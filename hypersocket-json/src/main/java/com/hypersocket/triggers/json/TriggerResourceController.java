@@ -594,7 +594,6 @@ public class TriggerResourceController extends AbstractTriggerController {
 
 	@AuthenticationRequiredButDontTouchSession
 	@RequestMapping(value = "triggers/image/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseStatus(value = HttpStatus.OK)
 	public void downloadTemplateImage(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid)
 			throws AccessDeniedException, UnauthorizedException,

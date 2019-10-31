@@ -37,13 +37,13 @@ public class RecipientHolder {
 	}
 	
 	public RecipientHolder(Principal principal, String email) {
-		this.name = principal.getPrincipalDescription();
+		this.name = principal.getDescription();
 		this.email = email;
 		this.principal = principal;
 	}
 	
 	public RecipientHolder(Principal principal) {
-		this.name = principal.getPrincipalDescription();
+		this.name = principal.getDescription();
 		this.email = principal.getEmail();
 		this.principal = principal;
 	}

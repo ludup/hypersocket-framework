@@ -180,7 +180,7 @@ public class CurrentRealmController extends ResourceController {
 								AccessDeniedException {
 							return realmService.searchPrincipals(
 									currentRealm,
-									PrincipalType.USER, module, searchColumn, HypersocketUtils.urlDecode(searchPattern), start,
+									PrincipalType.USER, module, searchColumn, searchPattern, start,
 									length, sorting);
 						}
 
@@ -193,7 +193,7 @@ public class CurrentRealmController extends ResourceController {
 									PrincipalType.USER, 
 									module, 
 									searchColumn,
-									HypersocketUtils.urlDecode(searchPattern));
+									searchPattern);
 						}
 					});
 			return r;

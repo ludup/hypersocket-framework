@@ -70,10 +70,10 @@ public abstract class SessionEvent extends SystemEvent {
 		 
 		if(authService.hasAuthenticatedContext()) {
 			addAttribute(ATTR_PRINCIPAL_NAME, authService.getCurrentPrincipal().getPrincipalName());
-			addAttribute(ATTR_PRINCIPAL_DESC, authService.getCurrentPrincipal().getPrincipalDescription());
+			addAttribute(ATTR_PRINCIPAL_DESC, authService.getCurrentPrincipal().getDescription());
 		} else {
 			addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
-			addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipal().getPrincipalDescription());
+			addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipal().getDescription());
 		}
 		
 		addAttribute(ATTR_PRINCIPAL_REALM, currentRealm.getName());
@@ -81,7 +81,7 @@ public abstract class SessionEvent extends SystemEvent {
 		
 		if(session.isImpersonating()) {
 			addAttribute(ATTR_IMPERSONATOR, session.getInheritedPrincipal().getPrincipalName());
-			addAttribute(ATTR_IMPERSONATOR_DESC, session.getInheritedPrincipal().getPrincipalDescription());
+			addAttribute(ATTR_IMPERSONATOR_DESC, session.getInheritedPrincipal().getDescription());
 		}
 	}
 	

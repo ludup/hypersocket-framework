@@ -23,7 +23,7 @@ public abstract class GroupPrincipal<U extends UserPrincipal, G extends GroupPri
 	
 	public abstract PrincipalStatus getPrincipalStatus();
 	
-	public String getPrincipalDescription() {
+	public String getDescription() {
 		return getName();
 	}
 	

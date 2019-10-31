@@ -1,6 +1,7 @@
 package com.hypersocket.triggers;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,8 +18,11 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -602,13 +606,23 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 	public void downloadTemplateImage(String uuid, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 
-		request.setAttribute(CONTENT_INPUTSTREAM,
-				httpUtils
-						.doHttpGet(
-								System.getProperty("hypersocket.templateServerImageUrl",
-										"https://updates2.hypersocket.com/hypersocket/api/templates/image/") + uuid,
-								true));
-
+		String uri = System.getProperty("hypersocket.templateServerImageUrl",
+				"https://updates2.hypersocket.com/hypersocket/api/templates/image/") + uuid;
+		CloseableHttpResponse resp = httpUtils.doHttpGet(uri, true, null);
+		if(resp.getStatusLine().getStatusCode() != 200) {
+			response.setStatus(resp.getStatusLine().getStatusCode());
+			return;
+		}
+		response.setContentType(resp.getFirstHeader("Content-Type").getValue());
+		Header clength = resp.getFirstHeader("Content-Length");
+		if(clength != null)
+			response.setContentLength(Integer.parseInt(clength.getValue()));
+		Header lastmod = resp.getFirstHeader("Last-Modified");
+		if(lastmod != null)
+			response.setHeader("Last-Modified", lastmod.getValue());
+		try(InputStream in = resp.getEntity().getContent()) {
+			IOUtils.copy(in, response.getOutputStream());
+		}
 	}
 
 	@Override
@@ -625,10 +639,12 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 		params.put("iSortCol_0", "0");
 		params.put("sSortDir_0", "asc");
 
+		String url = System.getProperty("hypersocket.templateServerUrl",
+				"https://updates2.hypersocket.com/hypersocket/api/templates") + "/"
+				+( (Boolean.getBoolean("hypersocketTriggers.enablePrivate") ? "developer" : "table" ) + "/3");
+		log.info(String.format("Retrieving from %s", url));
 		String json = httpUtils.doHttpPost(
-				System.getProperty("hypersocket.templateServerUrl",
-						"https://updates2.hypersocket.com/hypersocket/api/templates") + "/"
-						+ (Boolean.getBoolean("hypersocketTriggers.enablePrivate") ? "developer" : "table" + "/3"),
+				url,
 				params, true);
 
 		return json;

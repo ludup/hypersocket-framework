@@ -2887,7 +2887,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				if(includeAttributes.contains(TEXT_PRIMARY_EMAIL)) 
 					map.put(TEXT_PRIMARY_EMAIL, princ.getPrimaryEmail());
 				if(includeAttributes.contains(TEXT_DESCRIPTION)) 
-					map.put(TEXT_DESCRIPTION, princ.getPrincipalDescription());
+					map.put(TEXT_DESCRIPTION, princ.getDescription());
 				if(includeAttributes.contains(TEXT_UUID)) 
 					map.put(TEXT_UUID, princ.getUUID());
 				if(includeAttributes.contains(TEXT_CREATE_DATE)) 

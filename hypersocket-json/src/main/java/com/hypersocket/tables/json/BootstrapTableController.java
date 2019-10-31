@@ -16,7 +16,6 @@ import com.hypersocket.tables.BootstrapTableResourceProcessor;
 import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
-import com.hypersocket.utils.HypersocketUtils;
 
 public class BootstrapTableController<T> extends AuthenticatedController {
 
@@ -57,13 +56,13 @@ public class BootstrapTableController<T> extends AuthenticatedController {
 		String searchColumn = "";
 		
 		if(request.getParameter("sSearch") != null) {
-			searchPattern = HypersocketUtils.urlDecode(request.getParameter("sSearch"));
+			searchPattern = request.getParameter("sSearch");
 		} else if(request.getParameter("search") != null) {
-			searchPattern = HypersocketUtils.urlDecode(request.getParameter("search"));
+			searchPattern = request.getParameter("search");
 		}
 		
 		if(request.getParameter("searchColumn") != null) {
-			searchColumn = HypersocketUtils.urlDecode(request.getParameter("searchColumn"));
+			searchColumn = request.getParameter("searchColumn");
 		}
 
 		BootstrapTableResult<T> result = new BootstrapTableResult<T>(processor.getPage(

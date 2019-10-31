@@ -77,7 +77,7 @@ public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 								continue;
 							}
 							try {
-								permissionService.createRole(user.getPrincipalDescription(), realm, 
+								permissionService.createRole(user.getDescription(), realm, 
 										Arrays.asList(user), 
 										Collections.<Permission>emptyList(), Collections.<Realm>emptyList(), null, true, true, RoleType.USER, false, false, false);
 							} catch (ResourceCreationException e) {

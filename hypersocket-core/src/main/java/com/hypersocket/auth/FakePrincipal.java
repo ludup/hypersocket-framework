@@ -38,7 +38,7 @@ public class FakePrincipal extends Principal {
 		return PrincipalType.USER;
 	}
 	
-	public String getPrincipalDescription() {
+	public String getDescription() {
 		return getName();
 	}
 	

@@ -110,7 +110,7 @@ public abstract class Principal extends RealmResource {
 		this.principalType = type;
 	}
 
-	public abstract String getPrincipalDescription();
+	public abstract String getDescription();
 	
 	@XmlElement(name = "principalName")
 	public String getPrincipalName() {

@@ -260,6 +260,7 @@ public class FileUploadServiceImpl extends
 		
 		response.setContentType(contentType);
 		response.setStatus(HttpStatus.SC_OK);
+		response.setContentLength(fileUpload.getFileSize().intValue());
 		
 		if(forceDownload) {
 			response.setHeader("Content-disposition", "attachment; filename="

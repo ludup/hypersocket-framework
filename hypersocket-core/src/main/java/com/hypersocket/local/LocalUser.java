@@ -24,7 +24,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
@@ -57,6 +56,10 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	Date lastSignOn;
 	
 	@Column(name="fullname")
+	@Deprecated
+	/**
+	 * This should be removed in a later version
+	 */
 	String fullname;
 	
 	@Column(name="email")
@@ -77,6 +80,9 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	@Column(name="user_expires")
 	@Temporal(TemporalType.DATE)
 	Date expires;
+	
+	@Column(name="description")
+	String description;
 	
 	public String getIcon() {
 		return "fa-database";
@@ -111,8 +117,8 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		return PrincipalStatus.ENABLED;
 	}
 	@Override
-	public String getPrincipalDescription() {
-		return StringUtils.isBlank(getFullname()) ? getName() : getFullname();
+	public String getDescription() {
+		return description == null ? fullname : description;
 	}
 	
 	public void setType(PrincipalType type) {
@@ -141,12 +147,19 @@ public class LocalUser extends UserPrincipal implements Serializable {
 		this.lastSignOn = lastSignOn;
 	}
 
+	@Deprecated
 	public String getFullname() {
-		return fullname;
+		return getDescription();
 	}
 
+	@Deprecated
 	public void setFullname(String fullname) {
-		this.fullname = fullname;
+		setDescription(description);
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+		this.fullname = null;
 	}
 
 	@Override

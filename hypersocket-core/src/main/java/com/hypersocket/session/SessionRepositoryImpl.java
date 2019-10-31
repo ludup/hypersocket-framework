@@ -419,7 +419,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		Map<String,Long> results = new HashMap<String,Long>();
 		for(Object obj : ret) {
 			Object[] tmp = (Object[])obj;
-			results.put(((Principal) tmp[0]).getPrincipalDescription(), ((Long)tmp[1] / 60));
+			results.put(((Principal) tmp[0]).getDescription(), ((Long)tmp[1] / 60));
 		}
 		
 		return results;

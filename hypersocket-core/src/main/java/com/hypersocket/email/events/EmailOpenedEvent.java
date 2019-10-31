@@ -28,7 +28,7 @@ public class EmailOpenedEvent extends SystemEvent {
 		addAttribute(ATTR_EMAIL_SENT, HypersocketUtils.formatDateTime(receipt.getCreateDate()));
 		addAttribute(ATTR_EMAIL_READ, HypersocketUtils.formatDateTime(receipt.getOpened()));
 		addAttribute(ATTR_PRINCIPAL, receipt.getPrincipal()==null ? "" : receipt.getPrincipal().getName());
-		addAttribute(ATTR_PRINCIPAL_DESC, receipt.getPrincipal()==null ? "" : receipt.getPrincipal().getPrincipalDescription());
+		addAttribute(ATTR_PRINCIPAL_DESC, receipt.getPrincipal()==null ? "" : receipt.getPrincipal().getDescription());
 	}
 
 	public EmailOpenedEvent(Object source, Throwable e, Realm currentRealm) {

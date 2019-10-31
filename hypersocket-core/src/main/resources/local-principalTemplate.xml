@@ -2,7 +2,7 @@
 <propertyTemplates >
 	<propertyCategory resourceKey="local.userDetailsE"
 		resourceBundle="LocalRealm" weight="0">
-		<property resourceKey="fullname" inputType="text" weight="0" defaultValue="" showVariables="true" />
+		<property resourceKey="description" inputType="text" weight="0" defaultValue="" showVariables="true" />
 		<property resourceKey="email" inputType="text" weight="100" allowEmpty="true" validateAll="email" defaultValue="" showVariables="true"/>
 		<property resourceKey="secondaryEmail" inputType="multipleTextInput" weight="200" allowEmpty="true" validateAll="email" defaultValue="" showVariables="true"/>
 		<property resourceKey="mobile" inputType="text" weight="300" defaultValue="" showVariables="true"/>
