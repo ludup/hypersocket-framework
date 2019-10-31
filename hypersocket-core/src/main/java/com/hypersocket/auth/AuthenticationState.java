@@ -26,7 +26,6 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
-import com.hypersocket.utils.HypersocketUtils;
 
 public class AuthenticationState {
 

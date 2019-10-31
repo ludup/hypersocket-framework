@@ -9,7 +9,6 @@ import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.SessionFactory;
 import org.hibernate.cache.spi.RegionFactory;
-import org.hibernate.search.hcore.impl.HibernateSearchIntegrator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

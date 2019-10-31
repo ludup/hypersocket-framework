@@ -1,11 +1,8 @@
 package com.hypersocket.automation;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.quartz.Job;
 import org.quartz.SchedulerException;
