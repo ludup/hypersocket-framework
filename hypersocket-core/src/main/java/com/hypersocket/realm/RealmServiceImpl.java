@@ -2859,9 +2859,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				includeAttributes = new LinkedHashSet<String>();
 				if(StringUtils.isNotBlank(attributes))
 					attrs = Arrays.asList(attributes.split(","));
+				if(attrs == null || attrs.isEmpty())
+					includeAttributes.addAll(DEFAULT_PRINCIPAL_ATTRIBUTE_NAMES);
 				if(attrs != null) {
-					if(attrs.isEmpty())
-						includeAttributes.addAll(DEFAULT_PRINCIPAL_ATTRIBUTE_NAMES);
 					includeAttributes.addAll(attrs);
 				}
 				i18n = i18nService.getResourceMap(locale);
