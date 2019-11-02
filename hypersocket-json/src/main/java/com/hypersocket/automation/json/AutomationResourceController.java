@@ -186,6 +186,7 @@ public class AutomationResourceController extends AbstractTriggerController {
 					AutomationResourceServiceImpl.RESOURCE_BUNDLE,
 					"info.startedAutomation", resource.getName()));
 		} catch(Exception ex) { 
+			log.error("Failed to run automation on demand", e);
 			return new RequestStatus(false, I18N.getResource(sessionUtils.getLocale(request), 
 					AutomationResourceServiceImpl.RESOURCE_BUNDLE,
 					"error.failedToStartAutomation", ex.getMessage()));
