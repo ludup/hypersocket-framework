@@ -90,6 +90,10 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		};
 	}
 	
+	protected HibernateTemplate getTemplate() {
+		return hibernateTemplate;
+	}
+	
 	@Transactional
 	protected AbstractEntity<K> save(AbstractEntity<K> entity) {
 
