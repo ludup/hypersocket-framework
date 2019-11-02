@@ -25,9 +25,10 @@
 			weight="700" defaultValue="" validateAll="email"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.replyName" inputType="text"
 			weight="800" defaultValue=""  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
-		
 		<property resourceKey="smtp.delay" inputType="integer"
 			weight="900" defaultValue="250" minValue="0" maxValue="60000"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
+		<property resourceKey="smtp.doNotSendToNoReply" inputType="switch"
+			weight="1000" defaultValue="true" visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.emailExtra"
 		resourceBundle="EmailService" weight="600"  group="messages">

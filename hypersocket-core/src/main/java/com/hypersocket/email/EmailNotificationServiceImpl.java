@@ -46,6 +46,8 @@ import com.hypersocket.triggers.ValidationException;
 
 @Service
 public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceImpl implements EmailNotificationService {
+	
+	private final static List<String> NO_REPLY_ADDRESSES = Arrays.asList("noreply", "no.reply", "no.reply", "do_not_reply", "do.not.reply", "do_not_reply");
 
 	@Autowired
 	private ConfigurationService configurationService;
@@ -76,6 +78,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	public final static String SMTP_FROM_NAME = "smtp.fromName";
 	public final static String SMTP_REPLY_ADDRESS = "smtp.replyAddress";
 	public final static String SMTP_REPLY_NAME = "smtp.replyName";
+	public final static String SMTP_DO_NOT_SEND_TO_NO_REPLY = "smtp.doNotSendToNoReply";
 	
 	public static final String EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 	
@@ -155,6 +158,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		if(archive && StringUtils.isNotBlank(archiveAddress)) {
 			populateEmailList(new String[] {archiveAddress} , archiveRecipients, RecipientType.TO);
 		}
+		
+		boolean noNoReply = configurationService.getBooleanValue(realm, SMTP_DO_NOT_SEND_TO_NO_REPLY);
 
 		for(RecipientHolder r : recipients) {
 			
@@ -162,6 +167,12 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				log.warn(String.format("Missing email address for %s", r.getName()));
 				continue;
 			}
+			
+			if(noNoReply && NO_REPLY_ADDRESSES.contains(StringUtils.left(r.getEmail(), r.getEmail().indexOf('@')))) {
+				log.warn(String.format("Skipping no reply email address for %s", r.getEmail()));
+				continue;
+			}
+			
 			
 			ServerResolver serverResolver = new ServerResolver(realm);
 			
