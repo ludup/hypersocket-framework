@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -60,7 +62,8 @@ import com.hypersocket.utils.HypersocketUtils;
 @Controller
 public class AutomationResourceController extends AbstractTriggerController {
 
-
+	static Logger log = LoggerFactory.getLogger(AutomationResourceController.class);
+	
 	@Autowired
 	AutomationResourceService resourceService;
 
@@ -186,7 +189,7 @@ public class AutomationResourceController extends AbstractTriggerController {
 					AutomationResourceServiceImpl.RESOURCE_BUNDLE,
 					"info.startedAutomation", resource.getName()));
 		} catch(Exception ex) { 
-			log.error("Failed to run automation on demand", e);
+			log.error("Failed to run automation on demand", ex);
 			return new RequestStatus(false, I18N.getResource(sessionUtils.getLocale(request), 
 					AutomationResourceServiceImpl.RESOURCE_BUNDLE,
 					"error.failedToStartAutomation", ex.getMessage()));
