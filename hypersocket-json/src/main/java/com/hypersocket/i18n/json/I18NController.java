@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -43,23 +44,27 @@ import com.hypersocket.session.json.SessionUtils;
 @Controller
 public class I18NController extends AuthenticatedController {
 
+	static long lastModified = System.currentTimeMillis();
 	
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 	
 	@Autowired
-	SessionUtils sessionUtils;
+	private SessionUtils sessionUtils;
 	
 	@RequestMapping(value="i18n", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
-	@ResponseStatus(value=HttpStatus.OK)
-	public Map<String,String> getResources(HttpServletRequest request, HttpServletResponse response) throws IOException, AccessDeniedException {
+	public Map<String,String> getResources(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, AccessDeniedException {
 		
 		setupAnonymousContext(request.getRemoteAddr(), 
 				request.getServerName(), 
 				request.getHeader(HttpHeaders.USER_AGENT),
 				request.getParameterMap());
 		try {
+			if(webRequest.checkNotModified(lastModified)) {
+				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+				return null;
+			}
 			Cache<String,String> results = i18nService.getResourceMap(sessionUtils.getLocale(request));
 			results.put("LANG", sessionUtils.getLocale(request).getLanguage());
 			return serializeCache(results);
@@ -68,28 +73,20 @@ public class I18NController extends AuthenticatedController {
 		}
 	}
 	
-	private Map<String,String> serializeCache(Cache<String,String> cache) throws JsonGenerationException, JsonMappingException, IOException {
-		
-		Map<String,String> m = new HashMap<String,String>();
-		
-		for(Iterator<Entry<String,String>> it = cache.iterator(); it.hasNext();) {
-			Entry<String,String> e = it.next();
-			m.put(e.getKey(), e.getValue());
-		}
-		return m;
-
-	}
-	
 	@RequestMapping(value="i18n/{locale}", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
 	@ResponseStatus(value=HttpStatus.OK)
-	public Map<String,String> getResources(HttpServletRequest request, HttpServletResponse response, @PathVariable String locale) throws IOException, AccessDeniedException {
+	public Map<String,String> getResources(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response, @PathVariable String locale) throws IOException, AccessDeniedException {
 		
 		setupAnonymousContext(request.getRemoteAddr(), 
 				request.getServerName(), 
 				request.getHeader(HttpHeaders.USER_AGENT),
 				request.getParameterMap());
 		try {
+			if(webRequest.checkNotModified(lastModified)) {
+				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+				return null;
+			}
 			Cache<String,String> results = i18nService.getResourceMap(i18nService.getLocale(locale));
 			results.put("LANG", locale);
 			return serializeCache(results);
@@ -100,16 +97,19 @@ public class I18NController extends AuthenticatedController {
 	
 	@RequestMapping(value = "i18n/locales", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<SelectOption> getLocales(
-			HttpServletRequest request, HttpServletResponse response)
-			throws AccessDeniedException, UnauthorizedException {
+			WebRequest webRequest, HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException, IOException {
 
 		setupAnonymousContext(request.getRemoteAddr(), 
 				request.getServerName(), 
 				request.getHeader(HttpHeaders.USER_AGENT),
 				request.getParameterMap());
 		try {
+			if(webRequest.checkNotModified(lastModified)) {
+				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+				return null;
+			}
 			List<SelectOption> locales = new ArrayList<SelectOption>();
 	
 			for (Locale l : i18nService.getSupportedLocales()) {
@@ -119,6 +119,16 @@ public class I18NController extends AuthenticatedController {
 		} finally {
 			clearAuthenticatedContext();
 		}
+	}
+	
+	private Map<String,String> serializeCache(Cache<String,String> cache) throws JsonGenerationException, JsonMappingException, IOException {
+		Map<String,String> m = new HashMap<String,String>();
+		for(Iterator<Entry<String,String>> it = cache.iterator(); it.hasNext();) {
+			Entry<String,String> e = it.next();
+			m.put(e.getKey(), e.getValue());
+		}
+		return m;
+
 	}
 	
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
 
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.UnauthorizedException;
@@ -27,21 +29,25 @@ import com.hypersocket.session.json.SessionUtils;
 
 @Controller
 public class EnumController extends AuthenticatedController {
+	
+	static long lastModified = System.currentTimeMillis();
 
 	@Autowired
 	SessionUtils sessionUtils;
 	
 	@RequestMapping(value = "enum/{className}/", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<NameValuePair> getStates(
-			HttpServletRequest request,
+			WebRequest request, HttpServletResponse response,
 			@PathVariable("className") String className)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupSystemContext();
 		try {
-			
+			if(request.checkNotModified(lastModified)) {
+				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+				return null;
+			}
 			Set<String> ignoredTypes = new HashSet<String>();
 			String ignored = request.getParameter("ignore");
 			if(ignored!=null) {
@@ -66,16 +72,18 @@ public class EnumController extends AuthenticatedController {
 	
 	@RequestMapping(value = "enum/{className}/{ignore}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<NameValuePair> getStates(
-			HttpServletRequest request,
+			WebRequest request, HttpServletResponse response,
 			@PathVariable("className") String className,
 			@PathVariable("ignore") String ignored)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupSystemContext();
 		try {
-			
+			if(request.checkNotModified(lastModified)) {
+				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+				return null;
+			}
 			Set<String> ignoredTypes = new HashSet<String>();
 			if(ignored!=null) {
 				for(String ignore : ignored.split(",")) {
@@ -99,15 +107,17 @@ public class EnumController extends AuthenticatedController {
 
 	@RequestMapping(value = "enum/displayable/{className}/", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<Displayable<?>> getDisplayableEnums(
-			HttpServletRequest request,
+			WebRequest request, HttpServletResponse response,
 			@PathVariable("className") String className)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupSystemContext();
 		try {
-
+			if(request.checkNotModified(lastModified)) {
+				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+				return null;
+			}
 			Class<?> enumType = Class.forName(className);
 			if(!Displayable.class.isAssignableFrom(enumType)) {
 				throw new IllegalStateException("Enum is not of type Displayable.");
@@ -120,7 +130,7 @@ public class EnumController extends AuthenticatedController {
 		} catch(Exception e) {
 			return new ResourceList<Displayable<?>>(false, e.getMessage());
 		} finally {
-			clearAuthenticatedContext();
+			response.setDateHeader("Last-Modified", lastModified);
 		}
 	}
 
