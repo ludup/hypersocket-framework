@@ -367,11 +367,14 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		if(interfacesToBind.isEmpty()) {
 
 			try {
+				int port = Integer.parseInt(
+								System.getProperty("hypersocket." + interfaceResource.getProtocol().name().toLowerCase() + ".port", 
+								String.valueOf(interfaceResource.getPort())));
 				if(log.isInfoEnabled()) {
 					log.info("Binding server to all interfaces on port "
-							+ interfaceResource.getPort());
+							+ port);
 				}
-				Channel ch = serverBootstrap.bind(new InetSocketAddress(interfaceResource.getPort()));
+				Channel ch = serverBootstrap.bind(new InetSocketAddress(port));
 				ch.setAttachment(interfaceResource);
 				switch(interfaceResource.getProtocol()) {
 				case HTTP:
@@ -408,16 +411,19 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 					if(interfacesToBind.contains(inetAddress.getHostAddress())) {
 						try {
+							int port = Integer.parseInt(
+									System.getProperty("hypersocket." + interfaceResource.getProtocol().name().toLowerCase() + ".port", 
+									String.valueOf(interfaceResource.getPort())));
 							if(log.isInfoEnabled()) {
 								log.info("Binding " + interfaceResource.getProtocol() + " server to interface "
 										+ i.getDisplayName()
 										+ " "
 										+ inetAddress.getHostAddress()
 										+ ":"
-										+ interfaceResource.getPort());
+										+ port);
 							}
 
-							Channel ch = serverBootstrap.bind(new InetSocketAddress(inetAddress, interfaceResource.getPort()));
+							Channel ch = serverBootstrap.bind(new InetSocketAddress(inetAddress, port));
 
 							ch.setAttachment(interfaceResource);
 							switch(interfaceResource.getProtocol()) {
