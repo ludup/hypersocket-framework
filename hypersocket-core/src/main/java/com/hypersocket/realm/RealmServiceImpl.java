@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -115,7 +116,7 @@ import com.hypersocket.utils.HypersocketUtils;
 @Service
 public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		implements RealmService, UpgradeServiceListener {
-
+	
 	private static final String TEXT_PRINCIPAL_NAME = "text.principalName";
 	private static final String TEXT_REALM = "text.realm";
 	private static final String TEXT_NAME = "text.name";
@@ -128,8 +129,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	private static final String TEXT_MODIFIED_DATE = "text.modifiedDate";
 	private static final String TEXT_EXPIRES = "text.expires";
 	private static final String TEXT_STATUS = "text.status";
+	private static final String TEXT_LAST_PASSWORD_CHANGE = "text.lastPasswordChange";
+	private static final String TEXT_PASSWORD_EXPIRY = "text.passwordExpiry";
+	private static final String TEXT_LAST_SIGN_ON = "text.lastSignOn";
 	private static final List<String> DEFAULT_PRINCIPAL_ATTRIBUTE_NAMES = Arrays.asList(TEXT_REALM, TEXT_PRINCIPAL_NAME, TEXT_NAME, TEXT_EMAIL, TEXT_OU, TEXT_PRIMARY_EMAIL,
-			TEXT_DESCRIPTION, TEXT_UUID, TEXT_CREATE_DATE, TEXT_MODIFIED_DATE, TEXT_EXPIRES, TEXT_STATUS);
+			TEXT_DESCRIPTION, TEXT_UUID, TEXT_CREATE_DATE, TEXT_MODIFIED_DATE, TEXT_EXPIRES, TEXT_STATUS, TEXT_LAST_PASSWORD_CHANGE, TEXT_LAST_SIGN_ON, TEXT_PASSWORD_EXPIRY);
 
 	static Logger log = LoggerFactory.getLogger(RealmServiceImpl.class);
 
@@ -2845,7 +2849,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		// TODO hmm?
 		// assertPermission(RealmPermission.READ);
 
-		exportService.downloadCSV(realm, new AbstractPagingExportDataProvider<Principal>(PAGE_SIZE) {
+		exportService.downloadCSV(realm, new AbstractPagingExportDataProvider<UserPrincipal>(PAGE_SIZE) {
 			Set<String> includeAttributes;
 			Cache<String, String> i18n;
 			Realm currentRealm = realm;
@@ -2872,7 +2876,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				return includeAttributes;
 			}
 
-			protected Map<String, String> convertToMap(Principal princ) {
+			protected Map<String, String> convertToMap(UserPrincipal princ) {
 				final Map<String, String> map = new HashMap<String, String>();
 				if(includeAttributes.contains(TEXT_REALM)) 
 					map.put(TEXT_REALM, princ.getRealm().getName());
@@ -2901,6 +2905,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 							: HypersocketUtils.formatDate(princ.getExpires(), "yyyy-MM-dd HH:mm:ss"));
 				if(includeAttributes.contains(TEXT_STATUS)) 
 					map.put(TEXT_STATUS, princ.getPrincipalStatus() == null ? "" : princ.getPrincipalStatus().name());
+				if(includeAttributes.contains(TEXT_LAST_PASSWORD_CHANGE)) 
+					map.put(TEXT_LAST_PASSWORD_CHANGE, princ.getLastPasswordChange() == null ? ""
+							: HypersocketUtils.formatDate(princ.getLastPasswordChange(), "yyyy-MM-dd HH:mm:ss"));
+				if(includeAttributes.contains(TEXT_PASSWORD_EXPIRY)) 
+					map.put(TEXT_PASSWORD_EXPIRY, princ.getPasswordExpiry() == null ? ""
+							: HypersocketUtils.formatDate(princ.getLastPasswordChange(), "yyyy-MM-dd HH:mm:ss"));
+				if(includeAttributes.contains(TEXT_LAST_SIGN_ON)) 
+					map.put(TEXT_LAST_SIGN_ON, princ.getLastSignOn() == null ? ""
+							: HypersocketUtils.formatDate(princ.getLastSignOn(), "yyyy-MM-dd HH:mm:ss"));
+				
 				if(!attributes.isEmpty()){
 					RealmProvider provider = getProviderForRealm(princ.getRealm());
 					for(String a : attrs) {
@@ -2917,8 +2931,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			@SuppressWarnings("unchecked")
 			@Override
-			protected List<Principal> fetchPage(int startPosition) throws AccessDeniedException {
-				return (List<Principal>) searchPrincipals(currentRealm, PrincipalType.USER, module, searchColumn,
+			protected List<UserPrincipal> fetchPage(int startPosition) throws AccessDeniedException {
+				return (List<UserPrincipal>) searchPrincipals(currentRealm, PrincipalType.USER, module, searchColumn,
 						searchPattern, startPosition, PAGE_SIZE, sort);
 			}
 		}, outputHeaders, delimiters, eol, wrap, escape, "", output, locale);
