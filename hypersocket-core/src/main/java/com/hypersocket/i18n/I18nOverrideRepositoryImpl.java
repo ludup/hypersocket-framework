@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-import javax.cache.Cache;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Projections;
@@ -14,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hypersocket.cache.CacheService;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 
@@ -22,7 +19,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 public class I18nOverrideRepositoryImpl extends AbstractEntityRepositoryImpl<I18nOverride, Long> implements I18nOverrideRepository {
 
 	@Autowired
-	CacheService cacheService;
+	I18NService i18nService;
 	
 	@Override
 	protected Class<I18nOverride> getEntityClass() {
@@ -54,13 +51,7 @@ public class I18nOverrideRepositoryImpl extends AbstractEntityRepositoryImpl<I18
 		if(o!=null) {
 			delete(o);
 		}
-		
-		String cacheKey = "i18n-" + locale.getLanguage();
-		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey, String.class, String.class);
-		if(cache!=null) {
-			cache.remove(key);
-		}
-		
+		i18nService.clearCache(locale);
 	}
 
 	@Override
@@ -79,11 +70,7 @@ public class I18nOverrideRepositoryImpl extends AbstractEntityRepositoryImpl<I18
 		
 		save(o);
 		
-		String cacheKey = "i18n-" + locale.getLanguage();
-		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey, String.class, String.class);
-		if(cache!=null) {
-			cache.put(id, translated);
-		}
+		i18nService.clearCache(locale);
 	}
 
 	@Override

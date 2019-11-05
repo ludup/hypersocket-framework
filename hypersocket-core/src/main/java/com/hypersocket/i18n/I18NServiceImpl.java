@@ -36,21 +36,131 @@ import com.hypersocket.session.SessionService;
 @Service
 public class I18NServiceImpl implements I18NService {
 
-	static Logger log = LoggerFactory.getLogger(I18NServiceImpl.class);
-	
-	Set<String> bundles = new HashSet<String>();
-	
 	public static final String RESOURCE_BUNDLE = "I18NService";
 	public static final String USER_INTERFACE_BUNDLE = "UserInterface";
 	
-	List<Locale> supportedLocales = new ArrayList<Locale>();
-	
-	List<Message> allMessages;
-	HashMap<Locale,Map<String,String>> resources = new HashMap<Locale,Map<String,String>>();
+	static Logger log = LoggerFactory.getLogger(I18NServiceImpl.class);
 	
 	@Autowired
-	CacheService cacheService; 
+	private CacheService cacheService;
 	
+	private Set<String> bundles = new HashSet<String>();
+	private long lastUpdate = System.currentTimeMillis(); 
+	private HashMap<Locale,Map<String,String>> resources = new HashMap<Locale,Map<String,String>>();
+	private List<Locale> supportedLocales = new ArrayList<Locale>();
+	
+	public static String convertFromTag(String tag, Locale locale, Object... arguments) {
+		if(tag.startsWith("i18n/")) {
+			String[] elements = tag.split("/");
+			return I18N.getResource(locale, elements[1], elements[2], arguments);
+		} else {
+			return tag;
+		}
+	}
+	
+	public static String tagForConversion(String resourceBundle, String resourceKey) {
+		return "i18n/" + resourceBundle + "/" + resourceKey;
+	}
+	
+	@Override
+	public void clearCache(Locale locale) {
+		cacheService.getCacheManager().destroyCache(getCacheKey(locale));
+	}
+	
+	@Override
+	public Set<String> getBundles() {
+		return bundles;
+	}
+
+	@Override
+	public long getLastUpdate() {
+		return lastUpdate;
+	}
+	
+	@Override
+	public Locale getLocale(String locale) {
+		
+		Locale result = Locale.forLanguageTag(locale);
+		if(result==null) {
+			return Locale.ENGLISH;
+		}
+		return result;
+	}
+	
+	@Override
+	public String getResource(String resourceKey) {
+		return getResource(resourceKey, Locale.getDefault());
+	}
+	
+	@Override
+	public String getResource(String resourceKey, Locale locale) {
+		return getResourceMap(locale).get(resourceKey);
+	}
+
+	@Override
+	public synchronized Cache<String,String> getResourceMap(Locale locale) {
+		
+		String cacheKey = getCacheKey(locale);
+		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey,String.class, String.class);
+
+		if(cache==null) {
+			cache = cacheService.getCacheOrCreate(cacheKey, String.class, String.class);
+			buildCache(cache, locale);
+		}
+		return cache;
+	}
+	
+	@Override
+	public List<Locale> getSupportedLocales() {
+		return supportedLocales;
+	}
+	
+	@Override
+	public Map<String,Map<String,Message>> getTranslatableMessages() {
+		
+		Map<String,Map<String,Message>> messages = new HashMap<String,Map<String,Message>>();
+		
+		for(String bundle : bundles) {
+			messages.put(bundle, new HashMap<String,Message>());
+			for(String key :I18N.getResourceKeys(Locale.ENGLISH, bundle)) {
+				String translated = I18N.getResource(Locale.ENGLISH, bundle, key);
+				String original = I18N.getResourceNoOveride(Locale.ENGLISH, bundle, key);
+				messages.get(bundle).put(key, new Message(bundle, key, original, original.equals(translated) ? "" : translated));
+			}
+		}
+		
+		return messages;
+	}
+	
+	@Override
+	public synchronized void registerBundle(String bundle) {
+		bundles.add(bundle);
+		resources.clear();
+	}
+
+	private void buildBundleMap(String bundle, Locale locale, Cache<String,String> resources) {
+		for(String key :  I18N.getResourceKeys(locale, bundle)) {
+			resources.put(key, I18N.getResource(locale, bundle, key));
+		}
+	}
+
+	private void buildCache(Cache<String,String> cache, Locale locale) {
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Building i18n resources cache for %s", locale.getLanguage()));
+		}
+		for(String bundle : bundles) {
+			buildBundleMap(bundle, locale, cache);
+		}
+		if(log.isInfoEnabled()) {
+			log.info(String.format("Completed i18n resources cache for %s", locale.getLanguage()));
+		}
+	}
+
+
+	private String getCacheKey(Locale locale) {
+		return String.format("i18n-%s", locale.getLanguage());
+	}
+
 	@PostConstruct
 	private void postConstruct() {
 		
@@ -80,107 +190,6 @@ public class I18NServiceImpl implements I18NService {
 		supportedLocales.add(getLocale("es"));
 		supportedLocales.add(getLocale("sv"));
 		
-	}
-	
-	private String getCacheKey(Locale locale) {
-		return String.format("i18n-%s", locale.getLanguage());
-	}
-	
-	private void buildCache(Cache<String,String> cache, Locale locale) {
-		if(log.isInfoEnabled()) {
-			log.info(String.format("Building i18n resources cache for %s", locale.getLanguage()));
-		}
-		for(String bundle : bundles) {
-			buildBundleMap(bundle, locale, cache);
-		}
-		if(log.isInfoEnabled()) {
-			log.info(String.format("Completed i18n resources cache for %s", locale.getLanguage()));
-		}
-	}
-	
-	@Override
-	public synchronized void registerBundle(String bundle) {
-		bundles.add(bundle);
-		resources.clear();
-	}
-
-	@Override
-	public synchronized Cache<String,String> getResourceMap(Locale locale) {
-		
-		String cacheKey = getCacheKey(locale);
-		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey,String.class, String.class);
-
-		if(cache==null) {
-			cache = cacheService.getCacheOrCreate(cacheKey, String.class, String.class);
-			buildCache(cache, locale);
-		}
-		return cache;
-	}
-	
-	@Override
-	public String getResource(String resourceKey, Locale locale) {
-		return getResourceMap(locale).get(resourceKey);
-	}
-	
-	@Override
-	public String getResource(String resourceKey) {
-		return getResource(resourceKey, Locale.getDefault());
-	}
-	
-	private void buildBundleMap(String bundle, Locale locale, Cache<String,String> resources) {
-		for(String key :  I18N.getResourceKeys(locale, bundle)) {
-			resources.put(key, I18N.getResource(locale, bundle, key));
-		}
-	}
-
-	@Override
-	public Locale getLocale(String locale) {
-		
-		Locale result = Locale.forLanguageTag(locale);
-		if(result==null) {
-			return Locale.ENGLISH;
-		}
-		return result;
-	}
-	
-	public static String tagForConversion(String resourceBundle, String resourceKey) {
-		return "i18n/" + resourceBundle + "/" + resourceKey;
-	}
-	
-	public static String convertFromTag(String tag, Locale locale, Object... arguments) {
-		if(tag.startsWith("i18n/")) {
-			String[] elements = tag.split("/");
-			return I18N.getResource(locale, elements[1], elements[2], arguments);
-		} else {
-			return tag;
-		}
-	}
-	
-	@Override
-	public Map<String,Map<String,Message>> getTranslatableMessages() {
-		
-		Map<String,Map<String,Message>> messages = new HashMap<String,Map<String,Message>>();
-		
-		for(String bundle : bundles) {
-			messages.put(bundle, new HashMap<String,Message>());
-			for(String key :I18N.getResourceKeys(Locale.ENGLISH, bundle)) {
-				String translated = I18N.getResource(Locale.ENGLISH, bundle, key);
-				String original = I18N.getResourceNoOveride(Locale.ENGLISH, bundle, key);
-				messages.get(bundle).put(key, new Message(bundle, key, original, original.equals(translated) ? "" : translated));
-			}
-		}
-		
-		return messages;
-	}
-
-	@Override
-	public List<Locale> getSupportedLocales() {
-		return supportedLocales;
-	}
-
-	@Override
-	public Set<String> getBundles() {
-		return bundles;
 	}
 
 }

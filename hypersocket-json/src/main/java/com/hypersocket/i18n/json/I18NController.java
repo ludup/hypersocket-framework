@@ -44,8 +44,6 @@ import com.hypersocket.session.json.SessionUtils;
 @Controller
 public class I18NController extends AuthenticatedController {
 
-	static long lastModified = System.currentTimeMillis();
-	
 	@Autowired
 	private I18NService i18nService;
 	
@@ -61,7 +59,7 @@ public class I18NController extends AuthenticatedController {
 				request.getHeader(HttpHeaders.USER_AGENT),
 				request.getParameterMap());
 		try {
-			if(webRequest.checkNotModified(lastModified)) {
+			if(webRequest.checkNotModified(i18nService.getLastUpdate())) {
 				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
 				return null;
 			}
@@ -83,7 +81,7 @@ public class I18NController extends AuthenticatedController {
 				request.getHeader(HttpHeaders.USER_AGENT),
 				request.getParameterMap());
 		try {
-			if(webRequest.checkNotModified(lastModified)) {
+			if(webRequest.checkNotModified(i18nService.getLastUpdate())) {
 				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
 				return null;
 			}
@@ -106,7 +104,7 @@ public class I18NController extends AuthenticatedController {
 				request.getHeader(HttpHeaders.USER_AGENT),
 				request.getParameterMap());
 		try {
-			if(webRequest.checkNotModified(lastModified)) {
+			if(webRequest.checkNotModified(i18nService.getLastUpdate())) {
 				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
 				return null;
 			}

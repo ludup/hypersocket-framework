@@ -32,5 +32,9 @@ public interface I18NService {
 
 	String getResource(String resourceKey);
 
+	void clearCache(Locale locale);
+	
+	long getLastUpdate();
+
 
 }
