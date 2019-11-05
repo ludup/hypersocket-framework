@@ -64,6 +64,7 @@ public class I18NServiceImpl implements I18NService {
 	
 	@Override
 	public void clearCache(Locale locale) {
+		lastUpdate = System.currentTimeMillis();
 		cacheService.getCacheManager().destroyCache(getCacheKey(locale));
 	}
 	
