@@ -168,7 +168,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				continue;
 			}
 			
-			if(noNoReply && NO_REPLY_ADDRESSES.contains(StringUtils.left(r.getEmail(), r.getEmail().indexOf('@')))) {
+			if(noNoReply && isNoReply(StringUtils.left(r.getEmail(), r.getEmail().indexOf('@')))) {
 				log.warn(String.format("Skipping no reply email address for %s", r.getEmail()));
 				continue;
 			}
@@ -238,6 +238,14 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				}
 			}
 		}
+	}
+	
+	private boolean isNoReply(String addr) {
+		for(String a : NO_REPLY_ADDRESSES) {
+			if(addr.startsWith(a))
+				return true;
+		}
+		return false;
 	}
 	
 	private String processDefaultReplacements(String str, RecipientHolder r, ServerResolver serverResolver) {
