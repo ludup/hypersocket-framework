@@ -47,7 +47,7 @@ import com.hypersocket.triggers.ValidationException;
 @Service
 public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceImpl implements EmailNotificationService {
 	
-	private final static List<String> NO_REPLY_ADDRESSES = Arrays.asList("noreply", "no.reply", "no.reply", "do_not_reply", "do.not.reply", "do_not_reply");
+	private final static List<String> NO_REPLY_ADDRESSES = Arrays.asList("noreply", "no.reply", "no-reply", "no_reply", "do_not_reply", "do.not.reply", "do_not_reply");
 
 	@Autowired
 	private ConfigurationService configurationService;
