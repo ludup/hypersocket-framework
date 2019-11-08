@@ -234,7 +234,7 @@ public class EmailTask extends AbstractTaskProvider {
 		try {
 			emailService.sendEmail(currentRealm, subject, body, bodyHtml,
 					replyToName, replyToEmail, 
-					recipients.toArray(new RecipientHolder[0]), archive, track, delay, attachments.toArray(new EmailAttachment[0]));
+					recipients.toArray(new RecipientHolder[0]), archive, track, delay, null, attachments.toArray(new EmailAttachment[0]));
 
 			return new EmailTaskResult(this, currentRealm, task);
 		} catch (Exception ex) {

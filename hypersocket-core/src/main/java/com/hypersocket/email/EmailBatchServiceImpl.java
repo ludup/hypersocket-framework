@@ -79,7 +79,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 					new RecipientHolder[] { new RecipientHolder(item.getToName(), item.getToEmail()) }, 
 					item.getArchive(), 
 					item.getTrack(),
-					5, attachments.toArray(new EmailAttachment[0]));
+					5, item.getContext(), attachments.toArray(new EmailAttachment[0]));
 
 			
 		} catch (MailException | AccessDeniedException | ValidationException e) {
@@ -100,19 +100,20 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 
 	@Override
 	public void queueEmail(Realm realm, String subject, String body, String html, String replyToName,
-			String replyToEmail, String name, String email, Boolean archive, Boolean track, String attachments)
+			String replyToEmail, String name, String email, Boolean archive, Boolean track, String attachments, String context)
 			throws ResourceException {
-		scheduleEmail(realm, subject, body, html, replyToName, replyToEmail, name, email, archive, track, attachments, null);
+		scheduleEmail(realm, subject, body, html, replyToName, replyToEmail, name, email, archive, track, attachments, null, context);
 	}
 
 	@Override
 	public void scheduleEmail(Realm realm, String subject, String body, String html, String replyToName,
-			String replyToEmail, String name, String email, Boolean archive, Boolean track, String attachments, Date schedule)
+			String replyToEmail, String name, String email, Boolean archive, Boolean track, String attachments, Date schedule, String context)
 			throws ResourceException {
 
 		EmailBatchItem item = new EmailBatchItem();
 		item.setName(UUID.randomUUID().toString());
 		item.setRealm(realm);
+		item.setContext(context);
 		item.setSubject(subject);
 		item.setText(body);
 		item.setHtml(html);

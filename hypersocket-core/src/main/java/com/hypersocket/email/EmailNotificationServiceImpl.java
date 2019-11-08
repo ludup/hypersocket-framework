@@ -88,14 +88,14 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 	@Override
 	@SafeVarargs
-	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean archive, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
-		sendEmail(getCurrentRealm(), subject, text, html, recipients, archive, track, delay, attachments);
+	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean archive, boolean track, int delay, String context, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(getCurrentRealm(), subject, text, html, recipients, archive, track, delay, context, attachments);
 	}
 	
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean archive, boolean track, int delay, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
-		sendEmail(realm, subject, text, html, null, null, recipients, archive, track, delay, attachments);
+	public final void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean archive, boolean track, int delay, String context, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+		sendEmail(realm, subject, text, html, null, null, recipients, archive, track, delay, context, attachments);
 	}
 	
 	public EmailController getController() {
@@ -129,7 +129,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			boolean archive,
 			boolean track,
 			int delay,
-			EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
+			String context, EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
 		
 		if(!isEnabled()) {
 			if(systemConfigurationService.getBooleanValue("smtp.on")) {
@@ -210,11 +210,11 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 						replyToEmail, 
 						r, 
 						delay,
-						attachments);
+						context, attachments);
 				
 				for(RecipientHolder recipient : archiveRecipients) {
 					send(realm, mail, messageSubject, messageText, archiveRecipientHtml, 
-							replyToName, replyToEmail, recipient, delay, attachments);
+							replyToName, replyToEmail, recipient, delay, context, attachments);
 				}
 				
 			} else {
@@ -230,11 +230,11 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 						replyToEmail, 
 						r, 
 						delay,
-						attachments);
+						context, attachments);
 				
 				for(RecipientHolder recipient : archiveRecipients) {
 					send(realm, mail, messageSubject, messageText, "", 
-							replyToName, replyToEmail, recipient, delay, attachments);
+							replyToName, replyToEmail, recipient, delay, context, attachments);
 				}
 			}
 		}
@@ -294,7 +294,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			String replyToEmail, 
 			RecipientHolder r, 
 			int delay,
-			EmailAttachment... attachments) throws AccessDeniedException {
+			String context, EmailAttachment... attachments) throws AccessDeniedException {
 		
 		Principal p = null;
 		
@@ -400,9 +400,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			if("true".equals(System.getProperty("hypersocket.email", "true")))
 				mail.sendMail(email);
 			
-			eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail()));
+			eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context));
 		} catch (MailException e) {
-			eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail()));
+			eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail(), context));
 			throw e;
 		}
 

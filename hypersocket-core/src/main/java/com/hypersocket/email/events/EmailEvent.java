@@ -16,27 +16,37 @@ public class EmailEvent extends SystemEvent {
 	public static final String ATTR_SUBJECT = "attr.subject";
 	public static final String ATTR_BODY = "attr.body";
 	public static final String ATTR_TO = "attr.to";
+	public static final String ATTR_CONTEXT = "attr.context";
 
-	public EmailEvent(Object source, Realm currentRealm, Task task, String subject, String body, String to) {
+	public EmailEvent(Object source, Realm currentRealm, Task task, String subject, String body, String to, String context) {
 		super(source, EVENT_RESOURCE_KEY, true, currentRealm);
-		addAttributes(subject, body, to);
+		addAttributes(subject, body, to, context);
 	}
 
-	public EmailEvent(Object source, Realm currentRealm, String subject, String body, String to) {
+	public EmailEvent(Object source, Realm currentRealm, String subject, String body, String to, String context) {
 		super(source, EVENT_RESOURCE_KEY, true, currentRealm);
-		addAttributes(subject, body, to);
+		addAttributes(subject, body, to, context);
 	}
 
-	private void addAttributes(String subject, String body, String to) {
+	private void addAttributes(String subject, String body, String to, String context) {
 		addAttribute(ATTR_SUBJECT, subject);
 		addAttribute(ATTR_BODY, body);
 		addAttribute(ATTR_TO, to);
+		addAttribute(ATTR_CONTEXT, context);
 
 	}
 
-	public EmailEvent(Object source, Throwable e, Realm currentRealm, String subject, String body, String to) {
+	public EmailEvent(Object source, Throwable e, Realm currentRealm, String subject, String body, String to, String context) {
 		super(source, EVENT_RESOURCE_KEY, e, currentRealm);
-		addAttributes(subject, body, to);
+		addAttributes(subject, body, to, context);
+	}
+	
+	public String getTo() {
+		return getAttribute(ATTR_TO);
+	}
+	
+	public String getContext() {
+		return getAttribute(ATTR_CONTEXT);
 	}
 
 	@Override

@@ -53,6 +53,17 @@ public class EmailBatchItem extends RealmResource {
 	@Temporal(TemporalType.TIMESTAMP)
 	Date schedule;
 	
+	@Column(name="context")
+	String context;
+	
+	public String getContext() {
+		return context;
+	}
+
+	public void setContext(String context) {
+		this.context = context;
+	}
+
 	public String getSubject() {
 		return subject;
 	}

@@ -54,7 +54,7 @@ public interface MessageResourceService extends
 
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> emails, ITokenResolver tokenResolver);
 
-	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails, List<EmailAttachment> attachments);
+	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, Collection<String> emails, List<EmailAttachment> attachments, String context);
 	
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver, String... emails);
 
@@ -73,23 +73,23 @@ public interface MessageResourceService extends
 			Collection<String> emails, Date schedule);
 	
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			List<EmailAttachment> attachments, Iterator<Principal> principals, Collection<String> emails);
+			List<EmailAttachment> attachments, Iterator<Principal> principals, Collection<String> emails, String context);
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Iterator<Principal> principals, Collection<String> emails, Date schedule, List<EmailAttachment> attachments);
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			List<EmailAttachment> attachments, Iterator<Principal> principals);
+			List<EmailAttachment> attachments, Iterator<Principal> principals, String context);
 
 	void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
-			RecipientHolder replyTo, ITokenResolver tokenResolver, List<EmailAttachment> attachments);
+			RecipientHolder replyTo, ITokenResolver tokenResolver, List<EmailAttachment> attachments, String context);
 
 	void sendMessage(String message, Realm currentRealm, ITokenResolver resolver,
 			Iterator<Principal> principals, Collection<String> emails);
 
 	void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Iterator<Principal> principals, Collection<String> emails, Date schedule,
-			List<EmailAttachment> attachments);
+			List<EmailAttachment> attachments, String context);
 
 	void sendMessageNow(String resourceKey, Realm currentRealm, ITokenResolver ticketResolver,
 			Iterator<Principal> principals, Collection<String> emails);

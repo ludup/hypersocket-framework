@@ -407,20 +407,20 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 
 	@Override
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			List<EmailAttachment> attachments, Iterator<Principal> principals) {
+			List<EmailAttachment> attachments, Iterator<Principal> principals, String context) {
 		sendMessage(resourceKey, realm, tokenResolver, replyTo, attachments, principals,
-				Collections.<String>emptyList());
+				Collections.<String>emptyList(), null);
 	}
 
 	@Override
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver,
 			String... principals) {
-		sendMessageToEmailAddress(resourceKey, realm, tokenResolver, Arrays.asList(principals), null);
+		sendMessageToEmailAddress(resourceKey, realm, tokenResolver, Arrays.asList(principals), null, null);
 	}
 
 	@Override
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver,
-			Collection<String> emails, List<EmailAttachment> attachments) {
+			Collection<String> emails, List<EmailAttachment> attachments, String context) {
 
 		MessageResource message = repository.getMessageById(resourceKey, realm);
 
@@ -436,12 +436,12 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 						return new RecipientHolder(ResourceUtils.getNamePairKey(email),
 								ResourceUtils.getNamePairValue(email));
 					}
-				}, attachments);
+				}, attachments, context);
 	}
 
 	@Override
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
-			RecipientHolder replyTo, ITokenResolver tokenResolver, List<EmailAttachment> attachments) {
+			RecipientHolder replyTo, ITokenResolver tokenResolver, List<EmailAttachment> attachments, String context) {
 		MessageResource message = repository.getMessageById(resourceKey, realm);
 
 		if (message == null) {
@@ -449,14 +449,14 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 			return;
 		}
 
-		sendMessage(message, realm, tokenResolver, replyTo, recipients.iterator(), attachments);
+		sendMessage(message, realm, tokenResolver, replyTo, recipients.iterator(), attachments, context);
 
 	}
 
 	@Override
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
 			ITokenResolver tokenResolver) {
-		sendMessageToEmailAddress(resourceKey, realm, recipients, null, tokenResolver, null);
+		sendMessageToEmailAddress(resourceKey, realm, recipients, null, tokenResolver, null, null);
 	}
 
 	@Override
@@ -467,7 +467,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 
 	@Override
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			List<EmailAttachment> attachments, Iterator<Principal> principals, Collection<String> emails) {
+			List<EmailAttachment> attachments, Iterator<Principal> principals, Collection<String> emails, String context) {
 		sendMessage(resourceKey, realm, tokenResolver, replyTo, principals, emails, new Date(), attachments);
 	}
 
@@ -502,13 +502,13 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 			return;
 		}
 
-		sendMessage(message, realm, tokenResolver, replyTo, principals, emails, schedule, attachments);
+		sendMessage(message, realm, tokenResolver, replyTo, principals, emails, schedule, attachments, null);
 	}
 
 	@Override
 	public void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Iterator<Principal> principals, Collection<String> emails, Date schedule,
-			List<EmailAttachment> attachments) {
+			List<EmailAttachment> attachments, String context) {
 
 		EmailDeliveryStrategy strategy = message.getDeliveryStrategy();
 
@@ -581,17 +581,17 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	
 		recipients.addIterator(validated.iterator());
 
-		sendMessage(message, realm, tokenResolver, replyTo, recipients, schedule, null);
+		sendMessage(message, realm, tokenResolver, replyTo, recipients, schedule, null, context);
 	}
 
 	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver,
-			RecipientHolder replyTo, Iterator<RecipientHolder> recipients, List<EmailAttachment> attachments) {
-		sendMessage(message, realm, tokenResolver, replyTo, recipients, new Date(), attachments);
+			RecipientHolder replyTo, Iterator<RecipientHolder> recipients, List<EmailAttachment> attachments, String context) {
+		sendMessage(message, realm, tokenResolver, replyTo, recipients, new Date(), attachments, context);
 	}
 
 	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver,
 			RecipientHolder replyTo, Iterator<RecipientHolder> recipients, Date schedule,
-			List<EmailAttachment> attachments) {
+			List<EmailAttachment> attachments, String context) {
 
 		if (!message.getEnabled()) {
 			log.info(String.format("Message template %s has been disabled", message.getName()));
@@ -709,7 +709,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 					batchService.scheduleEmail(realm, subjectWriter.toString(), bodyWriter.toString(),
 							htmlWriter.toString(), replyTo != null ? replyTo.getName() : message.getReplyToName(),
 							replyTo != null ? replyTo.getEmail() : message.getReplyToEmail(), recipient.getName(),
-							recipient.getEmail(), message.getArchive(), message.getTrack(), attachmentsListString, schedule);
+							recipient.getEmail(), message.getArchive(), message.getTrack(), attachmentsListString, schedule, context);
 
 				} else {
 					List<EmailAttachment> emailAttachments = new ArrayList<EmailAttachment>();
@@ -734,7 +734,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 					emailService.sendEmail(realm, subjectWriter.toString(), bodyWriter.toString(),
 							htmlWriter.toString(), message.getReplyToName(), message.getReplyToEmail(),
 							new RecipientHolder[] { recipient }, message.getArchive(), message.getTrack(), 50,
-							emailAttachments.toArray(new EmailAttachment[0]));
+							context, emailAttachments.toArray(new EmailAttachment[0]));
 
 				}
 			}
