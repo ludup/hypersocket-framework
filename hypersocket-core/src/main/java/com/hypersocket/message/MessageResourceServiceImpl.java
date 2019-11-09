@@ -513,7 +513,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 		EmailDeliveryStrategy strategy = message.getDeliveryStrategy();
 
 		List<RecipientHolder> validated = new ArrayList<>();
-		if (!emails.isEmpty()) {
+		if (emails != null && !emails.isEmpty()) {
 			/**
 			 * LDP discovered issue where a blank value was in this collection. 
 			 * Guard against that here.
