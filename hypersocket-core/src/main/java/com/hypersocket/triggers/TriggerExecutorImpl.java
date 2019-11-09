@@ -36,6 +36,7 @@ import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.transactions.TransactionService;
+import com.hypersocket.triggers.conditions.TriggerAttributeHelper;
 
 @Component
 public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implements TriggerExecutor {
@@ -173,8 +174,8 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 			if (!checkCondition(condition, trigger, event, sourceEvents)) {
 				if (log.isDebugEnabled()) {
 					log.debug("Trigger " + trigger.getName() + " failed processing all conditions due to "
-							+ condition.getConditionKey() + " attributeValue=" + condition.getAttributeKey()
-							+ " conditionValue=" + condition.getConditionValue());
+							+ condition.getConditionKey() + " attributeKey=" + condition.getAttributeKey()
+							+ " attributeValue=" + TriggerAttributeHelper.getAttribute(condition.getAttributeKey(), sourceEvents) + " conditionValue=" + condition.getConditionValue());
 				}
 				return false;
 			}
@@ -189,8 +190,8 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 				}
 				if (log.isDebugEnabled()) {
 					log.debug("Trigger " + trigger.getName() + " failed processing any conditions due to "
-							+ condition.getConditionKey() + " attributeValue=" + condition.getAttributeKey()
-							+ " conditionValue=" + condition.getConditionValue());
+							+ condition.getConditionKey() + " attributeKey=" + condition.getAttributeKey() +
+							" attributeValue=" + TriggerAttributeHelper.getAttribute(condition.getAttributeKey(), sourceEvents) + " conditionValue=" + condition.getConditionValue());
 				}
 			}
 			return conditionPassed;
