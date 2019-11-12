@@ -171,7 +171,10 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 		} else {
 			RealmProvider provider = realmService.getProviderForRealm(source
 					.getRealm());
-			return provider.getUserPropertyValue(source, name);
+			if(provider.hasPropertyValueSet(source, name))
+				return provider.getUserPropertyValue(source, name);
+			else
+				return null;
 		
 		}
 

@@ -721,7 +721,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public boolean hasPropertyValueSet(SimpleResource resource, String resourceKey) {
 		PropertyTemplate template = getPropertyTemplate(resource, resourceKey);
-		return ((ResourcePropertyStore) template.getPropertyStore()).hasPropertyValueSet(template, resource);
+		return template != null && ((ResourcePropertyStore) template.getPropertyStore()).hasPropertyValueSet(template, resource);
 	}
 
 	@Override
