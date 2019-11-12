@@ -300,7 +300,7 @@ public abstract class AbstractExtensionUpdater {
 					 * are not deleted
 					 */
 					toRemove.remove(archiveFile);
-					log.info("Will not remove " + archiveFile);
+					log.info("Will remove or backup " + archiveFile);
 				}
 				
 			} catch (IOException ioe) {
