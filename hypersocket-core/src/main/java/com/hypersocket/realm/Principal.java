@@ -23,6 +23,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cascade;
@@ -83,6 +84,10 @@ public abstract class Principal extends RealmResource {
 	
 	public String getPrimaryEmail() {
 		return primaryEmail;
+	}
+	
+	public String getPrincipalDescription() {
+		return StringUtils.defaultString(getDescription(), getPrincipalName());
 	}
 
 	public void setPrimaryEmail(String primaryEmail) {
