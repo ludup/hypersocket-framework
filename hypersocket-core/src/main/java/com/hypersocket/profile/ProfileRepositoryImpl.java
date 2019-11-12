@@ -40,7 +40,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Override
 	@Transactional(readOnly=true)
 	public long getCompleteProfileCount(Collection<Realm>  realm) {
-		return getCount(Profile.class, new RealmsCriteria(realm), new CriteriaConfiguration(){
+		return getCount(Profile.class, new RealmsCriteria(realm), new DeletedCriteria(false), new CriteriaConfiguration(){
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -52,7 +52,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Override
 	@Transactional(readOnly=true)
 	public long getCompleteProfileOnDateCount(Collection<Realm> realm, final Date date) {
-		return getCount(Profile.class, new RealmsCriteria(realm), new CriteriaConfiguration(){
+		return getCount(Profile.class, new RealmsCriteria(realm), new DeletedCriteria(false),  new CriteriaConfiguration(){
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -65,7 +65,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Override
 	@Transactional(readOnly=true)
 	public long getIncompleteProfileCount(Collection<Realm> realm) {
-		return getCount(Profile.class, new RealmsCriteria(realm), new CriteriaConfiguration(){
+		return getCount(Profile.class, new RealmsCriteria(realm), new DeletedCriteria(false), new CriteriaConfiguration(){
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -77,7 +77,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Override
 	@Transactional(readOnly=true)
 	public long getPartiallyCompleteProfileCount(Collection<Realm> realm) {
-		return getCount(Profile.class, new RealmsCriteria(realm), new CriteriaConfiguration(){
+		return getCount(Profile.class, new RealmsCriteria(realm), new DeletedCriteria(false), new CriteriaConfiguration(){
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -89,7 +89,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 
 	@Override
 	public Collection<Profile> getProfilesWithStatus(Collection<Realm> realm, final ProfileCredentialsState...credentialsStates) {
-		return list(Profile.class, new RealmsCriteria(realm), new CriteriaConfiguration() {
+		return list(Profile.class, new RealmsCriteria(realm), new DeletedCriteria(false), new CriteriaConfiguration() {
 			
 			@Override
 			public void configure(Criteria criteria) {
