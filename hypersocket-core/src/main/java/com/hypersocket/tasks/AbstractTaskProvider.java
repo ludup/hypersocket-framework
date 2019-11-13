@@ -56,6 +56,11 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	
 	protected String processTokenReplacements(String value, final List<SystemEvent> events, boolean evaluateScripts, boolean replaceUnkown) {
 		Principal p = null;
+		/**
+		 * LDP - I'm not sure this is correct. We are firstly supposed to support replacements from all events, not just the last, so if
+		 * the flow contains a user but further back this will not work. Also, is it correct to use ATTR_PRINCIPAL_NAME, is this referring to 
+		 * the current user, or a user being worked on? There needs to be some clarify here. 
+		 */
 		if(!events.isEmpty()) {
 			SystemEvent last = events.get(events.size() - 1);
 			if(last.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {

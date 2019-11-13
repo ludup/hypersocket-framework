@@ -140,6 +140,15 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 
 		eventService.registerEvent(TriggerExecutedEvent.class, RESOURCE_BUNDLE);
 
+		new DefaultVariableReplacementProvider("default.timestamp") {
+
+			@Override
+			public String getReplacementValue(String variable) {
+				return String.valueOf(System.currentTimeMillis());
+			}
+
+		};
+		
 		new DefaultVariableReplacementProvider("default.currentUser.email") {
 
 			@Override
