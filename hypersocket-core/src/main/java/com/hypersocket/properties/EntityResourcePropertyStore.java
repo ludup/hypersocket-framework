@@ -203,7 +203,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 									String nameMethod = "get" + StringUtils.capitalize(template.getAttributes().get("valueAttr"));
 									try {
 										Method method = t.getClass().getMethod(nameMethod, (Class<?>[])null);
-										return method.invoke(t).toString();
+										Object v = method.invoke(t);
+										return v == null ? "" : v.toString();
 									} catch (NoSuchMethodException | SecurityException | IllegalAccessException
 											| IllegalArgumentException | InvocationTargetException e) {
 									}
@@ -218,7 +219,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 									String nameMethod = "get" + StringUtils.capitalize(template.getAttributes().get("nameAttr"));
 									try {
 										Method method = t.getClass().getMethod(nameMethod, (Class<?>[])null);
-										return method.invoke(t).toString();
+										Object v = method.invoke(t);
+										return v == null ? "" : v.toString();
 									} catch (NoSuchMethodException | SecurityException | IllegalAccessException
 											| IllegalArgumentException | InvocationTargetException e) {
 									}
