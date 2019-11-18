@@ -51,7 +51,11 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 				try {
 					clusteredScheduler.start();
 				} catch (SchedulerException e) {
-					throw new IllegalStateException(e.getMessage(), e);
+					/**
+					 * Should we be throwing this? It kills the server entirely.
+					 */
+					log.error("The clustered scheduler failed to start", e);
+//					throw new IllegalStateException(e.getMessage(), e);
 				}
 			}
 
