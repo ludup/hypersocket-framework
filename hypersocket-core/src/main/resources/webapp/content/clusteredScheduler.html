@@ -73,7 +73,7 @@ function jobDateFormatter(value, row, index) {
 							icon: 'fa-cog',
 							resourceUrl : "clusteredScheduler/job",
 							fields : [ {
-								name : "id",
+								name : "name",
 								sortable: true
 							},{
 								name : "status",
@@ -92,7 +92,7 @@ function jobDateFormatter(value, row, index) {
 								resourceKey : 'fireJob',
 								iconClass : 'fa-play',
 								action : function(resource, callback) {
-									getJSON('clusteredScheduler/fire/' + encodeURIComponent(resource.name), null, function(data) {
+									getJSON('clusteredScheduler/fire/' + resource.id, null, function(data) {
 										if(data.success) {
 											showSuccess(getResource('text.jobTriggered').format(resource.name));
 										} else {
@@ -106,7 +106,7 @@ function jobDateFormatter(value, row, index) {
 								resourceKey : 'interruptJob',
 								iconClass : 'fa-hand-paper-o ',
 								action : function(resource, callback) {
-									getJSON('clusteredScheduler/interrupt/' + encodeURIComponent(resource.name), null, function(data) {
+									getJSON('clusteredScheduler/interrupt/' + resource.id, null, function(data) {
 										if(data.success) {
 											showSuccess(getResource('text.jobInterrupted').format(resource.name));
 										} else {
@@ -171,7 +171,7 @@ function jobDateFormatter(value, row, index) {
 								$('#resourceName').val(resource.name);
 								
 								$('#clusteredSchedulerProperties').propertyPage(
-										{ url : 'clusteredScheduler/properties/' + encodeURIComponent(resource.id), 
+										{ url : 'clusteredScheduler/properties/' + resource.id, 
 											showButtons : false, 
 											canUpdate : currentMenu.canUpdate && !readOnly
 								});
