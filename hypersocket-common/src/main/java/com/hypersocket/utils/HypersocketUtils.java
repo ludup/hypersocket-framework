@@ -268,7 +268,7 @@ public class HypersocketUtils {
 	
 	public static String base64Encode(byte[] bytes) {
 		try {
-			return new String(Base64.encodeBase64(bytes, false, true), "UTF-8");
+			return new String(Base64.encodeBase64(bytes), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalStateException("System does not support UTF-8 encoding!");
 		}
@@ -284,10 +284,6 @@ public class HypersocketUtils {
 
 	public static byte[] base64Decode(String property) throws IOException {
 		return Base64.decodeBase64(property.getBytes("UTF-8"));
-	}
-	
-	public static String base64DecodeToString(String value) throws IOException {
-		return new String(base64Decode(value), "UTF-8");
 	}
 	
 	public static boolean isValidJSON(final String json) {

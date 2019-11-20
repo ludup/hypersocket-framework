@@ -1,7 +1,5 @@
 package com.hypersocket.scheduler.json;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -69,7 +67,7 @@ public class ClusteredSchedulerResourceController extends AbstractSchedulerResou
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceList<PropertyCategory> getActionTemplate(HttpServletRequest request, @PathVariable String id)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, ResourceNotFoundException,
-			SchedulerException, NotScheduledException, IOException {
+			SchedulerException, NotScheduledException {
 		return super.getActionTemplate(resourceService, request, id);
 	}
 
@@ -79,7 +77,7 @@ public class ClusteredSchedulerResourceController extends AbstractSchedulerResou
 	@ResponseStatus(value = HttpStatus.OK)
 	public SchedulerResource getResource(HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") String id) throws AccessDeniedException, UnauthorizedException,
-			ResourceNotFoundException, SessionTimeoutException, SchedulerException, NotScheduledException, IOException {
+			ResourceNotFoundException, SessionTimeoutException, SchedulerException, NotScheduledException {
 		return super.getResource(resourceService, request, response, id);
 	}
 
@@ -88,7 +86,7 @@ public class ClusteredSchedulerResourceController extends AbstractSchedulerResou
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<SchedulerResource> deleteResource(HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") String id)
-			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, IOException {
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return super.deleteResource(resourceService, request, response, id);
 	}
 
@@ -106,7 +104,7 @@ public class ClusteredSchedulerResourceController extends AbstractSchedulerResou
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public RequestStatus fireJob(HttpServletRequest request, HttpServletResponse response,
-			@PathVariable("id") String id) throws IOException {
+			@PathVariable("id") String id) {
 		try {
 			super.fireJob(resourceService, request, response, id);
 			return new RequestStatus(true);
@@ -126,7 +124,7 @@ public class ClusteredSchedulerResourceController extends AbstractSchedulerResou
 			super.interruptJob(resourceService, request, response, id);
 			return new RequestStatus(true);
 		} catch (ResourceNotFoundException | AccessDeniedException | UnauthorizedException | SessionTimeoutException
-				| SchedulerException | NotScheduledException | IOException e) {
+				| SchedulerException | NotScheduledException e) {
 			return new RequestStatus(false, e.getMessage());
 		}
 	}

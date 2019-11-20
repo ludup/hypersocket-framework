@@ -7,8 +7,6 @@ import org.quartz.JobKey;
 import org.quartz.Trigger;
 import org.quartz.Trigger.TriggerState;
 
-import com.hypersocket.utils.HypersocketUtils;
-
 public class SchedulerResource {
 	private String name;
 	private String group;
@@ -28,7 +26,7 @@ public class SchedulerResource {
 
 	public SchedulerResource(Trigger trigger, TriggerState status) {
 		/* NOTE: At the moment, job groups are not used, so ID is same as Name */
-		setId(HypersocketUtils.base64Encode(trigger.getJobKey().getName()));
+		setId(trigger.getJobKey().getName());
 		setGroup(trigger.getJobKey().getGroup());
 		setName(trigger.getJobKey().getName());
 		setLastFire(trigger.getPreviousFireTime());
