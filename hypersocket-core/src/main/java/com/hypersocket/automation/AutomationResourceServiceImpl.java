@@ -414,15 +414,15 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 		}
 
 		try {
-			if(schedulerService.jobDoesNotExists("automation Daily Job")){
+			if(schedulerService.jobDoesNotExists("automationDailyJob")){
 				Calendar c = Calendar.getInstance();
 				c.set(Calendar.HOUR, 0);
 				c.set(Calendar.MINUTE, 0);
 				c.add(Calendar.DAY_OF_MONTH, 1);
 				JobDataMap data = new JobDataMap();
-				data.put("jobName", "automation Daily Job");
+				data.put("jobName", "automationDailyJob");
 				
-				schedulerService.scheduleAt(DailySchedulerJob.class, "automation Daily Job", data, c.getTime(), HypersocketUtils.ONE_DAY);
+				schedulerService.scheduleAt(DailySchedulerJob.class, "automationDailyJob", data, c.getTime(), HypersocketUtils.ONE_DAY);
 			}
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule daily automation jobs", e);
