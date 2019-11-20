@@ -7,8 +7,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -17,12 +19,16 @@ import org.quartz.Job;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.quartz.JobKey;
+import org.quartz.JobListener;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleScheduleBuilder;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
+import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
@@ -43,7 +49,7 @@ import com.hypersocket.tables.Sort;
 import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticatedServiceImpl
-		implements SchedulerService {
+		implements SchedulerService, JobListener {
 
 	static Logger log = LoggerFactory.getLogger(AbstractSchedulerServiceImpl.class);
 
@@ -54,10 +60,14 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	@Autowired
 	private PermissionService permissionService;
 
+	private Set<String> interrupting = Collections.synchronizedSet(new LinkedHashSet<>());
+	private Set<JobKey> running = Collections.synchronizedSet(new LinkedHashSet<>());
+
 	@PostConstruct
 	private void postConstruct() throws SchedulerException {
 
 		scheduler = configureScheduler();
+		scheduler.getListenerManager().addJobListener(this);
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
 
@@ -210,8 +220,8 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 
 		if (jobExists(scheduleId)) {
 			if (log.isInfoEnabled()) {
-				log.info(String.format("The job with identity %s already exists so will not be scheduled again !!!!!!!.",
-						scheduleId));
+				log.info(String.format(
+						"The job with identity %s already exists so will not be scheduled again !!!!!!!.", scheduleId));
 			}
 		}
 
@@ -254,7 +264,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		Trigger trigger = triggersOfJob.get(0);
 		scheduler.triggerJob(trigger.getJobKey(), trigger.getJobDataMap());
 	}
-	
+
 	@Override
 	public boolean jobDoesNotExists(String scheduleId) throws SchedulerException {
 		return !jobExists(scheduleId);
@@ -295,12 +305,12 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 					+ interval + " and repeat " + (repeat >= 0 ? repeat : "indefinatley")
 					+ (end != null ? " until " + HypersocketUtils.formatDateTime(end) : ""));
 		}
-		
+
 		List<? extends Trigger> triggers = scheduler.getTriggersOfJob(new JobKey(id));
-		if(triggers.isEmpty()) {
+		if (triggers.isEmpty()) {
 			throw new NotScheduledException();
 		}
-		
+
 		TriggerKey triggerKey = triggers.get(0).getKey();
 
 		if (triggerKey != null) {
@@ -328,14 +338,17 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 			scheduler.deleteJob(jobKey);
 		}
 	}
-	
+
 	public void interrupt(String id) throws SchedulerException, NotScheduledException {
+		if (interrupting.contains(id))
+			throw new SchedulerException("Already interrupting.");
 		JobKey jobKey = new JobKey(id);
 		if (scheduler.checkExists(jobKey)) {
 			List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(jobKey);
 			if (triggersOfJob.isEmpty()) {
 				throw new NotScheduledException();
 			}
+			interrupting.add(id);
 			scheduler.interrupt(jobKey);
 		}
 	}
@@ -415,8 +428,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 				return 0;
 			}
 		});
-		return l.subList(Math.min(l.size(), start),
-				Math.min(l.size(), start + length));
+		return l.subList(Math.min(l.size(), start), Math.min(l.size(), start + length));
 	}
 
 	@Override
@@ -443,11 +455,11 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		List<SchedulerResource> r = new ArrayList<>();
 		for (String gn : scheduler.getJobGroupNames()) {
 			for (JobKey k : scheduler.getJobKeys(GroupMatcher.jobGroupEquals(gn))) {
-				List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(k);
-				if (triggersOfJob.isEmpty())
-					r.add(new SchedulerResource(k));
-				else
-					r.add(buildSchedulerResource(triggersOfJob.get(0)));
+				try {
+					r.add(buildSchedulerResource(k));
+				} catch (NotScheduledException e) {
+					// Should not happen
+				}
 			}
 		}
 		return r;
@@ -459,15 +471,49 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			assertPermission(SystemPermission.SYSTEM);
 		}
-		List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(new JobKey(id));
+		return buildSchedulerResource(new JobKey(id));
+	}
+
+	protected SchedulerResource buildSchedulerResource(JobKey key) throws SchedulerException, NotScheduledException {
+
+		List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(key);
 		if (triggersOfJob.isEmpty()) {
 			throw new NotScheduledException();
 		}
-		return buildSchedulerResource(triggersOfJob.get(0));
-	}
+		Trigger trigger = triggersOfJob.get(0);
 
-	protected SchedulerResource buildSchedulerResource(Trigger trigger) throws SchedulerException {
-		return new SchedulerResource(trigger, scheduler.getTriggerState(trigger.getKey()));
+		SchedulerJobState state = SchedulerJobState.MISSING;
+		if (interrupting.contains(key.toString())) {
+			state = SchedulerJobState.CANCELLING;
+		} else {
+			if (running.contains(key)) {
+				state = SchedulerJobState.RUNNING;
+			} else {
+				TriggerState triggerState = scheduler.getTriggerState(trigger.getKey());
+				switch (triggerState) {
+				case BLOCKED:
+					state = SchedulerJobState.BLOCKED;
+					break;
+				case ERROR:
+					state = SchedulerJobState.COMPLETE_WITH_ERRORS;
+					break;
+				case COMPLETE:
+					state = SchedulerJobState.COMPLETE;
+					break;
+				case PAUSED:
+					state = SchedulerJobState.PAUSED;
+					break;
+				case NORMAL:
+					state = SchedulerJobState.WAITING;
+					break;
+				default:
+					state = SchedulerJobState.MISSING;
+					break;
+				}
+			}
+		}
+
+		return new SchedulerResource(trigger, state);
 	}
 
 	@Override
@@ -576,5 +622,22 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 			this.resource = resource;
 		}
 
+	}
+
+	public String getName() {
+		return getClass().getName();
+	}
+
+	public void jobToBeExecuted(JobExecutionContext context) {
+		running.add(context.getTrigger().getJobKey());
+	}
+
+	public void jobExecutionVetoed(JobExecutionContext context) {
+		running.remove(context.getTrigger().getJobKey());
+	}
+
+	public void jobWasExecuted(JobExecutionContext context, JobExecutionException jobException) {
+		running.remove(context.getTrigger().getJobKey());
+		interrupting.remove(context.getTrigger().getJobKey().toString());
 	}
 }

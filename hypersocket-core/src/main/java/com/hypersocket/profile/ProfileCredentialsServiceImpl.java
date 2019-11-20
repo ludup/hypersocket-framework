@@ -227,6 +227,10 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		}
 	}
 	
+	@Override
+	public Profile getProfileForUser(Principal target) {
+		return profileRepository.getEntityById(target.getId());
+	}
 	
 	private void fireProfileCreationJob(Principal targetPrincipal) {
 		

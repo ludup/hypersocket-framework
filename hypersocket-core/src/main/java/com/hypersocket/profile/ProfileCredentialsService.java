@@ -34,4 +34,6 @@ public interface ProfileCredentialsService {
 
 	Profile updateOrGenerate(Principal target) throws AccessDeniedException;
 
+	Profile getProfileForUser(Principal target) throws AccessDeniedException;
+
 }

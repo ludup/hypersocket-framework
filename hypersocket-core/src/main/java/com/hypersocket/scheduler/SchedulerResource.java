@@ -5,7 +5,6 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobKey;
 import org.quartz.Trigger;
-import org.quartz.Trigger.TriggerState;
 
 public class SchedulerResource {
 	private String name;
@@ -14,7 +13,7 @@ public class SchedulerResource {
 	private Date nextFire;
 	private Date lastFire;
 	private String description;
-	private TriggerState status = TriggerState.NONE;
+	private SchedulerJobState status = SchedulerJobState.MISSING;
 
 	public SchedulerResource() {
 	}
@@ -24,7 +23,7 @@ public class SchedulerResource {
 		group = k.getGroup();
 	}
 
-	public SchedulerResource(Trigger trigger, TriggerState status) {
+	public SchedulerResource(Trigger trigger, SchedulerJobState status) {
 		/* NOTE: At the moment, job groups are not used, so ID is same as Name */
 		setId(trigger.getJobKey().getName());
 		setGroup(trigger.getJobKey().getGroup());
@@ -86,11 +85,11 @@ public class SchedulerResource {
 		return new JobKey(name, group);
 	}
 
-	public TriggerState getStatus() {
+	public SchedulerJobState getStatus() {
 		return status;
 	}
 
-	public void setStatus(TriggerState status) {
+	public void setStatus(SchedulerJobState status) {
 		this.status = status;
 	}
 
