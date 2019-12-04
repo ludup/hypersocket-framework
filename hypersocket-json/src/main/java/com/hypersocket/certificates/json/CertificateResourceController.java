@@ -197,7 +197,7 @@ public class CertificateResourceController extends ResourceController {
 	@RequestMapping(value = "certificates/certificate", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceStatus<CertificateResource> createOrUpdateNetworkResource(HttpServletRequest request,
+	public ResourceStatus<CertificateResource> createOrUpdateCertificate(HttpServletRequest request,
 			HttpServletResponse response, @RequestBody ResourceUpdate resource)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 

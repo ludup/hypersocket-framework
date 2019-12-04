@@ -2,7 +2,9 @@ package com.hypersocket.certificates.jobs;
 
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.quartz.JobExecutionContext;
@@ -55,9 +57,13 @@ public class CertificateExpiringNotificationJob extends PermissionsAwareJob {
 					
 					if(x509.getNotAfter().after(startDate) && x509.getNotAfter().before(endDate)) {
 						resourceService.sendExpiringNotification(resource, x509);
+						break;
 					} else if(x509.getNotAfter().before(new Date())) {
 						resourceService.sendExpiringNotification(resource, x509);
+						break;
 					}
+					
+					
 				}
 			} catch (CertificateException e) {
 				log.error("Could not parse X509 certificate", e);
