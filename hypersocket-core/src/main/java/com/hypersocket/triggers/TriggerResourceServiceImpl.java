@@ -719,18 +719,13 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 
 	abstract class DefaultVariableReplacementProvider implements ReplacementVariableProvider {
 
-		String variable;
-		Set<String> variables;
-
 		DefaultVariableReplacementProvider(String variable) {
-			this.variable = variable;
-			this.variables = new HashSet<String>();
 			replacementVariables.put(variable, this);
 		}
 
 		@Override
 		public Set<String> getReplacementVariableNames() {
-			return variables;
+			return replacementVariables.keySet();
 		}
 	}
 	
