@@ -3,6 +3,7 @@ package com.hypersocket.auth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -44,7 +45,7 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 			username = state.getParameter(UsernameAndPasswordTemplate.USERNAME_FIELD);
 		}
 
-		if (username == null || username.equals("")) {
+		if (Objects.isNull(state.getPrincipal())  && (username == null || username.equals(""))) {
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
 		
@@ -58,8 +59,14 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 		}
 		
 		try {
-			Principal principal = authenticationService.resolvePrincipalAndRealm(
+			Principal principal;
+			
+			if(Objects.isNull(state.getPrincipal())) {
+				principal = authenticationService.resolvePrincipalAndRealm(
 					state, username, selectedRealm);
+			} else {
+				principal = state.getPrincipal();
+			}
 
 			AuthenticatorResult result = verifyCredentials(state, principal, parameters);
 

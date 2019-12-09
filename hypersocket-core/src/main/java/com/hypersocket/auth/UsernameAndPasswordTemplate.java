@@ -9,6 +9,7 @@ package com.hypersocket.auth;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -40,19 +41,15 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 			fields.add(select);
 		}
 		
-		TextInputField username = new TextInputField(USERNAME_FIELD, "", true, I18N
-				.getResource(state.getLocale(),
-						AuthenticationServiceImpl.RESOURCE_BUNDLE,
-						"username.label"));
-
-		if (state.getPrincipal() != null) {
-			username.setDefaultValue(state.getPrincipal().getName());
-		} else if (params.containsKey(USERNAME_FIELD)) {
-			username.setDefaultValue(AuthenticationUtils.getRequestParameter(
-					params, UsernameAndPasswordTemplate.USERNAME_FIELD));
+		if(Objects.isNull(state.getPrincipal())) {
+		
+			TextInputField username = new TextInputField(USERNAME_FIELD, "", true, I18N
+					.getResource(state.getLocale(),
+							AuthenticationServiceImpl.RESOURCE_BUNDLE,
+							"username.label"));
+			fields.add(username);
 		}
-
-		fields.add(username);
+		
 		fields.add(new PasswordInputField(PASSWORD_FIELD, "", true, "Password"));
 
 	}
