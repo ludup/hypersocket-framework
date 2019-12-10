@@ -160,13 +160,16 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			if(fileLength <= 131072) {
 				int r;
 				byte[] buf = new byte[4096];
-				while((r = in.read(buf)) > -1) {
-					response.getOutputStream().write(buf,0,r);
-					if(fileLength < 0) {
-						actualLength += r;
+				try {
+					while((r = in.read(buf)) > -1) {
+						response.getOutputStream().write(buf,0,r);
+						if(fileLength < 0) {
+							actualLength += r;
+						}
 					}
-				
-					
+				}
+				finally {
+					in.close();
 				}
 				response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(actualLength));
 				
