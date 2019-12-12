@@ -1,5 +1,7 @@
 package com.hypersocket.scheduler;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,6 +16,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.DateBuilder;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
@@ -62,6 +65,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 
 	private Set<String> interrupting = Collections.synchronizedSet(new LinkedHashSet<>());
 	private Set<JobKey> running = Collections.synchronizedSet(new LinkedHashSet<>());
+	private Map<JobKey, Throwable> exceptions = new HashMap<>();
 
 	@PostConstruct
 	private void postConstruct() throws SchedulerException {
@@ -513,7 +517,31 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 			}
 		}
 
-		return new SchedulerResource(trigger, state);
+		String exceptionMessage = null;
+		String exceptionTrace = null;
+		Throwable e = exceptions.get(key);
+		if(e != null) {
+			StringWriter trace = new StringWriter();
+			e.printStackTrace(new PrintWriter(trace));
+			exceptionMessage = e.getMessage() == null ? "<no message supplied>" : e.getMessage();
+			exceptionTrace = trace.toString();
+			if(StringUtils.isNotBlank(exceptionMessage)) {
+				state = SchedulerJobState.COMPLETE_WITH_ERRORS;
+			}
+		}
+
+		SchedulerResource sr = new SchedulerResource(trigger, state);
+		JobDetail detail = scheduler.getJobDetail(key);
+		if(detail != null) {
+			JobDataMap map = trigger.getJobDataMap();
+			for(Map.Entry<String, Object> en : map.entrySet()) {
+				sr.getData().put(en.getKey(), String.valueOf(en.getValue()));
+			}
+		}
+		sr.setDescription(trigger.getJobDataMap().getString("jobName"));
+		sr.setError(exceptionMessage);
+		sr.setTrace(exceptionTrace);
+		return sr;
 	}
 
 	@Override
@@ -522,6 +550,9 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 			assertPermission(SystemPermission.SYSTEM);
 		}
 		scheduler.deleteJob(resource.getJobKey());
+		exceptions.remove(resource.getJobKey());
+		running.remove(resource.getJobKey());
+		interrupting.remove(resource.getJobKey().toString());
 	}
 
 	@Override
@@ -544,9 +575,9 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	@Override
 	public Collection<PropertyCategory> getPropertyTemplate(SchedulerResource resource) {
 		Collection<PropertyCategory> defs = getPropertyTemplate();
-		PropertyCategory pc = defs.iterator().next();
-		for (AbstractPropertyTemplate t : pc.getTemplates())
-			((SchedulerPropertyTemplate) t).setResource(resource);
+		for(PropertyCategory cat : defs)
+			for (AbstractPropertyTemplate t : cat.getTemplates())
+				((SchedulerPropertyTemplate) t).setResource(resource);
 		return defs;
 	}
 
@@ -592,8 +623,31 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		lastFire.setWeight(500);
 		lastFire.getAttributes().put("inputType", "time");
 		pc.getTemplates().add(lastFire);
+		
+		PropertyCategory errpc = new PropertyCategory();
+		errpc.setBundle(RESOURCE_BUNDLE);
+		errpc.setCategoryKey("state");
+		errpc.setWeight(200);
+		
+		SchedulerPropertyTemplate status = new SchedulerPropertyTemplate();
+		status.setResourceKey("status");
+		status.setWeight(50);
+		status.getAttributes().put("inputType", "text");
+		errpc.getTemplates().add(status);
 
-		return Arrays.asList(pc);
+		SchedulerPropertyTemplate error = new SchedulerPropertyTemplate();
+		error.setResourceKey("error");
+		error.setWeight(100);
+		error.getAttributes().put("inputType", "text");
+		errpc.getTemplates().add(error);
+
+		SchedulerPropertyTemplate trace = new SchedulerPropertyTemplate();
+		trace.setResourceKey("trace");
+		trace.setWeight(200);
+		trace.getAttributes().put("inputType", "textarea");
+		errpc.getTemplates().add(trace);
+
+		return Arrays.asList(pc, errpc);
 	}
 
 	static class SchedulerPropertyTemplate extends AbstractPropertyTemplate {
@@ -602,6 +656,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		@Override
 		public String getValue() {
 			if (resource != null) {
+				System.out.println("Get " + getResourceKey());
 				if (getResourceKey().equals("id"))
 					return resource.getId();
 				if (getResourceKey().equals("name"))
@@ -610,6 +665,12 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 					return resource.getGroup();
 				if (getResourceKey().equals("description"))
 					return resource.getDescription();
+				if (getResourceKey().equals("status"))
+					return resource.getStatus().name();
+				if (getResourceKey().equals("error"))
+					return resource.getError();
+				if (getResourceKey().equals("trace"))
+					return resource.getTrace();
 				if (getResourceKey().equals("nextFire"))
 					return resource.getNextFire() == null ? null : String.valueOf(resource.getNextFire().getTime());
 				if (getResourceKey().equals("lastFire"))
@@ -629,15 +690,29 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	}
 
 	public void jobToBeExecuted(JobExecutionContext context) {
-		running.add(context.getTrigger().getJobKey());
+		JobKey jk = context.getTrigger().getJobKey();
+		running.add(jk);
+		exceptions.remove(jk);
 	}
 
 	public void jobExecutionVetoed(JobExecutionContext context) {
-		running.remove(context.getTrigger().getJobKey());
+		JobKey jk = context.getTrigger().getJobKey();
+		running.add(jk);
+		exceptions.remove(jk);
 	}
 
 	public void jobWasExecuted(JobExecutionContext context, JobExecutionException jobException) {
-		running.remove(context.getTrigger().getJobKey());
+		JobKey jk = context.getTrigger().getJobKey();
+		if(jobException != null) {
+			Throwable e = jobException;
+			if(jobException.getCause() != null)
+				e = jobException.getCause();
+			exceptions.put(jk, e);
+		}
+		else {
+			exceptions.remove(jk);
+		}
+		running.remove(jk);
 		interrupting.remove(context.getTrigger().getJobKey().toString());
 	}
 }

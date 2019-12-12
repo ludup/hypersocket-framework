@@ -32,6 +32,21 @@
 
 <script type="text/javascript">
 
+function statusFormatter(value, row, index) {
+	var t  = '';
+	t += '<div';
+	if(value == 'COMPLETE_WITH_ERRORS') {
+		t += ' class="alert alert-danger"';
+	}
+	t += '>';
+	t += getResource('job.' + value);
+	t += '</div>';
+	if(value == 'COMPLETE_WITH_ERRORS') {
+		t += '<br/><small>' + row.error + '</small>';
+	}
+	return t;
+}
+
 function jobDateFormatter(value, row, index) {
 	if(!value) {
 		return getResource("job.never.text");
@@ -71,9 +86,13 @@ function jobDateFormatter(value, row, index) {
 							fields : [ {
 								name : "name",
 								sortable: true
+							},{
+								name : "description",
+								sortable: false
 							}, {
 								name : "status",
-								sortable: true
+								sortable: true,
+								formatter: statusFormatter
 							},{
 								name: 'nextFire',
 								sortable: true,

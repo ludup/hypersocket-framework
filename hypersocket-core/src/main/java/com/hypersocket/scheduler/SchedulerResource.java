@@ -1,8 +1,8 @@
 package com.hypersocket.scheduler;
 
 import java.util.Date;
+import java.util.Properties;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobKey;
 import org.quartz.Trigger;
@@ -17,6 +17,9 @@ public class SchedulerResource {
 	private Date lastFire;
 	private String description;
 	private SchedulerJobState status = SchedulerJobState.MISSING;
+	private String error;
+	private String trace;
+	private Properties data = new Properties();
 
 	public SchedulerResource() {
 	}
@@ -34,6 +37,10 @@ public class SchedulerResource {
 		setLastFire(trigger.getPreviousFireTime());
 		setNextFire(trigger.getNextFireTime());
 		this.status = status;
+	}
+	
+	public Properties getData() {
+		return data;
 	}
 
 	public String getName() {
@@ -104,6 +111,22 @@ public class SchedulerResource {
 						&& matchesString(name, searchPattern))
 				|| (StringUtils.isNotBlank(searchPattern)  
 						&& matchesString(group, searchPattern));
+	}
+
+	public String getError() {
+		return error;
+	}
+
+	public void setError(String error) {
+		this.error = error;
+	}
+
+	public String getTrace() {
+		return trace;
+	}
+
+	public void setTrace(String trace) {
+		this.trace = trace;
 	}
 
 	private boolean matchesString(String text, String pattern) {
