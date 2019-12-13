@@ -56,7 +56,7 @@ public class DatabaseInformation {
 		ResultSet rs = null;
 		try {
 			connection = dataSource.getConnection();
-			rs = connection.getMetaData().getTables(null, null, "%", null);
+			rs = connection.getMetaData().getTables(dataSource.getConnection().getCatalog(), null, "%", null);
 			while(rs.next()){
 				tables.add(rs.getString("TABLE_NAME").toLowerCase());
 			} 

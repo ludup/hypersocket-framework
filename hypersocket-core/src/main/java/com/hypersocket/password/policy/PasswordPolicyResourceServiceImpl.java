@@ -68,34 +68,30 @@ public class PasswordPolicyResourceServiceImpl extends
 	static Logger log = LoggerFactory.getLogger(PasswordPolicyResourceServiceImpl.class);
 	
 	@Autowired
-	PasswordPolicyResourceRepository repository;
+	private PasswordPolicyResourceRepository repository;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 	
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 	
 	@Autowired
-	PasswordAnalyserService analyserService;
+	private PasswordAnalyserService analyserService;
 	
 	@Autowired
-	PasswordHistroyService passwordHistoryService; 
+	private PasswordHistroyService passwordHistoryService; 
 
 	@Autowired
-	DictionaryService dictionaryService; 
-	
-	@Autowired
-	AuthenticationService authenticationService; 
+	private AuthenticationService authenticationService; 
 
-	
-	Map<String,PolicyResolver> passwordPolicyResolvers = new HashMap<String,PolicyResolver>();
+	private Map<String,PolicyResolver> passwordPolicyResolvers = new HashMap<String,PolicyResolver>();
 	
 	public PasswordPolicyResourceServiceImpl() {
 		super("passwordPolicy");

@@ -269,7 +269,7 @@ public class PasswordPolicyResourceController extends ResourceController {
 		} catch (PasswordPolicyException e) {
 			return new ResourceStatus<PasswordPolicyResource>(false, e.getMessage());
 		} finally {
-			clearAuthenticatedContext();
+			clearAuthenticatedContext(); 
 		}
 	}
 	

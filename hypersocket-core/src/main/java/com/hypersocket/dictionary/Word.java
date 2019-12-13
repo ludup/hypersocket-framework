@@ -1,5 +1,5 @@
 /* HEADER */
-package com.hypersocket.password.policy;
+package com.hypersocket.dictionary;
 
 import java.util.Locale;
 
@@ -15,8 +15,8 @@ public class Word extends SimpleResource {
 
 	private static final long serialVersionUID = 3518709658570275084L;
 
-	@Column(name = "locale", nullable = false, length = 30)
-	private Locale locale = Locale.ENGLISH;
+	@Column(name = "locale", nullable = true, length = 30)
+	private Locale locale = null;
 
 	@Column(name = "word_text", nullable = false, length = 255)
 	private String text;

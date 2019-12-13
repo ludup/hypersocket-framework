@@ -10,13 +10,19 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.config.SystemConfigurationService;
+import com.hypersocket.dictionary.DictionaryResourceService;
+
 @Service
 public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
 	@Autowired
-	DictionaryService dictionaryService;
+	private DictionaryResourceService dictionaryService;
+	
+	@Autowired
+	private SystemConfigurationService systemConfigurationService;
 
 	final String DEFAULT_SYMBOLS;
 	
@@ -105,15 +111,23 @@ public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Ser
 
 		// Check the password doesn't contain any dictionary words
 		if (!characteristics.getContainDictionaryWord()) {
+			systemConfigurationService.setupSystemContext();
+			int minWordLength;
+			boolean matchAlphaOnly;
+			try {
+				minWordLength = systemConfigurationService.getIntValue("dictionary.minWordLength");
+				matchAlphaOnly = systemConfigurationService.getBooleanValue("dictionary.matchAlphaOnly");
+			}
+			finally {
+				systemConfigurationService.clearPrincipalContext();
+			}
+			
 			// Break up the passphrase into what look like words
 			StringBuilder bui = new StringBuilder();
 			List<String> words = new ArrayList<String>();
 			for (char ch : password) {
-				if (Character.isLetter(ch)) {
+				if ((matchAlphaOnly && Character.isLetter(ch)) || (!matchAlphaOnly && !Character.isWhitespace(ch))) {
 					bui.append(ch);
-					if(bui.length() > 3) {
-						words.add(bui.toString());
-					}
  				} else {
 					if (bui.length() > 0) {
 						words.add(bui.toString());
@@ -121,11 +135,15 @@ public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Ser
 					}
 				}
 			}
+			if (bui.length() > 0) {
+				words.add(bui.toString());
+				bui.setLength(0);
+			}
 
 			// Now look for those words
 			for (String word : words) {
 				// Minimum of 4 letter words
-				if (word.length() > 3) {
+				if (word.length() >= minWordLength) {
 					if (dictionaryService.containsWord(locale, word)) {
 						throw new PasswordPolicyException(PasswordPolicyException.Type.containsDictionaryWords, strength);
 					}

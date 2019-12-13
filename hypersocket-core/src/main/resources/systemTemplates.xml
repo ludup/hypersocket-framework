@@ -58,4 +58,32 @@
 		<property resourceKey="org.quartz.threadPool.threadCount" inputType="integer" store="schedulerConfiguration" 
 				  allowEmpty="false" weight="700" defaultValue="50" minValue="1" maxValue="1000"/>		
 	</propertyCategory>
+	<propertyCategory resourceKey="category.dictionary"
+		resourceBundle="DictionaryResourceService" weight="700" group="dictionary">
+		<property resourceKey="dictionary.minWordLength" inputType="integer"
+			defaultValue="4" weight="10" minValue="1" maxValue="255" />
+		<property resourceKey="dictionary.matchAlphaOnly" inputType="switch"
+			defaultValue="false" weight="20" />
+		<property resourceKey="dictionary.caseInsenstive" inputType="switch"
+			defaultValue="false" weight="30" />
+		<property resourceKey="dictionary.blacklistBuiltIn" inputType="switch"
+			defaultValue="true" weight="50" />
+		<property resourceKey="dictionary.blacklistApiCall" inputType="switch"
+			defaultValue="false" weight="100" />
+		<property resourceKey="dictionary.method" inputType="select"
+			options="GET, POST" weight="200" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
+		<property resourceKey="dictionary.url" inputType="text"
+			defaultValue="" weight="300" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
+		<property resourceKey="dictionary.certificate" inputType="switch"
+			defaultValue="" weight="400" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
+		<property resourceKey="dictionary.variables" inputType="namePairs"
+			weight="500" urlEncode="false" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
+		<property resourceKey="dictionary.headers" inputType="namePairs"
+			weight="600" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
+		<property resourceKey="dictionary.responseList" inputType="multipleTextInput"
+			weight="700" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"
+			defaultValue="200"/>
+		<property resourceKey="dictionary.responseContent" inputType="text"
+			defaultValue="" weight="800" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
+	</propertyCategory>
 </propertyTemplates>

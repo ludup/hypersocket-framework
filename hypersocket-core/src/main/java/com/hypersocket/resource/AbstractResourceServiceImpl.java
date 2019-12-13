@@ -45,7 +45,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	static Logger log = LoggerFactory
 			.getLogger(AbstractAssignableResourceRepositoryImpl.class);
 
-	protected static final String RESOURCE_BUNDLE_DEFAULT = "AssignableResourceService";
+	public static final String RESOURCE_BUNDLE_DEFAULT = "AssignableResourceService";
 
 	protected final String resourceCategory;
 

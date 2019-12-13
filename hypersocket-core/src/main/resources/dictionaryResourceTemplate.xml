@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="dictionaryResource">
+	<propertyCategory resourceKey="category.basic"
+		resourceBundle="DictionaryResourceService" weight="100">
+		<property resourceKey="dictionary.locale" inputType="select"
+			url="i18n/locales" defaultValue="" emptySelectionAllowed="true" weight="100" nameIsResourceKey="false"/>
+	</propertyCategory>
+</propertyTemplates>
