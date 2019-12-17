@@ -66,12 +66,12 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Principal createGroup(Realm realm, String name, Map<String, String> properties) throws ResourceException;
 
-	void deleteGroup(Principal group) throws ResourceException;
+	void deleteGroup(Principal group, boolean deleteLocallyOnly) throws ResourceException;
 
 	Principal updateGroup(Realm realm, Principal group, String name, Map<String, String> properties,
 			List<Principal> principals, List<Principal> groups) throws ResourceException;
 
-	void deleteUser(Principal user) throws ResourceException;
+	void deleteUser(Principal user, boolean deleteLocallyOnly) throws ResourceException;
 
 	void deleteRealm(Realm realm) throws ResourceException;
 

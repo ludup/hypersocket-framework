@@ -3,7 +3,9 @@ package com.hypersocket.realm;
 import java.util.Collection;
 import java.util.List;
 
+import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface PrincipalRepository extends AbstractResourceRepository<Principal> {
@@ -24,5 +26,13 @@ public interface PrincipalRepository extends AbstractResourceRepository<Principa
 	Collection<Principal> allPrincipals();
 
 	Principal getPrincipalByReference(String reference, Realm realm);
+
+	List<?> searchDeleted(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+			ColumnSort[] sorting, int start, int length, CriteriaConfiguration... criteriaConfiguration);
+
+	Long getDeletedCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+			CriteriaConfiguration... criteriaConfiguration);
+
+	void undelete(Realm realm, Principal user) throws ResourceChangeException;
 
 }

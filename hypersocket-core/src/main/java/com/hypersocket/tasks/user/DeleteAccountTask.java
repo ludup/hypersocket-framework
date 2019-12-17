@@ -59,7 +59,7 @@ public class DeleteAccountTask extends AbstractAccountTask {
 	protected AbstractTaskResult doExecute(Principal p, final Task task, final Realm currentRealm, final List<SystemEvent> event)
 			throws ValidationException {
 		try {
-			realmService.deleteUser(currentRealm, p);
+			realmService.deleteUser(currentRealm, p, false);
 			return new DeleteAccountTaskResult(this, currentRealm, task);
 		} catch (Exception e) {
 			return new DeleteAccountTaskResult(this, currentRealm, task, e, p.getPrincipalName());

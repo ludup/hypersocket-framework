@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -90,6 +89,7 @@ import com.hypersocket.realm.events.SetPasswordEvent;
 import com.hypersocket.realm.events.UserCreatedEvent;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserEvent;
+import com.hypersocket.realm.events.UserUndeletedEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.realm.ou.OrganizationalUnitRepository;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
@@ -271,6 +271,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		eventService.registerEvent(UserCreatedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
 		eventService.registerEvent(UserUpdatedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
 		eventService.registerEvent(UserDeletedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
+		eventService.registerEvent(UserUndeletedEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
 		eventService.registerEvent(PasswordUpdateEvent.class, RESOURCE_BUNDLE, new UserPropertyCollector());
 
 		eventService.registerEvent(GroupEvent.class, RESOURCE_BUNDLE, new GroupPropertyCollector());
@@ -333,6 +334,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				return "missingPhone.label";
 			}
 		});
+		
+
 	}
 
 	@Override
@@ -1719,7 +1722,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void deleteGroup(Realm realm, final Principal group) throws ResourceException, AccessDeniedException {
+	public void deleteGroup(Realm realm, final Principal group, boolean deleteLocallyOnly) throws ResourceException, AccessDeniedException {
 
 		final RealmProvider provider = getProviderForRealm(realm);
 
@@ -1737,7 +1740,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				public void beforeOperation(Principal resource, Map<String, String> properties)
 						throws ResourceException {
 					try {
-						provider.deleteGroup(group);
+						provider.deleteGroup(group, deleteLocallyOnly);
 					} catch (ResourceChangeException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
@@ -1764,7 +1767,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void deleteUser(Realm realm, Principal user) throws ResourceException, AccessDeniedException {
+	public void deleteUser(Realm realm, Principal user, boolean deleteLocallyOnly) throws ResourceException, AccessDeniedException {
 
 		final RealmProvider provider = getProviderForPrincipal(user);
 
@@ -1779,13 +1782,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.cannotDeleteSystemAdmin",
 						user.getPrincipalName());
 			}
-
+			
 			permissionService.revokePermissions(user, new TransactionAdapter<Principal>() {
 				@Override
 				public void afterOperation(Principal resource, Map<String, String> properties)
 						throws ResourceException {
 					try {
-						provider.deleteUser(resource);
+						provider.deleteUser(resource, deleteLocallyOnly);
 					} catch (ResourceChangeException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
@@ -2600,7 +2603,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void deleteUsers(final Realm realm, final List<Principal> users)
+	public void deleteUsers(final Realm realm, final List<Principal> users, boolean deleteLocallyOnly)
 			throws ResourceException, AccessDeniedException {
 		transactionService.doInTransaction(new TransactionCallback<Void>() {
 
@@ -2608,7 +2611,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			public Void doInTransaction(TransactionStatus status) {
 				for (Principal user : users) {
 					try {
-						deleteUser(realm, user);
+						deleteUser(realm, user, false);
 					} catch (ResourceException | AccessDeniedException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
@@ -2624,7 +2627,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void deleteGroups(final Realm realm, final List<Principal> groups)
+	public void deleteGroups(final Realm realm, final List<Principal> groups, boolean deleteLocallyOnly)
 			throws ResourceException, AccessDeniedException {
 		transactionService.doInTransaction(new TransactionCallback<Void>() {
 
@@ -2632,7 +2635,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			public Void doInTransaction(TransactionStatus status) {
 				for (Principal group : groups) {
 					try {
-						deleteGroup(realm, group);
+						deleteGroup(realm, group, deleteLocallyOnly);
 					} catch (ResourceException | AccessDeniedException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
@@ -2692,6 +2695,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			return "filter.accounts.local";
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
 				ColumnSort[] sorting) {
@@ -2731,6 +2735,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			return "filter.accounts.remote";
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
 				ColumnSort[] sorting) {
@@ -2937,5 +2942,55 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 		}, outputHeaders, delimiters, eol, wrap, escape, "", output, locale);
 
+	}
+
+	@Override
+	public void undeleteUser(Realm realm, Principal user) throws ResourceException, AccessDeniedException {
+		final RealmProvider provider = getProviderForPrincipal(user);
+
+		try {
+			assertAnyPermission(UserPermission.CREATE, RealmPermission.CREATE);
+
+			if (provider.isReadOnly(realm)) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
+			}
+
+			principalRepository.undelete(realm, user);
+
+			eventService.publishEvent(new UserUndeletedEvent(this, getCurrentSession(), realm, provider, user));
+
+		} catch (AccessDeniedException e) {
+			eventService.publishEvent(
+					new UserUndeletedEvent(this, e, getCurrentSession(), realm, provider, user.getPrincipalName()));
+			throw e;
+		} catch (ResourceChangeException e) {
+			eventService.publishEvent(
+					new UserUndeletedEvent(this, e, getCurrentSession(), realm, provider, user.getPrincipalName()));
+			throw e;
+		} catch (Throwable e) {
+			eventService.publishEvent(
+					new UserUndeletedEvent(this, e, getCurrentSession(), realm, provider, user.getPrincipalName()));
+			throw new ResourceChangeException(e, RESOURCE_BUNDLE, "undeleteUser.unexpectedError", e.getMessage());
+		}
+		
+	}
+
+	@Override
+	public void undeleteUsers(Realm realm, List<Principal> users) throws ResourceException, AccessDeniedException {
+		transactionService.doInTransaction(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				for (Principal user : users) {
+					try {
+						undeleteUser(realm, user);
+					} catch (ResourceException | AccessDeniedException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+				return null;
+			}
+		});
+		
 	}
 }

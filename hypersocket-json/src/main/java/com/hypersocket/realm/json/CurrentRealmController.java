@@ -66,7 +66,6 @@ import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 import com.hypersocket.triggers.TriggerResourceColumns;
-import com.hypersocket.utils.HypersocketUtils;
 
 @Controller
 public class CurrentRealmController extends ResourceController {
@@ -902,7 +901,22 @@ public class CurrentRealmController extends ResourceController {
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
+		return doDeleteGroup(request, id, true);
+	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/remoteGroup/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Principal> deleteGroupAndRemoteGroup(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable("id") Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		return doDeleteGroup(request, id, false);
+	}
+
+	private ResourceStatus<Principal> doDeleteGroup(HttpServletRequest request, Long id, boolean deleteLocallyOnly)
+			throws UnauthorizedException, SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
@@ -910,7 +924,7 @@ public class CurrentRealmController extends ResourceController {
 			Principal group = realmService.getPrincipalById(realm, id,
 					PrincipalType.GROUP);
 			String oldName = group.getPrincipalName();
-			realmService.deleteGroup(realm, group);
+			realmService.deleteGroup(realm, group, deleteLocallyOnly);
 
 			return new ResourceStatus<Principal>(true,
 					I18N.getResource(sessionUtils.getLocale(request),
@@ -933,6 +947,18 @@ public class CurrentRealmController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
+		return doDelete(request, id, true);
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/remoteUser/undelete/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Principal> undeleteUser(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable("id") Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
@@ -940,7 +966,40 @@ public class CurrentRealmController extends ResourceController {
 			Principal user = realmService.getPrincipalById(realm, id,
 					PrincipalType.USER);
 			String oldName = user.getPrincipalName();
-			realmService.deleteUser(realm, user);
+			realmService.undeleteUser(realm, user);
+			return new ResourceStatus<Principal>(true, I18N.getResource(
+					sessionUtils.getLocale(request),
+					RealmService.RESOURCE_BUNDLE, "info.user.undeleted", oldName));
+
+		} catch (AccessDeniedException | ResourceException e) {
+			return new ResourceStatus<Principal>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/remoteUser/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Principal> deleteUserAndRemoteUser(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable("id") Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		return doDelete(request, id, false);
+	}
+
+	private ResourceStatus<Principal> doDelete(HttpServletRequest request, Long id, boolean deleteLocallyOnly)
+			throws UnauthorizedException, SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Realm realm = sessionUtils.getCurrentRealm(request);
+			Principal user = realmService.getPrincipalById(realm, id,
+					PrincipalType.USER);
+			String oldName = user.getPrincipalName();
+			realmService.deleteUser(realm, user, deleteLocallyOnly);
 
 			return new ResourceStatus<Principal>(true, I18N.getResource(
 					sessionUtils.getLocale(request),
@@ -1179,6 +1238,25 @@ public class CurrentRealmController extends ResourceController {
 												@RequestBody Long[] ids)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
+		return doBulkDelete(request, ids, true);
+		
+	}
+	
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/bulk/remoteGroups", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus deleteGroupAndRemoteGroupResources(HttpServletRequest request,
+												HttpServletResponse response,
+												@RequestBody Long[] ids)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		return doBulkDelete(request, ids, false);
+	}
+
+	private RequestStatus doBulkDelete(HttpServletRequest request, Long[] ids, boolean deleteLocallyOnly)
+			throws UnauthorizedException, SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
@@ -1195,7 +1273,7 @@ public class CurrentRealmController extends ResourceController {
 								I18NServiceImpl.USER_INTERFACE_BUNDLE,
 								"bulk.delete.empty"));
 			}else {
-				realmService.deleteGroups(getCurrentRealm(), groupResources);
+				realmService.deleteGroups(getCurrentRealm(), groupResources, deleteLocallyOnly);
 				return new RequestStatus(true,
 						I18N.getResource(sessionUtils.getLocale(request),
 								I18NServiceImpl.USER_INTERFACE_BUNDLE,
@@ -1209,12 +1287,23 @@ public class CurrentRealmController extends ResourceController {
 		}
 	}
 	
-	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/bulk/users", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public RequestStatus deleteUserResources(HttpServletRequest request,
+												HttpServletResponse response,
+												@RequestBody Long[] ids)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		return doDeleteBulkUsers(request, ids, true);
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/bulk/undelete/users", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus undeleteUserResources(HttpServletRequest request,
 												HttpServletResponse response,
 												@RequestBody Long[] ids)
 			throws AccessDeniedException, UnauthorizedException,
@@ -1233,9 +1322,53 @@ public class CurrentRealmController extends ResourceController {
 				return new RequestStatus(false,
 						I18N.getResource(sessionUtils.getLocale(request),
 								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.undelete.empty"));
+			}else {
+				realmService.undeleteUsers(getCurrentRealm(), userResources);
+				return new RequestStatus(true,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.undelete.success"));
+			}
+			
+		} catch (Exception e) {
+			return new RequestStatus(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/bulk/remoteUsers", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus deleteUserAndRemoteResources(HttpServletRequest request,
+												HttpServletResponse response,
+												@RequestBody Long[] ids)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		return doDeleteBulkUsers(request, ids, false);
+	}
+
+	private RequestStatus doDeleteBulkUsers(HttpServletRequest request, Long[] ids, boolean deleteLocallyOnly)
+			throws UnauthorizedException, SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			
+			if(ids == null) {
+				ids = new Long[0];
+			}
+			
+			List<Principal> userResources = realmService.getUsersByIds(ids);
+
+			if(userResources == null || userResources.isEmpty()) {
+				return new RequestStatus(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
 								"bulk.delete.empty"));
 			}else {
-				realmService.deleteUsers(getCurrentRealm(), userResources);
+				realmService.deleteUsers(getCurrentRealm(), userResources, deleteLocallyOnly);
 				return new RequestStatus(true,
 						I18N.getResource(sessionUtils.getLocale(request),
 								I18NServiceImpl.USER_INTERFACE_BUNDLE,

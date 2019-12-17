@@ -3,9 +3,12 @@ package com.hypersocket.realm;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +18,12 @@ import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.repository.PrincipalTypesCriteria;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.RealmCriteria;
+import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.tables.ColumnSort;
 
 @Repository
 public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Principal> implements PrincipalRepository {
+	final static Logger LOG = LoggerFactory.getLogger(PrincipalRepositoryImpl.class);
 
 	@Override
 	@Transactional(readOnly=true)
@@ -108,5 +113,32 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 		} else {
 			return getResourceByName(reference, realm);
 		}
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public List<?> searchDeleted(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+			ColumnSort[] sorting, int start, int length, CriteriaConfiguration... criteriaConfiguration) {
+		return super.search(getResourceClass(), searchColumn, searchPattern, start,
+				length, sorting, ArrayUtils.addAll(criteriaConfiguration,
+						new RealmCriteria(realm), new PrincipalTypeCriteria(type), new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public Long getDeletedCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+			CriteriaConfiguration... criteriaConfiguration) {
+		return getCount(getResourceClass(), searchColumn, searchPattern,
+				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(
+						realm), new PrincipalTypeCriteria(type), new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
+	}
+
+	@Override
+	@Transactional
+	public void undelete(Realm realm, Principal user) throws ResourceChangeException {
+		user.setLocallyDeleted(false);
+		user.setDeleted(false);
+		save(user);
+		flush();		
 	}
 }

@@ -542,7 +542,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	@Override
 	@Transactional
-	public void deleteGroup(Principal group) throws ResourceException {
+	public void deleteGroup(Principal group, boolean deleteLocallyOnly) throws ResourceException {
 
 		if (!(group instanceof LocalGroup)) {
 			throw new IllegalStateException(
@@ -613,7 +613,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	@Override
 	@Transactional
-	public void deleteUser(Principal user) {
+	public void deleteUser(Principal user, boolean deleteLocallyOnly) {
 
 		if (!(user instanceof LocalUser)) {
 			throw new IllegalStateException(

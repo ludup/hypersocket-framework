@@ -100,6 +100,10 @@ public abstract class Principal extends RealmResource {
 	
 	public abstract PrincipalStatus getPrincipalStatus();
 	
+	public boolean isLocallyDeleted() {
+		return false;
+	}
+	
 	public boolean isPrimaryAccount() {
 		return super.getRealm().getOwner()==null;
 	}
@@ -179,5 +183,9 @@ public abstract class Principal extends RealmResource {
 	}
 
 	public abstract String getRealmModule();
+
+	public void setLocallyDeleted(boolean locallyDeleted) {
+		throw new UnsupportedOperationException();
+	}
 
 }

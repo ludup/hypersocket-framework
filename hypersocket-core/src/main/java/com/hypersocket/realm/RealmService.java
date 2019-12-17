@@ -101,9 +101,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Principal updateGroup(Realm realm, Principal principal, String name, Map<String, String> properties,
 						  List<Principal> principals, List<Principal> groups) throws AccessDeniedException, ResourceException;
 
-	void deleteGroup(Realm realm, Principal group) throws ResourceException, AccessDeniedException;
+	void deleteGroup(Realm realm, Principal group, boolean deleteLocallyOnly) throws ResourceException, AccessDeniedException;
 
-	void deleteUser(Realm realm, Principal user) throws ResourceException, AccessDeniedException;
+	void deleteUser(Realm realm, Principal user, boolean deleteLocallyOnly) throws ResourceException, AccessDeniedException;
 
 	Collection<PropertyCategory> getUserPropertyTemplates(Principal principalById) throws AccessDeniedException;
 
@@ -285,11 +285,11 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	
 	List<Realm> getRealmsByIds(Long...ids) throws AccessDeniedException;
 	
-	void deleteUsers(Realm realm, List<Principal> users) throws ResourceException, AccessDeniedException;
+	void deleteUsers(Realm realm, List<Principal> users, boolean deleteLocallyOnly) throws ResourceException, AccessDeniedException;
 	
 	List<Principal> getUsersByIds(Long...ids) throws AccessDeniedException;
 	
-	void deleteGroups(Realm realm, List<Principal> groups) throws ResourceException, AccessDeniedException;
+	void deleteGroups(Realm realm, List<Principal> groups, boolean deleteLocallyOnly) throws ResourceException, AccessDeniedException;
 	
 	List<Principal> getGroupsByIds(Long...ids) throws AccessDeniedException;
 
@@ -334,6 +334,10 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Principal createLocalUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
 			PasswordCreator passwordCreator, boolean forceChange, boolean selfCreated, boolean sendNotifications)
 			throws ResourceException, AccessDeniedException;
+
+	void undeleteUser(Realm realm, Principal user) throws ResourceException, AccessDeniedException;
+
+	void undeleteUsers(Realm realm, List<Principal> users) throws ResourceException, AccessDeniedException;
 
 }
 

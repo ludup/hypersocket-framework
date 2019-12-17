@@ -330,7 +330,7 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 		
 	}
 	
-	class DefaultCriteriaConfiguration implements CriteriaConfiguration {
+	public class DefaultCriteriaConfiguration implements CriteriaConfiguration {
 
 		@Override
 		public void configure(Criteria criteria) {
