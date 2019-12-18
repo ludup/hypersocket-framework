@@ -360,6 +360,9 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 			for(String word : line.split("\\s+")) {
 				createResource(locale, word);
 				l++;
+				if((l % 100) == 0) 
+					repository.flush();
+					
 			}
 		}
 		return l;
