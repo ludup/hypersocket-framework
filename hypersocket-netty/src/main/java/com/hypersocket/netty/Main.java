@@ -138,7 +138,7 @@ public class Main {
 			 * It also provides log output (via a custom log appender), and startup progress
 			 * based on the last known time taken.
 			 */
-			if("true".equals(System.getProperty(MiniHttpServer.HYPERSOCKET_BOOT_HTTP_SERVER,MiniHttpServer.HYPERSOCKET_BOOT_HTTP_SERVER_DEFAULT))) {
+			if("true".equals(System.getProperty(MiniHttpServer.HYPERSOCKET_BOOT_HTTP_SERVER,MiniHttpServer.HYPERSOCKET_BOOT_HTTP_SERVER_DEFAULT)) && !new File(conf, "no-boot-httpserver").exists()) {
 				String username = System.getProperty("user.name");
 				miniserverStarted = System.currentTimeMillis();
 				File bootKeystore = new File(conf, "boothttp.keystore");
