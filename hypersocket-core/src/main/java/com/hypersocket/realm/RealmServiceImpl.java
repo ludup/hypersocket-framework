@@ -2611,7 +2611,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			public Void doInTransaction(TransactionStatus status) {
 				for (Principal user : users) {
 					try {
-						deleteUser(realm, user, false);
+						deleteUser(realm, user, deleteLocallyOnly);
 					} catch (ResourceException | AccessDeniedException e) {
 						throw new IllegalStateException(e.getMessage(), e);
 					}
