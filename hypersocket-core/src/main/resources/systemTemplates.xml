@@ -65,7 +65,7 @@
 		<property resourceKey="dictionary.matchAlphaOnly" inputType="switch"
 			defaultValue="false" weight="20" />
 		<property resourceKey="dictionary.caseInsenstive" inputType="switch"
-			defaultValue="false" weight="30" />
+			defaultValue="true" weight="30" />
 		<property resourceKey="dictionary.blacklistBuiltIn" inputType="switch"
 			defaultValue="true" weight="50" />
 		<property resourceKey="dictionary.blacklistApiCall" inputType="switch"
