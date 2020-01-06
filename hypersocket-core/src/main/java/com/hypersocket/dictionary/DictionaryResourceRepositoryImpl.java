@@ -61,8 +61,8 @@ public class DictionaryResourceRepositoryImpl extends AbstractSimpleResourceRepo
 
 	@Override
 	public void deleteResources(List<Long> wordIds) {
-		sessionFactory.getCurrentSession().createQuery("delete from Word where id in :id").setParameterList("id", wordIds)
-				.executeUpdate();
+		sessionFactory.getCurrentSession().createQuery("delete from Word where id in :id")
+				.setParameterList("id", wordIds).executeUpdate();
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class DictionaryResourceRepositoryImpl extends AbstractSimpleResourceRepo
 				ArrayUtils.addAll(configs, new DeletedCriteria(false), new CriteriaConfiguration() {
 					@Override
 					public void configure(Criteria criteria) {
-						if(locale != null)
+						if (locale != null)
 							criteria.add(Restrictions.eq("locale", locale));
 					}
 				}));
@@ -91,7 +91,7 @@ public class DictionaryResourceRepositoryImpl extends AbstractSimpleResourceRepo
 				ArrayUtils.addAll(configs, new DeletedCriteria(false), new CriteriaConfiguration() {
 					@Override
 					public void configure(Criteria criteria) {
-						if(locale != null)
+						if (locale != null)
 							criteria.add(Restrictions.eq("locale", locale));
 					}
 				}));
@@ -106,16 +106,16 @@ public class DictionaryResourceRepositoryImpl extends AbstractSimpleResourceRepo
 
 	@Override
 	@Transactional(readOnly = true)
-	public boolean containsWord(Locale locale, String word, boolean caseInsensitive) {
+	public boolean containsWord(Locale locale, String word, boolean caseInsensitive, boolean fallbackToDefault) {
 		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Word.class);
 		if (caseInsensitive) {
 			criteria.add(Restrictions.eq("text", word).ignoreCase());
 		} else {
 			criteria.add(Restrictions.eq("text", word));
 		}
-		if(locale != null) {
+		if (locale != null) {
 			Disjunction dj = Restrictions.disjunction();
-			dj.add(Restrictions.eq("locale", locale));
+			dj.add(Restrictions.eq("locale", locale.toLanguageTag()));
 			dj.add(Restrictions.isNull("locale"));
 			criteria.add(dj);
 		}
@@ -184,18 +184,17 @@ public class DictionaryResourceRepositoryImpl extends AbstractSimpleResourceRepo
 
 		@Override
 		public void configure(Criteria criteria) {
-			if(localeOrNull) {
+			if (localeOrNull) {
 				Disjunction dj = Restrictions.disjunction();
 				dj.add(Restrictions.isNull("locale"));
-				if(locale != null)
-					dj.add(Restrictions.eq("locale", locale));
+				if (locale != null)
+					dj.add(Restrictions.eq("locale", locale.toLanguageTag()));
 				criteria.add(dj);
-			}
-			else {
-				if(locale == null)
+			} else {
+				if (locale == null)
 					criteria.add(Restrictions.isNull("locale"));
 				else
-					criteria.add(Restrictions.eq("locale", locale));
+					criteria.add(Restrictions.eq("locale", locale.toLanguageTag()));
 			}
 		}
 

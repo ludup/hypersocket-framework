@@ -3,6 +3,6 @@
 	<propertyCategory resourceKey="category.basic"
 		resourceBundle="DictionaryResourceService" weight="100">
 		<property resourceKey="dictionary.locale" inputType="select"
-			url="i18n/locales" defaultValue="" emptySelectionAllowed="true" weight="100" nameIsResourceKey="false"/>
+			url="i18n/allLanguageTags" defaultValue="" emptySelectionAllowed="true" weight="100" nameIsResourceKey="false"/>
 	</propertyCategory>
 </propertyTemplates>

@@ -46,7 +46,7 @@ public interface DictionaryResourceService  {
 
 	Long getResourceCount(Locale locale, String searchColumn, String searchPattern) throws AccessDeniedException;
 
-	long importDictionary(Locale locale, Reader input) throws ResourceException, IOException, AccessDeniedException;
+	long importDictionary(Locale locale, Reader input, boolean ignoreDuplicates) throws ResourceException, IOException, AccessDeniedException;
 
 	void deleteResources(List<Long> ids) throws AccessDeniedException, ResourceException;
 

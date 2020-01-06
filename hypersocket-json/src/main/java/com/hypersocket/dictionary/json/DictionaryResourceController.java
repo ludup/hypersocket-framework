@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -153,8 +154,8 @@ public class DictionaryResourceController extends ResourceController {
 				properties.put(i.getId(), i.getValue());
 			}
 			Locale locale = null;
-			if(properties.containsKey("locale")) {
-				locale = Locale.forLanguageTag(properties.get("locale"));
+			if(properties.containsKey("dictionary.locale")) {
+				locale = Locale.forLanguageTag(properties.get("dictionary.locale"));
 			}
 			if (resource.getId() != null) {
 				newResource = resourceService.updateResource(resourceService.getResourceById(resource.getId()),
@@ -180,7 +181,8 @@ public class DictionaryResourceController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<Long> upload(HttpServletRequest request, HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file,
-			@RequestParam Locale locale)
+			@RequestParam String locale,
+			@RequestParam(required = false) boolean ignoreDuplicates)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
@@ -190,11 +192,14 @@ public class DictionaryResourceController extends ResourceController {
 			if (StringUtils.isBlank(characterEncoding))
 				characterEncoding = "UTF-8";
 			try (InputStream inputStream = file.getInputStream()) {
-				long rows = resourceService.importDictionary(locale,
-						new InputStreamReader(inputStream, characterEncoding));
+				long rows = resourceService.importDictionary(StringUtils.isBlank(locale) ? null : Locale.forLanguageTag(locale),
+						new InputStreamReader(inputStream, characterEncoding), ignoreDuplicates);
 				return new ResourceStatus<Long>(rows, I18N.getResource(sessionUtils.getLocale(request),
 						DictionaryResourceServiceImpl.RESOURCE_BUNDLE, "dictionary.imported.info", rows));
 			}
+		} catch (DataIntegrityViolationException e) {
+			return new ResourceStatus<Long>(false, I18N.getResource(sessionUtils.getLocale(request),
+					DictionaryResourceServiceImpl.RESOURCE_BUNDLE, "dictionary.imported.duplicateRecords"));
 		} catch (ResourceException e) {
 			return new ResourceStatus<Long>(false, e.getMessage());
 		} catch (Throwable e) {
@@ -224,7 +229,7 @@ public class DictionaryResourceController extends ResourceController {
 						DictionaryResourceServiceImpl.RESOURCE_BUNDLE, "error.invalidResourceId", id));
 			}
 
-			String preDeletedName = resource.getName();
+			String preDeletedName = resource.getText();
 			resourceService.deleteResource(resource);
 
 			return new ResourceStatus<Word>(true, I18N.getResource(sessionUtils.getLocale(request),

@@ -14,7 +14,7 @@ public interface DictionaryResourceRepository extends
 
 	String randomWord(Locale locale);
 
-	boolean containsWord(Locale locale, String word, boolean caseInsenstive);
+	boolean containsWord(Locale locale, String word, boolean caseInsenstive, boolean fallbackToDefault);
 
 	List<Word> search(Locale locale, String searchColumn, String searchPattern, int start,
 			int length, ColumnSort[] sorting, CriteriaConfiguration... configs);

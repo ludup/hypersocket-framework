@@ -87,9 +87,15 @@ public class I18N {
 					"You must specify a resource bundle for key " + key);
 		}
 
-		I18nOverride override = ApplicationContextServiceImpl.getInstance()
+		I18nOverride override = null;
+		try {
+			override = ApplicationContextServiceImpl.getInstance()
 					.getBean(I18nOverrideRepository.class)
 						.getResource(locale, resourceBundle, key);
+		}
+		catch(Exception e) {
+			log.warn("Could check for localisation override.", e);
+		}
 
 		if (override!=null) {
 			String localizedString = override.getValue();

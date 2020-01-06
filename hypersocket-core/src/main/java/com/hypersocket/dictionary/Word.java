@@ -6,17 +6,18 @@ import java.util.Locale;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import com.hypersocket.resource.SimpleResource;
 
 @Entity
-@Table(name = "words")
+@Table(name = "words", uniqueConstraints = @UniqueConstraint(columnNames = {"locale","word_text"}))
 public class Word extends SimpleResource {
 
 	private static final long serialVersionUID = 3518709658570275084L;
 
-	@Column(name = "locale", nullable = true, length = 30)
-	private Locale locale = null;
+	@Column(name = "locale", nullable = false, length = 30)
+	private String locale = "*";
 
 	@Column(name = "word_text", nullable = false, length = 255)
 	private String text;
@@ -28,9 +29,9 @@ public class Word extends SimpleResource {
 	}
 
 	public Word(Locale locale, String text, long wordIndex) {
-		this.locale = locale;
 		this.text = text;
 		this.wordIndex = wordIndex;
+		setLocale(locale);
 	}
 
 	public final long getWordIndex() {
@@ -42,11 +43,11 @@ public class Word extends SimpleResource {
 	}
 
 	public final Locale getLocale() {
-		return locale;
+		return locale.equals("*") ? null : Locale.forLanguageTag(locale);
 	}
 
 	public final void setLocale(Locale locale) {
-		this.locale = locale;
+		this.locale = locale == null ? "*" : locale.toLanguageTag();
 	}
 
 	public final String getText() {

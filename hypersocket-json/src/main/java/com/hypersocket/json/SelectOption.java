@@ -7,31 +7,38 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
+public class SelectOption implements Comparable<SelectOption> {
 
-public class SelectOption {
+	private String value;
+	private String name;
 
-	String value;
-	String name;
-	
-	public SelectOption() {	
+	public SelectOption() {
 	}
-	
+
 	public SelectOption(String value, String name) {
 		this.value = value;
 		this.name = name;
 	}
+
 	public String getValue() {
 		return value;
 	}
+
 	public void setValue(String id) {
 		this.value = id;
 	}
+
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	
+
+	@Override
+	public int compareTo(SelectOption o) {
+		return name.compareTo(o.getName());
+	}
+
 }

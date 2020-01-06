@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpCookie;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import java.util.Locale;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -85,7 +87,7 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 
 	@Autowired
 	private HttpUtilsImpl httpUtils;
-	
+
 	@Autowired
 	private SystemConfigurationService systemConfigurationService;
 
@@ -178,7 +180,8 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 			if (t instanceof ResourceException) {
 				throw (ResourceException) t;
 			} else {
-				throw new ResourceCreationException(AbstractResourceServiceImpl.RESOURCE_BUNDLE_DEFAULT, "generic.create.error", t.getMessage(), t);
+				throw new ResourceCreationException(AbstractResourceServiceImpl.RESOURCE_BUNDLE_DEFAULT,
+						"generic.create.error", t.getMessage(), t);
 			}
 		}
 		return resource;
@@ -205,7 +208,8 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 			if (t instanceof ResourceException) {
 				throw (ResourceException) t;
 			} else {
-				throw new ResourceCreationException(AbstractResourceServiceImpl.RESOURCE_BUNDLE_DEFAULT, "generic.create.error", t.getMessage(), t);
+				throw new ResourceCreationException(AbstractResourceServiceImpl.RESOURCE_BUNDLE_DEFAULT,
+						"generic.create.error", t.getMessage(), t);
 			}
 		}
 
@@ -231,89 +235,167 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 
 	@Override
 	public boolean containsWord(Locale locale, String word) {
-		return ( systemConfigurationService.getBooleanValue("dictionary.blacklistBuiltIn") && 
-				dictionaryRepository.containsWord(locale, word, systemConfigurationService.getBooleanValue("dictionary.blacklistBuiltIn")) ) 
-				|| (systemConfigurationService.getBooleanValue("dictionary.blacklistApiCall") && inRemote(locale, word));
+		return (systemConfigurationService.getBooleanValue("dictionary.blacklistBuiltIn")
+				&& dictionaryRepository.containsWord(locale, word,
+						systemConfigurationService.getBooleanValue("dictionary.caseInsenstive"), true))
+				|| (systemConfigurationService.getBooleanValue("dictionary.blacklistApiCall")
+						&& inRemote(locale, word));
 	}
-	
-	protected boolean inRemote(Locale locale, String word) {
-		String method = processTokenReplacements(systemConfigurationService.getValue("dictionary.method"), locale, word);
-		String url = processTokenReplacements(systemConfigurationService.getValue("dictionary.url"), locale, word);
-		String responseContent = processTokenReplacements(systemConfigurationService.getValue("dictionary.responseContent"), locale, word);
-		String[] variables = systemConfigurationService.getValues("dictionary.variables");
-		String[] responses = systemConfigurationService.getValues("dictionary.responseList");
-		String[] headers = systemConfigurationService.getValues("dictionary.headers");
+
+	protected HttpResponse authRemote(Locale locale, String word) {
+		String method = processTokenReplacements(systemConfigurationService.getValue("dictionary.logonMethod"), locale,
+				word, null);
+		String url = processTokenReplacements(systemConfigurationService.getValue("dictionary.logonUrl"), locale, word, null);
+		String responseContent = processTokenReplacements(
+				systemConfigurationService.getValue("dictionary.logonResponseContent"), locale, word, null);
+		String[] variables = systemConfigurationService.getValues("dictionary.logonVariables");
+		String[] responses = systemConfigurationService.getValues("dictionary.logonResponseList");
+		String[] headers = systemConfigurationService.getValues("dictionary.logonHeaders");
 		boolean checkCertificate = systemConfigurationService.getBooleanValue("dictionary.certificate");
 
-		for(int i=0;i<responses.length;i++) {
-			responses[i] = processTokenReplacements(responses[i], locale, word);
+		for (int i = 0; i < responses.length; i++) {
+			responses[i] = processTokenReplacements(responses[i], locale, word, null);
 		}
-		
+
 		CloseableHttpClient client = null;
 		HttpResponse response;
 		try {
 
 			client = httpUtils.createHttpClient(!checkCertificate);
 			if (METHOD_GET.equals(method)) {
-				if(variables.length > 0) {
-					url = url + "?";
-					boolean first = true;
-					for (String variable : variables) {
-						if(!first) {
-							url += "&";
-						}
-						first = false;
-						String[] namePair = variable.split("=");
-						url += URLEncoder.encode(processTokenReplacements(namePair[0], locale, word), "UTF-8")
-							+ "=" 
-							+ URLEncoder.encode(processTokenReplacements(namePair[1], locale, word), "UTF-8");
-					}
-				}
+				url = encodeVars(locale, word, url, variables, null);
 				HttpGet request = new HttpGet(url);
 				request.addHeader("User-Agent", USER_AGENT);
-				for(String header : headers) {
-					request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word), 
-							processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word));
+				for (String header : headers) {
+					request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word, null),
+							processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word, null));
 				}
 				response = client.execute(request);
 
 			} else {
 				HttpPost request = new HttpPost(url);
-				
-				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(
-						variables.length);
+
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(variables.length);
 				for (String variable : variables) {
 					String[] namePair = variable.split("=");
-					nameValuePairs.add(new BasicNameValuePair(
-							processTokenReplacements(namePair[0], locale, word),
-							processTokenReplacements(namePair[1], locale, word)));
+					nameValuePairs.add(new BasicNameValuePair(processTokenReplacements(namePair[0], locale, word, null),
+							processTokenReplacements(namePair[1], locale, word, null)));
 				}
-				
+
 				request.addHeader("User-Agent", USER_AGENT);
-				for(String header : headers) {
-					request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word), 
-							processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word));
+				for (String header : headers) {
+					request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word, null),
+							processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word, null));
 				}
-				
+
 				request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 				response = client.execute(request);
 			}
 
 			HttpEntity entity = response.getEntity();
 			String content = EntityUtils.toString(entity);
-			
-			boolean matchesResponse = responses.length == 0 ? true : Arrays.asList(responses).contains(
-					Integer.toString(response.getStatusLine().getStatusCode()));
+
+			boolean matchesResponse = responses.length == 0 ? true
+					: Arrays.asList(responses).contains(Integer.toString(response.getStatusLine().getStatusCode()));
 			boolean matchesContent = StringUtils.isBlank(content) || content.matches(responseContent);
-			
+
+			return matchesResponse && matchesContent ? response : null;
+
+		} catch (Exception e) {
+			log.error("Failed to fully process login " + method + " method for " + url + "variables: " + variables, e);
+			return null;
+		} finally {
+			if (client != null) {
+				try {
+					client.close();
+				} catch (IOException e) {
+					log.error("Error closing login HttpClient instance for HTTP Task", e);
+				}
+			}
+		}
+	}
+
+	protected boolean inRemote(Locale locale, String word) {
+
+		HttpResponse logonResponse = null;
+		if (systemConfigurationService.getBooleanValue("dictionary.logonRequired")) {
+			logonResponse = authRemote(locale, word);
+			if (logonResponse == null)
+				return false;
+		}
+
+		String method = processTokenReplacements(systemConfigurationService.getValue("dictionary.method"), locale,
+				word, logonResponse);
+		String url = processTokenReplacements(systemConfigurationService.getValue("dictionary.url"), locale, word, logonResponse);
+		String responseContent = processTokenReplacements(
+				systemConfigurationService.getValue("dictionary.responseContent"), locale, word, logonResponse);
+		String[] variables = systemConfigurationService.getValues("dictionary.variables");
+		String[] responses = systemConfigurationService.getValues("dictionary.responseList");
+		String[] headers = systemConfigurationService.getValues("dictionary.headers");
+		boolean checkCertificate = systemConfigurationService.getBooleanValue("dictionary.certificate");
+
+		for (int i = 0; i < responses.length; i++) {
+			responses[i] = processTokenReplacements(responses[i], locale, word, logonResponse);
+		}
+
+		CloseableHttpClient client = null;
+		HttpResponse response;
+		try {
+
+			client = httpUtils.createHttpClient(!checkCertificate);
+			if (METHOD_GET.equals(method)) {
+				url = encodeVars(locale, word, url, variables, logonResponse);
+				HttpGet request = new HttpGet(url);
+				request.addHeader("User-Agent", USER_AGENT);
+				if(logonResponse != null) {
+					for (Header h : logonResponse.getHeaders("Set-Cookie")) {
+						List<HttpCookie> cookies = HttpCookie.parse(h.getValue());
+						for (HttpCookie c : cookies) {
+							request.addHeader("Cookie", c.toString());
+						}
+					}
+				}
+				
+				for (String header : headers) {
+					request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word, logonResponse),
+							processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word, logonResponse));
+				}
+				response = client.execute(request);
+
+			} else {
+				HttpPost request = new HttpPost(url);
+
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(variables.length);
+				for (String variable : variables) {
+					String[] namePair = variable.split("=");
+					nameValuePairs.add(new BasicNameValuePair(processTokenReplacements(namePair[0], locale, word, logonResponse),
+							processTokenReplacements(namePair[1], locale, word, logonResponse)));
+				}
+
+				request.addHeader("User-Agent", USER_AGENT);
+				for (String header : headers) {
+					request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word, logonResponse),
+							processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word, logonResponse));
+				}
+
+				request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+				response = client.execute(request);
+			}
+
+			HttpEntity entity = response.getEntity();
+			String content = EntityUtils.toString(entity);
+
+			boolean matchesResponse = responses.length == 0 ? true
+					: Arrays.asList(responses).contains(Integer.toString(response.getStatusLine().getStatusCode()));
+			boolean matchesContent = StringUtils.isBlank(content) || content.matches(responseContent);
+
 			return matchesResponse && matchesContent;
 
 		} catch (Exception e) {
-			log.error("Failed to fully process " + method + " method for "
-					+ url + "variables: " + variables, e);
+			log.error("Failed to fully process " + method + " method for " + url + "variables: " + variables, e);
 			return false;
 		} finally {
-			if(client!=null) {
+			if (client != null) {
 				try {
 					client.close();
 				} catch (IOException e) {
@@ -351,23 +433,27 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 
 	@Override
 	@Transactional(readOnly = false)
-	public long importDictionary(Locale locale, Reader input) throws ResourceException, IOException, AccessDeniedException {
+	public long importDictionary(Locale locale, Reader input, boolean ignoreDuplicates)
+			throws ResourceException, IOException, AccessDeniedException {
 		assertPermission(DictionaryResourcePermission.CREATE);
 		BufferedReader r = new BufferedReader(input);
 		String line;
 		long l = 0;
-		while ( ( line = r.readLine() ) != null) {
-			for(String word : line.split("\\s+")) {
+		while ((line = r.readLine()) != null) {
+			for (String word : line.split("\\s+")) {
+				if (ignoreDuplicates && repository.containsWord(locale, word,
+						systemConfigurationService.getBooleanValue("dictionary.caseInsenstive"), false))
+					continue;
 				createResource(locale, word);
 				l++;
-				if((l % 100) == 0) 
+				if ((l % 100) == 0)
 					repository.flush();
-					
+
 			}
 		}
 		return l;
 	}
-	
+
 	@Override
 	@Transactional
 	public void deleteResources(List<Long> wordIds) throws ResourceException, AccessDeniedException {
@@ -375,9 +461,41 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 		repository.deleteResources(wordIds);
 	}
 
-	private String processTokenReplacements(String value, Locale locale, String word) {
+	private String encodeVars(Locale locale, String word, String url, String[] variables, HttpResponse response)
+			throws UnsupportedEncodingException {
+		if (variables.length > 0) {
+			url = url + "?";
+			boolean first = true;
+			for (String variable : variables) {
+				if (!first) {
+					url += "&";
+				}
+				first = false;
+				String[] namePair = variable.split("=");
+				url += URLEncoder.encode(processTokenReplacements(namePair[0], locale, word, response), "UTF-8") + "="
+						+ URLEncoder.encode(processTokenReplacements(namePair[1], locale, word, response), "UTF-8");
+			}
+		}
+		return url;
+	}
+
+	private String processTokenReplacements(String value, Locale locale, String word, HttpResponse response) {
 		try {
-			return value == null ? null : value.replace("${word}", word).replace("${encodedWord}", URLEncoder.encode(word, "UTF-8")).replace("${locale}", locale == null ? "" : locale.toLanguageTag());
+			if (value == null)
+				return null;
+			value = value.replace("${word}", word);
+			value = value.replace("${encodedWord}", URLEncoder.encode(word, "UTF-8"));
+			value = value.replace("${locale}", locale == null ? "" : locale.toLanguageTag());
+			if (response != null) {
+				for (Header h : response.getHeaders("Set-Cookie")) {
+					List<HttpCookie> cookies = HttpCookie.parse(h.getValue());
+					for (HttpCookie c : cookies) {
+						value = value.replace("${cookie." + c.getName() + "}", c.getValue());
+					}
+				}
+			}
+			return value;
+
 		} catch (UnsupportedEncodingException e) {
 			return value;
 		}

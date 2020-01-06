@@ -9,17 +9,20 @@ package com.hypersocket.i18n.json;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.cache.Cache;
 import javax.cache.Cache.Entry;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -92,6 +95,33 @@ public class I18NController extends AuthenticatedController {
 			clearAuthenticatedContext();
 		}
 	}	
+	
+	@RequestMapping(value = "i18n/allLanguageTags", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	public ResourceList<SelectOption> getAllLanguageTags(
+			WebRequest webRequest, HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException, IOException {
+
+		setupAnonymousContext(request.getRemoteAddr(), 
+				request.getServerName(), 
+				request.getHeader(HttpHeaders.USER_AGENT),
+				request.getParameterMap());
+		try {
+			List<SelectOption> locales = new ArrayList<SelectOption>();
+			for (Locale l : Locale.getAvailableLocales()) {
+				String n = l.getDisplayLanguage();
+				if(StringUtils.isNotBlank(l.getDisplayCountry()) && !Objects.equals(n, l.getDisplayCountry()))
+					n += " (" + l.getDisplayCountry() + ")";
+				if(StringUtils.isNotBlank(l.getVariant()))
+					n += " [" + l.getDisplayCountry() + "]";
+				locales.add(new SelectOption(l.toLanguageTag(), n));
+			}
+			Collections.sort(locales);
+			return new ResourceList<SelectOption>(locales);
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 	
 	@RequestMapping(value = "i18n/locales", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
