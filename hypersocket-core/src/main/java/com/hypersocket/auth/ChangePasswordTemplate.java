@@ -18,7 +18,7 @@ public class ChangePasswordTemplate extends FormTemplate {
 	public static final String CONFIRM_PASSWORD_FIELD = "confirmPassword";
 	
 	public ChangePasswordTemplate(AuthenticationState state, String buttonResourceKey) {
-		super(state.getInitialScheme());
+		super(state.getInitialSchemeResourceKey());
 		setResourceKey(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 
 		fields.add(new ParagraphField("info.passwordChangeRequired", true));

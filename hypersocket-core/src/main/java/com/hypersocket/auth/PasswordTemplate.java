@@ -23,7 +23,7 @@ public class PasswordTemplate extends FormTemplate {
 	@SuppressWarnings("rawtypes")
 	public PasswordTemplate(
 			AuthenticationState state, Map params) {
-		super(state.getInitialScheme());
+		super(state.getInitialSchemeResourceKey());
 		fields.add(new PasswordInputField(PASSWORD_FIELD, "", true, I18N.getResource(state.getLocale(),
 				AuthenticationServiceImpl.RESOURCE_BUNDLE, "password.label")));
 

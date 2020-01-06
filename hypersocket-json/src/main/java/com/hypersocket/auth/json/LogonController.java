@@ -197,7 +197,7 @@ public class LogonController extends AuthenticatedController {
 			}
 			
 			if (state == null
-					|| (!StringUtils.isEmpty(scheme) && !state.getInitialScheme().equals(scheme))) {
+					|| (!StringUtils.isEmpty(scheme) && !state.getInitialSchemeResourceKey().equals(scheme))) {
 				// We have not got login state so create
 				state = AuthenticationState.createAuthenticationState(scheme, request,
 						null, state, sessionUtils.getLocale(request));

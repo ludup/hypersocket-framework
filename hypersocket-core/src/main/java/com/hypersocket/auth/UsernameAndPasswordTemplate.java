@@ -29,7 +29,7 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 
 	@SuppressWarnings("rawtypes")
 	public UsernameAndPasswordTemplate(AuthenticationState state, Map params, List<Realm> realms, Realm defaultRealm) {
-		super(state.getInitialScheme());
+		super(state.getInitialSchemeResourceKey());
 		setResourceKey(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 
 		if(realms.size() > 1) {

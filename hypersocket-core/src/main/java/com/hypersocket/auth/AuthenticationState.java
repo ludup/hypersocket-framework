@@ -32,11 +32,11 @@ public class AuthenticationState {
 	private static final String PREVIOUS_AUTHENTICATION_SCHEME = "previousAuthenticationScheme";
 	private static final String AUTHENTICATION_STATE = "authenticationState";
 	
-	String initialScheme;
 	Stack<AuthenticationScheme> previousSchemes = new Stack<>();
 	Stack<Integer> previousIndex = new Stack<>();
 	Stack<List<AuthenticationModule>> previousModules = new Stack<>();
 	AuthenticationScheme scheme;
+	AuthenticationScheme initialScheme;
 	String remoteAddress;
 	Integer currentIndex = new Integer(0);
 	List<AuthenticationModule> modules;
@@ -60,8 +60,7 @@ public class AuthenticationState {
 	Map<String, Object> environment = new HashMap<String, Object>();
 	
 	
-	AuthenticationState(String intialScheme, String remoteAddress, Map<String,Object> environment, Locale locale) {
-		this.initialScheme = intialScheme;
+	AuthenticationState(String remoteAddress, Map<String,Object> environment, Locale locale) {
 		this.remoteAddress = remoteAddress;
 		this.environment = environment;
 		this.locale = locale;
@@ -71,8 +70,16 @@ public class AuthenticationState {
 		return locale;
 	}
 	
-	public String getInitialScheme() {
+	public String getInitialSchemeResourceKey() {
+		return initialScheme.getResourceKey();
+	}
+	
+	public AuthenticationScheme getInitialScheme() {
 		return initialScheme;
+	}
+	
+	public void setInitialScheme(AuthenticationScheme initialScheme) {
+		this.initialScheme = initialScheme;
 	}
 	
 	public boolean isPrimaryState() {

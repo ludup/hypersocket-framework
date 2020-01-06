@@ -369,7 +369,7 @@ public class AuthenticationServiceImpl extends
 			Map<String, Object> environment, Realm realm, Locale locale)
 			throws AccessDeniedException {
 
-		AuthenticationState state = new AuthenticationState(schemeResourceKey, remoteAddress, environment, locale);
+		AuthenticationState state = new AuthenticationState(remoteAddress, environment, locale);
 
 		if(realm==null) {
 			realm = realmService.getDefaultRealm();
@@ -417,6 +417,7 @@ public class AuthenticationServiceImpl extends
 			} else {
 				scheme = getDefaultScheme(remoteAddress, environment, realm);
 			}
+			
 		}
 
 		if (scheme == null) {
@@ -428,7 +429,9 @@ public class AuthenticationServiceImpl extends
 					state.getRealm(),
 					AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
 		}
-
+		
+		state.setInitialScheme(scheme);
+		
 		List<AuthenticationModule> modulesForScheme = repository.getModulesForScheme(scheme);
 		if(modulesForScheme.isEmpty())
 			throw new AccessDeniedException(String.format("No authentication modules for the scheme %s.", scheme.getName()));

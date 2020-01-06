@@ -164,7 +164,7 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
 		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
 		
-		FormTemplate t = new FormTemplate(state.getInitialScheme());
+		FormTemplate t = new FormTemplate(state.getInitialSchemeResourceKey());
 		t.getInputFields().add(new ParagraphField("missingEmail.paragraph", true));
 		if((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists){
 			t.getInputFields().add(new TextInputField(PARAM_PRIMARY, state.getParameter(PARAM_PRIMARY)!=null ? state.getParameter(PARAM_PRIMARY) : "", true, I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, "missingEmailAddress.primary")));
