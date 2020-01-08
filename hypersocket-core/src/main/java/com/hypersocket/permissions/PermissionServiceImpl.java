@@ -609,9 +609,34 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			}
 			
 			throw new AccessDeniedException(
-					I18N.getResource(currentLocale, PermissionService.RESOURCE_BUNDLE, "error.accessDenied"));
+					I18N.getResource(currentLocale, PermissionService.RESOURCE_BUNDLE, "error.accessDenied",
+							debugPermissionState(principal, principalPermissions, derivedPrincipalPermissions, permissions)));
 
 		}
+	}
+
+	private String debugPermissionState(Principal principal, Set<Permission> principalPermissions,
+			Set<PermissionType> derivedPrincipalPermissions, PermissionType... permissions) {
+		StringBuilder bui = new StringBuilder();
+		bui.append(String.format("This permission failure involved the principal %s (of type %s).\n",
+				principal.getPrincipalName(), principal.getType()));
+		
+		bui.append("The permissions required were (* means have, ! means missing) :-\n");
+		for(PermissionType p : permissions) {
+			bui.append(String.format("  %sResource Key: %s, Class: %s", derivedPrincipalPermissions.contains(p) ? "*" : "!", p.getResourceKey(), p.getClass().getName()));
+		}
+		
+		bui.append("The primary permissions discovered were :-\n");
+		for(Permission p : principalPermissions) {
+			bui.append(String.format("   Id: %d, Resource Key: %s, Category: %s", p.getId(), p.getResourceKey(), p.getCategory()));
+		}
+		if(!derivedPrincipalPermissions.isEmpty()) {
+			bui.append("The derived permissions discovered were :-\n");
+			for(PermissionType p : derivedPrincipalPermissions) {
+				bui.append(String.format("  Resource Key: %s, Class: %s", p.getResourceKey(), p.getClass().getName()));
+			}
+		}
+		return bui.toString();
 	}
 
 	@Override
