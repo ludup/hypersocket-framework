@@ -43,7 +43,12 @@ public class Word extends SimpleResource {
 	}
 
 	public final Locale getLocale() {
-		return locale.equals("*") ? null : Locale.forLanguageTag(locale);
+		try {
+			return locale == null || locale.equals("*") ? null : Locale.forLanguageTag(locale);
+		}
+		catch(Exception e) {
+			return null;
+		}
 	}
 
 	public final void setLocale(Locale locale) {
