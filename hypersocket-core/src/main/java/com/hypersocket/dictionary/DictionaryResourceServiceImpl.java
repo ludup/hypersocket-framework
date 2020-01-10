@@ -409,6 +409,10 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 	@Override
 	public void deleteResource(Word resource) throws AccessDeniedException, ResourceException {
 		assertPermission(DictionaryResourcePermission.DELETE);
+		if(resource.getLocale() == null) {
+			resource.setLocale(null);
+			repository.saveResource(resource);
+		}
 		repository.deleteResource(resource);
 	}
 
