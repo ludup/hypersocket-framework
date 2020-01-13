@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
@@ -247,15 +248,15 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 	}
 
 	@Override
-	public boolean containsWord(Locale locale, String word) {
-		return (systemConfigurationService.getBooleanValue("dictionary.blacklistBuiltIn")
-				&& dictionaryRepository.containsWord(locale, word,
-						systemConfigurationService.getBooleanValue("dictionary.caseInsenstive"), true))
-				|| (systemConfigurationService.getBooleanValue("dictionary.blacklistApiCall")
-						&& inRemote(locale, word));
+	public boolean containsWord(Locale locale, String word) throws IOException {
+		Boolean doBuiltIn = systemConfigurationService.getBooleanValue("dictionary.blacklistBuiltIn");
+		Boolean doApi = systemConfigurationService.getBooleanValue("dictionary.blacklistApiCall");
+		Boolean caseInsensitive = systemConfigurationService.getBooleanValue("dictionary.caseInsenstive");
+		return (doBuiltIn && dictionaryRepository.containsWord(locale, word, caseInsensitive, true))
+				|| (doApi && inRemote(locale, word));
 	}
 
-	protected HttpResponse authRemote(Locale locale, String word) {
+	protected HttpResponse authRemote(Locale locale, String word) throws IOException {
 		String method = processTokenReplacements(systemConfigurationService.getValue("dictionary.logonMethod"), locale,
 				word, null);
 		String url = processTokenReplacements(systemConfigurationService.getValue("dictionary.logonUrl"), locale, word, null);
@@ -266,8 +267,8 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 		String[] headers = systemConfigurationService.getValues("dictionary.logonHeaders");
 		boolean checkCertificate = systemConfigurationService.getBooleanValue("dictionary.certificate");
 		String authType = systemConfigurationService.getValue("dictionary.logonAuthentication");
-		String username = systemConfigurationService.getValue("dictionary.logonAusername");
-		String password = systemConfigurationService.getValue("dictionary.logonApassword");
+		String username = systemConfigurationService.getValue("dictionary.logonUsername"); 
+		String password = systemConfigurationService.getValue("dictionary.logonPassword");
 
 		for (int i = 0; i < responses.length; i++) {
 			responses[i] = processTokenReplacements(responses[i], locale, word, null);
@@ -307,13 +308,12 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 
 			boolean matchesResponse = responses.length == 0 ? true
 					: Arrays.asList(responses).contains(Integer.toString(response.getStatusLine().getStatusCode()));
-			boolean matchesContent = StringUtils.isBlank(content) || content.matches(responseContent);
+			boolean matchesContent = StringUtils.isBlank(content) || Pattern.compile(responseContent, Pattern.DOTALL).matcher(content).matches();
 
 			return matchesResponse && matchesContent ? response : null;
 
 		} catch (Exception e) {
-			log.error("Failed to fully process login " + method + " method for " + url + "variables: " + variables, e);
-			return null;
+			throw new IOException("Failed to fully process login " + method + " method for " + url + "variables: " + variables, e);
 		} finally {
 			if (client != null) {
 				try {
@@ -325,13 +325,13 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 		}
 	}
 
-	protected boolean inRemote(Locale locale, String word) {
+	protected boolean inRemote(Locale locale, String word) throws IOException {
 
 		HttpResponse logonResponse = null;
 		if (systemConfigurationService.getBooleanValue("dictionary.logonRequired")) {
 			logonResponse = authRemote(locale, word);
 			if (logonResponse == null)
-				return false;
+				throw new IOException("Authentication with banned passwords server failed.");
 		}
 
 		String method = processTokenReplacements(systemConfigurationService.getValue("dictionary.method"), locale,
@@ -397,13 +397,12 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 
 			boolean matchesResponse = responses.length == 0 ? true
 					: Arrays.asList(responses).contains(Integer.toString(response.getStatusLine().getStatusCode()));
-			boolean matchesContent = StringUtils.isBlank(content) || content.matches(responseContent);
+			boolean matchesContent = StringUtils.isBlank(content) || Pattern.compile(responseContent, Pattern.DOTALL).matcher(content).matches();
 
 			return matchesResponse && matchesContent;
 
 		} catch (Exception e) {
-			log.error("Failed to fully process " + method + " method for " + url + "variables: " + variables, e);
-			return false;
+			throw new IOException("Failed to fully process login " + method + " method for " + url + "variables: " + variables, e);
 		} finally {
 			if (client != null) {
 				try {

@@ -36,7 +36,7 @@ public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Ser
 	
 	@Override
 	public float analyse(Locale locale, String username, char[] password, PasswordPolicyResource characteristics)
-			throws PasswordPolicyException {
+			throws PasswordPolicyException, IOException {
 
 		// Count up the character types
 		int lowerCase = 0;

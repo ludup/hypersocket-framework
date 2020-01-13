@@ -1,5 +1,6 @@
 package com.hypersocket.password.policy.json;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -268,6 +269,8 @@ public class PasswordPolicyResourceController extends ResourceController {
 			return new ResourceStatus<PasswordPolicyResource>(false, e.getMessage());
 		} catch (PasswordPolicyException e) {
 			return new ResourceStatus<PasswordPolicyResource>(false, e.getMessage());
+		} catch (IOException e) {
+			return new ResourceStatus<PasswordPolicyResource>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext(); 
 		}
@@ -291,6 +294,8 @@ public class PasswordPolicyResourceController extends ResourceController {
 					policy);
 			
 			return new ResourceStatus<PasswordPolicyResource>(policy);
+		} catch (IOException e) {
+			return new ResourceStatus<PasswordPolicyResource>(false, e.getMessage());
 		} catch (PasswordPolicyException e) {
 			return new ResourceStatus<PasswordPolicyResource>(false, e.getMessage());
 		} 

@@ -35,7 +35,7 @@ public interface DictionaryResourceService  {
 
 	String randomWord(Locale locale);
 
-	boolean containsWord(Locale locale, String word);
+	boolean containsWord(Locale locale, String word) throws IOException;
 
 	void deleteResource(Word resource) throws AccessDeniedException, ResourceException;
 

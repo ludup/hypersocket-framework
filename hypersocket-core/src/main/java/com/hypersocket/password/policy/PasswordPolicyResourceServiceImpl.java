@@ -1,5 +1,6 @@
 package com.hypersocket.password.policy;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -345,6 +346,8 @@ public class PasswordPolicyResourceServiceImpl extends
 			default:
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.passwordPolicy");
 			}
+		} catch (IOException e) {
+			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.passwordPolicy.error");
 		}
 	}
 	
