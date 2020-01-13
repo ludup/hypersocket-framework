@@ -69,10 +69,18 @@
 		<property resourceKey="dictionary.blacklistBuiltIn" inputType="switch"
 			defaultValue="true" weight="50" />
 	</propertyCategory>
+	
+	
 	<propertyCategory resourceKey="category.dictionaryApi"
 		resourceBundle="DictionaryResourceService" weight="900" group="dictionary">	
 		<property resourceKey="dictionary.blacklistApiCall" inputType="switch"
 			defaultValue="false" weight="100" />
+		<property resourceKey="dictionary.authentication" inputType="select" defaultValue="NONE" options="NONE,BASIC,NTLM"
+			allowEmpty="false" weight="125" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
+		<property resourceKey="dictionary.username" inputType="text" 
+			allowEmpty="true" weight="150" defaultValue="" visibilityDependsOn="dictionary.blacklistApiCall,dictionary.authentication" visibilityDependsValue="true,BASIC|NTLM"/>/>
+		<property resourceKey="dictionary.password" encrypted="true" inputType="password"
+			allowEmpty="true" weight="175" defaultValue="" visibilityDependsOn="dictionary.blacklistApiCall,dictionary.authentication" visibilityDependsValue="true,BASIC|NTLM"/>/>
 		<property resourceKey="dictionary.method" inputType="select"
 			options="GET, POST" weight="200" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
 		<property resourceKey="dictionary.certificate" inputType="switch"
@@ -94,19 +102,25 @@
 		resourceBundle="DictionaryResourceService" weight="1000" group="dictionary">
 		<property resourceKey="dictionary.logonRequired" inputType="switch"
 			defaultValue="false" weight="100"  visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
+		<property resourceKey="dictionary.logonAuthentication" inputType="select" defaultValue="NONE" options="NONE,BASIC,NTLM"
+			allowEmpty="false" weight="125" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall" visibilityDependsValue="true,true"/>
+		<property resourceKey="dictionary.logonUsername" inputType="text" 
+			allowEmpty="true" weight="150" defaultValue="" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall,dictionary.authentication" visibilityDependsValue="true,true,BASIC|NTLM"/>/>
+		<property resourceKey="dictionary.logonPassword" encrypted="true" inputType="password"
+			allowEmpty="true" weight="175" defaultValue="" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall,dictionary.authentication" visibilityDependsValue="true,true,BASIC|NTLM"/>/>
 		<property resourceKey="dictionary.logonMethod" inputType="select"
-			options="GET, POST" weight="200" visibilityDependsOn="dictionary.logonRequired" visibilityDependsValue="true"/>
+			options="GET, POST" weight="200" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall" visibilityDependsValue="true,true"/>
 		<property resourceKey="dictionary.logonUrl" inputType="text"
-			defaultValue="" weight="300" visibilityDependsOn="dictionary.logonRequired" visibilityDependsValue="true"/>
+			defaultValue="" weight="300" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall" visibilityDependsValue="true,true"/>
 		<property resourceKey="dictionary.logonVariables" inputType="namePairs"
-			weight="500" urlEncode="false" visibilityDependsOn="dictionary.logonRequired" visibilityDependsValue="true"/>
+			weight="500" urlEncode="false" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall" visibilityDependsValue="true,true"/>
 		<property resourceKey="dictionary.logonHeaders" inputType="namePairs"
-			weight="600" visibilityDependsOn="dictionary.logonRequired" visibilityDependsValue="true"/>
+			weight="600" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall" visibilityDependsValue="true,true"/>
 		<property resourceKey="dictionary.logonResponseList" inputType="multipleTextInput"
-			weight="700" visibilityDependsOn="dictionary.logonRequired" visibilityDependsValue="true"
+			weight="700" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall" visibilityDependsValue="true,true"
 			defaultValue="200"/>
 		<property resourceKey="dictionary.logonResponseContent" inputType="text"
-			defaultValue="" weight="800" visibilityDependsOn="dictionary.logonRequired" visibilityDependsValue="true"/>
+			defaultValue="" weight="800" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall" visibilityDependsValue="true,true"/>
 	</propertyCategory>
 		
 </propertyTemplates>

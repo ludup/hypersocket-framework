@@ -1,10 +1,13 @@
 package com.hypersocket.dictionary;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpCookie;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,11 +20,21 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
@@ -252,6 +265,9 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 		String[] responses = systemConfigurationService.getValues("dictionary.logonResponseList");
 		String[] headers = systemConfigurationService.getValues("dictionary.logonHeaders");
 		boolean checkCertificate = systemConfigurationService.getBooleanValue("dictionary.certificate");
+		String authType = systemConfigurationService.getValue("dictionary.logonAuthentication");
+		String username = systemConfigurationService.getValue("dictionary.logonAusername");
+		String password = systemConfigurationService.getValue("dictionary.logonApassword");
 
 		for (int i = 0; i < responses.length; i++) {
 			responses[i] = processTokenReplacements(responses[i], locale, word, null);
@@ -260,37 +276,31 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 		CloseableHttpClient client = null;
 		HttpResponse response;
 		try {
-
 			client = httpUtils.createHttpClient(!checkCertificate);
+			HttpRequestBase request;
 			if (METHOD_GET.equals(method)) {
 				url = encodeVars(locale, word, url, variables, null);
-				HttpGet request = new HttpGet(url);
-				request.addHeader("User-Agent", USER_AGENT);
-				for (String header : headers) {
-					request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word, null),
-							processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word, null));
-				}
-				response = client.execute(request);
-
+				request = new HttpGet(url);
 			} else {
-				HttpPost request = new HttpPost(url);
-
+				request = new HttpPost(url);
 				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(variables.length);
 				for (String variable : variables) {
 					String[] namePair = variable.split("=");
 					nameValuePairs.add(new BasicNameValuePair(processTokenReplacements(namePair[0], locale, word, null),
 							processTokenReplacements(namePair[1], locale, word, null)));
 				}
-
-				request.addHeader("User-Agent", USER_AGENT);
-				for (String header : headers) {
-					request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word, null),
-							processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word, null));
-				}
-
-				request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-				response = client.execute(request);
+				((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
 			}
+			request.addHeader("User-Agent", USER_AGENT);
+			for (String header : headers) {
+				request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word, null),
+						processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word, null));
+			}
+			HttpClientContext ctx = auth(client, url, authType, username, password);
+			if(ctx == null)
+				response = client.execute(request);
+			else
+				response = client.execute(request, ctx);
 
 			HttpEntity entity = response.getEntity();
 			String content = EntityUtils.toString(entity);
@@ -333,6 +343,9 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 		String[] responses = systemConfigurationService.getValues("dictionary.responseList");
 		String[] headers = systemConfigurationService.getValues("dictionary.headers");
 		boolean checkCertificate = systemConfigurationService.getBooleanValue("dictionary.certificate");
+		String authType = systemConfigurationService.getValue("dictionary.authentication");
+		String username = systemConfigurationService.getValue("dictionary.username");
+		String password = systemConfigurationService.getValue("dictionary.password");
 
 		for (int i = 0; i < responses.length; i++) {
 			responses[i] = processTokenReplacements(responses[i], locale, word, logonResponse);
@@ -343,27 +356,13 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 		try {
 
 			client = httpUtils.createHttpClient(!checkCertificate);
+			HttpRequestBase request;
 			if (METHOD_GET.equals(method)) {
 				url = encodeVars(locale, word, url, variables, logonResponse);
-				HttpGet request = new HttpGet(url);
-				request.addHeader("User-Agent", USER_AGENT);
-				if(logonResponse != null) {
-					for (Header h : logonResponse.getHeaders("Set-Cookie")) {
-						List<HttpCookie> cookies = HttpCookie.parse(h.getValue());
-						for (HttpCookie c : cookies) {
-							request.addHeader("Cookie", c.toString());
-						}
-					}
-				}
-				
-				for (String header : headers) {
-					request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word, logonResponse),
-							processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word, logonResponse));
-				}
-				response = client.execute(request);
+				request = new HttpGet(url);
 
 			} else {
-				HttpPost request = new HttpPost(url);
+				request = new HttpPost(url);
 
 				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(variables.length);
 				for (String variable : variables) {
@@ -372,15 +371,26 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 							processTokenReplacements(namePair[1], locale, word, logonResponse)));
 				}
 
-				request.addHeader("User-Agent", USER_AGENT);
-				for (String header : headers) {
-					request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word, logonResponse),
-							processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word, logonResponse));
-				}
-
-				request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-				response = client.execute(request);
+				((HttpPost)request).setEntity(new UrlEncodedFormEntity(nameValuePairs));
 			}
+			if(logonResponse != null) {
+				for (Header h : logonResponse.getHeaders("Set-Cookie")) {
+					List<HttpCookie> cookies = HttpCookie.parse(h.getValue());
+					for (HttpCookie c : cookies) {
+						request.addHeader("Cookie", c.toString());
+					}
+				}
+			}
+			request.addHeader("User-Agent", USER_AGENT);
+			for (String header : headers) {
+				request.addHeader(processTokenReplacements(ResourceUtils.getNamePairKey(header), locale, word, logonResponse),
+						processTokenReplacements(ResourceUtils.getNamePairValue(header), locale, word, logonResponse));
+			}
+			HttpClientContext ctx = auth(client, url, authType, username, password);
+			if(ctx == null)
+				response = client.execute(request);
+			else
+				response = client.execute(request, ctx);
 
 			HttpEntity entity = response.getEntity();
 			String content = EntityUtils.toString(entity);
@@ -403,6 +413,34 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 				}
 			}
 		}
+	}
+
+	private HttpClientContext auth(CloseableHttpClient client, String url, String authType, String username,
+			String password) {
+		
+		if(StringUtils.isNotBlank(authType) && !authType.equals("NONE")) {
+			try {
+				URL u = new URL(url);
+				CredentialsProvider credsProvider = new BasicCredentialsProvider();
+				credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+
+				AuthCache authCache = new BasicAuthCache();
+				BasicScheme basicAuth = new BasicScheme();
+				authCache.put(new HttpHost(u.getHost(), u.getPort() == -1 ? 
+						(u.getProtocol().equals("http") ? 80 : 443) : u.getPort(), u.getProtocol()), basicAuth);
+
+				// Add AuthCache to the execution context
+				HttpClientContext context = HttpClientContext.create();
+				context.setCredentialsProvider(credsProvider);
+				context.setAuthCache(authCache);
+
+				return context;
+			} catch (MalformedURLException murle) {
+				throw new IllegalStateException("Not a valid URL.");
+			}
+		}
+		
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")

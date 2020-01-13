@@ -64,7 +64,7 @@ public class Word extends SimpleResource {
 	}
 	
 	public String getName() {
-		return getId().toString();
+		return text == null ? getId().toString() : text;
 	}
 
 }
