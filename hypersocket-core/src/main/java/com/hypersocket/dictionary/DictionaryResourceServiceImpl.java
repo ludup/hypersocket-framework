@@ -69,10 +69,12 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.transactions.TransactionService;
+import com.hypersocket.upgrade.UpgradeService;
+import com.hypersocket.upgrade.UpgradeServiceListener;
 
 @Service
 public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceImpl
-		implements DictionaryResourceService {
+		implements DictionaryResourceService, UpgradeServiceListener {
 
 	public static final String RESOURCE_BUNDLE = "DictionaryResourceService";
 	public static final String USER_AGENT = "Mozilla/5.0";
@@ -100,6 +102,9 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 	private EventService eventService;
 
 	@Autowired
+	private UpgradeService upgradeService;
+
+	@Autowired
 	private HttpUtilsImpl httpUtils;
 
 	@Autowired
@@ -124,27 +129,7 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 		eventService.registerEvent(DictionaryResourceDeletedEvent.class, RESOURCE_BUNDLE);
 
 		EntityResourcePropertyStore.registerResourceService(Word.class, repository);
-
-		new Thread() {
-			public void run() {
-				try {
-					transactionService.doInTransaction(new TransactionCallback<Void>() {
-
-						@Override
-						public Void doInTransaction(TransactionStatus arg0) {
-							dictionaryRepository.setup();
-							return null;
-						}
-
-					});
-				} catch (ResourceException e) {
-					log.error("Could not setup dictionary", e);
-				} catch (AccessDeniedException e) {
-					log.error("Could not setup dictionary", e);
-				}
-
-			}
-		}.start();
+		upgradeService.registerListener(this);
 	}
 
 	protected Class<Word> getResourceClass() {
@@ -540,5 +525,34 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 		} catch (UnsupportedEncodingException e) {
 			return value;
 		}
+	}
+
+	@Override
+	public void onUpgradeFinished() {
+	}
+
+	@Override
+	public void onUpgradeComplete() {
+
+		new Thread() {
+			public void run() {
+				try {
+					transactionService.doInTransaction(new TransactionCallback<Void>() {
+
+						@Override
+						public Void doInTransaction(TransactionStatus arg0) {
+							dictionaryRepository.setup();
+							return null;
+						}
+
+					});
+				} catch (ResourceException e) {
+					log.error("Could not setup dictionary", e);
+				} catch (AccessDeniedException e) {
+					log.error("Could not setup dictionary", e);
+				}
+
+			}
+		}.start();
 	}
 }
