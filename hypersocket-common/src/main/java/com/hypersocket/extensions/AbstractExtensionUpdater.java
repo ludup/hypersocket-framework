@@ -48,6 +48,8 @@ public abstract class AbstractExtensionUpdater {
 	
 	private boolean checked;
 	private File backupFolder;
+
+	private File backupRootFolder;
 	
 	public long getTransfered() {
 		return transfered;
@@ -77,8 +79,8 @@ public abstract class AbstractExtensionUpdater {
 			log.info("Checking updatable extensions");
 		}
 		
-		backupFolder = new File(HypersocketUtils.getConfigDir().getParent(), "backups");
-		backupFolder = new File(backupFolder, HypersocketVersion.getVersion());
+		backupRootFolder = new File(HypersocketUtils.getConfigDir().getParent(), "backups");
+		backupFolder = new File(backupRootFolder, HypersocketVersion.getVersion());
 		FileUtils.deleteFolder(backupFolder);
 		if (!backupFolder.exists()) {
 			backupFolder.mkdirs();
@@ -352,9 +354,9 @@ public abstract class AbstractExtensionUpdater {
 
 			}
 			
-			if(backupFolder.exists()) {
+			if(backupRootFolder.exists()) {
 				/* Trim to MAX_BACKUPS based on modification date of folder */
-				List<File> dirs = new ArrayList<>(Arrays.asList(backupFolder.listFiles((dir, name) -> dir.isDirectory())));
+				List<File> dirs = new ArrayList<>(Arrays.asList(backupRootFolder.listFiles((dir, name) -> dir.isDirectory())));
 				if (dirs.size() > MAX_BACKUPS) {
 					log.error(String.format("There are now more backup folders (%d) than the maximum of %d, trimming", dirs.size(), MAX_BACKUPS));
 					Collections.sort(dirs, (o1, o2) -> Long.valueOf(o1.lastModified()).compareTo(o2.lastModified()));
