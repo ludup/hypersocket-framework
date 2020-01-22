@@ -79,7 +79,7 @@
 			allowEmpty="false" weight="125" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
 		<property resourceKey="dictionary.username" inputType="text" 
 			allowEmpty="true" weight="150" defaultValue="" visibilityDependsOn="dictionary.blacklistApiCall,dictionary.authentication" visibilityDependsValue="true,BASIC|NTLM"/>/>
-		<property resourceKey="dictionary.password" encrypted="true" inputType="password"
+		<property resourceKey="dictionary.password" inputType="password"
 			allowEmpty="true" weight="175" defaultValue="" visibilityDependsOn="dictionary.blacklistApiCall,dictionary.authentication" visibilityDependsValue="true,BASIC|NTLM"/>/>
 		<property resourceKey="dictionary.method" inputType="select"
 			options="GET, POST" weight="200" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
@@ -106,7 +106,7 @@
 			allowEmpty="false" weight="125" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall" visibilityDependsValue="true,true"/>
 		<property resourceKey="dictionary.logonUsername" inputType="text" 
 			allowEmpty="true" weight="150" defaultValue="" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall,dictionary.authentication" visibilityDependsValue="true,true,BASIC|NTLM"/>/>
-		<property resourceKey="dictionary.logonPassword" encrypted="true" inputType="password"
+		<property resourceKey="dictionary.logonPassword" inputType="password"
 			allowEmpty="true" weight="175" defaultValue="" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall,dictionary.authentication" visibilityDependsValue="true,true,BASIC|NTLM"/>/>
 		<property resourceKey="dictionary.logonMethod" inputType="select"
 			options="GET, POST" weight="200" visibilityDependsOn="dictionary.logonRequired,dictionary.blacklistApiCall" visibilityDependsValue="true,true"/>
