@@ -31,10 +31,9 @@ import com.hypersocket.server.interfaces.http.HTTPProtocol;
 
 public class SSLSwitchingHandler extends FrameDecoder {
 
-
 	static Logger log = LoggerFactory.getLogger(SSLSwitchingHandler.class);
 
-	NettyServer server;
+	private NettyServer server;
 	
 	public SSLSwitchingHandler(NettyServer server) {
 		this.server = server;
@@ -90,7 +89,7 @@ public class SSLSwitchingHandler extends FrameDecoder {
 		p.addLast("decoder", new HttpRequestDecoder());
 		p.addLast("encoder", new HttpResponseEncoder());
 		p.addLast("chunkedWriter", new ChunkedWriteHandler());
-		p.addLast("executionHandler", server.executionHandler);
+		p.addLast("executionHandler", server.getHandler());
 		try {
 			p.addLast("http", new HttpRequestDispatcherHandler(server));
 		} catch (ServletException e) {

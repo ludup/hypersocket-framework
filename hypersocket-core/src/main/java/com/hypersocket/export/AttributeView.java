@@ -2,7 +2,7 @@ package com.hypersocket.export;
 
 public class AttributeView implements Comparable<AttributeView>{
 
-	String name;
+	private String name;
 
 	public AttributeView() {
 

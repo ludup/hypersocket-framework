@@ -8,17 +8,8 @@ import com.hypersocket.session.Session;
 public class JobResourceDeletedEvent extends
 		JobResourceEvent {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 8721556313766105978L;
-	/**
-	 * TODO rename to suit your resource and replace job with lower case
-	 * name of your resource.
-	 * 
-	 * You typically add attributes to the base JobResourceEvent
-	 * class so these can be reused across all resource events.
-	 */
+
 	public static final String EVENT_RESOURCE_KEY = "job.deleted";
 
 	public JobResourceDeletedEvent(Object source,

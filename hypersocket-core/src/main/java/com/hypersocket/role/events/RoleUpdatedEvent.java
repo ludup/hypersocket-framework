@@ -18,8 +18,8 @@ public class RoleUpdatedEvent extends RoleEvent {
 	public static final String ATTR_PRINCIPALS_GRANTED = "attr.principalsGranted";
 	public static final String ATTR_PRINCIPALS_REVOKED = "attr.principalsRevoked";
 	
-	Collection<Principal> granted;
-	Collection<Principal> revoked;
+	private Collection<Principal> granted;
+	private Collection<Principal> revoked;
 	
 	public RoleUpdatedEvent(Object source, Session session, Realm realm,
 			Role resource, Collection<Principal> granted, Collection<Principal> revoked) {

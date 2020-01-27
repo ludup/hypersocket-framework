@@ -49,30 +49,30 @@ public class Role extends RealmResource {
 	@Fetch(FetchMode.SUBSELECT)
 //	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
 	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
-	Set<Principal> principals = new HashSet<>();
+	private Set<Principal> principals = new HashSet<>();
 	
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
 	@JoinTable(name = "role_realms", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
-	Set<Realm> realms = new HashSet<>();
+	private Set<Realm> realms = new HashSet<>();
 	
 	@Column(name="all_users", nullable=false)
-	boolean allUsers;
+	private boolean allUsers;
 	
 	@Column(name="all_permissions", nullable=false)
-	boolean allPermissions;
+	private boolean allPermissions;
 
 	@Column(name="all_realms", nullable=false)
-	Boolean allRealms = Boolean.FALSE;
+	private Boolean allRealms = Boolean.FALSE;
 	
 	@Column(name="personal_role", nullable=true)
-	Boolean personalRole = new Boolean(false);
+	private Boolean personalRole = new Boolean(false);
 	
 	@Column(name="role_type")
-	RoleType type;
+	private RoleType type;
 	
 	@Column(name="principal_name")
-	String principalName;
+	private String principalName;
 	
 	@JsonIgnore
 	public Set<Permission> getPermissions() {

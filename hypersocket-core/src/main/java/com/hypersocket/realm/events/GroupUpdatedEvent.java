@@ -18,8 +18,8 @@ public class GroupUpdatedEvent extends GroupEvent {
 	public static final String ATTR_PRINCIPALS_GRANTED = "attr.principalsGranted";
 	public static final String ATTR_PRINCIPALS_REVOKED = "attr.principalsRevoked";
 	
-	Collection<Principal> granted;
-	Collection<Principal> revoked;
+	private Collection<Principal> granted;
+	private Collection<Principal> revoked;
 	
 	public GroupUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,

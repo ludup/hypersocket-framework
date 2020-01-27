@@ -17,7 +17,7 @@ import com.hypersocket.realm.Principal;
 @XmlRootElement(name="users")
 public class UserList {
 
-	List<Principal> users;
+	private List<Principal> users;
 	
 	public UserList() {
 		

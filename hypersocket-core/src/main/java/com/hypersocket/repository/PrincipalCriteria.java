@@ -7,7 +7,8 @@ import com.hypersocket.realm.Principal;
 
 public class PrincipalCriteria implements CriteriaConfiguration {
 
-	Principal principal;
+	private Principal principal;
+	
 	public PrincipalCriteria(Principal principal) {
 		this.principal = principal;
 	}

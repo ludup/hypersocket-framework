@@ -21,10 +21,10 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Autowired
 	@Qualifier("transactionManager")
-	PlatformTransactionManager txManager;
+	private PlatformTransactionManager txManager;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Override
 	public <T> T doInTransaction(TransactionCallback<T> transaction) throws ResourceException, AccessDeniedException {

@@ -18,17 +18,17 @@ public class AlertKey {
 	@Id
 	@GeneratedValue(strategy=GenerationType.TABLE)
 	@Column(name="alert_key_id")
-	Long id;
+	private Long id;
 
 	@Column(name="resourceKey")
-	String resourceKey; 
+	private String resourceKey; 
 	
 	@Column(name="alert_key")
-	String key;
+	private String key;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="triggered")
-	Date triggered;
+	private Date triggered;
 
 
 	public Long getId() {

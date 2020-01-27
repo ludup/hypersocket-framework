@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
 
@@ -26,13 +25,10 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	public static final String RESOURCE_KEY = "changePassword";
 	
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 	
 	@Autowired
-	PermissionService permissionService;
-	
-	@Autowired
-	AuthenticationService authenticationService;
+	private AuthenticationService authenticationService;
 	
 	@PostConstruct
 	private void postConstruct() {

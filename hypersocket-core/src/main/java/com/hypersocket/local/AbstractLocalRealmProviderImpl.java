@@ -44,7 +44,6 @@ import com.hypersocket.realm.PrincipalSuspensionService;
 import com.hypersocket.realm.PrincipalSuspensionType;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserPrincipal;
 import com.hypersocket.resource.RealmResource;
@@ -71,26 +70,21 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	public final static String FIELD_PASSWORD_ENCODING = "password.encoding";
 
 	@Autowired
-	LocalUserRepository userRepository;
+	private LocalUserRepository userRepository;
 
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 
 	@Autowired
-	RealmRepository realmRepository;
-
-	@Autowired
-	PasswordEncryptionService encryptionService;
+	private PasswordEncryptionService encryptionService;
 	
 	@Autowired
-	PrincipalSuspensionService suspensionService; 
+	private PrincipalSuspensionService suspensionService; 
 	
 	@Autowired
-	ConfigurationService configurationService;
-	
-	PropertyCategory userDetailsCategory;
+	private ConfigurationService configurationService;
 
-	Set<String> defaultProperties = new HashSet<String>();
+	private Set<String> defaultProperties = new HashSet<String>();
 	
 	@PostConstruct
 	private void registerProvider() throws Exception {

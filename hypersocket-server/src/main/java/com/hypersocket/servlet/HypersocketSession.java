@@ -20,14 +20,16 @@ import javax.servlet.http.HttpSessionContext;
 @SuppressWarnings("deprecation")
 public class HypersocketSession implements HttpSession {
 
-	long creationTime = System.currentTimeMillis();
-	UUID uuid = UUID.randomUUID();
-	long lastAccessedTime = creationTime;
-	Map<String,Object> attributes = new HashMap<String,Object>();
-	boolean invalidated = false;
-	boolean isNew = true;
-	int maxInterval = 300;
-	ServletContext context;
+	private long creationTime = System.currentTimeMillis();
+	private UUID uuid = UUID.randomUUID();
+	private long lastAccessedTime = creationTime;
+	private Map<String,Object> attributes = new HashMap<String,Object>();
+	private boolean isNew = true;
+	private int maxInterval = 300;
+	private ServletContext context;
+	
+	/* TODO: Remove? Unsure if used client side */
+	private boolean invalidated = false;
 	
 	HypersocketSession( ServletContext context) {
 		this.context = context;

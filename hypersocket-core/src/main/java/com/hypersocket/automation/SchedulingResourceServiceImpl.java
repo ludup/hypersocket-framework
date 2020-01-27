@@ -25,10 +25,10 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 	static Logger log = LoggerFactory.getLogger(SchedulingResourceServiceImpl.class);
 	
 	@Autowired
-	ClusteredSchedulerService schedulerService;
+	private ClusteredSchedulerService schedulerService;
 
 	@Autowired
-	ConfigurationService configurationService; 
+	private ConfigurationService configurationService; 
 	
 	@Override
 	public <T extends RealmResource> void unschedule(T resource) throws SchedulerException {

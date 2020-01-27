@@ -9,10 +9,6 @@ import com.hypersocket.session.Session;
 public class DictionaryResourceCreatedEvent extends
 		DictionaryResourceEvent {
 
-	/**
-	 * TODO You typically add attributes to the base DictionaryResourceEvent class
-	 * so these can be reused across all resource events.
-	 */
 	public static final String EVENT_RESOURCE_KEY = "dictionary.created";
 	
 	public DictionaryResourceCreatedEvent(Object source,

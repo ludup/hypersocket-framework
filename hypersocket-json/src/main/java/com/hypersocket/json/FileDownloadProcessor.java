@@ -18,17 +18,15 @@ public abstract class FileDownloadProcessor {
 
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
 
-	HttpServletRequest request;
-	HttpServletResponse response;
-	File file;
-	String protocol;
+	private HttpServletResponse response;
+	private File file;
+	private String protocol;
 
 	static MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
 
 	public FileDownloadProcessor(HttpServletRequest request,
 			HttpServletResponse response, File file,
 			String protocol) {
-		this.request = request;
 		this.response = response;
 		this.file = file;
 		this.protocol = protocol;

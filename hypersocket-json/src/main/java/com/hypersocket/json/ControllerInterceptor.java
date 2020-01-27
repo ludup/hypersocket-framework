@@ -29,7 +29,7 @@ public class ControllerInterceptor implements HandlerInterceptor {
 	private static Logger log = LoggerFactory.getLogger(ControllerInterceptor.class);
 	
 	@Autowired
-	AuthenticationService authenticationService;
+	private AuthenticationService authenticationService;
 	
 	@Override
 	public boolean preHandle(HttpServletRequest request,

@@ -8,12 +8,9 @@ import com.hypersocket.scheduler.PermissionsAwareJob;
 
 public class DailySchedulerJob extends PermissionsAwareJob {
 
-	public DailySchedulerJob() {
-	}
-
 	@Autowired
-	AutomationResourceService automationService; 
-	
+	private AutomationResourceService automationService;
+
 	@Override
 	protected void executeJob(JobExecutionContext context)
 			throws JobExecutionException {

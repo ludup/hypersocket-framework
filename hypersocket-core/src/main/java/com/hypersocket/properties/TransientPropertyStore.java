@@ -12,7 +12,7 @@ import com.hypersocket.resource.SimpleResource;
 
 public class TransientPropertyStore implements ResourcePropertyStore {
 
-	Map<String,PropertyTemplate> templates = new HashMap<String,PropertyTemplate>();
+	private Map<String,PropertyTemplate> templates = new HashMap<String,PropertyTemplate>();
 	
 	public TransientPropertyStore() {
 	}

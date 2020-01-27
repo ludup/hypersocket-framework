@@ -32,7 +32,7 @@ import com.hypersocket.tables.Column;
 public class RoleAttributeCategoryController extends AbstractAttributeCategoryController<RoleAttribute, RoleAttributeCategory> {
 
 	@Autowired
-	RoleAttributeCategoryService roleAttributeCategoryService;
+	private RoleAttributeCategoryService roleAttributeCategoryService;
 	
 	@PostConstruct
 	private void init() {

@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SimpleThreadPoolEx implements ThreadPool {
 
 
-	int pendingThreadShutdown = 0;
+	private int pendingThreadShutdown = 0;
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      * 

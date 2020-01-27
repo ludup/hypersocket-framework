@@ -19,10 +19,10 @@ public class CommandExecutor {
 
 	static Logger log = LoggerFactory.getLogger(CommandExecutor.class);
 	
-	ProcessBuilder pb;
-	List<String> args = new ArrayList<String>();
-	StringBuffer buffer = new StringBuffer();
-	File pwd = null;
+	private ProcessBuilder pb;
+	private List<String> args = new ArrayList<String>();
+	private StringBuffer buffer = new StringBuffer();
+	private File pwd = null;
 	
 	public CommandExecutor(String command) {
 		args.add(command);

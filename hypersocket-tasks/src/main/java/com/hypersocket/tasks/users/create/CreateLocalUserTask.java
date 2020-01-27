@@ -29,19 +29,19 @@ public class CreateLocalUserTask extends AbstractCreateUserTask {
 	public static final String RESOURCE_BUNDLE = "CreateLocalUserTask";
 	
 	@Autowired
-	CreateLocalUserTaskRepository repository;
+	private CreateLocalUserTaskRepository repository;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	I18NService i18nService; 
+	private I18NService i18nService; 
 
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	public CreateLocalUserTask() {
 	}

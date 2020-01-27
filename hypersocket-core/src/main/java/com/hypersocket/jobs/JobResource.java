@@ -15,14 +15,14 @@ public class JobResource extends RealmResource {
 	private static final long serialVersionUID = 5348826725565924228L;
 
 	@OneToOne
-	JobResource parentJob;
+	private JobResource parentJob;
 
 	@Column(name="state")
-	JobState state;
+	private JobState state;
 	
 	@Column(name="result")
 	@Lob
-	String result;
+	private String result;
 	
 	public JobResource getParentJob() {
 		return parentJob;

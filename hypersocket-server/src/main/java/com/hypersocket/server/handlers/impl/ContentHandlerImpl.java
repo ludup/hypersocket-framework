@@ -52,11 +52,11 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
     public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
     public static final int HTTP_CACHE_SECONDS = 60 * 60;
 
-    ConfigurableMimeFileTypeMap mimeTypesMap = new ConfigurableMimeFileTypeMap();
+    private ConfigurableMimeFileTypeMap mimeTypesMap = new ConfigurableMimeFileTypeMap();
     
-    Map<String,String> aliases = new HashMap<String,String>();
-    Set<String> dynamic = new HashSet<String>();
-    List<ContentFilter> filters = new ArrayList<ContentFilter>();
+    private Map<String,String> aliases = new HashMap<String,String>();
+    private Set<String> dynamic = new HashSet<String>();
+    private List<ContentFilter> filters = new ArrayList<ContentFilter>();
     
     protected ContentHandlerImpl(String name, int priority) {
     	super(name, priority);

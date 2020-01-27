@@ -22,13 +22,13 @@ import com.hypersocket.realm.RealmService;
 public class PasswordHistoryServiceImpl implements PasswordHistroyService {
 
 	@Autowired
-	ConfigurationService configurationService; 
+	private ConfigurationService configurationService; 
 	
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	@Autowired
-	PasswordHistoryRepository repository; 
+	private PasswordHistoryRepository repository; 
 	
 	@PostConstruct
 	private void postConstruct() {

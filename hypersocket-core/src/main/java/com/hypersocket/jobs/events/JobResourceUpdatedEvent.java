@@ -8,17 +8,8 @@ import com.hypersocket.session.Session;
 public class JobResourceUpdatedEvent extends
 		JobResourceEvent {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -6513139602203267668L;
-	/**
-	 * TODO rename to suit your resource and replace job with lower case
-	 * name of your resource.
-	 * 
-	 * You typically add attributes to the base JobResourceEvent
-	 * class so these can be reused across all resource events.
-	 */
+
 	public static final String EVENT_RESOURCE_KEY = "job.updated";
 
 	public JobResourceUpdatedEvent(Object source,

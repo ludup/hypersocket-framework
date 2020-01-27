@@ -60,7 +60,7 @@ public class LogoController extends ResourceController {
 	}
 
 	@Autowired
-	FileUploadService resourceService;
+	private FileUploadService resourceService;
 
 	/**
 	 * Generates an icon. Each icon is made up 3 separate elements, the final value

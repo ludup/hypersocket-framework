@@ -10,7 +10,6 @@ import com.hypersocket.session.events.SessionEvent;
 public class PrincipalEvent extends SessionEvent {
 
 	private static final long serialVersionUID = 1767418948626283958L;
-	Realm realm;
 	
 	public static final String EVENT_RESOURCE_KEY = "principal.event";
 	
@@ -20,7 +19,6 @@ public class PrincipalEvent extends SessionEvent {
 	public PrincipalEvent(Object source, String resourceKey, boolean success,
 			Session session, Realm realm) {
 		super(source, resourceKey, success, session, realm);
-		this.realm = realm;
 		addAttribute(ATTR_REALM_NAME, realm.getName());
 		addAttribute(ATTR_REALM_TYPE, realm.getResourceCategory());
 	}
@@ -28,7 +26,6 @@ public class PrincipalEvent extends SessionEvent {
 	public PrincipalEvent(Object source, String resourceKey, Throwable e,
 			Session session, Realm realm) {
 		super(source, resourceKey, e, session);
-		this.realm = realm;
 		addAttribute(ATTR_REALM_NAME, realm.getName());
 		addAttribute(ATTR_REALM_TYPE, realm.getResourceCategory());
 	}

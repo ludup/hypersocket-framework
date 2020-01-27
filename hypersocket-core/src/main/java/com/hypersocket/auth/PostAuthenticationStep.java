@@ -14,15 +14,15 @@ import com.hypersocket.permissions.AccessDeniedException;
 
 public interface PostAuthenticationStep {
 
-	public boolean requiresProcessing(AuthenticationState state);
+	boolean requiresProcessing(AuthenticationState state);
 	
-	public int getOrderPriority();
+	int getOrderPriority();
 	
-	public String getResourceKey();
+	String getResourceKey();
 	
-	public AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException;
+	AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException;
 	
-	public FormTemplate createTemplate(AuthenticationState state);
+	FormTemplate createTemplate(AuthenticationState state);
 
 	boolean requiresUserInput(AuthenticationState state);
 

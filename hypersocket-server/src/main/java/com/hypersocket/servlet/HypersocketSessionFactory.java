@@ -16,7 +16,7 @@ public class HypersocketSessionFactory {
 
 	static HypersocketSessionFactory instance = new HypersocketSessionFactory();
 	
-	Map<String,HypersocketSession> sessions = new HashMap<String,HypersocketSession>();
+	private Map<String,HypersocketSession> sessions = new HashMap<String,HypersocketSession>();
 	
 	public static HypersocketSessionFactory getInstance() {
 		return instance;

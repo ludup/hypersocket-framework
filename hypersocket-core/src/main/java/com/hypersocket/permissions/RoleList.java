@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name="roles")
 public class RoleList {
 
-	List<Role> roles;
+	private List<Role> roles;
 	
 	@XmlElement(name="role")
 	public List<Role> getRoles() {

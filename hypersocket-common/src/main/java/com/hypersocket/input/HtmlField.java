@@ -2,7 +2,7 @@ package com.hypersocket.input;
 
 public class HtmlField extends InputField {
 
-	String classes;
+	private String classes;
 	
 	public HtmlField() {
 	}

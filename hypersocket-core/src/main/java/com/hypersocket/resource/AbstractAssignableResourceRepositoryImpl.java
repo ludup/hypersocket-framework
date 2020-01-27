@@ -62,7 +62,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	protected EntityResourcePropertyStore entityPropertyStore;
 
 	@Autowired
-	EncryptionService encryptionService;
+	private EncryptionService encryptionService;
 	
 	@PostConstruct
 	private void postConstruct() {

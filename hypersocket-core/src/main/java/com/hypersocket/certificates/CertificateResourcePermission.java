@@ -18,10 +18,6 @@ public enum CertificateResourcePermission implements PermissionType {
 	DELETE("delete", READ);
 	
 	private final String val;
-	
-	/**
-	 * TODO place your resource name in this final static string e.g. applications
-	 */
 	private final static String name = "certificate";
 	
 	private PermissionType[] implies;

@@ -14,10 +14,7 @@ public class FallbackAuthenticator extends UsernameAndPasswordAuthenticator {
 	public static final String RESOURCE_KEY = "usernameAndPasswordFallback";
 	
 	@Autowired
-	AuthenticationService authenticationService;
-	
-	@Autowired
-	PermissionService permissionService; 
+	private PermissionService permissionService; 
 	
 	public FallbackAuthenticator() {	
 	}

@@ -38,10 +38,10 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 public class BrowserLaunchableController extends BootstrapTableController<Void> {
 
 	@Autowired
-	BrowserLaunchableService resourceService;
+	private BrowserLaunchableService resourceService;
 
 	@Autowired
-	SessionUtils sessionUtils;
+	private SessionUtils sessionUtils;
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "browser/fingerprint", method = RequestMethod.GET, produces = { "application/json" })

@@ -19,8 +19,8 @@ public abstract class AssignableResourceEvent extends ResourceEvent {
 	public static final String ATTR_ASSIGNED_ROLES = "attr.assignedRoles";
 	public static final String ATTR_UNASSIGNED_ROLES = "attr.unassignedRoles";
 
-	Collection<Role> unassignedRoles;
-	Collection<Role> assignedRoles;
+	private Collection<Role> unassignedRoles;
+	private Collection<Role> assignedRoles;
 
 	public AssignableResourceEvent(Object source, String resourceKey,
 			boolean success, Session session, AssignableResource resource) {

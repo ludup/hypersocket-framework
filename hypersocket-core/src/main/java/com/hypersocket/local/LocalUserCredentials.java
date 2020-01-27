@@ -31,28 +31,28 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="id")
-	Long id;
+	private Long id;
 	
 	@OneToOne
-	LocalUser user;
+	private LocalUser user;
 	
 	@Column(name="password", nullable=false)
-	byte[] password;
+	private byte[] password;
 	
 	@Column(name="encoded_password", length=1024)
-	String encodedPassword;
+	private String encodedPassword;
 	
 	@Column(name="salt", nullable=false)
-	byte[] salt;
+	private byte[] salt;
 	
 	@Column(name="encoded_salt")
-	String encodedSalt;
+	private String encodedSalt;
 	
 	@Column(name="encryption_type", nullable=false)
-	PasswordEncryptionType encryptionType;
+	private PasswordEncryptionType encryptionType;
 	
 	@Column(name="password_change_required")
-	boolean passwordChangeRequired;
+	private boolean passwordChangeRequired;
 
 	public LocalUser getUser() {
 		return user;

@@ -56,77 +56,77 @@ public class Session extends AbstractEntity<String> {
 	@GeneratedValue(generator = "uuid")
 	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	@Column(name = "id")
-	String id;
+	private String id;
 
 	@Column(name = "ip_address", nullable = false, insertable = true, updatable = false)
-	String remoteAddress;
+	private String remoteAddress;
 
 	@Column(name = "signed_out")
-	Date signedOut;
+	private Date signedOut;
 
 	@Transient
-	Date lastUpdated;
+	private Date lastUpdated;
 
 	@ManyToOne
 	@Fetch(FetchMode.SELECT)
 	@JoinColumn(name = "principal_id", insertable = true, updatable = false)
-	Principal principal;
+	private Principal principal;
 
 	@ManyToOne
 	@Fetch(FetchMode.SELECT)
 	@JoinColumn(name = "impersonating_principal_id", insertable = true, updatable = true)
-	Principal impersonatedPrincipal;
+	private Principal impersonatedPrincipal;
 
 	@Column(name = "inherit", nullable = true)
-	Boolean inheritPermissions;
+	private Boolean inheritPermissions;
 
 	@ManyToOne
 	@JoinColumn(name = "current_realm_id")
-	Realm currentRealm;
+	private Realm currentRealm;
 
 	@ManyToOne
 	@JoinColumn(name = "realm_id")
-	Realm realm;
+	private Realm realm;
 
 	@ManyToOne
 	@JoinColumn(name = "authentication_scheme")
-	AuthenticationScheme scheme;
+	private AuthenticationScheme scheme;
 
 	@Column(name = "user_agent", nullable = false)
-	String userAgent;
+	private String userAgent;
 
 	@Column(name = "user_agent_version", nullable = false)
-	String userAgentVersion;
+	private String userAgentVersion;
 
 	@Column(name = "os", nullable = false)
-	String os;
+	private String os;
 
 	@Column(name = "os_version", nullable = false)
-	String osVersion;
+	private String osVersion;
 
 	@Column(name = "timeout", nullable = true)
-	Integer sessionTimeout;
+	private Integer sessionTimeout;
 
 	@Column(name = "non_cookie_key")
-	String nonCookieKey;
+	private String nonCookieKey;
 
 	@Column(name = "state", length = 8000)
-	String state;
+	private String state;
 
 	@Column(name = "total_seconds")
-	Double totalSeconds;
-
-	@Transient
-	Map<String, String> stateParameters;
+	private Double totalSeconds;
 
 	@Column(name = "system")
-	Boolean system;
+	private Boolean system;
 
 	@Column(name = "transient")
-	Boolean transientSession;
+	private Boolean transientSession;
 
 	@Transient
-	String csrfToken = null;
+	private String csrfToken = null;
+
+	@Transient
+	private Map<String, String> stateParameters;
 	
 	@Override
 	public String getId() {
@@ -409,5 +409,9 @@ public class Session extends AbstractEntity<String> {
 			csrfToken = DigestUtils.sha256Hex(getId() + "|CSRF_TOKEN");
 		}
 		return csrfToken;
+	}
+
+	public void setSystem(boolean system) {
+		this.system = system;		
 	}
 }

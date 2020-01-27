@@ -3,8 +3,8 @@ package com.hypersocket.properties;
 
 public interface Property {
 
-	public String getValue();
+	String getValue();
 
-	public String getResourceKey();
+	String getResourceKey();
 
 }

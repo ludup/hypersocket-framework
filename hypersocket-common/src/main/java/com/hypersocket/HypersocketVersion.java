@@ -20,7 +20,7 @@ import org.w3c.dom.Document;
 
 public class HypersocketVersion {
 
-	static String version;
+	private static String version;
 	
 	public static String getVersion() {
 		if(Boolean.getBoolean("hypersocket.development")) {

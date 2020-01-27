@@ -7,7 +7,7 @@ import com.hypersocket.session.SessionService;
 public abstract class PermissionsAwareUpgradeScript implements Runnable {
 
 	@Autowired
-	SessionService sessionService; 
+	private SessionService sessionService; 
 	
 	@Override
 	public void run() {

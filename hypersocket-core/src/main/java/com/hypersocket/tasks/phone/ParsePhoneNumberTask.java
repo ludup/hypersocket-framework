@@ -29,16 +29,16 @@ public class ParsePhoneNumberTask extends AbstractTaskProvider {
 	public static final String RESOURCE_BUNDLE = "ParsePhoneNumberTask";
 	
 	@Autowired
-	ParsePhoneNumberTaskRepository repository;
+	private ParsePhoneNumberTaskRepository repository;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	I18NService i18nService; 
+	private I18NService i18nService; 
 
 	public ParsePhoneNumberTask() {
 	}

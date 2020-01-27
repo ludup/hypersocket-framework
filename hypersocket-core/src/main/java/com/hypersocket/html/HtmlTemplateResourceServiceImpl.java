@@ -32,16 +32,16 @@ public class HtmlTemplateResourceServiceImpl extends
 	public static final String RESOURCE_BUNDLE = "HtmlTemplateResourceService";
 
 	@Autowired
-	HtmlTemplateResourceRepository repository;
+	private HtmlTemplateResourceRepository repository;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	public HtmlTemplateResourceServiceImpl() {
 		super("HtmlTemplate");

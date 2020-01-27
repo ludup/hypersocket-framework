@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class ExtendedIpFilterRuleHandler extends IpFilteringHandlerImpl {
 	
 	@Autowired
-	IPRestrictionService ipRestrictionService; 
+	private IPRestrictionService ipRestrictionService; 
 	
 	public ExtendedIpFilterRuleHandler() {
 	}

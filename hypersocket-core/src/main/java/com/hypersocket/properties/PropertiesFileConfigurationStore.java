@@ -25,10 +25,12 @@ import com.hypersocket.utils.HypersocketUtils;
 public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStore {
 
 	static Logger log = LoggerFactory.getLogger(PropertiesFileConfigurationStore.class);
-	File propertiesFile;
-	Properties properties;
-	Map<String,PropertyTemplate> templates = new HashMap<>();
-	Map<String,List<PropertyTemplate>> templatesByModule = new HashMap<>();
+	
+	private File propertiesFile;
+	private Map<String,PropertyTemplate> templates = new HashMap<>();
+	private Map<String,List<PropertyTemplate>> templatesByModule = new HashMap<>();
+	
+	protected Properties properties;
 	
 	public PropertiesFileConfigurationStore() {
 	}

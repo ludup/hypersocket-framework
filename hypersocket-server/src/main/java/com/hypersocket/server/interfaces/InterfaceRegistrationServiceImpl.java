@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class InterfaceRegistrationServiceImpl implements InterfaceRegistrationService {
 
-	Set<String> additionalInterfacesPages = new HashSet<String>();
+	private Set<String> additionalInterfacesPages = new HashSet<String>();
 	
 	@Override
 	public void registerAdditionalInterface(String page) {

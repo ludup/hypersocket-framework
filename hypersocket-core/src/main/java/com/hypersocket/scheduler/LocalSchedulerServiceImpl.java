@@ -10,19 +10,15 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
-import com.hypersocket.util.DatabaseInformation;
 
 @Service
 public class LocalSchedulerServiceImpl extends AbstractSchedulerServiceImpl implements LocalSchedulerService {
 
 	@Autowired 
-	AutowiringSpringBeanJobFactory autowiringSpringBeanJobFactory;
+	private AutowiringSpringBeanJobFactory autowiringSpringBeanJobFactory;
 	
 	@Autowired
-	DatabaseInformation databaseInformation;
-	
-	@Autowired
-	UpgradeService upgradeService; 
+	private UpgradeService upgradeService; 
 	
 	protected Scheduler configureScheduler() throws SchedulerException {
 

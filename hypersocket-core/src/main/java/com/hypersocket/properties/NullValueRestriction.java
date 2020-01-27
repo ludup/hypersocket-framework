@@ -14,7 +14,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 
 public class NullValueRestriction implements CriteriaConfiguration {
 
-	String column;
+	private String column;
 	
 	public NullValueRestriction(String column) {
 		this.column = column;

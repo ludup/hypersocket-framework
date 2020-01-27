@@ -18,10 +18,10 @@ public class ResourceList<T> extends ResourceStatus<T> {
 
 	public static final int DEFAULT_MAXIMUM_RESOURCES = 1000;
 	
-	Collection<T> resources;
-	Map<String,String> properties;
+	private Collection<T> resources;
+	private Map<String,String> properties;
+	
 	public ResourceList() {
-		
 	}
 	
 	public ResourceList(Collection<T> resources) {

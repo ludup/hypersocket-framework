@@ -38,16 +38,16 @@ public class MonitorPortTask extends AbstractTaskProvider {
 	public static final String ATTR_TIMEOUT = "monitorPort.timeout";
 
 	@Autowired
-	MonitorPortTaskRepository repository;
+	private MonitorPortTaskRepository repository;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@PostConstruct
 	private void postConstruct() {

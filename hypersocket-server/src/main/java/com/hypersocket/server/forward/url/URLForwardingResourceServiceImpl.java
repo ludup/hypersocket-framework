@@ -23,13 +23,13 @@ public class URLForwardingResourceServiceImpl extends AbstractAssignableResource
 	public static final String RESOURCE_BUNDLE = "URLForwardingResourceService";
 	
 	@Autowired
-	URLForwardingResourceRepository repository; 
+	private URLForwardingResourceRepository repository; 
 	
 	@Autowired
-	EventService eventService; 
+	private EventService eventService; 
 	
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 	
 	protected URLForwardingResourceServiceImpl() {
 		super("URLFowardingResource");

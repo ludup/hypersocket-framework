@@ -7,7 +7,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 
 public class PersonalRestriction implements CriteriaConfiguration {
 
-	boolean personal;
+	private boolean personal;
 	
 	public PersonalRestriction(boolean personal) {
 		this.personal = personal;

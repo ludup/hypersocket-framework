@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticationService;
-import com.hypersocket.config.ConfigurationService;
-import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 
@@ -20,16 +18,10 @@ public class ContextAnnotationServiceImpl implements ContextAnnotationService {
 	static Logger log = LoggerFactory.getLogger(ContextAnnotationServiceImpl.class);
 	
 	@Autowired
-	AuthenticationService authenticationService; 
+	private AuthenticationService authenticationService; 
 	
 	@Autowired
-	RealmService realmService; 
-	
-	@Autowired
-	SessionService sessionService; 
-	
-	@Autowired
-	ConfigurationService configurationService;
+	private SessionService sessionService; 
 	
 	@Override
 	public Object process(ProceedingJoinPoint pjp) throws Throwable {

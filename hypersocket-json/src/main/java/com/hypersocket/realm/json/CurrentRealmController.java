@@ -71,19 +71,19 @@ import com.hypersocket.triggers.TriggerResourceColumns;
 public class CurrentRealmController extends ResourceController {
 	
 	@Autowired
-	PrincipalSuspensionService suspensionService;
+	private PrincipalSuspensionService suspensionService;
 
 	@Autowired
-	UserVariableReplacementService userVariableReplacement;
+	private UserVariableReplacementService userVariableReplacement;
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 	
 	@Autowired
-	OrganizationalUnitService ouService;
+	private OrganizationalUnitService ouService;
 	
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })

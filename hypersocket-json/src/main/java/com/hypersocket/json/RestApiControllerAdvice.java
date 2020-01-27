@@ -26,9 +26,6 @@ public class RestApiControllerAdvice {
 
     static Logger log = LoggerFactory.getLogger(RestApiControllerAdvice.class);
 
-    @Autowired
-    LocalUserRepository userRepository;
-
     @ModelAttribute
     public void addAttributes(Model model, HttpServletRequest request) {
         LocalUser user = (LocalUser) request.getAttribute(RestApi.API_USER);

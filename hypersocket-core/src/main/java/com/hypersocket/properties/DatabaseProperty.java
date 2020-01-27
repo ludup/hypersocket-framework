@@ -30,17 +30,17 @@ public class DatabaseProperty extends AbstractEntity<Long> implements ResourcePr
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="property_id")
-	Long id;
+	private Long id;
 
 	@Column(nullable=false)
-	String resourceKey;
+	private String resourceKey;
 	
 	@Column(nullable=true)
 	@Lob
-	String value;
+	private String value;
 	
 	@Column(name="resource")
-	Long resource;
+	private Long resource;
 	
 	@Override
 	@XmlElement(name="id")

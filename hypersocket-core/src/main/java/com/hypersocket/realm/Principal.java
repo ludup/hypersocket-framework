@@ -45,29 +45,29 @@ public abstract class Principal extends RealmResource {
 	@Cascade({ CascadeType.SAVE_UPDATE, CascadeType.MERGE })
 	@JoinTable(name = "role_principals", joinColumns = { @JoinColumn(name = "principal_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
 	@Fetch(FetchMode.SELECT)
-	Set<Role> roles = new HashSet<Role>();
+	private Set<Role> roles = new HashSet<Role>();
 	
 	@Fetch(FetchMode.SELECT)
 	@OneToMany(fetch = FetchType.EAGER, mappedBy="principal")
-	Set<PrincipalSuspension> suspensions;
+	private Set<PrincipalSuspension> suspensions;
 	
 	@Fetch(FetchMode.SELECT)
 	@OneToMany(fetch = FetchType.LAZY)
 	@JoinTable(name="principal_links", joinColumns = { @JoinColumn(name = "principals_resource_id") }, inverseJoinColumns = { @JoinColumn(name = "linkedPrincipals_resource_id") })
-	Set<Principal> linkedPrincipals;
+	private Set<Principal> linkedPrincipals;
 	
 	@ManyToOne
 	@JoinColumn(name="parent_principal")
-	Principal parentPrincipal;
+	private Principal parentPrincipal;
 
 	@Column(name="principal_type")
-	PrincipalType principalType = getType();
+	private PrincipalType principalType = getType();
 	
 	@Column(name="primary_email")
-	String primaryEmail;
+	private String primaryEmail;
 	
 	@Column(name="ou", length=1024)
-	String organizationalUnit;
+	private String organizationalUnit;
 	
 	public Long getId() {
 		return super.getId();

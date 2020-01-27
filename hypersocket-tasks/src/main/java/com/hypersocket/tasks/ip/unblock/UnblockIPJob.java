@@ -19,13 +19,13 @@ public class UnblockIPJob extends PermissionsAwareJob {
 	static Logger log = LoggerFactory.getLogger(UnblockIPJob.class);
 	
 	@Autowired
-	IPRestrictionService ipRestrictionService;
+	private IPRestrictionService ipRestrictionService;
 	
 	@Autowired
-	RealmRepository realmRepository; 
+	private RealmRepository realmRepository; 
 	
 	@Autowired
-	BlockIPTask blockIPTask;
+	private BlockIPTask blockIPTask;
 	
 	public UnblockIPJob() {
 	}

@@ -72,7 +72,7 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 public class CertificateResourceController extends ResourceController {
 
 	@Autowired
-	CertificateResourceService resourceService;
+	private CertificateResourceService resourceService;
 
 	@RequestMapping(value = "certificates/providers", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

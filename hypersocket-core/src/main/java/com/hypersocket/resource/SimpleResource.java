@@ -13,10 +13,11 @@ import java.util.UUID;
 public abstract class SimpleResource extends AbstractEntity<Long> {
 
 	private static final long serialVersionUID = 306989572401186385L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	@Column(name="resource_id")
-	Long id;
+	private Long id;
 
 
 	@Column(name = "reference", updatable=false)

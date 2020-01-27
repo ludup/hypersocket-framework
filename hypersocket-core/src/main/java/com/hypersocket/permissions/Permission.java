@@ -38,25 +38,25 @@ public class Permission extends AbstractEntity<Long> {
 	@Id
 	@GeneratedValue(strategy=GenerationType.TABLE)
 	@Column(name="id")
-	Long id;
+	private Long id;
 	
 	@Column(name="resource_key", nullable=false, unique=true)
-	String resourceKey;
+	private String resourceKey;
 	
 	@ManyToOne
 	@JoinColumn(name="category_id", nullable=false)
-	PermissionCategory category;
+	private PermissionCategory category;
 
 	@Column(name="hidden", nullable=false)
-	boolean hidden;
+	private boolean hidden;
 	
 	@Column(name="system", nullable=false)
-	boolean system;
+	private boolean system;
 	
 	@ManyToMany(fetch=FetchType.LAZY)
 	@Fetch(FetchMode.SUBSELECT)
 	@JoinTable(name = "role_permissions", joinColumns={@JoinColumn(name="permission_id")}, inverseJoinColumns={@JoinColumn(name="role_id")})
-	Set<Role> roles = new HashSet<Role>();
+	private Set<Role> roles = new HashSet<Role>();
 	
 	public Long getId() {
 		return id;

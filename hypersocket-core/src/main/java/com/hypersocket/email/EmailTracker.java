@@ -20,19 +20,19 @@ public class EmailTracker extends SimpleResource {
 	private static final long serialVersionUID = -2245463597525844610L;
 
 	@Column(name="subject")
-	String subject;
+	private String subject;
 	
 	@Column(name="email_address")
-	String emailAddress;
+	private String emailAddress;
 	
 	@ManyToOne
-	Principal principal;
+	private Principal principal;
 	
 	@ManyToOne
-	Realm realm;
+	private Realm realm;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	Date opened;
+	private Date opened;
 	
 	public String getSubject() {
 		return subject;

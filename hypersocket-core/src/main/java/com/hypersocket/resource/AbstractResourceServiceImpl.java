@@ -50,15 +50,14 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	protected final String resourceCategory;
 
 	@Autowired
-	protected
-	RealmService realmService;
+	protected RealmService realmService;
+
+	@Autowired
+	private TransactionService transactionService;
 
 	protected boolean assertPermissions = true;
 
-	String fingerprint;
-
-	@Autowired
-	TransactionService transactionService;
+	private String fingerprint;
 
 	protected abstract AbstractResourceRepository<T> getRepository();
 

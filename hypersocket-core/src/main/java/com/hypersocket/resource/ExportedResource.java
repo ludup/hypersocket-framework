@@ -5,8 +5,8 @@ import java.util.Map;
 
 public class ExportedResource<T> {
 
-	Map<String,String> properties = new HashMap<String,String>();
-	T resource;
+	private Map<String,String> properties = new HashMap<String,String>();
+	private T resource;
 	
 	public ExportedResource() {
 	}

@@ -14,18 +14,19 @@ import com.hypersocket.repository.CriteriaConfiguration;
 
 public class HiddenFilter implements CriteriaConfiguration {
 
-	boolean showHidden = false;
-	
+	private boolean showHidden = false;
+
 	public HiddenFilter() {
-		
+
 	}
+
 	public HiddenFilter(boolean showHidden) {
 		this.showHidden = showHidden;
 	}
-	
+
 	@Override
 	public void configure(Criteria criteria) {
-		if(!showHidden) {
+		if (!showHidden) {
 			criteria.add(Restrictions.eq("hidden", false));
 		}
 

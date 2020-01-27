@@ -15,7 +15,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 
 public class ChannelBufferServletInputStream extends ServletInputStream {
 
-	ChannelBuffer content;
+	private ChannelBuffer content;
 	
 	public ChannelBufferServletInputStream(ChannelBuffer content) {
 		this.content = content;

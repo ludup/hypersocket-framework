@@ -31,16 +31,16 @@ public class SleepTask extends AbstractTaskProvider {
 	public static final String RESOURCE_BUNDLE = "SleepTask";
 	
 	@Autowired
-	SleepTaskRepository repository;
+	private SleepTaskRepository repository;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	I18NService i18nService; 
+	private I18NService i18nService; 
 
 	public SleepTask() {
 	}

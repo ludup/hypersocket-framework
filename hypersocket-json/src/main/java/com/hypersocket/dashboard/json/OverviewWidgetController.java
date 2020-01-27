@@ -27,7 +27,7 @@ import com.hypersocket.session.json.SessionTimeoutException;
 public class OverviewWidgetController extends ResourceController {
 
 	@Autowired
-	OverviewWidgetService service;
+	private OverviewWidgetService service;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "overview/widgets/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })

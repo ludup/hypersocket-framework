@@ -19,16 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
-import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -49,29 +46,21 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	public final static String FIELD_PASSWORD_ENCODING = "password.encoding";
 
 	@Autowired
-	LocalUserRepository userRepository;
+	private LocalUserRepository userRepository;
 
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 
 	@Autowired
-	RealmRepository realmRepository;
-
-	@Autowired
-	PasswordEncryptionService encryptionService;
+	private PermissionService permissionService; 
 	
 	@Autowired
-	PermissionService permissionService; 
+	private I18NService i18nService;
 	
 	@Autowired
-	I18NService i18nService;
+	private LocalPrincipalTemplateRepository templateRepository;
 	
-	@Autowired
-	LocalPrincipalTemplateRepository templateRepository;
-	
-	PropertyCategory userDetailsCategory;
-
-	Set<String> defaultProperties = new HashSet<String>();
+	private Set<String> defaultProperties = new HashSet<String>();
 	
 	@PostConstruct
 	private void registerProvider() throws Exception {

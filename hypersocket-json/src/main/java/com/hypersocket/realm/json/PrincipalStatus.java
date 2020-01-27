@@ -15,7 +15,7 @@ import com.hypersocket.realm.Principal;
 @XmlRootElement(name="principalStatus")
 public class PrincipalStatus extends StatusTemplate<Long> {
 
-	Principal principal;
+	private Principal principal;
 	
 	public PrincipalStatus() {
 	}

@@ -53,7 +53,7 @@ public class FileStoreController extends ResourceController {
 	static Logger log = LoggerFactory.getLogger(FileStoreController.class);
 	
 	@Autowired
-	FileUploadService resourceService;
+	private FileUploadService resourceService;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "files/table", method = RequestMethod.GET, produces = { "application/json" })

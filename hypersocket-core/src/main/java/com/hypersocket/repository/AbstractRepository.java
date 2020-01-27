@@ -15,11 +15,11 @@ import com.hypersocket.tables.Sort;
 
 public interface AbstractRepository<K> {
 
-	public void refresh(Object entity);
+	void refresh(Object entity);
 	
-	public Object merge(Object entity);
+	Object merge(Object entity);
 	
-	public void flush();
+	void flush();
 
 	Long getCount(Class<?> clz, String searchColumn, String searchPattern, CriteriaConfiguration... configs);
 

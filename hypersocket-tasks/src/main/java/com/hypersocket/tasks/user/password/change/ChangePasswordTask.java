@@ -33,22 +33,22 @@ public class ChangePasswordTask extends AbstractTaskProvider {
 	public static final String RESOURCE_BUNDLE = "ChangePasswordTask";
 	
 	@Autowired
-	ChangePasswordTaskRepository repository;
+	private ChangePasswordTaskRepository repository;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	I18NService i18nService; 
+	private I18NService i18nService; 
 
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 	
 	@Autowired
-	PasswordPolicyResourceService policyService; 
+	private PasswordPolicyResourceService policyService; 
 	
 	public ChangePasswordTask() {
 	}

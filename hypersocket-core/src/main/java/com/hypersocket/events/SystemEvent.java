@@ -17,14 +17,14 @@ public abstract class SystemEvent extends AbstractEvent {
 	
 	public static final String ATTR_EXCEPTION_TEXT = "attr.exception";
 	
-	String resourceKey;
-	SystemEventStatus status;
-	Throwable exception;
-	Realm currentRealm;
-	long altTimestamp = -1;
+	private String resourceKey;
+	private SystemEventStatus status;
+	private Throwable exception;
+	private Realm currentRealm;
+	private long altTimestamp = -1;
 	protected boolean hidden;
 	
-	Map<String,String> attributes = new HashMap<String,String>();
+	private Map<String,String> attributes = new HashMap<String,String>();
 	
 	public SystemEvent(Object source, String resourceKey, boolean success, Realm currentRealm) {
 		super(source);

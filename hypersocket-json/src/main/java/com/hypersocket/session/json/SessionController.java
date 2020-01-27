@@ -5,7 +5,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,7 +23,6 @@ import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -39,10 +37,7 @@ import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
-public class SessionController extends ResourceController {
-
-	@Autowired
-	PermissionService permissionService; 
+public class SessionController extends ResourceController { 
 	
 	@RequestMapping(value = "session/touch", method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody

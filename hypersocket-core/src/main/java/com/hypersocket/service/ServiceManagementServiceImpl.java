@@ -13,8 +13,8 @@ import com.hypersocket.realm.Realm;
 @Service
 public class ServiceManagementServiceImpl extends AbstractAuthenticatedServiceImpl implements ServiceManagementService {
 
-	List<ManageableService> systemServices = new ArrayList<ManageableService>();
-	List<ManageableService> realmServices = new ArrayList<ManageableService>();
+	private List<ManageableService> systemServices = new ArrayList<ManageableService>();
+	private List<ManageableService> realmServices = new ArrayList<ManageableService>();
 	
 	@Override
 	public void registerService(ManageableService service) {

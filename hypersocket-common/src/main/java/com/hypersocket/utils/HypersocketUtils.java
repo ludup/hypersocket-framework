@@ -17,7 +17,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -50,12 +49,12 @@ public class HypersocketUtils {
 
 	static Logger log = LoggerFactory.getLogger(HypersocketUtils.class);
 
-	static ThreadLocal<Long> times = new ThreadLocal<Long>();
+	private static ThreadLocal<Long> times = new ThreadLocal<Long>();
 
 	/* BUG: Date formatters are not thread safe. */
 	//static Map<String,SimpleDateFormat> dateFormats = new HashMap<String,SimpleDateFormat>();
 
-	static SecureRandom random = new SecureRandom();
+	private static SecureRandom random = new SecureRandom();
 	
 	public static Date calculateDateTime(String timezone, Date from, String time) {
 

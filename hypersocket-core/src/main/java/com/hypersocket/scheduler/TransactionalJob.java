@@ -19,11 +19,11 @@ public abstract class TransactionalJob implements Job, InterruptableJob {
 	static Logger log = LoggerFactory.getLogger(TransactionalJob.class);
 	
 	@Autowired
-	TransactionService transactionService;
+	private TransactionService transactionService;
 	
-	boolean transactionFailed = false;
-	boolean interrupted = false;
-	Thread jobThread = null;
+	private boolean transactionFailed = false;
+	private boolean interrupted = false;
+	private Thread jobThread = null;
 	
 	public TransactionalJob() {
 	}

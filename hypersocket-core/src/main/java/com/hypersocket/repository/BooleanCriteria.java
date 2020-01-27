@@ -12,8 +12,8 @@ import org.hibernate.criterion.Restrictions;
 
 public class BooleanCriteria implements CriteriaConfiguration {
 
-	String column;
-	boolean value;
+	private String column;
+	private boolean value;
 	
 	public BooleanCriteria(String column, boolean value) {
 		this.value = value;

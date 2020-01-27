@@ -9,7 +9,7 @@ package com.hypersocket.input;
 
 public class ParagraphField extends InputField {
 
-	boolean isValueResourceKey;
+	private boolean isValueResourceKey;
 	
 	public ParagraphField(String defaultValue, boolean isValueResourceKey) {
 		super(InputFieldType.p, "paragraphField", defaultValue, false, "");

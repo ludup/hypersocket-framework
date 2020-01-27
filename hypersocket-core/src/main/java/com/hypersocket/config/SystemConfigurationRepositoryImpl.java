@@ -22,13 +22,14 @@ import com.hypersocket.properties.PropertyTemplateRepositoryAbstractImpl;
 @Repository
 public class SystemConfigurationRepositoryImpl extends PropertyRepositoryImpl implements SystemConfigurationRepository {
 
-	PropertyTemplateRepository repository;
 
 	@Autowired
-	EncryptionService encryptionService;
+	private EncryptionService encryptionService;
 
 	@Autowired
-	ApplicationContext applicationContext;
+	private ApplicationContext applicationContext;
+	
+	private PropertyTemplateRepository repository;
 
 	@PostConstruct
 	private void postConstruct() {

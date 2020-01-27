@@ -56,25 +56,25 @@ public class QuartzSpringConfiguration {
 	}
 	
 	@Autowired 
-	AutowiringSpringBeanJobFactory autowiringSpringBeanJobFactory;
+	private AutowiringSpringBeanJobFactory autowiringSpringBeanJobFactory;
 	
 	@Autowired
-	DataSource dataSource;
+	private DataSource dataSource;
 	
 	@Autowired
-	PlatformTransactionManager transactionManager;
+	private PlatformTransactionManager transactionManager;
 	
 	@Autowired
-	ApplicationContext applicationContext;
+	private ApplicationContext applicationContext;
 	
 	@Autowired
-	Environment environment;
+	private Environment environment;
 	
 	@Autowired
-	DatabaseInformation databaseInformation;
+	private DatabaseInformation databaseInformation;
 	
 	@Value("${user.dir}") 
-	String userDir; 
+	private String userDir; 
 	
 	@Bean
 	SchedulerFactoryBean schedulerFactoryBean(@Qualifier("quartzProperties") Properties quartzProperties) throws SQLException{

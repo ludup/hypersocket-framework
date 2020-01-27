@@ -19,10 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.ConfigurationService;
-import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -42,27 +40,21 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 	static Logger log = LoggerFactory.getLogger(AbstractForwardingHandler.class);
 
 	@Autowired
-	SessionService sessionService;
+	private SessionService sessionService;
 
 	@Autowired
-	SessionUtils sessionUtils;
+	private SessionUtils sessionUtils;
 
 	@Autowired
-	AuthenticationService authenticationService;
+	private HypersocketServer server;
 
 	@Autowired
-	HypersocketServer server;
-
-	@Autowired
-	EventService eventService;
-
-	@Autowired
-	UserVariableReplacementService userVariableReplacement;
+	private UserVariableReplacementService userVariableReplacement;
 	
 	@Autowired
-	ConfigurationService configurationService; 
+	private ConfigurationService configurationService; 
 	
-	String path;
+	private String path;
 	
 	public AbstractForwardingHandler(String path) {
 		this.path = path;

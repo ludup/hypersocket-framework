@@ -43,9 +43,8 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 @Controller
 public class HTTPInterfaceResourceController extends ResourceController {
 
-
 	@Autowired
-	HTTPInterfaceResourceService resourceService;
+	private HTTPInterfaceResourceService resourceService;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "httpInterfaces/list", method = RequestMethod.GET, produces = { "application/json" })

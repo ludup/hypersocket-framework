@@ -38,12 +38,12 @@ public class SecretKeyServiceImpl extends
 	static Logger log = LoggerFactory.getLogger(SecretKeyServiceImpl.class);
 	
 	@Autowired
-	SecretKeyRepository repository;
+	private SecretKeyRepository repository;
 	
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
-	EncryptionProvider encryptionProvider;
+	private EncryptionProvider encryptionProvider;
 	
 	public SecretKeyServiceImpl() {
 		super("secretKeyResource");

@@ -44,12 +44,12 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 
 	@Autowired
 	@Qualifier("transactionManager")
-	PlatformTransactionManager txManager;
+	private PlatformTransactionManager txManager;
 	
 	@Autowired
-	EncryptionService encryptionService;
+	private EncryptionService encryptionService;
 	
-	List<TransactionOperation<T>> defaultOperations = new ArrayList<TransactionOperation<T>>();
+	private List<TransactionOperation<T>> defaultOperations = new ArrayList<TransactionOperation<T>>();
 	
 	@PostConstruct
 	private void postConstruct() {

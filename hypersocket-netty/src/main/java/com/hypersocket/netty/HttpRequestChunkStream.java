@@ -9,8 +9,8 @@ import org.jboss.netty.handler.codec.http.HttpChunk;
 
 public class HttpRequestChunkStream extends ServletInputStream {
 
-	HttpChunk currentChunk;
-	boolean isEOF = false;
+	private HttpChunk currentChunk;
+	private boolean isEOF = false;
 	
 	@Override
 	public int read() throws IOException {

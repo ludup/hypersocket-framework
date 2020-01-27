@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name="resourceStatus")
 public class StatusTemplate<T> extends RequestStatus {
 
-	T id;
+	private T id;
 	
 	public StatusTemplate() {
 		super();

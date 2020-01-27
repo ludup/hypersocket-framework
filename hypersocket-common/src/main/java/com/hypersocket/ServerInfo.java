@@ -2,8 +2,8 @@ package com.hypersocket;
 
 public class ServerInfo {
 
-	String basePath;
-	String version;
+	private String basePath;
+	private String version;
 	
 	public ServerInfo() {
 	}

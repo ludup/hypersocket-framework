@@ -10,10 +10,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PathResolverServiceImpl implements PathResolverService {
-
 	
-	List<PathResolver> resolvers = new ArrayList<PathResolver>();
-	
+	private List<PathResolver> resolvers = new ArrayList<PathResolver>();
 	
 	@Override
 	public void registerResolver(PathResolver resolver) {

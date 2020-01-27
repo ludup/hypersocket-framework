@@ -27,11 +27,11 @@ public class RsaEncryptionProvider extends AbstractEncryptionProvider {
 
 	static public RsaEncryptionProvider instance;
 	
-	File prvFile = new File(HypersocketUtils.getConfigDir(), "secrets");
-	File pubFile = new File(HypersocketUtils.getConfigDir(), "secrets.pub");
+	private File prvFile = new File(HypersocketUtils.getConfigDir(), "secrets");
+	private File pubFile = new File(HypersocketUtils.getConfigDir(), "secrets.pub");
 	
-	PrivateKey privateKey;
-	PublicKey publicKey;
+	private PrivateKey privateKey;
+	private PublicKey publicKey;
 	
 	public RsaEncryptionProvider() throws Exception {
 		

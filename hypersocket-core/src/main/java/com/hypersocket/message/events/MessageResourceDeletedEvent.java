@@ -8,17 +8,8 @@ import com.hypersocket.session.Session;
 public class MessageResourceDeletedEvent extends
 		MessageResourceEvent {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 2761984448107423821L;
-	/**
-	 * TODO rename to suit your resource and replace message with lower case
-	 * name of your resource.
-	 * 
-	 * You typically add attributes to the base MessageResourceEvent
-	 * class so these can be reused across all resource events.
-	 */
+
 	public static final String EVENT_RESOURCE_KEY = "message.deleted";
 
 	public MessageResourceDeletedEvent(Object source,

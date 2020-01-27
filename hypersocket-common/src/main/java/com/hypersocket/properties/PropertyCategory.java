@@ -15,25 +15,24 @@ public class PropertyCategory implements Serializable {
 
 	private static final long serialVersionUID = -9161050636516897409L;
 
-	String categoryKey;
-	String categoryGroup;
-	String categoryNamespace;
-	String bundle;
-	String displayMode;
-	int weight;
-	boolean userCreated;
-	boolean systemOnly = false;
-	boolean nonSystem = false;
-	boolean hidden;
-	String filter = "default";
-	String name = null;
-	String visibilityDependsOn = "";
-	String visibilityDependsValue = "";
+	private String categoryKey;
+	private String categoryGroup;
+	private String categoryNamespace;
+	private String bundle;
+	private String displayMode;
+	private int weight;
+	private boolean userCreated;
+	private boolean systemOnly = false;
+	private boolean nonSystem = false;
+	private boolean hidden;
+	private String filter = "default";
+	private String name = null;
+	private String visibilityDependsOn = "";
+	private String visibilityDependsValue = "";
 	
-	List<AbstractPropertyTemplate> templates = new ArrayList<AbstractPropertyTemplate>();
+	private List<AbstractPropertyTemplate> templates = new ArrayList<AbstractPropertyTemplate>();
 	
 	public PropertyCategory() {
-		
 	}
 	
 	public PropertyCategory(PropertyCategory other) {

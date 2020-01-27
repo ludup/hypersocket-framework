@@ -20,37 +20,37 @@ public abstract class AbstractAttribute<C extends RealmAttributeCategory<?>> ext
 	private static final long serialVersionUID = 8883188306254264069L;
 
 	@Column(name="description")
-	String description;
+	private String description;
 	
 	@Column(name="default_value", nullable=true, length=8000 /*SQL server limit */)
-	String defaultValue;
+	private String defaultValue;
 
 	@Column(name="weight")
-	int weight;
+	private int weight;
 	
 	@Column(name="type")
-	AttributeType type;
+	private AttributeType type;
 
 	@Column(name="hidden")
-	Boolean hidden = false;
+	private Boolean hidden = false;
 	
 	@Column(name="display_mode")
-	String displayMode;
+	private String displayMode;
 	
 	@Column(name="read_only")
-	Boolean readOnly = false;
+	private Boolean readOnly = false;
 	
 	@Column(name="encrypted")
-	Boolean encrypted = false;
+	private Boolean encrypted = false;
 	
 	@Column(name="variable_name")
-	String variableName;
+	private String variableName;
 	
 	@Column(name="options", length = 8096)
-	String options;
+	private String options;
 
 	@Column(name="linked_resource_id")
-	Long linkedResourceId;
+	private Long linkedResourceId;
 	
 	public abstract C getCategory();
 

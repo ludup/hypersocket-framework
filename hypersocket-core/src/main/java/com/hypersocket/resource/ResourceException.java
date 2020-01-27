@@ -15,10 +15,9 @@ public class ResourceException extends Exception {
 
 	private static final long serialVersionUID = 8760287136428990927L;
 
-
-	String bundle;
-	String resourceKey;
-	Object[] args;
+	private String bundle;
+	private String resourceKey;
+	private Object[] args;
 	
 	public ResourceException(ResourceException e) {
 		this(e.getCause(), e.getBundle(), e.getResourceKey(), e.getArgs());

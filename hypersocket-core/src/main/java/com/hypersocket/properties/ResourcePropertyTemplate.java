@@ -11,42 +11,41 @@ import com.hypersocket.resource.SimpleResource;
 
 public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 
-	SimpleResource resource;
-	
+	private SimpleResource resource;
+
 	public ResourcePropertyTemplate(AbstractPropertyTemplate t, SimpleResource resource) {
-		this.resourceKey = t.getResourceKey();
-		this.defaultValue = t.getDefaultValue();
-		this.mapping = t.getMapping();
-		this.weight = t.getWeight();
-		this.category = t.getCategory();
-		this.hidden = t.isHidden();
-		this.displayMode = t.getDisplayMode();
-		this.readOnly = t.isReadOnly();
-		this.resource = resource;
-		this.propertyStore = t.getPropertyStore();
-		this.defaultsToProperty = t.getDefaultsToProperty();
-		this.encrypted = t.isEncrypted();
-		this.name = t.getName();
-		this.description = t.getDescription();
-		this.metaData = t.metaData;
-		this.attributes.putAll(t.attributes);
-//		this.options.addAll(t.getOptions());
+		setResourceKey(t.getResourceKey());
+		setDefaultValue(t.getDefaultValue());
+		setMapping(t.getMapping());
+		setWeight(t.getWeight());
+		setCategory(t.getCategory());
+		setHidden(t.isHidden());
+		setDisplayMode(t.getDisplayMode());
+		setReadOnly(t.isReadOnly());
+		setResource(resource);
+		setPropertyStore(t.getPropertyStore());
+		setDefaultsToProperty(t.getDefaultsToProperty());
+		setEncrypted(t.isEncrypted());
+		setName(t.getName());
+		setDescription(t.getDescription());
+		setMetaData(t.getMetaData());
+		getAttributes().putAll(t.getAttributes());
 	}
-	
+
 	public void setPropertyStore(ResourcePropertyStore propertyStore) {
 		this.propertyStore = propertyStore;
 	}
-	
+
 	public String getValue() {
-		return ((ResourcePropertyStore)propertyStore).getPropertyValue(this, resource);
+		return ((ResourcePropertyStore) propertyStore).getPropertyValue(this, resource);
 	}
-	
+
 	public SimpleResource getResource() {
 		return resource;
 	}
-	
+
 	public void setResource(SimpleResource resource) {
 		this.resource = resource;
 	}
-	
+
 }

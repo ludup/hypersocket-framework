@@ -21,15 +21,14 @@ import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
+import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.ip.unblock.UnblockIPJob;
 import com.hypersocket.triggers.AbstractTaskResult;
 import com.hypersocket.triggers.MultipleTaskResults;
-import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.ValidationException;
 
 @Component
@@ -42,25 +41,22 @@ public class BlockIPTask extends AbstractTaskProvider {
 	public static final String RESOURCE_KEY = "blockIP";
 	
 	@Autowired
-	BlockIPTaskRepository repository; 
+	private BlockIPTaskRepository repository; 
 	
 	@Autowired
-	IPRestrictionService ipRestrictionService;
+	private IPRestrictionService ipRestrictionService; 
 	
 	@Autowired
-	TriggerResourceService triggerService; 
+	private I18NService i18nService;
 	
 	@Autowired
-	I18NService i18nService;
+	private ClusteredSchedulerService schedulerService; 
 	
 	@Autowired
-	ClusteredSchedulerService schedulerService; 
+	private TaskProviderService taskService; 
 	
 	@Autowired
-	TaskProviderService taskService; 
-	
-	@Autowired
-	EventService eventService; 
+	private EventService eventService; 
 	
 	@PostConstruct
 	private void postConstruct() {

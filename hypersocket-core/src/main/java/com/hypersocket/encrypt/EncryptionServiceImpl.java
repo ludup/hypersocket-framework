@@ -27,10 +27,10 @@ public class EncryptionServiceImpl implements EncryptionService {
 	
 	@Autowired
 	@Qualifier("defaultEncryptor")
-	Encryptor encryptor;
+	private Encryptor encryptor;
 
 	@Autowired
-	TransactionService transactionService; 
+	private TransactionService transactionService; 
 	
 	@Override
 	public String encryptString(String reference, String data, Realm realm) throws IOException {

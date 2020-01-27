@@ -56,7 +56,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	protected abstract Role getPersonalRole(Principal principal) throws AccessDeniedException;
 	
 	@Autowired
-	SessionService sessionService;  
+	private SessionService sessionService;  
 
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {

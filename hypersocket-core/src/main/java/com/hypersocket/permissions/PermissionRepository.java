@@ -22,50 +22,50 @@ import java.util.Set;
 
 public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
-	public PermissionCategory createCategory(String resourceBundle,
+	PermissionCategory createCategory(String resourceBundle,
 			String resourceKey);
 
-	public Permission createPermission(String resourceKey, boolean system,
+	Permission createPermission(String resourceKey, boolean system,
 			PermissionCategory category, boolean hidden);
 
-	public Role createRole(String name, Realm realm, boolean personalRole,
+	Role createRole(String name, Realm realm, boolean personalRole,
 			boolean allUsers, boolean allPermissions, boolean system, RoleType type);
 
-	public PermissionCategory getCategoryById(Long id);
+	PermissionCategory getCategoryById(Long id);
 
-	public PermissionCategory getCategoryByKey(String resourceBundle,
+	PermissionCategory getCategoryByKey(String resourceBundle,
 			String resourceKey);
 
-	public Permission getPermissionById(Long id);
+	Permission getPermissionById(Long id);
 
-	public Permission getPermissionByResourceKey(String name);
+	Permission getPermissionByResourceKey(String name);
 
-	public Role getRoleById(Long id);
+	Role getRoleById(Long id);
 
-	public Role getRoleByName(String name, Realm realm);
+	Role getRoleByName(String name, Realm realm);
 
-	public void grantPermission(Role role, Permission permissions);
+	void grantPermission(Role role, Permission permissions);
 
-	public void revokePermission(Role role, Permission permissions);
+	void revokePermission(Role role, Permission permissions);
 
-	public void grantPermissions(Role role, Collection<Permission> permissions);
+	void grantPermissions(Role role, Collection<Permission> permissions);
 
-	public void revokePermission(Role role, Collection<Permission> permissions);
+	void revokePermission(Role role, Collection<Permission> permissions);
 
-	public void deleteCategory(PermissionCategory category);
+	void deleteCategory(PermissionCategory category);
 
-	public void deletePermission(Permission permission);
+	void deletePermission(Permission permission);
 
-	public void deleteRole(Role role);
+	void deleteRole(Role role);
 
-	public List<PermissionCategory> getAllCatgories();
+	List<PermissionCategory> getAllCatgories();
 
-	public List<Permission> getAllPermissions(Set<Long> registered,
+	List<Permission> getAllPermissions(Set<Long> registered,
 			boolean includeSystem);
 
-	public void assignRole(Role role, Principal... principal);
+	void assignRole(Role role, Principal... principal);
 
-	public void unassignRole(Role role, Principal... principal);
+	void unassignRole(Role role, Principal... principal);
 
 	Set<Permission> getDelegatedPrincipalPermissions(Realm currentRealm,
 			Collection<Principal> principals,
@@ -73,9 +73,9 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
 	Set<Principal> getPrincipalsWithPermissions(PermissionType permissions);
 
-	public List<Role> getRolesForRealm(Realm realm);
+	List<Role> getRolesForRealm(Realm realm);
 
-	public List<Permission> getPermissionsByCategory(PermissionCategory cat1);
+	List<Permission> getPermissionsByCategory(PermissionCategory cat1);
 
 	void saveRole(Role role);
 

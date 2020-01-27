@@ -12,12 +12,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name="resourceStatus")
 public class ResourceStatus<T> {
 
-	boolean success = true;
-	String message = "";
-	T resource;
-	boolean confirmation = false;
-	String[] options;
-	Object[] args;
+	private boolean success = true;
+	private String message = "";
+	private T resource;
+	
+	/* TODO: These appear to be unused on the Java side, but I will
+	 * leave them here as I have no idea if any of the Javascript
+	 * side expects them to at least exist
+	 */
+	private boolean confirmation = false;
+	private String[] options;
+	private Object[] args;
 	
 	public ResourceStatus() {
 		super();
@@ -69,5 +74,29 @@ public class ResourceStatus<T> {
 
 	public void setResource(T resource) {
 		this.resource = resource;
+	}
+
+	public boolean isConfirmation() {
+		return confirmation;
+	}
+
+	public void setConfirmation(boolean confirmation) {
+		this.confirmation = confirmation;
+	}
+
+	public String[] getOptions() {
+		return options;
+	}
+
+	public void setOptions(String[] options) {
+		this.options = options;
+	}
+
+	public Object[] getArgs() {
+		return args;
+	}
+
+	public void setArgs(Object[] args) {
+		this.args = args;
 	}
 }

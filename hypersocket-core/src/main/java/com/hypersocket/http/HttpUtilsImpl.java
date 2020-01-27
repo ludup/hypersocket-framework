@@ -57,7 +57,6 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.certificates.CertificateVerificationException;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.properties.ResourceUtils;
-import com.hypersocket.realm.RealmService;
 import com.hypersocket.utils.HttpUtils;
 import com.hypersocket.utils.HttpUtilsHolder;
 
@@ -69,10 +68,7 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 	static BasicCookieStore cookieStore;
 
 	@Autowired
-	SystemConfigurationService systemConfigurationService;
-
-	@Autowired
-	RealmService realmService;
+	private SystemConfigurationService systemConfigurationService;
 
 	//
 	private ThreadLocal<Stack<HostnameVerifier>> verifier = new ThreadLocal<>();

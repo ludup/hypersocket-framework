@@ -14,10 +14,10 @@ import com.hypersocket.json.PropertyItem;
 @XmlRootElement(name="realm")
 public class RealmUpdate {
 
-	String name;
-	String type;
-	Long id;
-	PropertyItem[] properties;
+	private String name;
+	private String type;
+	private Long id;
+	private PropertyItem[] properties;
 	
 	public RealmUpdate() {
 		

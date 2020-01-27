@@ -8,14 +8,11 @@ import javax.net.ssl.HostnameVerifier;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 public class HttpUtilsHolder implements HttpUtils {
 
-	static BasicCookieStore cookieStore;
-
-	static HttpUtils instance = new HttpUtilsApacheImpl();
+	private static HttpUtils instance = new HttpUtilsApacheImpl();
 
 	public static HttpUtils getInstance() {
 		return instance;

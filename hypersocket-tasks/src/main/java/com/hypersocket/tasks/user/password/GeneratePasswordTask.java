@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.auth.PrincipalNotFoundException;
-import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
@@ -40,22 +39,19 @@ public class GeneratePasswordTask extends AbstractTaskProvider {
 	public static final String RESOURCE_BUNDLE = "GeneratePasswordTask";
 	
 	@Autowired
-	GeneratePasswordTaskRepository repository;
+	private GeneratePasswordTaskRepository repository;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	I18NService i18nService; 
+	private I18NService i18nService; 
 	
 	@Autowired
-	ConfigurationService configurationService; 
-	
-	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	public GeneratePasswordTask() {
 	}

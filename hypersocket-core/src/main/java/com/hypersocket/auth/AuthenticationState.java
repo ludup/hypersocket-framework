@@ -32,32 +32,32 @@ public class AuthenticationState {
 	private static final String PREVIOUS_AUTHENTICATION_SCHEME = "previousAuthenticationScheme";
 	private static final String AUTHENTICATION_STATE = "authenticationState";
 	
-	Stack<AuthenticationScheme> previousSchemes = new Stack<>();
-	Stack<Integer> previousIndex = new Stack<>();
-	Stack<List<AuthenticationModule>> previousModules = new Stack<>();
-	AuthenticationScheme scheme;
-	AuthenticationScheme initialScheme;
-	String remoteAddress;
-	Integer currentIndex = new Integer(0);
-	List<AuthenticationModule> modules;
-	List<PostAuthenticationStep> sessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
-	List<PostAuthenticationStep> nonSessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
-	String lastErrorMsg;
-	boolean lastErrorIsResourceKey;
-	String lastPrincipalName;
-	String lastRealmName;
-	Realm realm;
-	Realm hostRealm;
-	Principal principal;
-	Principal lastPrincipal;
-	Session session;
-	int attempts = 0;
-	String homePage = "";
-	boolean hasEnded = false;
-	List<AuthenticationStateListener> listeners = new ArrayList<AuthenticationStateListener>();
-	Locale locale;
-	Map<String, String> parameters = new HashMap<String, String>();
-	Map<String, Object> environment = new HashMap<String, Object>();
+	private Stack<AuthenticationScheme> previousSchemes = new Stack<>();
+	private Stack<Integer> previousIndex = new Stack<>();
+	private Stack<List<AuthenticationModule>> previousModules = new Stack<>();
+	private AuthenticationScheme scheme;
+	private AuthenticationScheme initialScheme;
+	private String remoteAddress;
+	private Integer currentIndex = new Integer(0);
+	private List<AuthenticationModule> modules;
+	private List<PostAuthenticationStep> sessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
+	private List<PostAuthenticationStep> nonSessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
+	private String lastErrorMsg;
+	private boolean lastErrorIsResourceKey;
+	private String lastPrincipalName;
+	private String lastRealmName;
+	private Realm realm;
+	private Realm hostRealm;
+	private Principal principal;
+	private Principal lastPrincipal;
+	private Session session;
+	private int attempts = 0;
+	private String homePage = "";
+	private boolean hasEnded = false;
+	private List<AuthenticationStateListener> listeners = new ArrayList<AuthenticationStateListener>();
+	private Locale locale;
+	private Map<String, String> parameters = new HashMap<String, String>();
+	private Map<String, Object> environment = new HashMap<String, Object>();
 	
 	
 	AuthenticationState(String remoteAddress, Map<String,Object> environment, Locale locale) {

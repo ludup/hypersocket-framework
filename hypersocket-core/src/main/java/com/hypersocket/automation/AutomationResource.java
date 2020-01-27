@@ -29,42 +29,42 @@ public class AutomationResource extends Task {
 	private static final long serialVersionUID = 2363415972604814835L;
 
 	@Column(name="resource_key")
-	String resourceKey;
+	private String resourceKey;
 	
 	@Column(name="task_starts")
 	@Temporal(TemporalType.DATE)
-	Date taskStarts;
+	private Date taskStarts;
 	
 	@Column(name="start_time")
-	String startTime;
+	private String startTime;
 	
 	@Column(name="task_ends")
 	@Temporal(TemporalType.DATE)
-	Date taskEnds;
+	private Date taskEnds;
 	
 	@Column(name="end_time")
-	String endTime;
+	private String endTime;
 	
 	@Column(name="repeat_type")
-	AutomationRepeatType repeatType = AutomationRepeatType.NEVER;
+	private AutomationRepeatType repeatType = AutomationRepeatType.NEVER;
 	
 	@Column(name="repeat_value")
-	Integer repeatValue = 1;
+	private Integer repeatValue = 1;
 	
 	@Column(name="notes")
 	@Lob
-	String notes;
+	private String notes;
 	
 	@Column(name="transactional")
-	Boolean transactional;
+	private Boolean transactional;
 	
 	@Column(name="automation_events")
-	Boolean fireAutomationEvents;
+	private Boolean fireAutomationEvents;
 	
 	@OneToMany(fetch=FetchType.EAGER)
 	@JoinTable(name="automations_trigger_resources")
 	@Fetch(FetchMode.SELECT)
-	Set<TriggerResource> triggers = new HashSet<TriggerResource>();
+	private Set<TriggerResource> triggers = new HashSet<TriggerResource>();
 	
 	public String getResourceKey() {
 		return resourceKey;

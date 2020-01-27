@@ -33,7 +33,6 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
@@ -44,7 +43,6 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
-import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.resource.ResourceException;
@@ -72,44 +70,37 @@ public class AuthenticationServiceImpl extends
 			.getLogger(AuthenticationServiceImpl.class);
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 
 	@Autowired
-	AuthenticationModuleRepository repository;
+	private AuthenticationModuleRepository repository;
 
 	@Autowired
-	AuthenticationSchemeRepository schemeRepository;
+	private AuthenticationSchemeRepository schemeRepository;
 
 	@Autowired
-	SessionService sessionService;
+	private SessionService sessionService;
 
 	@Autowired
-	RealmRepository realmRepository;
+	private RealmService realmService;
 
 	@Autowired
-	RealmService realmService;
+	private ConfigurationService configurationService;
 
 	@Autowired
-	ConfigurationService configurationService;
+	private EventService eventService;
 
 	@Autowired
-	EventService eventService;
+	private I18NService i18nService;
 
 	@Autowired
-	I18NService i18nService;
+	private UserVariableReplacementService variableReplacement;
 
-	@Autowired
-	UserVariableReplacementService variableReplacement;
-
-	Map<String, Authenticator> authenticators = new HashMap<String, Authenticator>();
-
-	List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
-
-	List<AuthenticationServiceListener> listeners = new ArrayList<AuthenticationServiceListener>();
-
-	Permission logonPermission;
-	AuthenticationSchemeSelector authenticationSelector;
-	List<AuthenticatorSelector> authenticatorSelectors = new ArrayList<AuthenticatorSelector>();
+	private Map<String, Authenticator> authenticators = new HashMap<String, Authenticator>();
+	private List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
+	private List<AuthenticationServiceListener> listeners = new ArrayList<AuthenticationServiceListener>();
+	private AuthenticationSchemeSelector authenticationSelector;
+	private List<AuthenticatorSelector> authenticatorSelectors = new ArrayList<AuthenticatorSelector>();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -122,7 +113,7 @@ public class AuthenticationServiceImpl extends
 				.registerPermissionCategory(RESOURCE_BUNDLE,
 						"category.authentication");
 
-		logonPermission = permissionService.registerPermission(
+		permissionService.registerPermission(
 				AuthenticationPermission.LOGON, authentication);
 
 		eventService.registerEvent(AuthenticationAttemptEvent.class,

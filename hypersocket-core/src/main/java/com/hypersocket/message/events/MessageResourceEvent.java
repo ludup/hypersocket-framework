@@ -8,22 +8,12 @@ import com.hypersocket.session.Session;
 
 public class MessageResourceEvent extends ResourceEvent {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 6693971807084150159L;
 	public static final String EVENT_RESOURCE_KEY = "message.event";
 	
 	public MessageResourceEvent(Object source, String resourceKey,
 			Session session, MessageResource resource) {
 		super(source, resourceKey, true, session, resource);
-
-		/**
-		 * TODO add attributes of your resource here. Make sure all attributes
-		 * have a constant string definition like the commented out example above,
-		 * its important for its name to start with ATTR_ as this is picked up during 
-		 * the registration process
-		 */
 	}
 
 	public MessageResourceEvent(Object source, String resourceKey,

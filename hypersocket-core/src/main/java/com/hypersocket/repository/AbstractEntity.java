@@ -32,7 +32,7 @@ public abstract class AbstractEntity<T> implements Serializable {
 	public abstract T getId();
 	
 	@Column(name="deleted", nullable=false)
-	boolean deleted;
+	private boolean deleted;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="created")
@@ -40,13 +40,13 @@ public abstract class AbstractEntity<T> implements Serializable {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name="modified")
-    Date modifiedDate = new Date();
+    private Date modifiedDate = new Date();
 
 	@Column(name="legacy_id")
-	Long legacyId;
+	private Long legacyId;
 	
 	@Transient
-	boolean preserveTimestamp = false;
+	private boolean preserveTimestamp = false;
 	
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;

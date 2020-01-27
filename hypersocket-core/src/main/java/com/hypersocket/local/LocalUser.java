@@ -41,7 +41,7 @@ public class LocalUser extends UserPrincipal implements Serializable {
 	private static final long serialVersionUID = 4490274955679793663L;
 
 	@Column(name="type", nullable=false)
-	PrincipalType type = PrincipalType.USER;
+	private PrincipalType type = PrincipalType.USER;
 	
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Cascade({CascadeType.SAVE_UPDATE})
@@ -50,39 +50,39 @@ public class LocalUser extends UserPrincipal implements Serializable {
 
 	@OneToOne(mappedBy="user", optional=true)
 	@Cascade({CascadeType.DELETE})
-	LocalUserCredentials credentials;
+	private LocalUserCredentials credentials;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	Date lastSignOn;
+	private Date lastSignOn;
 	
 	@Column(name="fullname")
 	@Deprecated
 	/**
 	 * This should be removed in a later version
 	 */
-	String fullname;
+	private String fullname;
 	
 	@Column(name="email")
-	String email;
+	private String email;
 
 	@Column(name="secondary_email", length=8000)
-	String secondaryEmail;
+	private String secondaryEmail;
 	
 	@Column(name="mobile")
-	String mobile;
+	private String mobile;
 	
 	@Column(name="secondary_mobile", length=8000)
-	String secondaryMobile;
+	private String secondaryMobile;
 	
 	@Column(name="realm_category")
-	String realmCategory;
+	private String realmCategory;
 	
 	@Column(name="user_expires")
 	@Temporal(TemporalType.DATE)
-	Date expires;
+	private Date expires;
 	
 	@Column(name="description")
-	String description;
+	private String description;
 	
 	public String getIcon() {
 		return "fa-database";

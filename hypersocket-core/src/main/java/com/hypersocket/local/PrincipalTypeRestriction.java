@@ -15,7 +15,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 
 public class PrincipalTypeRestriction implements CriteriaConfiguration {
 
-	PrincipalType type;
+	private PrincipalType type;
 	
 	public PrincipalTypeRestriction(PrincipalType type) {
 		this.type = type;

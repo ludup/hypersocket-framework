@@ -14,20 +14,20 @@ import com.hypersocket.resource.AbstractResourceRepository;
 
 public interface AuthenticationSchemeRepository extends AbstractResourceRepository<AuthenticationScheme> {
 
-	public AuthenticationScheme createScheme(Realm realm, String name, List<String> modules,
+	AuthenticationScheme createScheme(Realm realm, String name, List<String> modules,
 			String resourceKey, boolean hidden, Integer maximum, AuthenticationModuleType type, boolean supportsHomeRedirect);
 
 	List<AuthenticationScheme> allSchemes(Realm realm);
 
 	List<AuthenticationScheme> allEnabledSchemes(Realm realm);
 	
-	public AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey);
+	AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey);
 
-	public List<AuthenticationScheme> getCustomAuthenticationSchemes(Realm realm);
+	List<AuthenticationScheme> getCustomAuthenticationSchemes(Realm realm);
 
-	public AuthenticationScheme getSchemeById(Long id);
+	AuthenticationScheme getSchemeById(Long id);
 
-	public void saveScheme(AuthenticationScheme s);
+	void saveScheme(AuthenticationScheme s);
 
 	Long getSchemeByResourceKeyCount(Realm realm, String resourceKey);
 

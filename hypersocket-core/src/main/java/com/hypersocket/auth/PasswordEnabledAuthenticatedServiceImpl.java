@@ -27,7 +27,7 @@ public abstract class PasswordEnabledAuthenticatedServiceImpl
 			implements PasswordEnabledAuthenticatedService {
 
 	@Autowired
-	EncryptionService encryptionService; 
+	private EncryptionService encryptionService; 
 	
 	@Autowired
 	protected PermissionService permissionService;

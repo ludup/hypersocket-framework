@@ -18,13 +18,13 @@ public class URLForwardingResourceHandler extends
 		AbstractForwardingHandler<URLForwardingResource> {
 
 	@Autowired
-	URLForwardingResourceService websiteService;
+	private URLForwardingResourceService websiteService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	HypersocketServer server;
+	private HypersocketServer server;
 
 	public URLForwardingResourceHandler() {
 		super("url");

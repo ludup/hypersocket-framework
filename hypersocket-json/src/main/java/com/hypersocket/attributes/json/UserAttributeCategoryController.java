@@ -32,7 +32,7 @@ import com.hypersocket.tables.Column;
 public class UserAttributeCategoryController extends AbstractAttributeCategoryController<UserAttribute, UserAttributeCategory> {
 
 	@Autowired
-	UserAttributeCategoryService userAttributeCategoryService;
+	private UserAttributeCategoryService userAttributeCategoryService;
 	
 	@PostConstruct
 	private void init() {

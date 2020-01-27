@@ -21,7 +21,7 @@ public abstract class GroupEvent extends PrincipalEvent {
 	public static final String ATTR_ASSOCIATED_PRINCIPALS = "attr.associatedPrincipals";
 
 	private Principal principal;
-	Collection<Principal> assosiatedPrincipals;
+	private Collection<Principal> assosiatedPrincipals;
 	
 	public GroupEvent(Object source, String resourceKey, Session session,
 			Realm realm, RealmProvider provider, Principal principal,

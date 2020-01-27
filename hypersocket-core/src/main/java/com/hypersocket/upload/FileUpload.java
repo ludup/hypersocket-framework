@@ -14,28 +14,28 @@ public class FileUpload extends RealmResource {
 	private static final long serialVersionUID = 8896410295739619520L;
 
 	@Column(name = "file_name")
-	String fileName;
+	private String fileName;
 
 	@Column(name = "md5_sum")
-	String md5Sum;
+	private String md5Sum;
 
 	@Column(name = "file_size")
-	Long fileSize;
+	private Long fileSize;
 
 	@Column(name = "type")
-	String type;
+	private String type;
 	
 	@Column(name = "is_public")
-	Boolean isPublic;
-	
-	@Transient
-	String url;
+	private Boolean isPublic;
 	
 	@Column(name="short_code", nullable=true)
-	String shortCode;
+	private String shortCode;
+	
+	@Transient
+	private String url;
 
 	@Transient
-	String content;
+	private String content;
 	
 	public FileUpload() {
 	}

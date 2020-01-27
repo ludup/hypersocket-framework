@@ -6,11 +6,11 @@ import com.hypersocket.json.PropertyItem;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class TriggerActionUpdate {
 
-	Long id;
-	boolean newAction;
-	String name;
-	String resourceKey;
-	PropertyItem[] properties;
+	private Long id;
+	private boolean newAction;
+	private String name;
+	private String resourceKey;
+	private PropertyItem[] properties;
 	
 	public TriggerActionUpdate() {
 		

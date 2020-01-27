@@ -28,26 +28,26 @@ public class ExtensionDefinition implements Comparable<ExtensionDefinition>,
 
 	static Logger log = LoggerFactory.getLogger(ExtensionDefinition.class);
 
-	String id;
-	String license;
-	String licenseUrl;
-	String image;
-	String vendor;
-	String url;
-	Integer weight;
-	String hash;
-	File archiveFile;
-	List<String> dependencies = new ArrayList<String>();
-	long lastModified;
-	long size;
-	ExtensionState state = ExtensionState.NOT_INSTALLED;
-	String remoteDefinitionUrl = null;
-	String remoteArchiveUrl = null;
-	Long remoteArchiveSize = null;
-	Properties remoteProperties;
-	boolean system;
-	String version;
-	Map<String, List<String>> appExtensions = new HashMap<String, List<String>>();
+	private String id;
+	private String license;
+	private String licenseUrl;
+	private String image;
+	private String vendor;
+	private String url;
+	private Integer weight;
+	private String hash;
+	private File archiveFile;
+	private List<String> dependencies = new ArrayList<String>();
+	private long lastModified;
+	private long size;
+	private ExtensionState state = ExtensionState.NOT_INSTALLED;
+	private String remoteDefinitionUrl = null;
+	private String remoteArchiveUrl = null;
+	private Long remoteArchiveSize = null;
+	private Properties remoteProperties;
+	private boolean system;
+	private String version;
+	private Map<String, List<String>> appExtensions = new HashMap<String, List<String>>();
 
 	public ExtensionDefinition() {
 

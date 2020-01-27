@@ -15,11 +15,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 
 public class AnnotationServiceImpl implements AnnotationService {
 
-	Map<String,HypersocketExtensionPoint> extensionPoints = new HashMap<String,HypersocketExtensionPoint>();
-	
-	public AnnotationServiceImpl() {
-		
-	}
+	private Map<String,HypersocketExtensionPoint> extensionPoints = new HashMap<String,HypersocketExtensionPoint>();
 	
 	@Override
 	public void registerExtensionPoint(String id, HypersocketExtensionPoint ext) {

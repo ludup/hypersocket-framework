@@ -9,13 +9,13 @@ public abstract class AbstractAttributeCategory<A extends AbstractAttribute<?>> 
 	private static final long serialVersionUID = -8751695909133262852L;
 
 	@Column(name = "weight", nullable = false)
-	Integer weight = new Integer(0);
+	private Integer weight = new Integer(0);
 
 	@Column(name="visibility_depends_on")
-	String visibilityDependsOn;
+	private String visibilityDependsOn;
 	
 	@Column(name="visibility_depends_value")
-	String visibilityDependsValue;
+	private String visibilityDependsValue;
 	
 	public AbstractAttributeCategory() {
 		super();
@@ -44,7 +44,5 @@ public abstract class AbstractAttributeCategory<A extends AbstractAttribute<?>> 
 	public String getVisibilityDependsValue() {
 		return visibilityDependsValue;
 	}
-	
-	
 
 }

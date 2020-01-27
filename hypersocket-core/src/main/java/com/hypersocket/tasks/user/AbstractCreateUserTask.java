@@ -29,10 +29,10 @@ import com.hypersocket.triggers.ValidationException;
 public abstract class AbstractCreateUserTask extends AbstractTaskProvider {
 
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	@Autowired
-	EventService eventService; 
+	private EventService eventService; 
 	
 	@Override
 	public void validate(Task task, Map<String, String> parameters) throws ValidationException {

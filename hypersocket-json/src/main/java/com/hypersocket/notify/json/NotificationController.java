@@ -28,7 +28,7 @@ import com.hypersocket.session.json.SessionTimeoutException;
 public class NotificationController extends AuthenticatedController {
 
 	@Autowired
-	NotificationService notificationService;
+	private NotificationService notificationService;
 
 	@AuthenticationRequiredButDontTouchSession
 	@RequestMapping(value = "notifications/notification/{context}", 

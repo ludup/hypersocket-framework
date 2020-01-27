@@ -33,19 +33,19 @@ public class DigestTask extends AbstractTaskProvider {
 	public static final String RESOURCE_BUNDLE = "DigestTask";
 	
 	@Autowired
-	DigestTaskRepository repository;
+	private DigestTaskRepository repository;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	I18NService i18nService; 
+	private I18NService i18nService; 
 
 	@Autowired
-	FileUploadService uploadService; 
+	private FileUploadService uploadService; 
 	
 	public DigestTask() {
 	}

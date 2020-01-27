@@ -34,7 +34,6 @@ import com.decibel.uasparser.OnlineUpdater;
 import com.decibel.uasparser.UASparser;
 import com.decibel.uasparser.UserAgentInfo;
 import com.hypersocket.auth.AuthenticationScheme;
-import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
@@ -60,22 +59,19 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		implements SessionService, ApplicationListener<ContextStartedEvent> {
 
 	@Autowired
-	SessionRepository repository;
+	private SessionRepository repository;
 
 	@Autowired
-	AuthenticationService authenticationService;
+	private ConfigurationService configurationService;
 
 	@Autowired
-	ConfigurationService configurationService;
+	private ClusteredSchedulerService schedulerService;
 
 	@Autowired
-	ClusteredSchedulerService schedulerService;
+	private RealmService realmService;
 
 	@Autowired
-	RealmService realmService;
-
-	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	static final String SESSION_TIMEOUT = "session.timeout";
 
@@ -83,17 +79,15 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	public static String TOKEN_PREFIX = "_TOK";
 
-	UASparser parser;
-	OnlineUpdater updater;
-	
-	Map<Session, List<ResourceSession<?>>> resourceSessions = new HashMap<Session, List<ResourceSession<?>>>();
-	Map<String, SessionResourceToken<?>> sessionTokens = new HashMap<String, SessionResourceToken<?>>();
+	private UASparser parser;
+	private Map<Session, List<ResourceSession<?>>> resourceSessions = new HashMap<Session, List<ResourceSession<?>>>();
+	private Map<String, SessionResourceToken<?>> sessionTokens = new HashMap<String, SessionResourceToken<?>>();
+	private Map<String, Session> nonCookieSessions = new HashMap<String, Session>();
+	private Session systemSession;
+	private List<SessionReaperListener> listeners = new ArrayList<SessionReaperListener>();
 
-	Map<String, Session> nonCookieSessions = new HashMap<String, Session>();
-	
-	Session systemSession;
-	
-	List<SessionReaperListener> listeners = new ArrayList<SessionReaperListener>();
+	/* BUG: This is contructed here, but never used? */
+	private OnlineUpdater updater;
 	
 	@PostConstruct
 	private void postConstruct() throws AccessDeniedException {
@@ -144,7 +138,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setUserAgent("N/A");
 		session.setUserAgentVersion("N/A");
 		session.setRemoteAddress("");
-		session.system = true;
+		session.setSystem(true);
 
 		repository.saveEntity(session);
 		return session;

@@ -7,18 +7,18 @@ import com.hypersocket.triggers.TriggerType;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class TriggerResourceUpdate {
 
-	Long id;
-	String name;
-	String event;
-	String task;
-	String result;
-	TriggerType type;
-	TriggerActionUpdate[] actions;
-	TriggerConditionUpdate[] allConditions;
-	TriggerConditionUpdate[] anyConditions;
-	PropertyItem[] properties;
-	Long parentId;
-	boolean allRealms;
+	private Long id;
+	private String name;
+	private String event;
+	private String task;
+	private String result;
+	private TriggerType type;
+	private TriggerActionUpdate[] actions;
+	private TriggerConditionUpdate[] allConditions;
+	private TriggerConditionUpdate[] anyConditions;
+	private PropertyItem[] properties;
+	private Long parentId;
+	private boolean allRealms;
 	
 	public TriggerResourceUpdate() {
 		

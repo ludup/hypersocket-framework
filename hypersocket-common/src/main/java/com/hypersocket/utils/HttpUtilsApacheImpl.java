@@ -29,7 +29,7 @@ import org.apache.http.util.EntityUtils;
 
 public class HttpUtilsApacheImpl implements HttpUtils {
 
-	static BasicCookieStore cookieStore = new BasicCookieStore();
+	private static BasicCookieStore cookieStore = new BasicCookieStore();
 
 	@Override
 	public CloseableHttpClient createHttpClient(boolean allowSelfSigned) throws IOException {

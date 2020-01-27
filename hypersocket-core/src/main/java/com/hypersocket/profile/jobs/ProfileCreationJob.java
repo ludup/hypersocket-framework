@@ -13,10 +13,10 @@ import com.hypersocket.scheduler.PermissionsAwareJob;
 public class ProfileCreationJob extends PermissionsAwareJob {
 
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	@Autowired
-	ProfileCredentialsService profileService; 
+	private ProfileCredentialsService profileService; 
 	
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {

@@ -22,12 +22,10 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.auth.AuthenticationScheme;
-import com.hypersocket.permissions.PermissionRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
@@ -41,9 +39,6 @@ import com.hypersocket.utils.HypersocketUtils;
 public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,String> implements SessionRepository {
 
 	static Logger log = LoggerFactory.getLogger(SessionRepositoryImpl.class);
-	
-	@Autowired
-	PermissionRepository permissionRepository; 
 	
 	public SessionRepositoryImpl() {
 		super(true);
@@ -71,7 +66,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		session.setAuthenticationScheme(scheme);
 		session.setTimeout(timeout);
 		session.setPrincipalRealm(realm);
-		session.system = false;
+		session.setSystem(false);
 		save(session);
 		return session;
 	}

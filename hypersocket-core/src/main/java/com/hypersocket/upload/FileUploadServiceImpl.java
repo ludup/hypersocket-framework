@@ -27,10 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hypersocket.cache.CacheUtils;
-import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.realm.Realm;
@@ -55,19 +53,14 @@ public class FileUploadServiceImpl extends
 	
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
 	
-	FileStore defaultStore = new DefaultFileStore();
+	@Autowired
+	private FileUploadRepository repository;
+
+	@Autowired
+	private I18NService i18nService;
 	
-	@Autowired
-	FileUploadRepository repository;
+	private FileStore defaultStore = new DefaultFileStore();
 
-	@Autowired
-	I18NService i18nService;
-
-	@Autowired
-	PermissionService permissionService;
-
-	@Autowired
-	EventService eventService;
 
 	public FileUploadServiceImpl() {
 		super("fileUploads");

@@ -17,7 +17,7 @@ import com.hypersocket.server.handlers.HttpResponseProcessor;
 public class DiscoverHandler extends HttpRequestHandler {
 
 	@Autowired
-	HypersocketServer server; 
+	private HypersocketServer server; 
 	
 	public DiscoverHandler() {
 		super("discover", Integer.MIN_VALUE);

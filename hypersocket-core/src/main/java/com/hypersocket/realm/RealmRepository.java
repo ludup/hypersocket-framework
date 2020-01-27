@@ -19,15 +19,15 @@ import com.hypersocket.tables.ColumnSort;
 public interface RealmRepository extends
 		AbstractSimpleResourceRepository<Realm> {
 
-	public List<Realm> allRealms();
+	List<Realm> allRealms();
 
-	public Realm getRealmById(Long id);
+	Realm getRealmById(Long id);
 
-	public Realm getRealmByName(String name);
+	Realm getRealmByName(String name);
 
-	public Realm getRealmByHost(String host);
+	Realm getRealmByHost(String host);
 
-	public void delete(Realm realm);
+	void delete(Realm realm);
 
 	Realm saveRealm(Realm realm, Map<String, String> properties,
 					RealmProvider provider,
@@ -45,17 +45,17 @@ public interface RealmRepository extends
 	List<Realm> searchRealms(String searchPattern, String searchColumn, int start, int length,
 							 ColumnSort[] sorting, Realm currentRealm, Collection<Realm> filter);
 
-	public Long countRealms(String searchPattern, String searchColumn, Realm currentRealm, Collection<Realm> filter);
+	Long countRealms(String searchPattern, String searchColumn, Realm currentRealm, Collection<Realm> filter);
 
 	Realm saveRealm(Realm realm);
 
-	public Realm getDefaultRealm();
+	Realm getDefaultRealm();
 
-	public Realm setDefaultRealm(Realm realm);
+	Realm setDefaultRealm(Realm realm);
 
 	Realm getRealmByOwner(Long owner);
 
-	public Realm getSystemRealm();
+	Realm getSystemRealm();
 	
 	List<Realm> getRealmsByIds(Long...ids);
 

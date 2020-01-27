@@ -30,7 +30,7 @@ import com.hypersocket.tables.Column;
 public class RoleAttributeController extends AbstractAttributeController<RoleAttribute, RoleAttributeCategory> {
 
 	@Autowired
-	RoleAttributeService roleAttributeService;
+	private RoleAttributeService roleAttributeService;
 
 	public RoleAttributeController() {
 		super("RoleAttributes", "attribute");

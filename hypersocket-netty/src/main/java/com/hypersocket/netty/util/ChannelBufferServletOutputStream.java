@@ -16,7 +16,7 @@ import org.jboss.netty.buffer.ChannelBufferOutputStream;
 
 public class ChannelBufferServletOutputStream extends ServletOutputStream {
 
-	ChannelBufferOutputStream out;
+	private ChannelBufferOutputStream out;
 	
 	public ChannelBufferServletOutputStream(ChannelBuffer buffer) {
 		out = new ChannelBufferOutputStream(buffer);

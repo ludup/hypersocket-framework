@@ -8,10 +8,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class DataTablesResult {
 
-	int sEcho = 1;
-	String iTotalRecords;
-	String iTotalDisplayRecords;
-	Collection<?> aaData;
+	private int sEcho = 1;
+	private String iTotalRecords;
+	private String iTotalDisplayRecords;
+	private Collection<?> aaData;
 	
 	public DataTablesResult() {
 		

@@ -12,7 +12,7 @@ import org.hibernate.criterion.Restrictions;
 
 public class HiddenCriteria implements CriteriaConfiguration {
 
-	boolean hidden;
+	private boolean hidden;
 	
 	public HiddenCriteria(boolean hidden) {
 		this.hidden = hidden;

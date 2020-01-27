@@ -23,7 +23,7 @@ import com.hypersocket.session.json.SessionTimeoutException;
 public class InterfaceController extends AuthenticatedController {
 
 	@Autowired
-	InterfaceRegistrationService resourceService;
+	private InterfaceRegistrationService resourceService;
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "interfaces/list", method = RequestMethod.GET, produces = { "application/json" })

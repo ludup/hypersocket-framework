@@ -2,9 +2,9 @@ package com.hypersocket.tables;
 
 public class SearchColumn {
 
-	String url;
-	String resourceKey;
-	String column;
+	private String url;
+	private String resourceKey;
+	private String column;
 	
 	public SearchColumn() {
 		

@@ -8,8 +8,9 @@ import com.hypersocket.repository.CriteriaConfiguration;
 
 public class RealmCriteria implements CriteriaConfiguration {
 
-	Realm realm;
-	String column = "realm";
+	private Realm realm;
+	private String column = "realm";
+	
 	public RealmCriteria(Realm realm) {
 		this.realm = realm;
 	}

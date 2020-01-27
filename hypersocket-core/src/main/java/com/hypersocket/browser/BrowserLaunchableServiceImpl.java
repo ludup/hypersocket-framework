@@ -31,16 +31,17 @@ public class BrowserLaunchableServiceImpl extends
 	private String fingerprint;
 
 	@Autowired
-	BrowserLaunchableRepository repository;
+	private BrowserLaunchableRepository repository;
 
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
-	Map<Class<? extends BrowserLaunchable>, AbstractAssignableResourceService<?>> services 
+	private Map<Class<? extends BrowserLaunchable>, AbstractAssignableResourceService<?>> services 
 					= new HashMap<Class<? extends BrowserLaunchable>, AbstractAssignableResourceService<?>>();
+	
 	@PostConstruct
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);

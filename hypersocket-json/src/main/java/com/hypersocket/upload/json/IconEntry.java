@@ -2,9 +2,9 @@ package com.hypersocket.upload.json;
 
 public class IconEntry {
 
-	String value;
-	String name;
-	String icon;
+	private String value;
+	private String name;
+	private String icon;
 
 	public IconEntry() {
 	}

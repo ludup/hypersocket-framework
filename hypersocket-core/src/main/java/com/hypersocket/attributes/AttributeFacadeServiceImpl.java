@@ -22,10 +22,10 @@ public class AttributeFacadeServiceImpl extends AbstractAuthenticatedServiceImpl
 		implements AttributeFacadeService {
 
 	@Autowired
-	UserAttributeCategoryService categoryService;
+	private UserAttributeCategoryService categoryService;
 
 	@Autowired
-	UserAttributeService attributeService;
+	private UserAttributeService attributeService;
 
 	/**
 	 * Following methods are for backwards compatibility with old attributes

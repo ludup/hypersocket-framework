@@ -3,8 +3,8 @@ package com.hypersocket.properties;
 
 public class PropertiesFileProperty implements Property {
 
-	PropertyTemplate template;
-	String value;
+	private PropertyTemplate template;
+	private String value;
 	
 	PropertiesFileProperty(PropertyTemplate template, String value) {
 		this.template = template;

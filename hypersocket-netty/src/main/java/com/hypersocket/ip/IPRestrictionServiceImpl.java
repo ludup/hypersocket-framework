@@ -27,11 +27,11 @@ public class IPRestrictionServiceImpl implements IPRestrictionService, Applicati
 
 	static Logger log = LoggerFactory.getLogger(IPRestrictionServiceImpl.class);
 	
-	Set<IpFilterRule> allow = new HashSet<IpFilterRule>();
-	Set<IpFilterRule> deny = new HashSet<IpFilterRule>();
+	private Set<IpFilterRule> allow = new HashSet<IpFilterRule>();
+	private Set<IpFilterRule> deny = new HashSet<IpFilterRule>();
 	
 	@Autowired
-	SystemConfigurationService configurationService;
+	private SystemConfigurationService configurationService;
 
 	@Override
 	public synchronized void blockIPAddress(String addr) throws UnknownHostException {

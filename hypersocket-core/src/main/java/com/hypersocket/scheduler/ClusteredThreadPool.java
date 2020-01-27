@@ -10,7 +10,7 @@ import org.quartz.SchedulerConfigException;
  */
 public class ClusteredThreadPool extends SimpleThreadPoolEx {
 
-	static ClusteredThreadPool instance;
+	private static ClusteredThreadPool instance;
 	
 	public static ClusteredThreadPool getInstance() {
 		return instance;

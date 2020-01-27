@@ -7,8 +7,8 @@ import javax.activation.DataSource;
 
 public abstract class EmailAttachment implements DataSource {
 
-	String filename;
-	String contentType;
+	private String filename;
+	private String contentType;
 	
 	public EmailAttachment(String filename, String contentType) {
 		super();

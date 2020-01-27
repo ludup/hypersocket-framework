@@ -528,7 +528,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			@Override
 			public boolean evaluate(Object o) {
 				Role r = (Role) o;
-				return !r.personalRole;
+				return !r.isPersonalRole();
 			}
 		});
 		return roles;
@@ -542,7 +542,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			@Override
 			public boolean evaluate(Object o) {
 				Role r = (Role) o;
-				return !r.personalRole && !r.allUsers;
+				return !r.isPersonalRole() && !r.isAllUsers();
 			}
 		});
 		return roles;

@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.auth.AuthenticationService;
-import com.hypersocket.config.ConfigurationService;
-import com.hypersocket.i18n.I18NService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -25,24 +23,18 @@ public abstract class PermissionsAwareJob extends TransactionalJob implements Ru
 	static Logger log = LoggerFactory.getLogger(PermissionsAwareJob.class);
 
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 
 	@Autowired
-	RealmRepository realmRepository;
+	private RealmRepository realmRepository;
 	
 	@Autowired
-	I18NService i18nService;
+	private AuthenticationService authenticationService;
 
 	@Autowired
-	ConfigurationService configurationService;
-
-	@Autowired
-	AuthenticationService authenticationService;
-
-	@Autowired
-	SessionService sessionService;
+	private SessionService sessionService;
 	
-	JobExecutionContext context;
+	private JobExecutionContext context;
 	
 	protected Realm realm;
 	protected Principal principal;

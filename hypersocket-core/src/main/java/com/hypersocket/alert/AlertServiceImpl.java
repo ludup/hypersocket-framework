@@ -32,16 +32,16 @@ public class AlertServiceImpl implements AlertService {
 	@Autowired
 	private CacheService cacheService;
 	
-	Map<String,Object> alertLocks = new HashMap<String,Object>();
+	@Autowired
+	private EventService eventService; 
 	
 	@Autowired
-	EventService eventService; 
+	private TriggerResourceService triggerService; 
 	
 	@Autowired
-	TriggerResourceService triggerService; 
+	private AlertTaskRepository taskRepository;
 	
-	@Autowired
-	AlertTaskRepository taskRepository; 
+	private Map<String,Object> alertLocks = new HashMap<String,Object>(); 
 	
 	@Override
 	public void registerDynamicEvent(TriggerResource trigger) {

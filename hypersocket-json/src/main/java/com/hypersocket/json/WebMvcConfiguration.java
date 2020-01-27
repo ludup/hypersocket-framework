@@ -33,18 +33,17 @@ import com.hypersocket.session.json.SessionUtils;
 @Component
 public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 
+	@Autowired
+	private ControllerInterceptor interceptor;
 
 	@Autowired
-	ControllerInterceptor interceptor;
-
-	@Autowired
-	RestApiInterceptor restApiInterceptor;
+	private RestApiInterceptor restApiInterceptor;
 	
 	@Autowired
-	AuthenticationService authenticationService; 
+	private AuthenticationService authenticationService; 
 
 	@Autowired
-	SessionUtils sessionUtils; 
+	private SessionUtils sessionUtils; 
 	
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {

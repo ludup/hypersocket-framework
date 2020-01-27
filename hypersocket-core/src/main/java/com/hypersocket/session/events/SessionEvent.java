@@ -25,7 +25,7 @@ public abstract class SessionEvent extends SystemEvent {
 	public static final String ATTR_PRINCIPAL_REALM = CommonAttributes.ATTR_PRINCIPAL_REALM;
 	public static final String ATTR_IP_ADDRESS = CommonAttributes.ATTR_IP_ADDRESS;
 	
-	Session session;
+	private Session session;
 	
 	public SessionEvent(Object source, String resourceKey, boolean success,
 			Session session) {

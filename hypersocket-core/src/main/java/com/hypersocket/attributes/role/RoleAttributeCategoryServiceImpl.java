@@ -15,7 +15,7 @@ public class RoleAttributeCategoryServiceImpl extends AbstractAttributeCategoryS
 	public static final String RESOURCE_BUNDLE = "RoleAttributes";
 
 	@Autowired
-	RoleAttributeCategoryRepository userAttributeCategoryRepository;
+	private RoleAttributeCategoryRepository userAttributeCategoryRepository;
 
 	public RoleAttributeCategoryServiceImpl() {
 		super(RESOURCE_BUNDLE, RoleAttributePermission.class, RoleAttributeCategory.class,

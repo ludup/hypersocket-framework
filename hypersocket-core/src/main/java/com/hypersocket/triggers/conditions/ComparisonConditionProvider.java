@@ -21,9 +21,9 @@ import com.hypersocket.triggers.ValidationException;
 public class ComparisonConditionProvider implements TriggerConditionProvider {
 
 	@Autowired
-	TriggerResourceService triggerService; 
+	private TriggerResourceService triggerService; 
 	
-	Map<String,Condition> supportedConditions = new HashMap<String,Condition>();
+	private Map<String,Condition> supportedConditions = new HashMap<String,Condition>();
 	
 	@PostConstruct
 	private void postConstruct() {

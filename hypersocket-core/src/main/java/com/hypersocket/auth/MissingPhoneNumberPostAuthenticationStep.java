@@ -16,7 +16,6 @@ import com.hypersocket.input.FormTemplate;
 import com.hypersocket.input.ParagraphField;
 import com.hypersocket.input.TextInputField;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.profile.ProfileRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserPrincipal;
 import com.hypersocket.resource.ResourceException;
@@ -37,22 +36,19 @@ public class MissingPhoneNumberPostAuthenticationStep implements PostAuthenticat
 	public static final String PARAM_SECONDARY = "secondaryPhone";
 	
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 	
 	@Autowired
-	ProfileRepository profileRepository;
+	private AuthenticationService authenticationService;
 	
 	@Autowired
-	AuthenticationService authenticationService;
+	private ConfigurationService configurationService;
 	
 	@Autowired
-	ConfigurationService configurationService;
+	private RealmService realmService; 
 	
 	@Autowired
-	RealmService realmService; 
-	
-	@Autowired
-	SessionService sessionService; 
+	private SessionService sessionService; 
 	
 	@PostConstruct
 	private void postConstruct() {

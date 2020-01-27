@@ -19,49 +19,49 @@ public class CertificateResource extends RealmResource {
 	private static final long serialVersionUID = 2494558616152991393L;
 
 	@Column(name="type")
-	CertificateType type;
+	private CertificateType type;
 	
 	@Column(name="cn")
-	String commonName;
+	private String commonName;
 	
 	@Column(name="ou")
-	String organizationalUnit;
+	private String organizationalUnit;
 	
 	@Column(name="o")
-	String organization;
+	private String organization;
 	
 	@Column(name="l")
-	String location;
+	private String location;
 	
 	@Column(name="s")
-	String state;
+	private String state;
 	
 	@Column(name="c")
-	String country;
+	private String country;
 
 	@Column(name="private_key", nullable=false)
 	@Lob
-	String privateKey;
+	private String privateKey;
 	
 	@Column(name="certificate", nullable=true)
 	@Lob
-	String certificate;
+	private String certificate;
 	
 	@Column(name="bundle", nullable=true)
 	@Lob
-	String bundle;
+	private String bundle;
 	
 	@Column(name="signature_type")
-	String signatureAlgorithm;
+	private String signatureAlgorithm;
 	
 	@Column(name="provider")
-	String provider;
+	private String provider;
 	
 	@Temporal(TemporalType.DATE)
-	Date expiryDate;
+	private Date expiryDate;
 	
 	@Temporal(TemporalType.DATE)
-	Date issueDate;
+	private Date issueDate;
 	
 	public String getProvider() {
 		return provider;

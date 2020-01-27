@@ -30,12 +30,12 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 	}
 	
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 	
 	@Autowired
-	PermissionService permissionService; 
+	private PermissionService permissionService; 
 	
-	Set<UserVariableReplacement> additionalReplacements = new HashSet<UserVariableReplacement>();
+	private Set<UserVariableReplacement> additionalReplacements = new HashSet<UserVariableReplacement>();
 
 	public static Set<String> getDefaultReplacements() {
 		return defaultReplacements;

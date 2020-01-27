@@ -16,9 +16,9 @@ import com.hypersocket.server.websocket.WebsocketClientCallback;
 
 public interface WebsocketHandler {
 
-	public boolean handlesRequest(HttpServletRequest request);
+	boolean handlesRequest(HttpServletRequest request);
 	
-	public void acceptWebsocket(HttpServletRequest request, 
+	void acceptWebsocket(HttpServletRequest request, 
 			HttpServletResponse nettyResponse, 
 			WebsocketClientCallback callback, 
 			HttpResponseProcessor processor) throws UnauthorizedException, AccessDeniedException;

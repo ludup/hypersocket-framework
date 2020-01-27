@@ -20,7 +20,7 @@ import com.hypersocket.tables.ColumnSort;
 
 public interface SessionRepository extends AbstractEntityRepository<Session,String> {
 
-	public Session createSession(String remoteAddress, 
+	Session createSession(String remoteAddress, 
 			Principal principal, 
 			AuthenticationScheme scheme, 
 			String userAgent, 
@@ -30,11 +30,11 @@ public interface SessionRepository extends AbstractEntityRepository<Session,Stri
 			int timeout,
 			Realm realm);
 	
-	public Session getSessionById(String id);
+	Session getSessionById(String id);
 	
-	public void updateSession(Session session);
+	void updateSession(Session session);
 
-	public List<Session> getActiveSessions();
+	List<Session> getActiveSessions();
 
 	List<Session> getSystemSessions();
 

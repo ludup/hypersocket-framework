@@ -38,18 +38,18 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 	static Logger log = LoggerFactory.getLogger(ProfileCredentialsServiceImpl.class);
 	
 	@Autowired
-	PermissionService permissionService; 
+	private PermissionService permissionService; 
 	
 	@Autowired
-	ProfileRepository profileRepository;
+	private ProfileRepository profileRepository;
 	
 	@Autowired
-	ClusteredSchedulerService schedulerService; 
+	private ClusteredSchedulerService schedulerService; 
 	
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
-	Map<String,ProfileCredentialsProvider> providers = new HashMap<String,ProfileCredentialsProvider>();
+	private Map<String,ProfileCredentialsProvider> providers = new HashMap<String,ProfileCredentialsProvider>();
 	
 	@PostConstruct
 	private void postConstruct() {

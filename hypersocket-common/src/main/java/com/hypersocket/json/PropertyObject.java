@@ -1,10 +1,9 @@
 package com.hypersocket.json;
 
 public class PropertyObject {
-	String proertyName;
-	String propertyValue;
-	
-	
+	private String proertyName;
+	private String propertyValue;
+
 	public PropertyObject(String proertyName, String propertyValue) {
 		super();
 		this.proertyName = proertyName;

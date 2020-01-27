@@ -34,13 +34,13 @@ public class UserAttributeServiceImpl extends AbstractAttributeServiceImpl<UserA
 	public static final String RESOURCE_BUNDLE = "UserAttributes";
 
 	@Autowired
-	UserAttributeRepository userAttributeRepository;
+	private UserAttributeRepository userAttributeRepository;
 
 	@Autowired
-	UserAttributeCategoryRepository userAttributeCategoryRepository;
+	private UserAttributeCategoryRepository userAttributeCategoryRepository;
 
 	@Autowired
-	UserAttributeCategoryService userAttributeCategoryService;
+	private UserAttributeCategoryService userAttributeCategoryService;
 
 	FakePrincipal allUsersPrincial = new FakePrincipal("allusers");
 

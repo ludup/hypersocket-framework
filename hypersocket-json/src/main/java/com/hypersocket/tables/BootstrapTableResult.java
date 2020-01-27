@@ -7,9 +7,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class BootstrapTableResult<T> {
 
-	long total;
-	Collection<?> rows;
-	T resource;
+	private long total;
+	private Collection<?> rows;
+	private T resource;
 	
 	public BootstrapTableResult() {
 		

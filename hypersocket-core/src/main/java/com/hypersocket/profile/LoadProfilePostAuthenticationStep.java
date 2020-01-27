@@ -22,11 +22,12 @@ public class LoadProfilePostAuthenticationStep implements
 		PostAuthenticationStep {
 
 	static Logger log = LoggerFactory.getLogger(LoadProfilePostAuthenticationStep.class);
-	@Autowired
-	RealmService realmService; 
 	
 	@Autowired
-	AuthenticationService authenticationService; 
+	private RealmService realmService; 
+	
+	@Autowired
+	private AuthenticationService authenticationService; 
 	
 	public LoadProfilePostAuthenticationStep() {
 	}

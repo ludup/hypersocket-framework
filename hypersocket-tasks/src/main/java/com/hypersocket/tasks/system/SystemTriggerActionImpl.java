@@ -17,7 +17,6 @@ import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.AbstractTaskResult;
-import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.ValidationException;
 
@@ -30,16 +29,13 @@ public class SystemTriggerActionImpl extends AbstractTaskProvider {
 	public static final String ACTION_RESTART = "restartAction";
 	
 	@Autowired
-	SystemTriggerActionRepository repository; 
+	private SystemTriggerActionRepository repository; 
 	
 	@Autowired
-	HypersocketServer server;
+	private HypersocketServer server; 
 	
 	@Autowired
-	TriggerResourceService triggerService; 
-	
-	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 	
 	@Autowired
 	TaskProviderService taskService; 

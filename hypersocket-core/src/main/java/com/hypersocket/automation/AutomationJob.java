@@ -18,7 +18,6 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.tasks.DynamicResultsTaskProvider;
 import com.hypersocket.tasks.DynamicTaskExecutionContext;
 import com.hypersocket.tasks.TaskProvider;
@@ -35,25 +34,22 @@ public class AutomationJob extends AbstractTriggerJob {
 	static Logger log = LoggerFactory.getLogger(AutomationJob.class);
 	
 	@Autowired
-	AutomationResourceService automationService; 
+	private AutomationResourceService automationService; 
 	
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 	
 	@Autowired
-	EventService eventService; 
+	private EventService eventService; 
 	
 	@Autowired
-	ClusteredSchedulerService schedulerService; 
+	private RealmService realmService;
 	
 	@Autowired
-	RealmService realmService;
+	private TransactionService transactionService;
 	
 	@Autowired
-	TransactionService transactionService;
-	
-	@Autowired
-	SessionFactory sessionFactory;
+	private SessionFactory sessionFactory;
 	
 	public AutomationJob() {
 	}

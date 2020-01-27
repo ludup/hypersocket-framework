@@ -34,13 +34,13 @@ public class PermissionCategory extends AbstractEntity<Long> {
 	@Id
 	@GeneratedValue(strategy=GenerationType.TABLE)
 	@Column(name="id")
-	Long id;
+	private Long id;
 
 	@Column(name="resource_bundle", nullable=false, length = 512)	
-	String resourceBundle;
+	private String resourceBundle;
 	
 	@Column(name="resource_key", nullable=false, length = 512)	
-	String resourceKey;
+	private String resourceKey;
 
 	@OneToMany(mappedBy="category", fetch=FetchType.EAGER)
 	@Cascade(CascadeType.DELETE)

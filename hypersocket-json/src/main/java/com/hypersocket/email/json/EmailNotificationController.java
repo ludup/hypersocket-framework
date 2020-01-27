@@ -21,7 +21,6 @@ import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.ConfigurationService;
-import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.email.EmailTrackerService;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.SelectOption;
@@ -32,18 +31,15 @@ import com.hypersocket.upload.FileUploadService;
 
 @Controller
 public class EmailNotificationController extends AuthenticatedController {
-
-	@Autowired
-	EmailNotificationService emailService;
 	
 	@Autowired
-	EmailTrackerService trackerService; 
+	private EmailTrackerService trackerService; 
 	
 	@Autowired
-	FileUploadService uploadService; 
+	private FileUploadService uploadService; 
 	
 	@Autowired
-	ConfigurationService configurationService; 
+	private ConfigurationService configurationService; 
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "emails/smtpProtocols", method = RequestMethod.GET, produces = { "application/json" })

@@ -51,7 +51,7 @@ public class HazelcastSpringConfiguration {
 	private Environment environment;
 
 	@Value("${user.dir}")
-	String userDir;
+	private String userDir;
 
 	@Bean
 	Config config(NetworkConfig networkConfig) {

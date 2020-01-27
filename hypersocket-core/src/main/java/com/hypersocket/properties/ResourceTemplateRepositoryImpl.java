@@ -49,30 +49,29 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	static Logger log = LoggerFactory.getLogger(ResourceTemplateRepositoryImpl.class);
 
-	DatabasePropertyStore configPropertyStore;
+	private DatabasePropertyStore configPropertyStore;
 
 	@Autowired
-	EncryptionService encryptionService;
+	private EncryptionService encryptionService;
 
 	@Autowired
-	ApplicationContext applicationContext;
+	private ApplicationContext applicationContext;
 	
 	@Autowired
-	Environment environment;
+	private Environment environment;
 	
-	Map<String, PropertyCategory> activeCategories = new HashMap<>();
-	Map<String, PropertyTemplate> propertyTemplates = new HashMap<>();
+	private Map<String, PropertyCategory> activeCategories = new HashMap<>();
+	private Map<String, PropertyTemplate> propertyTemplates = new HashMap<>();
 	
-	Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<>();
-	Map<String, PropertyStore> propertyStoresById = new HashMap<>();
-	Set<PropertyStore> propertyStores = new HashSet<>();
+	private Map<String, PropertyStore> propertyStoresById = new HashMap<>();
+	private Set<PropertyStore> propertyStores = new HashSet<>();
 
-	List<PropertyTemplate> activeTemplates = new ArrayList<>();
-	Set<String> propertyNames = new HashSet<>();
-	Set<String> variableNames = new HashSet<>();
+	private List<PropertyTemplate> activeTemplates = new ArrayList<>();
+	private Set<String> propertyNames = new HashSet<>();
+	private Set<String> variableNames = new HashSet<>();
 
-	Set<PropertyResolver> propertyResolvers = new HashSet<>();
-	String resourceXmlPath;
+	private Set<PropertyResolver> propertyResolvers = new HashSet<>();
+	private String resourceXmlPath;
 
 	static Map<String, List<ResourceTemplateRepository>> propertyContexts = new HashMap<>();
 	static Map<String, Set<PropertyTemplate>> propertyTemplatesByType = new HashMap<>();
@@ -457,7 +456,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		for(int i = 0; i < pnode.getAttributes().getLength(); i++) {
 			Node n = pnode.getAttributes().item(i);
 			if(!isKnownAttributeName(n.getNodeName())) {
-				template.attributes.put(n.getNodeName(), n.getNodeValue());
+				template.getAttributes().put(n.getNodeName(), n.getNodeValue());
 			}
 		}
 		

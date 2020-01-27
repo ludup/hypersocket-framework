@@ -15,11 +15,11 @@ public class HttpChunkStream implements ChunkedInput {
 	static Logger log = LoggerFactory.getLogger(HttpChunkStream.class);
 	
 	private static final int CHUNK_SIZE = 65535;
-	boolean eof = false;
+	private boolean eof = false;
 
-	InputStream data;
-	String uri;
-	long position;
+	private InputStream data;
+	private String uri;
+	private long position;
 	
 	HttpChunkStream(InputStream data, String uri) {
 		this.data = data;

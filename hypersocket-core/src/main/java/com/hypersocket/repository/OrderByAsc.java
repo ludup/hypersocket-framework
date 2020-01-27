@@ -12,7 +12,8 @@ import org.hibernate.criterion.Order;
 
 public class OrderByAsc implements CriteriaConfiguration {
 
-	String property;
+	private String property;
+	
 	public OrderByAsc(String property) {
 		this.property = property;
 	}

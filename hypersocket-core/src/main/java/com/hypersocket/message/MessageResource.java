@@ -18,56 +18,56 @@ public class MessageResource extends RealmResource {
 	private static final long serialVersionUID = -5676595715637581705L;
 
 	@Column(name="resource_key", nullable=true)
-	String resourceKey;
+	private String resourceKey;
 	
 	@Column(name="subject", length=1024)
-	String subject;
+	private String subject;
 	
 	@Column(name="body")
 	@Lob
-	String body;
+	private String body;
 	
 	@Column(name="html")
 	@Lob
-	String html;
+	private String html;
 	
 	@Column(name="enabled")
-	Boolean enabled;
+	private Boolean enabled;
 	
 	@Column(name="track")
-	Boolean track;
+	private Boolean track;
 	
 	@Column(name="system_only")
-	Boolean systemOnly;
+	private Boolean systemOnly;
 	
 	@Column(name="use_template")
-	Boolean useTemplate;
+	private Boolean useTemplate;
 	
 	@Column(name="attachments", length=1024)
-	String attachments;
+	private String attachments;
 	
 	@Column(name="deliver_strategy")
-	EmailDeliveryStrategy deliveryStrategy;
+	private EmailDeliveryStrategy deliveryStrategy;
 	
 	@Column(name="additional", length=1024)
-	String additionalTo;
+	private String additionalTo;
 	
 	@Column(name="reply_name", length=1024)
-	String replyToName;
+	private String replyToName;
 	
 	@Column(name="reply_email", length=1024)
-	String replyToEmail;
+	private String replyToEmail;
 
 	@Column(name="variables")
 	@Lob
-	String supportedVariables;
+	private String supportedVariables;
 
 	@ManyToOne
 	@JoinColumn(name="html_template")
-	HtmlTemplateResource htmlTemplate;
+	private HtmlTemplateResource htmlTemplate;
 	
 	@Column(name="archive")
-	Boolean archive;
+	private Boolean archive;
 	
 	public String getSubject() {
 		return subject;

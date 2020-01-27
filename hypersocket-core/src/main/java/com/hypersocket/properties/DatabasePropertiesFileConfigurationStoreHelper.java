@@ -12,7 +12,7 @@ public class DatabasePropertiesFileConfigurationStoreHelper {
 	public static final String RESOURCE_BUNDLE = "DatabaseService";
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@PostConstruct
 	public void init(){

@@ -60,7 +60,6 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionRepository;
 import com.hypersocket.permissions.PermissionScope;
-import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.profile.ProfileCredentialsProvider;
 import com.hypersocket.profile.ProfileCredentialsService;
@@ -101,7 +100,6 @@ import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
-import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.ColumnSort;
@@ -137,84 +135,72 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	static Logger log = LoggerFactory.getLogger(RealmServiceImpl.class);
 
-	Map<String, RealmProvider> providersByModule = new HashMap<String, RealmProvider>();
+	private Map<String, RealmProvider> providersByModule = new HashMap<String, RealmProvider>();
 
-	List<RealmListener> realmListeners = new ArrayList<RealmListener>();
-	List<PrincipalProcessor> principalProcessors = new ArrayList<PrincipalProcessor>();
-
-	@Autowired
-	RealmRepository realmRepository;
+	private List<RealmListener> realmListeners = new ArrayList<RealmListener>();
+	private List<PrincipalProcessor> principalProcessors = new ArrayList<PrincipalProcessor>();
 
 	@Autowired
-	PermissionService permissionServ;
+	private RealmRepository realmRepository;
 
 	@Autowired
-	PermissionRepository permissionRepository;
+	private PermissionRepository permissionRepository;
 
 	@Autowired
-	EventService eventService;
-
-	Principal systemPrincipal;
-
-	Realm systemRealm;
+	private EventService eventService;
 
 	@Autowired
-	UpgradeService upgradeService;
+	private UpgradeService upgradeService;
 
 	@Autowired
-	SessionService sessionService;
+	private SessionService sessionService;
 
 	@Autowired
-	ClusteredSchedulerService schedulerService;
+	private UserVariableReplacementService userVariableReplacement;
 
 	@Autowired
-	PrincipalSuspensionService suspensionService;
+	private ConfigurationService configurationService;
 
 	@Autowired
-	UserVariableReplacementService userVariableReplacement;
+	private SystemConfigurationService systemConfigurationService;
 
 	@Autowired
-	ConfigurationService configurationService;
+	private UserAttributeService userAttributeService;
 
 	@Autowired
-	SystemConfigurationService systemConfigurationService;
+	private TransactionService transactionService;
 
 	@Autowired
-	UserAttributeService userAttributeService;
+	private PrincipalSuspensionRepository suspensionRepository;
 
 	@Autowired
-	TransactionService transactionService;
+	private CacheService cacheService;
 
 	@Autowired
-	PrincipalSuspensionRepository suspensionRepository;
-
-	Cache<String, Object> realmCache;
+	private PrincipalRepository principalRepository;
 
 	@Autowired
-	CacheService cacheService;
+	private MessageResourceService messageService;
 
 	@Autowired
-	PrincipalRepository principalRepository;
+	private OrganizationalUnitRepository ouRepository;
 
 	@Autowired
-	MessageResourceService messageService;
+	private ProfileCredentialsService profileService;
 
 	@Autowired
-	OrganizationalUnitRepository ouRepository;
+	private PasswordPolicyResourceService passwordPolicyService;
 
 	@Autowired
-	ProfileCredentialsService profileService;
+	private ExportService exportService;
 
 	@Autowired
-	PasswordPolicyResourceService passwordPolicyService;
+	private I18NService i18nService;
 
-	@Autowired
-	ExportService exportService;
-
-	@Autowired
-	I18NService i18nService;
-
-	List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
+	private List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
+	private Principal systemPrincipal;
+	private Realm systemRealm;
+	private Cache<String, Object> realmCache;
 
 	public static final String MESSAGE_NEW_USER_NEW_PASSWORD = "realmService.newUserNewPassword";
 	public static final String MESSAGE_NEW_USER_TMP_PASSWORD = "realmService.newUserTmpPassword";

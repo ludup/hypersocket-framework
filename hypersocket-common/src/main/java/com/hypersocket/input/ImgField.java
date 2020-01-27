@@ -2,11 +2,10 @@ package com.hypersocket.input;
 
 public class ImgField extends InputField {
 
-	String url;
-	String alt;
-	Integer width;
-	String _float;
-	String _class;
+	private String url;
+	private String alt;
+	private Integer width;
+	private String _class;
 	
 	public ImgField() {
 	}
@@ -29,6 +28,10 @@ public class ImgField extends InputField {
 		this.alt = alt;
 		this.width = width;
 		this._class = _class;
+	}
+	
+	public String getAlt() {
+		return alt;
 	}
 	
 	public String getUrl() {

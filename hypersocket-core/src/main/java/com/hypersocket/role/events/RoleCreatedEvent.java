@@ -15,7 +15,8 @@ public class RoleCreatedEvent extends RoleEvent {
 
 	public static final String EVENT_RESOURCE_KEY = "role.created";
 	public static final String ATTR_PRINCIPALS_GRANTED = "attr.principalsGranted";
-	Collection<Principal> granted;
+	
+	private Collection<Principal> granted;
 	
 	public RoleCreatedEvent(Object source, Session session, Realm realm,
 			Role resource, Collection<Principal> granted) {

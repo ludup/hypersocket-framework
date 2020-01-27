@@ -2,14 +2,14 @@ package com.hypersocket.dashboard;
 
 public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 
-	int weight;
-	String resourceKey;
-	String contentPath;
-	boolean large;
-	boolean visible;
-	Long column;
-	Long position;
-	boolean system;
+	private int weight;
+	private String resourceKey;
+	private String contentPath;
+	private boolean large;
+	private boolean visible;
+	private Long column;
+	private Long position;
+	private boolean system;
 	
 	public OverviewWidget() {
 

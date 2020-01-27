@@ -21,9 +21,7 @@ import com.hypersocket.HypersocketVersion;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.http.HttpUtilsImpl;
 import com.hypersocket.i18n.I18NService;
-import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.scheduler.ClusteredSchedulerService;
 
 @Service
 public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
@@ -48,16 +46,10 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	private long lastFirstStepsUpdate = 0;
 
 	@Autowired
-	I18NService i18nService;
-
-	@Autowired
-	ClusteredSchedulerService schedulerService;
-
-	@Autowired
-	PermissionService permissionService; 
+	private I18NService i18nService;
 	
 	@Autowired
-	HttpUtilsImpl httpUtils;
+	private HttpUtilsImpl httpUtils;
 	
 	@PostConstruct
 	private void postConstruct() {

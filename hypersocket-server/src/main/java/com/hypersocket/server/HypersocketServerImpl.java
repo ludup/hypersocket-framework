@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +76,18 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	private static Logger log = LoggerFactory.getLogger(HypersocketServerImpl.class);
 
+	@Autowired
+	private EventService eventService;
+	
+	@Autowired
+	private SessionService sessionService;
+	
+	@Autowired
+	private SystemConfigurationService configurationService;
+	
+	@Autowired 
+	private RealmService realmService;
+
 	private Map<String, Object> attributes = new HashMap<String, Object>();
 
 	private String sessionCookieName;
@@ -91,40 +102,25 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	private Map<HTTPInterfaceResource,SSLContext> sslContexts = new HashMap<HTTPInterfaceResource,SSLContext>();
 	private Map<HTTPInterfaceResource,KeyStore> sslCertificates = new HashMap<HTTPInterfaceResource,KeyStore>();
 	private String defaultRedirectPath = null;
-	private HomePageResolver homePageResolver = null;
+	private HomePageResolver homePageResolver = null; 
 	
-	@Autowired
-	EventService eventService;
-	
-	@Autowired
-	SessionService sessionService; 
-	
-	List<HttpRequestHandler> httpHandlers = Collections
+	private List<HttpRequestHandler> httpHandlers = Collections
 			.synchronizedList(new ArrayList<HttpRequestHandler>());
 
-	List<WebsocketHandler> wsHandlers = Collections
+	private List<WebsocketHandler> wsHandlers = Collections
 			.synchronizedList(new ArrayList<WebsocketHandler>());
 	
-	List<String> compressablePaths = new ArrayList<String>();
+	private List<String> compressablePaths = new ArrayList<String>();
 	
-	ApplicationContext applicationContext;
+	private ApplicationContext applicationContext;
 	
-	@Autowired
-	SystemConfigurationService configurationService;
+	private String[] enabledCipherSuites;
+	private String[] enabledProtocols;
 	
-	@Autowired 
-	RealmService realmService;
+	private boolean stopping = false;
 	
-	@Autowired
-	SessionFactory sessionFactory;
-	
-	String[] enabledCipherSuites;
-	String[] enabledProtocols;
-	
-	boolean stopping = false;
-	
-	Map<Pattern,String> urlRewrite = new HashMap<Pattern,String>();
-	Map<String,String> aliases = new HashMap<String,String>();
+	private Map<Pattern,String> urlRewrite = new HashMap<Pattern,String>();
+	private Map<String,String> aliases = new HashMap<String,String>();
 
 	private HypersocketServletContext servletContext;
 	

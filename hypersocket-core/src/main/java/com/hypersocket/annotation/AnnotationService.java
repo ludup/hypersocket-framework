@@ -11,7 +11,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 
 public interface AnnotationService {
 
-	public Object process(ProceedingJoinPoint pjp) throws Throwable;
+	Object process(ProceedingJoinPoint pjp) throws Throwable;
 
 	void registerExtensionPoint(String id, HypersocketExtensionPoint ext);
 }

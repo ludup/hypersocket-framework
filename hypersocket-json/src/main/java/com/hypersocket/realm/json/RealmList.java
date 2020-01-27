@@ -17,7 +17,7 @@ import com.hypersocket.realm.Realm;
 @XmlRootElement(name="roles")
 public class RealmList {
 
-	List<Realm> realms;
+	private List<Realm> realms;
 	
 	@XmlElement(name="realm")
 	public List<Realm> getRealms() {

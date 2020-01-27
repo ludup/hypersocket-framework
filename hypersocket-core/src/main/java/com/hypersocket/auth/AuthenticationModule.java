@@ -27,17 +27,17 @@ public class AuthenticationModule extends AbstractEntity<Long> {
 	@Id
 	@GeneratedValue(strategy=GenerationType.TABLE)
 	@Column(name = "module_id")
-	Long id;
+	private Long id;
 
 	@Column(name = "template")
-	String template;
+	private String template;
 
 	@OneToOne
 	@JoinColumn(name = "scheme_id")
-	AuthenticationScheme scheme;
+	private AuthenticationScheme scheme;
 
 	@Column(name = "idx")
-	Integer idx;
+	private Integer idx;
 
 	public AuthenticationModule() {
 

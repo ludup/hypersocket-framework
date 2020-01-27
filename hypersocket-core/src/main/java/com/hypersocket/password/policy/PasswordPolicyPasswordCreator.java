@@ -7,7 +7,7 @@ import com.hypersocket.resource.ResourceException;
 
 public class PasswordPolicyPasswordCreator implements PasswordCreator {
 
-	String password;
+	private String password;
 	
 	@Override
 	public char[] createPassword(Principal principal) throws ResourceException {

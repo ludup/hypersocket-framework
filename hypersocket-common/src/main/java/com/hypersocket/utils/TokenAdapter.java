@@ -4,9 +4,6 @@ import java.util.Map;
 
 public class TokenAdapter implements ITokenResolver {
 
-	public TokenAdapter() {
-	}
-
 	@Override
 	public String resolveToken(String tokenName) {
 		return null;

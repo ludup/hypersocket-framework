@@ -6,12 +6,12 @@ import com.hypersocket.json.PropertyItem;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class AssignableResourceUpdate {
 
-	Long id;
-	String name;
-	Long[] roles;
-	PropertyItem[] properties;
-	String logo;
-	boolean personal;
+	private Long id;
+	private String name;
+	private Long[] roles;
+	private PropertyItem[] properties;
+	private String logo;
+	private boolean personal;
 	
 	public AssignableResourceUpdate() {
 		

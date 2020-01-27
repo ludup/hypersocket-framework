@@ -12,9 +12,10 @@ import com.hypersocket.resource.RealmResource;
 public class OrganizationalUnit extends RealmResource {
 
 	private static final long serialVersionUID = -1269723999215576537L;
+	
 	@Column(name="dn")
 	@Lob
-	String dn;
+	private String dn;
 	
 	public String getDn() {
 		return dn;

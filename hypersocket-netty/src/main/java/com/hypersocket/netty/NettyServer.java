@@ -67,7 +67,6 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
-import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
 import com.hypersocket.netty.log.NCSARequestLog;
 import com.hypersocket.properties.ResourceUtils;
@@ -93,42 +92,39 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	static Logger log = LoggerFactory.getLogger(NettyServer.class);
 
-	private ClientBootstrap clientBootstrap = null;
-	private ServerBootstrap serverBootstrap = null;
-	Map<HTTPInterfaceResource,Set<Channel>> httpChannels;
-	Map<HTTPInterfaceResource,Set<Channel>> httpsChannels;
-
-	ExecutorService executor;
-
 	@Autowired
 	ExtendedIpFilterRuleHandler ipFilterHandler;
 
-	MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
-	Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
-
-	ExecutionHandler executionHandler;
+	@Autowired
+	private SystemConfigurationService configurationService;
 
 	@Autowired
-	IPRestrictionService ipRestrictionService;
+	private EventService eventService;
 
 	@Autowired
-	SystemConfigurationService configurationService;
+	private SessionService sessionService;
 
 	@Autowired
-	EventService eventService;
+	private I18NService i18nService;
 
 	@Autowired
-	SessionService sessionService;
+	private RealmService realmService;
 
-	@Autowired
-	I18NService i18nService;
+	private ClientBootstrap clientBootstrap = null;
+	private ServerBootstrap serverBootstrap = null;
+	private Map<HTTPInterfaceResource,Set<Channel>> httpChannels;
+	private Map<HTTPInterfaceResource,Set<Channel>> httpsChannels;
 
-	@Autowired
-	RealmService realmService;
+	private ExecutorService executor;
 
-	NettyThreadFactory nettyThreadFactory;
+	private MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
+	private Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
 
-	List<ClientConnector> clientConnectors = new ArrayList<ClientConnector>();
+	private ExecutionHandler executionHandler;
+
+	private NettyThreadFactory nettyThreadFactory;
+
+	private List<ClientConnector> clientConnectors = new ArrayList<ClientConnector>();
 
 	private Set<String> preventUrlRedirection = new HashSet<>();
 	private NCSARequestLog requestLog;
@@ -139,6 +135,11 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	
 	public NCSARequestLog getRequestLog() {
 		return requestLog;
+	}
+
+	
+	public ExecutionHandler getHandler() {
+		return executionHandler;
 	}
 	
 	public OrderedMemoryAwareThreadPoolExecutor getExecutionHandler() {

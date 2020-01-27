@@ -4,7 +4,7 @@ import com.hypersocket.resource.ResourceException;
 
 public class DefaultPasswordCreator implements PasswordCreator {
 
-	String password;
+	private String password;
 	
 	public DefaultPasswordCreator(String password) {
 		this.password = password;

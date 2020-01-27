@@ -12,7 +12,7 @@ import org.hibernate.criterion.Restrictions;
 
 public class DeletedCriteria implements CriteriaConfiguration {
 
-	boolean deleted;
+	private boolean deleted;
 	
 	public DeletedCriteria(boolean deleted) {
 		this.deleted = deleted;

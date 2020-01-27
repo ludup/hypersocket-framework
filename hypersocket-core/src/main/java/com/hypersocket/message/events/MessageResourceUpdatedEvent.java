@@ -8,17 +8,9 @@ import com.hypersocket.session.Session;
 public class MessageResourceUpdatedEvent extends
 		MessageResourceEvent {
 
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 697988030382428987L;
-	/**
-	 * TODO rename to suit your resource and replace message with lower case
-	 * name of your resource.
-	 * 
-	 * You typically add attributes to the base MessageResourceEvent
-	 * class so these can be reused across all resource events.
-	 */
+
 	public static final String EVENT_RESOURCE_KEY = "message.updated";
 
 	public MessageResourceUpdatedEvent(Object source,

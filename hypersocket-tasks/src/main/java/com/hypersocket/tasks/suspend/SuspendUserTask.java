@@ -24,7 +24,6 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -41,25 +40,22 @@ public class SuspendUserTask extends AbstractTaskProvider {
 	public static final String RESOURCE_KEY = "suspendUser";
 
 	@Autowired
-	SuspendUserTaskRepository repository;
+	private SuspendUserTaskRepository repository;
 
 	@Autowired
-	PrincipalSuspensionService suspensionService; 
+	private PrincipalSuspensionService suspensionService; 
 	
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@Autowired
-	ClusteredSchedulerService schedulerService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	TaskProviderService taskService;
-
-	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@PostConstruct
 	private void postConstruct() {

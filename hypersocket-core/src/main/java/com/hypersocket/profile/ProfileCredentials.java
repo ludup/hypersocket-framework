@@ -22,16 +22,16 @@ public class ProfileCredentials extends AbstractEntity<Long> {
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	@Column(name="credential_id")
-	Long id;
+	private Long id;
 	
 	@ManyToOne
-	Profile profile;
+	private Profile profile;
 	
 	@Column(name="state")
-	ProfileCredentialsState state; 
+	private ProfileCredentialsState state; 
 	
 	@Column(name="resource_key")
-	String resourceKey; 
+	private String resourceKey; 
 	
 	@Override
 	public Long getId() {

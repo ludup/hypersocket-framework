@@ -9,7 +9,7 @@ import com.hypersocket.replace.ReplacementUtils;
 
 public class TriggerAttributeHelper {
 
-	static Pattern eventPattern;
+	private static Pattern eventPattern;
 	
 	static {
 		eventPattern = Pattern.compile("event(\\d+):(.*)");

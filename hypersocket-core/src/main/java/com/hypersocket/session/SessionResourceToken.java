@@ -4,10 +4,10 @@ import org.apache.commons.lang3.RandomStringUtils;
 
 public class SessionResourceToken<T> {
 
-	Session session;
-	String shortCode;
-	long timestamp = System.currentTimeMillis();
-	T resource;
+	private Session session;
+	private String shortCode;
+	private long timestamp = System.currentTimeMillis();
+	private T resource;
 	
 	public SessionResourceToken(Session session, T resource) {
 		this.session = session;

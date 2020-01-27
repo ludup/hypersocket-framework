@@ -2,9 +2,7 @@ package com.hypersocket.certificates.jobs;
 
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.quartz.JobExecutionContext;

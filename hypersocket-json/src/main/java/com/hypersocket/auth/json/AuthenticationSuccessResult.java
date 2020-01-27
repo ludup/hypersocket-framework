@@ -13,9 +13,9 @@ import com.hypersocket.session.Session;
 
 public class AuthenticationSuccessResult extends AuthenticationResult {
 
-	Session session;
-	Role currentRole;
-	String homePage;
+	private Session session;
+	private Role currentRole;
+	private String homePage;
 	
 	public AuthenticationSuccessResult() {
 

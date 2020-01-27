@@ -6,10 +6,6 @@ import com.hypersocket.resource.ResourceException;
 
 public class PrincipalProcessorAdapter implements PrincipalProcessor {
 
-	public PrincipalProcessorAdapter() {
-
-	}
-
 	@Override
 	public void beforeUpdate(Principal principal, Map<String, String> properties)  throws ResourceException {
 

@@ -5,8 +5,8 @@ import java.util.List;
 
 public class BootstrapTablesResult {
 
-	String iTotalRecords;
-	Collection<?> rows;
+	private String iTotalRecords;
+	private Collection<?> rows;
 	
 	public BootstrapTablesResult(Collection<?> rows, long totalRecords) {
 		this.rows = rows;

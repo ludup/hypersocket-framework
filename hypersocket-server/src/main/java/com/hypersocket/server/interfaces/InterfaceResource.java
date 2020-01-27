@@ -13,13 +13,13 @@ public abstract class InterfaceResource extends RealmResource {
 	private static final long serialVersionUID = 3104523837579362221L;
 
 	@Column(name="interfaces", length=1024)
-	String interfaces;
+	private String interfaces;
 	
 	@Column(name="port")
-	Integer port;
+	private Integer port;
 	
 	@Column(name="all_interfaces", nullable=true)
-	Boolean allInterfaces;
+	private Boolean allInterfaces;
 	
 	public String getInterfaces() {
 		return interfaces;

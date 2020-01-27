@@ -15,10 +15,10 @@ import com.hypersocket.tasks.TaskProviderService;
 public class TriggerUtils {
 
 	@Autowired
-	TriggerResourceRepository triggerRepository;
+	private TriggerResourceRepository triggerRepository;
 	
 	@Autowired
-	TaskProviderService taskService; 
+	private TaskProviderService taskService; 
 	
 	@SuppressWarnings("unchecked")
 	public void createTrigger(Realm realm, 

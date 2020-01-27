@@ -31,17 +31,17 @@ import com.hypersocket.netty.util.ChannelBufferServletOutputStream;
 
 public class HttpResponseServletWrapper implements HttpServletResponse {
 
-	HttpResponse response;
-	String charset;
-	Locale locale;
-	boolean committed = false;
-	int bufferSize = 65535;
-	ChannelBuffer buffer;
-	ChannelBufferServletOutputStream out;
-	Channel channel;
-	HttpRequest request;
-	boolean closeOnComplete = false;
-	Date timestamp;
+	private HttpResponse response;
+	private String charset;
+	private Locale locale;
+	private boolean committed = false;
+	private int bufferSize = 65535;
+	private ChannelBuffer buffer;
+	private ChannelBufferServletOutputStream out;
+	private Channel channel;
+	private HttpRequest request;
+	private boolean closeOnComplete = false;
+	private Date timestamp;
 	
 	public HttpResponseServletWrapper(HttpResponse response, Channel channel, HttpRequest request) {
 		this.response = response;

@@ -4,11 +4,12 @@ import com.hypersocket.service.ServiceStatus;
 
 public class StatusView implements ServiceStatus {
 
-	String resourceKey;
-	boolean isRunning;
-	boolean isError;
-	String errorText;
-	String group;
+	private String resourceKey;
+	private boolean isRunning;
+	private boolean isError;
+	private String errorText;
+	private String group;
+
 	public StatusView(ServiceStatus status) {
 		this.resourceKey = status.getResourceKey();
 		this.isRunning = status.isRunning();
@@ -42,5 +43,4 @@ public class StatusView implements ServiceStatus {
 		return group;
 	}
 
-	
 }

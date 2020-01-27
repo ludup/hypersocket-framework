@@ -16,12 +16,10 @@ public class SocketForwardingWebsocketClient implements NettyWebsocketClient {
 	
 	static Logger log = LoggerFactory.getLogger(SocketForwardingWebsocketClient.class);
 	
-	Channel socketChannel;
-	Channel websocketChannel;
-	long totalBytesOut;
-	long totalBytesIn;
-	long intervalBytesOut;
-	long intervalBytesIn;
+	private Channel socketChannel;
+	private Channel websocketChannel;
+	private long totalBytesOut;
+	private long totalBytesIn;
 	
 	public SocketForwardingWebsocketClient(Channel socketChannel) {
 		this.socketChannel = socketChannel;

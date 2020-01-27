@@ -9,9 +9,9 @@ package com.hypersocket.realm.json;
 
 public class CredentialsUpdate {
 
-	Long principalId;
-	String password;
-	boolean forceChange;
+	private Long principalId;
+	private String password;
+	private boolean forceChange;
 	
 	public CredentialsUpdate() {
 		

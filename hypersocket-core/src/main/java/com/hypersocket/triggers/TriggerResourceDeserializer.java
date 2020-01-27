@@ -87,7 +87,7 @@ public class TriggerResourceDeserializer extends
 			conditions.add(triggerCondition);
 		}
 
-		resource.conditions = conditions;
+		resource.setConditions(conditions);
 
 		Set<TriggerResource> childTriggers = new HashSet<TriggerResource>();
 		Iterator<JsonNode> childTriggerIterator = node.get("childTriggers")
@@ -103,7 +103,7 @@ public class TriggerResourceDeserializer extends
 
 		}
 
-		resource.childTriggers = childTriggers;
+		resource.setChildTriggers(childTriggers);
 
 		return resource;
 	}

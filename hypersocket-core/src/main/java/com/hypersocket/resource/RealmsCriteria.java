@@ -11,8 +11,9 @@ import com.hypersocket.repository.CriteriaConfiguration;
 
 public class RealmsCriteria implements CriteriaConfiguration {
 
-	Collection<Realm> realms;
-	String column = "realm";
+	private Collection<Realm> realms;
+	private String column = "realm";
+	
 	public RealmsCriteria(Collection<Realm> realms) {
 		this.realms = realms;
 	}

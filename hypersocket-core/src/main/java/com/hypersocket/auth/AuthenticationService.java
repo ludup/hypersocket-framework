@@ -47,7 +47,7 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	void registerPostAuthenticationStep(
 			PostAuthenticationStep postAuthenticationStep);
 
-	public Map<String,Authenticator> getAuthenticators(String scheme);
+	Map<String,Authenticator> getAuthenticators(String scheme);
 
 	void registerListener(AuthenticationServiceListener listener);
 

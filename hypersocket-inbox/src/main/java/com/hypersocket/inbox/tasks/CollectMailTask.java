@@ -56,19 +56,19 @@ public class CollectMailTask extends AbstractTaskProvider {
 	public static final String ATTR_ATTACHMENTS = "collectMail.attachments";
 
 	@Autowired
-	CollectMailTaskRepository repository;
+	private CollectMailTaskRepository repository;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	FileUploadService fileUploadService;
+	private FileUploadService fileUploadService;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	public CollectMailTask() {
 	}

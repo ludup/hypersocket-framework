@@ -14,11 +14,11 @@ public class HtmlTemplateResource extends RealmResource {
 	private static final long serialVersionUID = 4099376557971813286L;
 	
 	@Column(name="content_selector")
-	String contentSelector;
+	private String contentSelector;
 	
 	@Lob
 	@Column(name="html")
-	String html;
+	private String html;
 
 	public String getContentSelector() {
 		return contentSelector;

@@ -44,8 +44,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	public static final String RESOURCE_BUNDLE = "UserAttributes";
 
 	@Autowired
-	protected
-	I18NService i18nService;
+	protected I18NService i18nService;
 	
 	@Autowired
 	protected EventService eventService;

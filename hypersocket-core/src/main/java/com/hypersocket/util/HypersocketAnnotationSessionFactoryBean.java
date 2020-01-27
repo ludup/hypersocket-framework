@@ -11,8 +11,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cache.spi.RegionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -22,8 +20,6 @@ import com.hypersocket.cache.HypersocketCacheRegionFactoryServiceInitiator;
 
 public class HypersocketAnnotationSessionFactoryBean extends
 		LocalSessionFactoryBean{
-
-	@Autowired Environment environment;
 	
 	private RegionFactory regionFactory;
 	private DatabaseInformation databaseInformation;

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public class ApplicationContextServiceImpl {
 
 	@Autowired
-	ApplicationContext applicationContext;
+	private ApplicationContext applicationContext;
 	
 	static ApplicationContextServiceImpl instance;
 	

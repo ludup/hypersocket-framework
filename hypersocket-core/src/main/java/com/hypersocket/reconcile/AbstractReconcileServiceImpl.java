@@ -26,9 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.context.SystemContextRequired;
-import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
@@ -38,9 +36,8 @@ import com.hypersocket.reconcile.events.ReconcileCompleteEvent;
 import com.hypersocket.reconcile.events.ReconcileEvent;
 import com.hypersocket.reconcile.events.ReconcileStartedEvent;
 import com.hypersocket.resource.Resource;
-import com.hypersocket.scheduler.NotScheduledException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
-import com.hypersocket.session.SessionService;
+import com.hypersocket.scheduler.NotScheduledException;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Service
@@ -53,21 +50,12 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 	public static final String RESOURCE_BUNDLE = "AbstractReconcileService";
 
 	@Autowired
-	ClusteredSchedulerService schedulerService;
+	private ClusteredSchedulerService schedulerService;
 
 	@Autowired
-	ConfigurationService configurationService;
+	private I18NService i18nService;
 	
-	@Autowired
-	I18NService i18nService;
-	
-	@Autowired
-	EventService eventService;
-	
-	@Autowired
-	SessionService sessionService; 
-	
-	Set<T> reconcilingResources = new HashSet<T>();
+	private Set<T> reconcilingResources = new HashSet<T>();
 	
 	public AbstractReconcileServiceImpl() {
 

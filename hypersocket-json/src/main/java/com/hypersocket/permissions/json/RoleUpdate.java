@@ -14,16 +14,16 @@ import com.hypersocket.json.PropertyItem;
 @XmlRootElement(name="role")
 public class RoleUpdate {
 
-	Long id;
-	String name;
-	String[] users;
-	String[] groups;
-	Long[] permissions;
-	Long[] realms;
-	PropertyItem[] properties;
-	boolean allUsers;
-	boolean allPerms;
-	boolean allRealms;
+	private Long id;
+	private String name;
+	private String[] users;
+	private String[] groups;
+	private Long[] permissions;
+	private Long[] realms;
+	private PropertyItem[] properties;
+	private boolean allUsers;
+	private boolean allPerms;
+	private boolean allRealms;
 	
 	public RoleUpdate() {
 		

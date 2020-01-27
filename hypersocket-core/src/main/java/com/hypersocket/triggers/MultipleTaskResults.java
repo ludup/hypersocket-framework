@@ -10,7 +10,8 @@ public class MultipleTaskResults extends AbstractTaskResult {
 
 	private static final long serialVersionUID = -1287105067476106327L;
 
-	TaskResult[] results;
+	private TaskResult[] results;
+	
 	public MultipleTaskResults(Object source, Realm currentRealm, Task task, TaskResult... results) {
 		super(source, "multiple.results", true, currentRealm, task);
 		this.results = results;

@@ -14,10 +14,10 @@ public class ResumeUserJob extends PermissionsAwareJob {
 	static Logger log = LoggerFactory.getLogger(ResumeUserJob.class);
 
 	@Autowired
-	PrincipalSuspensionService suspensionService;
+	private PrincipalSuspensionService suspensionService;
 
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	public ResumeUserJob() {
 	}

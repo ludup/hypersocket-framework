@@ -21,20 +21,16 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.tasks.TaskProvider;
-import com.hypersocket.tasks.TaskProviderService;
 
 @Repository
 public class TriggerResourceRepositoryImpl extends
 		AbstractResourceRepositoryImpl<TriggerResource> implements
 		TriggerResourceRepository {
 	
-	static Logger log = LoggerFactory.getLogger(TriggerResourceRepositoryImpl.class);
+	static Logger log = LoggerFactory.getLogger(TriggerResourceRepositoryImpl.class); 
 	
 	@Autowired
-	TaskProviderService taskService; 
-	
-	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	@Override
 	protected Class<TriggerResource> getResourceClass() {

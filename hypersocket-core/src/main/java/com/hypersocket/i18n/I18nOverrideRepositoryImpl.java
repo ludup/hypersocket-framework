@@ -19,7 +19,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 public class I18nOverrideRepositoryImpl extends AbstractEntityRepositoryImpl<I18nOverride, Long> implements I18nOverrideRepository {
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 	
 	@Override
 	protected Class<I18nOverride> getEntityClass() {

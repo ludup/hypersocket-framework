@@ -15,11 +15,9 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.realm.LogonException;
 import com.hypersocket.realm.Principal;
-import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
 
@@ -30,16 +28,10 @@ public class UsernameAndPasswordAuthenticator extends
 	public static final String RESOURCE_KEY = "usernameAndPassword";
 
 	@Autowired
-	AuthenticationService authenticationService;
+	private AuthenticationService authenticationService;
 
 	@Autowired
-	RealmRepository realmRepository;
-
-	@Autowired
-	RealmService realmService;
-
-	@Autowired
-	SystemConfigurationService systemConfigurationService;
+	private RealmService realmService;
 
 	@PostConstruct
 	private void postConstruct() {

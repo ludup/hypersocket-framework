@@ -11,13 +11,13 @@ import com.hypersocket.json.PropertyItem;
 
 public class UserUpdate {
 
-	String name;
-	Long id;
-	String[] groups;
+	private String name;
+	private Long id;
+	private String[] groups;
 	
-	String password;
-	boolean forceChange;
-	PropertyItem[] properties;
+	private String password;
+	private boolean forceChange;
+	private PropertyItem[] properties;
 
 	public PropertyItem[] getProperties() {
 		return properties;

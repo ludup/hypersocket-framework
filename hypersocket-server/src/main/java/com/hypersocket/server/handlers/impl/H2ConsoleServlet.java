@@ -16,8 +16,8 @@ import com.hypersocket.session.json.SessionUtils;
 
 public class H2ConsoleServlet extends ServletRequestHandler {
 
-	SessionUtils sessionUtils;
-	PermissionService permissionService; 
+	private SessionUtils sessionUtils;
+	private PermissionService permissionService; 
 	
 	public H2ConsoleServlet() {
 		super("console", new org.h2.server.web.WebServlet(), Integer.MIN_VALUE);

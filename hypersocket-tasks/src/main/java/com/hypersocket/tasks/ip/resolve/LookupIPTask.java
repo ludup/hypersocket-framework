@@ -36,16 +36,16 @@ public class LookupIPTask extends AbstractTaskProvider {
 	public static final String RESOURCE_BUNDLE = "LookupIPTask";
 	
 	@Autowired
-	LookupIPTaskRepository repository;
+	private LookupIPTaskRepository repository;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	I18NService i18nService; 
+	private I18NService i18nService; 
 
 	public LookupIPTask() {
 	}

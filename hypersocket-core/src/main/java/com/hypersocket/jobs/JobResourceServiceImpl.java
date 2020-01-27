@@ -20,7 +20,6 @@ import com.hypersocket.jobs.events.JobResourceDeletedEvent;
 import com.hypersocket.jobs.events.JobResourceEvent;
 import com.hypersocket.jobs.events.JobResourceUpdatedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
@@ -39,16 +38,13 @@ public class JobResourceServiceImpl extends
 	public static final String RESOURCE_BUNDLE = "JobResourceService";
 
 	@Autowired
-	JobResourceRepository repository;
+	private JobResourceRepository repository;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@Autowired
-	PermissionService permissionService;
-
-	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	public JobResourceServiceImpl() {
 		super("Job");

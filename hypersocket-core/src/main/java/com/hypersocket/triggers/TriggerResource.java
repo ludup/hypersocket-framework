@@ -25,31 +25,31 @@ public class TriggerResource extends Task {
 	private static final long serialVersionUID = 4055884752102231593L;
 
 	@Column(name = "result")
-	TriggerResultType result;
+	private TriggerResultType result;
 	
 	@Column(name="trigger_type")
-	TriggerType triggerType = TriggerType.TRIGGER;
+	private TriggerType triggerType = TriggerType.TRIGGER;
 	
 	@Column(name="event")
-	String event;
+	private String event;
 
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "trigger", fetch = FetchType.EAGER)
-	Set<TriggerCondition> conditions = new HashSet<TriggerCondition>();
+	private Set<TriggerCondition> conditions = new HashSet<TriggerCondition>();
 
 	@OneToMany(mappedBy = "parentTrigger", fetch = FetchType.EAGER)
-	Set<TriggerResource> childTriggers = new HashSet<>();
+	private Set<TriggerResource> childTriggers = new HashSet<>();
 
 	@OneToOne
-	TriggerResource parentTrigger;
+	private TriggerResource parentTrigger;
 
 	@Column(name = "resource_key")
-	String resourceKey;
+	private String resourceKey;
 	
 	@Column(name = "attachment_id")
-	Long attachmentId;
+	private Long attachmentId;
 	
 	@Column(name="all_realms")
-	Boolean allRealms = Boolean.FALSE;
+	private Boolean allRealms = Boolean.FALSE;
 
 	public TriggerResultType getResult() {
 		return result;
@@ -144,6 +144,14 @@ public class TriggerResource extends Task {
 	
 	public void setAllRealms(Boolean allRealms) {
 		this.allRealms = allRealms;
+	}
+
+	public void setConditions(Set<TriggerCondition> conditions) {
+		this.conditions = conditions;		
+	}
+
+	public void setChildTriggers(Set<TriggerResource> childTriggers) {
+		this.childTriggers = childTriggers;
 	}
 	
 }

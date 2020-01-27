@@ -7,7 +7,7 @@ import com.hypersocket.resource.AbstractResourceRepository;
 public interface FileUploadRepository extends
 		AbstractResourceRepository<FileUpload> {
 
-	public FileUpload getFileByUuid(String uuid);
+	FileUpload getFileByUuid(String uuid);
 
 	FileUpload getFileByShortCode(String shortCode);
 

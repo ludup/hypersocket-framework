@@ -39,9 +39,9 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	static Logger log = LoggerFactory.getLogger(AuthenticationSchemeRepositoryImpl.class);
 	
 	@Autowired
-	AuthenticationModuleRepository moduleRepository; 
+	private AuthenticationModuleRepository moduleRepository; 
 	
-	List<AuthenticationSchemeRegistration> schemes = new ArrayList<>();
+	private List<AuthenticationSchemeRegistration> schemes = new ArrayList<>();
 	
 	@Override
 	@Transactional

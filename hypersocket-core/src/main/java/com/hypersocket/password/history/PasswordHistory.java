@@ -15,10 +15,10 @@ public class PasswordHistory extends SimpleResource {
 	private static final long serialVersionUID = 8886201399925580320L;
 
 	@OneToOne
-	Principal principal;
+	private Principal principal;
 	
 	@Column(name="encoded_password")
-	String encodedPassword;
+	private String encodedPassword;
 
 	public void setPrincipal(Principal principal) {
 		this.principal = principal;

@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
-import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
@@ -27,19 +26,16 @@ public class UserInterfaceStateServiceImpl extends
 
 	public static final String RESOURCE_CATEGORY_TABLE_STATE = "userInterfaceState";
 	
-	List<UserInterfaceStateListener> listeners = new ArrayList<UserInterfaceStateListener>();
+	private List<UserInterfaceStateListener> listeners = new ArrayList<UserInterfaceStateListener>();
 
 	@Autowired
-	UserInterfaceStateRepository repository;
+	private UserInterfaceStateRepository repository;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@Autowired
-	EventService eventService;
-
-	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	@PostConstruct
 	private void postConstruct() {

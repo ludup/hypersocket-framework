@@ -30,25 +30,25 @@ public abstract class Resource extends SimpleResource {
 	private static final long serialVersionUID = 6795842573539622186L;
 
 	@Column(name="name", nullable=false)
-	String name;
+	private String name;
 	
 	@Column(name="hidden")
-	boolean hidden;
+	private boolean hidden;
 	
 	@Column(name="resource_category", nullable=true)
-	String resourceCategory;
+	private String resourceCategory;
 	
 	@Column(name="system", nullable=false)
-	boolean system = false;
+	private boolean system = false;
 	
 	@Column(name="read_only", nullable=true)
-	Boolean readOnly = false;
+	private Boolean readOnly = false;
 	
 	@Transient
-	String oldName;
+	private String oldName;
 	
 	@Transient
-	Map<String,String> properties;
+	private Map<String,String> properties;
 	
 	public Long getId() {
 		return super.getId();

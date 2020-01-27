@@ -13,7 +13,7 @@ public class RoleAttribute extends AbstractAttribute<RoleAttributeCategory> {
 	private static final long serialVersionUID = 9069451084265854269L;
 
 	@ManyToOne
-	RoleAttributeCategory category;
+	private RoleAttributeCategory category;
 	
 	@Override
 	public RoleAttributeCategory getCategory() {

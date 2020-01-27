@@ -33,31 +33,28 @@ import com.hypersocket.session.Session;
 @Table(name="assignable_resource_sessions")
 public abstract class AssignableResourceSession<T extends AssignableResource> extends AbstractEntity<Long> {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 720402107508666208L;
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.TABLE)
 	@Column(name="id")
-	Long id;
+	private Long id;
 	
 	@OneToOne
 	@JoinColumn(name="session_id")
-	Session session;
+	private Session session;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	Date opened;
+	private Date opened;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	Date closed;
+	private Date closed;
 	
 	@Column(name="total_bytes_out")
-	long totalBytesIn;
+	private long totalBytesIn;
 	
 	@Column(name="total_bytes_in")
-	long totalBytesOut;
+	private long totalBytesOut;
 	
 	@Override
 	public Long getId() {

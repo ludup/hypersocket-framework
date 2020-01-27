@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AutowiringSpringBeanJobFactory extends SpringBeanJobFactory implements ApplicationContextAware {
 
-	ApplicationContext applicationContext;
+	private ApplicationContext applicationContext;
 	
 	public AutowiringSpringBeanJobFactory() {
 	}

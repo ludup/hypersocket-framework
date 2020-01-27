@@ -3,9 +3,9 @@ package com.hypersocket.json;
 import java.io.File;
 
 public class MultipartObject {
-	String property;
-	File   file;
-	
+	private String property;
+	private File file;
+
 	public MultipartObject(String property, File file) {
 		super();
 		this.property = property;

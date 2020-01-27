@@ -12,8 +12,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties
 public class RequestStatus {
 
-	boolean success = true;
-	String message = "";
+	private boolean success = true;
+	private String message = "";
 	
 	public RequestStatus() {
 		

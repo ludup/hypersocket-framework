@@ -15,7 +15,7 @@ import com.hypersocket.realm.UserPermission;
 public class OrganizationalUnitServiceImpl extends AbstractAuthenticatedServiceImpl implements OrganizationalUnitService {
 
 	@Autowired
-	OrganizationalUnitRepository repository;
+	private OrganizationalUnitRepository repository;
 	
 	@Override
 	public List<OrganizationalUnit> getOrganizationalUnits() throws AccessDeniedException {

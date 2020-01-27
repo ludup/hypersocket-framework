@@ -8,11 +8,6 @@ import com.hypersocket.session.Session;
 @SuppressWarnings("serial")
 public class DictionaryResourceUpdatedEvent extends
 		DictionaryResourceEvent {
-
-	/**
-	 * TODO You typically add attributes to the base DictionaryResourceEvent
-	 * class so these can be reused across all resource events.
-	 */
 	public static final String EVENT_RESOURCE_KEY = "dictionary.updated";
 
 	public DictionaryResourceUpdatedEvent(Object source,

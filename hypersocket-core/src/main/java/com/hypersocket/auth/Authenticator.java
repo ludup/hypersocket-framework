@@ -16,16 +16,16 @@ import com.hypersocket.resource.AbstractResourceRepository;
 
 public interface Authenticator {
 
-	public String getResourceKey();
+	String getResourceKey();
 
-	public AuthenticatorResult authenticate(AuthenticationState state,
+	AuthenticatorResult authenticate(AuthenticationState state,
 			@SuppressWarnings("rawtypes") Map parameters)
 			throws AccessDeniedException;
 
 	@SuppressWarnings("rawtypes")
-	public FormTemplate createTemplate(AuthenticationState state, Map params) ;
+	FormTemplate createTemplate(AuthenticationState state, Map params) ;
 
-	public String getResourceBundle();
+	String getResourceBundle();
 
 	boolean isSecretModule();
 

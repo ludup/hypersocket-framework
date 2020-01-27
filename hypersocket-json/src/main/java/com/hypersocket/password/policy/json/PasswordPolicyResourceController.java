@@ -56,10 +56,10 @@ import com.hypersocket.utils.HypersocketUtils;
 public class PasswordPolicyResourceController extends ResourceController {
 
 	@Autowired
-	PasswordPolicyResourceService resourceService;
+	private PasswordPolicyResourceService resourceService;
 	
 	@Autowired
-	PasswordAnalyserService analyserService; 
+	private PasswordAnalyserService analyserService; 
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "passwordPolicys/list", method = RequestMethod.GET, produces = { "application/json" })

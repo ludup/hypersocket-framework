@@ -31,7 +31,7 @@ import java.util.List;
 public class PermissionsController extends ResourceController {
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 
 	
 	@AuthenticationRequired

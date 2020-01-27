@@ -10,7 +10,7 @@ import com.hypersocket.session.events.SessionEvent;
 public class RealmEvent extends SessionEvent {
 
 	private static final long serialVersionUID = 1767418948626283958L;
-	Realm realm;
+	private Realm realm;
 	
 	public static final String EVENT_RESOURCE_KEY = "realm.event";
 	

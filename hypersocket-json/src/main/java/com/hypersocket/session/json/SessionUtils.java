@@ -49,16 +49,16 @@ public class SessionUtils {
 	public static final String HYPERSOCKET_LOCALE = "HYPERSOCKET_LOCALE";
 
 	@Autowired
-	SessionService sessionService;
+	private SessionService sessionService;
 
 	@Autowired
-	ConfigurationService configurationService; 
+	private ConfigurationService configurationService; 
 	
 	@Autowired
-	SystemConfigurationService systemConfigurationService; 
+	private SystemConfigurationService systemConfigurationService; 
 	
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	public Session getActiveSession(HttpServletRequest request) {
 		

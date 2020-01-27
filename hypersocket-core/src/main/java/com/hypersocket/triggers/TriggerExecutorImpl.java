@@ -15,13 +15,11 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
-import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SynchronousEvent;
 import com.hypersocket.events.SystemEvent;
-import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
@@ -44,34 +42,28 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	static Logger log = LoggerFactory.getLogger(TriggerExecutor.class);
 
 	@Autowired
-	TriggerResourceService triggerService;
+	private TriggerResourceService triggerService;
 
 	@Autowired
-	AuthenticationService authenticationService;
+	private EventService eventService;
 
 	@Autowired
-	I18NService i18nService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private LocalSchedulerService schedulerService;
 
 	@Autowired
-	TaskProviderService taskService;
+	private ConfigurationService configurationService;
 
 	@Autowired
-	LocalSchedulerService schedulerService;
+	private RealmService realmService;
 
 	@Autowired
-	ConfigurationService configurationService;
-
-	@Autowired
-	RealmService realmService;
-
-	@Autowired
-	TransactionService transactionService;
+	private TransactionService transactionService;
 	
 	@Autowired
-	SessionFactory sessionFactory;
+	private SessionFactory sessionFactory;
 
 	public TriggerExecutorImpl() {
 	}

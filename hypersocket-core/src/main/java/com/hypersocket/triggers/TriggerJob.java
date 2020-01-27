@@ -4,12 +4,16 @@ import java.util.List;
 
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.triggers.events.TriggerExecutedEvent;
 
 public class TriggerJob extends AbstractTriggerJob {
-
+	
+	@Autowired
+	private EventService eventService;
 	
 	@Override
 	public void executeJob(JobExecutionContext context)

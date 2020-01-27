@@ -22,10 +22,10 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 
 	static Logger log = LoggerFactory.getLogger(AbstractResourcePropertyStore.class);
 	
-	Map<String, PropertyTemplate> templates = new HashMap<String, PropertyTemplate>();
-	Map<String, List<PropertyTemplate>> templatesByModule = new HashMap<String, List<PropertyTemplate>>();
+	private Map<String, PropertyTemplate> templates = new HashMap<String, PropertyTemplate>();
+	private Map<String, List<PropertyTemplate>> templatesByModule = new HashMap<String, List<PropertyTemplate>>();
 
-	EncryptionService encryptionService; 
+	protected EncryptionService encryptionService; 
 	
 	public AbstractResourcePropertyStore() {
 	}

@@ -14,12 +14,12 @@ import com.hypersocket.certificates.CertificateResource;
 @XmlRootElement(name="certificateState")
 public class CertificateStatus {
 
-	boolean installedCertificate;
-	boolean matchingCertificate;
+	private boolean installedCertificate;
+	private boolean matchingCertificate;
 	
-	boolean success = true;
-	String message;
-	CertificateResource resource;
+	private boolean success = true;
+	private String message;
+	private CertificateResource resource;
 	
 	public CertificateStatus(CertificateResource resource) {
 		this.resource = resource;

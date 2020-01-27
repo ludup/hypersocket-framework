@@ -14,7 +14,6 @@ public enum AuthenticationPermission implements PermissionType {
 	LOGON("permission.logon");
 
 	private final String val;
-
 	private PermissionType[] implies;
 	
 	private AuthenticationPermission(final String val, PermissionType... implies) {

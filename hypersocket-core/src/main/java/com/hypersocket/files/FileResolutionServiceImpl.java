@@ -22,7 +22,7 @@ import com.hypersocket.utils.FileUtils;
 @Service
 public class FileResolutionServiceImpl implements FileResolutionService {
 
-	List<FileResolver> fileSources = new ArrayList<FileResolver>();
+	private List<FileResolver> fileSources = new ArrayList<FileResolver>();
 	
 	@PostConstruct
 	private void postConstruct() {

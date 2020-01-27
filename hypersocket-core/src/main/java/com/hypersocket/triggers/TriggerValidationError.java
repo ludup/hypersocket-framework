@@ -3,9 +3,10 @@ package com.hypersocket.triggers;
 public class TriggerValidationError {
 
 	public enum ErrorType { MISSING_VALUE, INVALID_VALUE };
-	String attributeName;
-	String attributeValue;
-	ErrorType type;
+	
+	private String attributeName;
+	private String attributeValue;
+	private ErrorType type;
 	
 	public TriggerValidationError(String attributeName, String attributeValue) {
 		this.attributeName = attributeName;

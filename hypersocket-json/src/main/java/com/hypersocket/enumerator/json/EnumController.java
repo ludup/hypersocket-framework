@@ -5,17 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 
 import com.hypersocket.auth.json.AuthenticatedController;
@@ -25,15 +21,11 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.properties.enumeration.Displayable;
 import com.hypersocket.session.json.SessionTimeoutException;
-import com.hypersocket.session.json.SessionUtils;
 
 @Controller
 public class EnumController extends AuthenticatedController {
 	
 	static long lastModified = System.currentTimeMillis();
-
-	@Autowired
-	SessionUtils sessionUtils;
 	
 	@RequestMapping(value = "enum/{className}/", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

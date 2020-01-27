@@ -9,9 +9,9 @@ package com.hypersocket.json;
 
 public class PropertyItem {
 
-	String id;
-	String value;
-	String message;
+	private String id;
+	private String value;
+	private String message;
 	
 	public PropertyItem() {	
 	}

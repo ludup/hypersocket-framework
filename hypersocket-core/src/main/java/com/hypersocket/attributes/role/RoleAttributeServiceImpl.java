@@ -33,13 +33,13 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 	public static final String RESOURCE_BUNDLE = "RoleAttributes";
 
 	@Autowired
-	RoleAttributeRepository userAttributeRepository;
+	private RoleAttributeRepository userAttributeRepository;
 
 	@Autowired
-	RoleAttributeCategoryRepository userAttributeCategoryRepository;
+	private RoleAttributeCategoryRepository userAttributeCategoryRepository;
 
 	@Autowired
-	RoleAttributeCategoryService userAttributeCategoryService;
+	private RoleAttributeCategoryService userAttributeCategoryService;
 	
 	public RoleAttributeServiceImpl() {
 		super(RESOURCE_BUNDLE, RoleAttribute.class, RoleAttributePermission.class, RoleAttributePermission.CREATE,

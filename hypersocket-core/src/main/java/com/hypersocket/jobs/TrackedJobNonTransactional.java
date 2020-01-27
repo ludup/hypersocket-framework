@@ -11,10 +11,11 @@ import com.hypersocket.scheduler.PermissionsAwareJobNonTransactional;
 public abstract class TrackedJobNonTransactional extends PermissionsAwareJobNonTransactional {
 
 	@Autowired
-	JobResourceService jobService; 
+	private JobResourceService jobService; 
 	
-	JobDataMap data;
-	String uuid = null;
+	private JobDataMap data;
+	private String uuid = null;
+	
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		

@@ -43,7 +43,6 @@ import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.tasks.TaskProviderServiceImpl;
 import com.hypersocket.tasks.TaskResult;
-import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.TriggerResourceServiceImpl;
 import com.hypersocket.triggers.TriggerValidationError;
 import com.hypersocket.triggers.ValidationException;
@@ -68,27 +67,24 @@ public class EmailTask extends AbstractTaskProvider {
 	public static final String ATTR_DYNAMIC_ATTACHMENTS = "attach.dynamic";
 	public static final String ATTR_EVENT_SOURCE = "attach.event";
 	public static final String ATTR_EVENT_SOURCE_TYPE = "attach.eventSourceType";
+
+	@Autowired
+	private EmailNotificationService emailService;
+
+	@Autowired
+	private EmailTaskRepository repository;
+
+	@Autowired
+	private EventService eventService;
+
+	@Autowired
+	private TaskProviderService taskService; 
 	
 	@Autowired
-	TriggerResourceService triggerService;
-
-	@Autowired
-	EmailNotificationService emailService;
-
-	@Autowired
-	EmailTaskRepository repository;
-
-	@Autowired
-	EventService eventService;
-
-	@Autowired
-	TaskProviderService taskService; 
+	private FileUploadService uploadService; 
 	
 	@Autowired
-	FileUploadService uploadService; 
-	
-	@Autowired
-	HtmlTemplateResourceRepository htmlTemplateRepository;
+	private HtmlTemplateResourceRepository htmlTemplateRepository;
 	
 	@PostConstruct
 	private void postConstruct() {

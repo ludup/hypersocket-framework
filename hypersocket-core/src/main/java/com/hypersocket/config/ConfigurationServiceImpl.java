@@ -41,18 +41,18 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	static Logger log = LoggerFactory.getLogger(ConfigurationServiceImpl.class);
 
 	@Autowired
-	ConfigurationRepository repository;
+	private ConfigurationRepository repository;
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 
 	@Autowired
-	EventService eventPublisher;
+	private EventService eventPublisher;
 
 	@Autowired
-	I18NService i18nService; 
+	private I18NService i18nService; 
 	
-	Locale defaultLocale = null;
+	private Locale defaultLocale = null;
 	
 	@PostConstruct
 	private void postConstruct() {

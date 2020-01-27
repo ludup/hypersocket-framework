@@ -19,7 +19,7 @@ public class AttributeUpdate {
 	private Boolean encrypted;
 	private String variableName;
 	private List<NameValuePair> options;
-	Long[] roles;
+	private Long[] roles;
 	
 	public AttributeUpdate() {
 

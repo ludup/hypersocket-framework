@@ -41,19 +41,19 @@ public class RestApiInterceptor extends HandlerInterceptorAdapter {
 	private static Logger log = LoggerFactory.getLogger(RestApiInterceptor.class);
 
 	@Autowired
-	AuthenticationService authenticationService;
+	private AuthenticationService authenticationService;
 
 	@Autowired
-	SessionService sessionService;
+	private SessionService sessionService;
 
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 
 	@Autowired
-	LocalUserRepository userRepository;
+	private LocalUserRepository userRepository;
 
 	@Autowired
-	PasswordEncryptionService encryptionService;
+	private PasswordEncryptionService encryptionService;
 
 	@Override
 	@SuppressWarnings("unchecked")

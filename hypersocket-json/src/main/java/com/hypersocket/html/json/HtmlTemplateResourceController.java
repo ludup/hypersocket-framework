@@ -43,15 +43,8 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 @Controller
 public class HtmlTemplateResourceController extends ResourceController {
 
-	/**
-	 * TODO rename this class to match your entity.
-	 * 
-	 * rename RequestMapping annotions for your desired resource URLs. e.g
-	 * replace htmlTemplates for example with "applications" HtmlTemplates with "Applications"
-	 * htmlTemplate with "application" and HtmlTemplate with "Application"
-	 */
 	@Autowired
-	HtmlTemplateResourceService resourceService;
+	private HtmlTemplateResourceService resourceService;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "htmlTemplates/list", method = RequestMethod.GET, produces = { "application/json" })

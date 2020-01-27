@@ -14,8 +14,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 
 public class ValueRestriction implements CriteriaConfiguration {
 
-
-	String value;
+	private String value;
 	
 	public ValueRestriction(String value) {
 		this.value = value;

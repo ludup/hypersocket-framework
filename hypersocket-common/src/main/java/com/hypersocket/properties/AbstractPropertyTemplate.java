@@ -8,22 +8,22 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public abstract class AbstractPropertyTemplate {
+	protected PropertyStore propertyStore;
 
-	String resourceKey;
-	String defaultValue;
-	String defaultsToProperty;
-	int weight;
-	boolean hidden;
-	String displayMode;
-	boolean readOnly;
-	boolean encrypted;
-	PropertyCategory category;
-	String mapping;
-	PropertyStore propertyStore;
-	String metaData;
-	String name;
-	String description;
-	Map<String,String> attributes = new HashMap<String,String>();
+	private String resourceKey;
+	private String defaultValue;
+	private String defaultsToProperty;
+	private int weight;
+	private boolean hidden;
+	private String displayMode;
+	private boolean readOnly;
+	private boolean encrypted;
+	private PropertyCategory category;
+	private String mapping;
+	private String metaData;
+	private String name;
+	private String description;
+	private Map<String,String> attributes = new HashMap<String,String>();
 
 	public String getName() {
 		return name;

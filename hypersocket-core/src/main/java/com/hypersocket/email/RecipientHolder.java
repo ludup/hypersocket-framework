@@ -13,9 +13,9 @@ import com.hypersocket.realm.Principal;
 
 public class RecipientHolder {
 
-	String name;
-	String email;
-	Principal principal;
+	private String name;
+	private String email;
+	private Principal principal;
 	
 	static Set<String> salutations = new HashSet<String>(Arrays.asList("MR", "MS", "MRS", "DR", "PROF"));
 	

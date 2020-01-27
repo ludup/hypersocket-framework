@@ -13,7 +13,7 @@ public class BatchItem extends RealmResource {
 	private static final long serialVersionUID = -6097805172247469296L;
 
 	@Column(name="resource_key")
-	String resourceKey;
+	private String resourceKey;
 	
 	public String getResourceKey() {
 		return resourceKey;

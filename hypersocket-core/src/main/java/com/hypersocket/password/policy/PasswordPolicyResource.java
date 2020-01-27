@@ -13,64 +13,64 @@ public class PasswordPolicyResource extends AssignableResource {
 	private static final long serialVersionUID = 1194762176398433781L;
 
 	@Column(name="min_length")
-	Integer minimumLength;
+	private Integer minimumLength;
 	
 	@Column(name="max_length")
-	Integer maximumLength;
+	private Integer maximumLength;
 	
 	@Column(name="contain_username")
-	Boolean containUsername;
+	private Boolean containUsername;
 	
 	@Column(name="contain_dictionary")
-	Boolean containDictionaryWord;
+	private Boolean containDictionaryWord;
 	
 	@Column(name="priority")
-	Integer priority;
+	private Integer priority;
 	
 	@Column(name="min_criteria")
-	Integer minimumCriteriaMatches;
+	private Integer minimumCriteriaMatches;
 	
 	@Column(name="min_digits")
-	Integer minimumDigits;
+	private Integer minimumDigits;
 	
 	@Column(name="min_loewer")
-	Integer minimumLower;
+	private Integer minimumLower;
 	
 	@Column(name="min_upper")
-	Integer minimumUpper;
+	private Integer minimumUpper;
 	
 	@Column(name="min_symbol")
-	Integer minimumSymbol;
+	private Integer minimumSymbol;
 
 	@Column(name="allowed_symbols")
-	String validSymbols;
+	private String validSymbols;
 	
 	@Column(name="password_history")
-	Integer passwordHistory;
+	private Integer passwordHistory;
 	
 	@Column(name="min_age")
-	Integer minimumAge;
+	private Integer minimumAge;
 	
 	@Column(name="max_age")
-	Integer maximumAge;
+	private Integer maximumAge;
 	
 	@Column(name="hash_value")
-	Integer hashValue;
+	private Integer hashValue;
 	
 	@Column(name="dn", length=1024)
-	String dn;
+	private String dn;
 	
 	@Column(name="provider")
-	String provider;
+	private String provider;
 	
 	@Column(name="allow_edit")
-	Boolean allowEdit;
+	private Boolean allowEdit;
 	
 	@Column(name="default_policy")
-	Boolean defaultPolicy;
+	private Boolean defaultPolicy;
 	
 	@Column(name="additional_analysis", nullable = false, columnDefinition = "bit default TRUE")
-	Boolean additionalAnalysis;
+	private Boolean additionalAnalysis;
 	
 	public Integer getMinimumLength() {
 		return minimumLength;

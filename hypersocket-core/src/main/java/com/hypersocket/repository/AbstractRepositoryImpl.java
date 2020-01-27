@@ -47,12 +47,14 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 	static Logger log = LoggerFactory.getLogger(AbstractRepositoryImpl.class);
 
-	private HibernateTemplate hibernateTemplate;
-	protected SessionFactory sessionFactory;
 	
 	private static ThreadLocal<Boolean> cache = new ThreadLocal<>();
 	private static ThreadLocal<String> cacheRegion = new ThreadLocal<>();
+
+	private HibernateTemplate hibernateTemplate;	
 	private boolean requiresDemoWrite = false;
+	
+	protected SessionFactory sessionFactory;
 
 	protected AbstractRepositoryImpl() {
 

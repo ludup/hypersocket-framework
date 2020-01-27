@@ -19,7 +19,7 @@ public class DatabaseInformation {
 	private Set<String> tablesOnStartUp = new HashSet<>();
 
 	@Autowired DataSource dataSource;
-	String ormOnOld = null;
+	private String ormOnOld = null;
 	
 	@PostConstruct
 	public void postConstruct() throws SQLException{

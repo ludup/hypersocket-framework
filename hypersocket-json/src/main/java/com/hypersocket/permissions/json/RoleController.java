@@ -55,7 +55,7 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 public class RoleController extends ResourceController {
 	
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/role/{id}", method = RequestMethod.GET, produces = { "application/json" })

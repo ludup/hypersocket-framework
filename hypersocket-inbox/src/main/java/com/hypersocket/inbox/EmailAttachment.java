@@ -10,9 +10,9 @@ import javax.activation.DataSource;
 
 public class EmailAttachment implements DataSource {
 
-	String filename;
-	String contentType;
-	File file;
+	private String filename;
+	private String contentType;
+	private File file;
 	
 	public EmailAttachment(String filename, String contentType, File file) {
 		super();

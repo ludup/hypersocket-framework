@@ -19,7 +19,7 @@ public abstract class AbstractAuthenticatedServiceImpl extends AuthenticatedServ
 	protected PermissionService permissionService; 
 	
 	@Autowired
-	SessionService sessionService;
+	private SessionService sessionService;
 
 	@Override
 	protected void verifyPermission(Principal principal,

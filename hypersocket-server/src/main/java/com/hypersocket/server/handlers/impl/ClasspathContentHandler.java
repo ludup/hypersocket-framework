@@ -23,8 +23,9 @@ import com.hypersocket.utils.HypersocketUtils;
 public class ClasspathContentHandler extends ContentHandlerImpl {
 
 	static Logger log = org.slf4j.LoggerFactory.getLogger(ClasspathContentHandler.class);
-	String classpathPrefix;
-	String basePath;
+	
+	private String classpathPrefix;
+	private String basePath;
 	
 	public ClasspathContentHandler(String classpathPrefix, int priority) {
 		super("classpath:" + classpathPrefix, priority);

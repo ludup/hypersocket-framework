@@ -10,8 +10,8 @@ import java.io.InputStream;
  */
 public class CloseOnEOFInputStream extends InputStream {
 
-	InputStream in;
-	boolean closed = false;
+	private InputStream in;
+	private boolean closed = false;
 	
 	public CloseOnEOFInputStream(InputStream in) {
 		this.in = in;

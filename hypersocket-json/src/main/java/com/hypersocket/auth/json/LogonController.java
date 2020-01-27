@@ -47,7 +47,7 @@ import com.hypersocket.session.json.SessionUtils;
 public class LogonController extends AuthenticatedController {
 
 	@Autowired
-	PermissionService permissionService; 
+	private PermissionService permissionService; 
 	
 	@RequestMapping(value = "logon/reset", method = { RequestMethod.GET, RequestMethod.POST}, produces = "application/json")
 	@ResponseBody

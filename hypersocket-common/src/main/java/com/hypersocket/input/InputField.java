@@ -16,14 +16,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "inputField")
 public class InputField {
 
-	InputFieldType type;
-	String resourceKey;
-	String defaultValue;
-	boolean required;
-	String label;
-	List<Option> options = new ArrayList<Option>();
-	String infoKey;
-	String onChange;
+	private InputFieldType type;
+	private String resourceKey;
+	private String defaultValue;
+	private boolean required;
+	private String label;
+	private List<Option> options = new ArrayList<Option>();
+	private String infoKey;
+	private String onChange;
 	
 	public InputField() {
 

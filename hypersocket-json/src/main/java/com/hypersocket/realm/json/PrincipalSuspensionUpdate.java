@@ -11,10 +11,10 @@ import java.util.Date;
 
 public class PrincipalSuspensionUpdate {
 
-	String name;
-	Long principalId;
-	Date startDate;
-	Long duration;
+	private String name;
+	private Long principalId;
+	private Date startDate;
+	private Long duration;
 
 	public PrincipalSuspensionUpdate() {
 

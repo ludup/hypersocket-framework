@@ -26,19 +26,19 @@ public class Realm extends Resource {
 	private static final long serialVersionUID = -5087610813626724784L;
 
 	@Column(name = "default_realm")
-	boolean defaultRealm = false;
+	private boolean defaultRealm = false;
 
 	@Column(name = "uuid")
-	String uuid;
+	private String uuid;
 
 	@Column(name = "owner_id")
-	Long owner;
+	private Long owner;
 
 	@OneToOne(optional=true)
-	Realm parent;
+	private Realm parent;
 	
 	@Column(name="public_realm")
-	Boolean publicRealm;
+	private Boolean publicRealm;
 	
 	public boolean isDefaultRealm() {
 		return defaultRealm;

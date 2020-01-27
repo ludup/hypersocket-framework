@@ -15,7 +15,6 @@ public class ResourceEvent extends SessionEvent {
 	public static final String EVENT_RESOURCE_KEY = "resource.event";
 	
 	private static final long serialVersionUID = 1767418948626283958L;
-	RealmResource resource;
 	
 	public static final String ATTR_REALM_NAME = CommonAttributes.ATTR_REALM_NAME;
 	public static final String ATTR_RESOURCE_NAME = CommonAttributes.ATTR_RESOURCE_NAME;
@@ -23,6 +22,8 @@ public class ResourceEvent extends SessionEvent {
 	public static final String ATTR_OLD_RESOURCE_NAME = "attr.oldResourceName";
 	public static final String ATTR_CREATED = "attr.created";
 	public static final String ATTR_LAST_MODIFIED = "attr.lastModified";
+	
+	private RealmResource resource;
 	
 	public ResourceEvent(Object source, String resourceKey, boolean success,
 			Session session, RealmResource resource) {

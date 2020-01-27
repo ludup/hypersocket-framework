@@ -4,5 +4,5 @@ import java.util.Collection;
 
 public interface ResolverWithAttachments {
 
-	public Collection<String> getAttachmentUUIDS();
+	Collection<String> getAttachmentUUIDS();
 }

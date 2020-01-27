@@ -18,8 +18,9 @@ import com.hypersocket.server.websocket.WebsocketClientCallback;
 
 class ClientConnectCallbackImpl implements ChannelFutureListener {
 
-	WebsocketClientCallback callback;
-	WebsocketClient client;
+	private WebsocketClientCallback callback;
+	private WebsocketClient client;
+	
 	ClientConnectCallbackImpl(WebsocketClientCallback callback) {
 		this.callback = callback;
 	}

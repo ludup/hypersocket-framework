@@ -30,34 +30,34 @@ public interface HypersocketServer {
 
 	final static String RESOURCE_BUNDLE = "HypersocketServer";
 
-	public abstract List<HttpRequestHandler> getHttpHandlers();
+	List<HttpRequestHandler> getHttpHandlers();
 
-	public abstract List<WebsocketHandler> getWebsocketHandlers();
-	
-	public abstract void registerHttpHandler(HttpRequestHandler handler);
+	List<WebsocketHandler> getWebsocketHandlers();
 
-	public abstract void unregisterHttpHandler(HttpRequestHandler handler);
+	void registerHttpHandler(HttpRequestHandler handler);
 
-	public abstract void setAttribute(String name, Object value);
+	void unregisterHttpHandler(HttpRequestHandler handler);
 
-	public abstract <T> T getAttribute(String name, T template);
+	void setAttribute(String name, Object value);
 
-	public abstract String getApplicationName();
+	<T> T getAttribute(String name, T template);
 
-	public abstract void start() throws IOException;
+	String getApplicationName();
 
-	public abstract void stop();
+	void start() throws IOException;
 
-	public abstract DispatcherServlet getDispatcherServlet();
+	void stop();
 
-	public abstract String getApplicationPath();
-	
-	public String resolvePath(String path);
-	
-	public void init(ApplicationContext applicationContext) throws AccessDeniedException, ServletException, IOException;
-	
-	public void connect(TCPForwardingClientCallback callback) throws IOException;
-	
+	DispatcherServlet getDispatcherServlet();
+
+	String getApplicationPath();
+
+	String resolvePath(String path);
+
+	void init(ApplicationContext applicationContext) throws AccessDeniedException, ServletException, IOException;
+
+	void connect(TCPForwardingClientCallback callback) throws IOException;
+
 	ServletContext getServletContext();
 
 	ApplicationContext getApplicationContext();
@@ -76,11 +76,11 @@ public interface HypersocketServer {
 
 	String getApiPath();
 
-	public void restart(Long delay);
+	void restart(Long delay);
 
-	public void shutdown(Long delay);
+	void shutdown(Long delay);
 
-	public boolean isStopping();
+	boolean isStopping();
 
 	String[] getSSLProtocols();
 
@@ -97,12 +97,12 @@ public interface HypersocketServer {
 	Map<Pattern, String> getUrlRewrites();
 
 	void addAlias(String alias, String path);
-	
+
 	boolean isRedirectable(String uri);
-	
+
 	void setRedirectable(String uri, boolean redirectable);
-	
-	Map<String,String> getAliases();
+
+	Map<String, String> getAliases();
 
 	void removeAlias(String alias);
 
@@ -113,9 +113,9 @@ public interface HypersocketServer {
 	void registerClientConnector(ClientConnector connector);
 
 	void processDefaultResponse(HttpServletRequest request, HttpServletResponse response, boolean disableCache);
-	
+
 	String getDefaultRedirectPath();
-	
+
 	void setDefaultRedirectPath(String path);
 
 	HomePageResolver getHomePageResolver();

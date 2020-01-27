@@ -15,31 +15,31 @@ import com.hypersocket.repository.AbstractEntityRepository;
 
 public interface AuthenticationModuleRepository extends AbstractEntityRepository<AuthenticationModule,Long> {
 
-	public List<AuthenticationModule> getModulesForScheme(
+	List<AuthenticationModule> getModulesForScheme(
 			AuthenticationScheme scheme);
 
-	public List<AuthenticationModule> getAuthenticationModules();
+	List<AuthenticationModule> getAuthenticationModules();
 
-	public List<AuthenticationModule> getAuthenticationModulesByScheme(
+	List<AuthenticationModule> getAuthenticationModulesByScheme(
 			AuthenticationScheme authenticationScheme);
 
-	public AuthenticationModule getModuleById(Long id);
+	AuthenticationModule getModuleById(Long id);
 
-	public void updateSchemeModules(List<AuthenticationModule> moduleList);
+	void updateSchemeModules(List<AuthenticationModule> moduleList);
 
-	public AuthenticationModule createAuthenticationModule(
+	AuthenticationModule createAuthenticationModule(
 			AuthenticationModule authenticationModule);
 
-	public AuthenticationModule updateAuthenticationModule(
+	AuthenticationModule updateAuthenticationModule(
 			AuthenticationModule authenticationModule);
 
-	public void deleteModule(AuthenticationModule authenticationModule);
+	void deleteModule(AuthenticationModule authenticationModule);
 
 	boolean isAuthenticatorInUse(Realm realm, String resourceKey);
 
-	public Collection<AuthenticationScheme> getSchemesForModule(Realm currentRealm, String... resourceKeys);
+	Collection<AuthenticationScheme> getSchemesForModule(Realm currentRealm, String... resourceKeys);
 
-	public void deleteRealm(Realm realm);
+	void deleteRealm(Realm realm);
 
 	Collection<AuthenticationModule> getModulesForRealm(Realm scheme);
 

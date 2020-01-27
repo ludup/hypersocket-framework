@@ -11,7 +11,6 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceRepository;
 import com.hypersocket.server.interfaces.http.HTTPProtocol;
-import com.hypersocket.session.SessionService;
 import com.hypersocket.upgrade.PermissionsAwareUpgradeScript;
 
 public class server_1_DOT_2_DOT_0 extends PermissionsAwareUpgradeScript {
@@ -19,19 +18,16 @@ public class server_1_DOT_2_DOT_0 extends PermissionsAwareUpgradeScript {
 	static Logger log = LoggerFactory.getLogger(server_1_DOT_2_DOT_0.class);
 	
 	@Autowired
-	HTTPInterfaceResourceRepository repository;
+	private HTTPInterfaceResourceRepository repository;
 	
 	@Autowired
-	SystemConfigurationService configurationService;
+	private SystemConfigurationService configurationService;
 	
 	@Autowired
-	CertificateResourceService certificateService; 
+	private CertificateResourceService certificateService; 
 	
 	@Autowired
-	RealmService realmService;
-	
-	@Autowired
-	SessionService sessionService; 
+	private RealmService realmService; 
 
 	@Override
 	protected void doUpgrade() {

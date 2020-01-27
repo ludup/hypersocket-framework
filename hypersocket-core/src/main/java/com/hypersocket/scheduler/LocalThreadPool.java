@@ -10,7 +10,7 @@ import org.quartz.SchedulerConfigException;
  */
 public class LocalThreadPool extends SimpleThreadPoolEx {
 
-	static LocalThreadPool instance;
+	private static LocalThreadPool instance;
 	
 	public static LocalThreadPool getInstance() {
 		return instance;

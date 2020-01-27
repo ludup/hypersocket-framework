@@ -45,9 +45,8 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 @Controller
 public class MessageResourceController extends ResourceController {
 
-
 	@Autowired
-	MessageResourceService resourceService;
+	private MessageResourceService resourceService;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "messages/list", method = RequestMethod.GET, produces = { "application/json" })

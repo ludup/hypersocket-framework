@@ -13,15 +13,15 @@ import com.hypersocket.realm.Realm;
 
 public class AuthenticationRequiredResult extends AuthenticationResult {
 
-	FormTemplate formTemplate;
-	boolean lastErrorIsResourceKey;
-	boolean isNew;
-	boolean isFirst;
-	boolean isLast;
-	boolean lastResultSuccessful;
-	boolean inPostAuthentication;
-	String lastButtonResourceKey;
-	Realm realm;
+	private FormTemplate formTemplate;
+	private boolean lastErrorIsResourceKey;
+	private boolean isNew;
+	private boolean isFirst;
+	private boolean isLast;
+	private boolean lastResultSuccessful;
+	private boolean inPostAuthentication;
+	private String lastButtonResourceKey;
+	private Realm realm;
 	
 	public AuthenticationRequiredResult() {
 

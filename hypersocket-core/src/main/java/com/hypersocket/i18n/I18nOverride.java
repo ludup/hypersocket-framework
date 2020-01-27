@@ -20,20 +20,20 @@ public class I18nOverride extends AbstractEntity<Long> {
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	@Column(name="id")
-	Long id;
+	private Long id;
 
 	@Column(name="locale")
-	String locale;
+	private String locale;
 	
 	@Column(name="bundle", length=512)
-	String bundle;
+	private String bundle;
 	
 	@Column(name="name", length=512)
-	String name;
+	private String name;
 	
 	@Lob
 	@Column(name="value")
-	String value;
+	private String value;
 	
 	@Override
 	public Long getId() {

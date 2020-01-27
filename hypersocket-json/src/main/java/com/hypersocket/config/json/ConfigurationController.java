@@ -51,13 +51,13 @@ public class ConfigurationController extends AuthenticatedController {
 
 	static Logger log = LoggerFactory.getLogger(ConfigurationController.class);
 
-	@Autowired
-	ConfigurationService configurationService;
-
-	@Autowired
-	SystemConfigurationService systemConfigurationService;
-
 	final static String RESOURCE_KEY = "ConfigurationController";
+
+	@Autowired
+	private ConfigurationService configurationService;
+
+	@Autowired
+	private SystemConfigurationService systemConfigurationService;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "configuration/timeZone/list", method = RequestMethod.GET, produces = { "application/json" })

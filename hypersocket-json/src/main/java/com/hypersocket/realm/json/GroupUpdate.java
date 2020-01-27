@@ -14,12 +14,12 @@ import com.hypersocket.json.PropertyItem;
 @XmlRootElement(name="group")
 public class GroupUpdate {
 
-	Long id;
-	String name;
-	String[] users;
-	String[] groups;
+	private Long id;
+	private String name;
+	private String[] users;
+	private String[] groups;
 	
-	PropertyItem[] properties;
+	private PropertyItem[] properties;
 
 	public GroupUpdate() {
 		

@@ -27,23 +27,23 @@ public class TriggerCondition extends AbstractEntity<Long> {
 	@Id
 	@GeneratedValue(strategy=GenerationType.TABLE)
 	@Column(name="id")
-	Long id;
+	private Long id;
 	
 	@OneToOne
 	@JoinColumn(name="trigger_id")
-	TriggerResource trigger;
+	private TriggerResource trigger;
 	
 	@Column(name="type")
-	TriggerConditionType type;
+	private TriggerConditionType type;
 	
 	@Column(name="attribute_key")
-	String attributeKey;
+	private String attributeKey;
 	
 	@Column(name="condition_key")
-	String conditionKey;
+	private String conditionKey;
 	
 	@Column(name="condition_value")
-	String conditionValue;
+	private String conditionValue;
 	
 	@Override
 	public Long getId() {

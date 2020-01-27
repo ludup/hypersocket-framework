@@ -24,7 +24,7 @@ public class RoleEvent extends PrincipalEvent {
 	public static final String ATTR_ASSOCIATED_PERMISSIONS = "attr.associatedPermissions";
 	public static final String ATTR_PERMISSIONS = "attr.Permissions";
 
-	Role role;
+	private Role role;
 	
 	public RoleEvent(Object source, String resourceKey, Session session,
 			Realm realm, Role role) {

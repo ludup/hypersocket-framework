@@ -2,10 +2,10 @@ package com.hypersocket.i18n;
 
 public class Message {
 
-	String bundle;
-	String id;
-	String original;
-	String translated;
+	private String bundle;
+	private String id;
+	private String original;
+	private String translated;
 	
 	public Message() {
 		

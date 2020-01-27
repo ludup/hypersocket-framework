@@ -23,7 +23,7 @@ import com.hypersocket.triggers.ValidationException;
 public abstract class AbstractCreateAssignableResourceTask<T extends AssignableResource> extends AbstractTaskProvider {
 
 	@Autowired
-	TaskProviderService taskService; 
+	private TaskProviderService taskService; 
 	
 	@PostConstruct
 	private void postConstruct() {

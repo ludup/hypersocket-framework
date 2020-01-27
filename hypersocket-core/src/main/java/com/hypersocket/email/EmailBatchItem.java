@@ -18,43 +18,43 @@ public class EmailBatchItem extends RealmResource {
 	private static final long serialVersionUID = 7712547601212721547L;
 
 	@Column(name="subject", length=1024)
-	String subject;
+	private String subject;
 	
 	@Column(name="text")
 	@Lob
-	String text;
+	private String text;
 
 	@Column(name="html")
 	@Lob
-	String html;
+	private String html;
 	
 	@Column(name="reply_name")
-	String replyToName;
+	private String replyToName;
 	
 	@Column(name="reply_email")
-	String replyToEmail;
+	private String replyToEmail;
 	
 	@Column(name="to_name")
-	String toName;
+	private String toName;
 	
 	@Column(name="to_email")
-	String toEmail;
+	private String toEmail;
 	
 	@Column(name="track")
-	boolean track;
+	private boolean track;
 	
 	@Column(name="archive")
-	Boolean archive = Boolean.FALSE;
+	private Boolean archive = Boolean.FALSE;
 	
 	@Column(name="attachments")
 	@Lob
-	String attachments;
+	private String attachments;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	Date schedule;
+	private Date schedule;
 	
 	@Column(name="context")
-	String context;
+	private String context;
 	
 	public String getContext() {
 		return context;

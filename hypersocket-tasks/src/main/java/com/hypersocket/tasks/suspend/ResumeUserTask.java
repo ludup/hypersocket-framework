@@ -20,7 +20,6 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.tasks.AbstractTaskProvider;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProviderService;
@@ -37,25 +36,19 @@ public class ResumeUserTask extends AbstractTaskProvider {
 	public static final String RESOURCE_KEY = "resumeUser";
 
 	@Autowired
-	SuspendUserTask suspendUserTask;
-
-	@Autowired
-	PrincipalSuspensionService suspensionService;
+	private PrincipalSuspensionService suspensionService;
 	
 	@Autowired
-	ResumeUserTaskRepository repository;
+	private ResumeUserTaskRepository repository;
 
 	@Autowired
-	RealmService service;
+	private RealmService service;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@Autowired
-	ClusteredSchedulerService schedulerService;
-
-	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@PostConstruct
 	private void postConstruct() {

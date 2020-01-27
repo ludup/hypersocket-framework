@@ -14,7 +14,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 
 public class ResourceKeyRestriction implements CriteriaConfiguration {
 
-	String resourceKey;
+	private String resourceKey;
 	
 	public ResourceKeyRestriction(String resourceKey) {
 		this.resourceKey = resourceKey;

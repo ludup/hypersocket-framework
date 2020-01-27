@@ -14,15 +14,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.hypersocket.ApplicationContextServiceImpl;
-import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.server.HypersocketServerImpl;
 import com.hypersocket.server.handlers.HttpResponseProcessor;
 import com.hypersocket.session.json.SessionUtils;
 
 public class APIRequestHandler extends ServletRequestHandler {
 
-	SessionUtils sessionUtils;
-	ConfigurationService configurationService; 
+	private SessionUtils sessionUtils; 
 	
 	@Override
 	public void handleHttpRequest(HttpServletRequest request, HttpServletResponse response,
@@ -30,7 +28,6 @@ public class APIRequestHandler extends ServletRequestHandler {
 	
 		if(Objects.isNull(sessionUtils)) {
 			sessionUtils = ApplicationContextServiceImpl.getInstance().getBean(SessionUtils.class);
-			configurationService = ApplicationContextServiceImpl.getInstance().getBean(ConfigurationService.class);
 		}
 		
 		

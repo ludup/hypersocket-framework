@@ -27,7 +27,7 @@ import com.hypersocket.session.json.SessionTimeoutException;
 public class UserInterfaceStateController extends ResourceController {
 
 	@Autowired
-	UserInterfaceStateService service;
+	private UserInterfaceStateService service;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "interfaceState/state/{specific}/{resources}", method = RequestMethod.GET, produces = { "application/json" })

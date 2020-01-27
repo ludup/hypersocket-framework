@@ -36,15 +36,14 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 	public static final String SYSTEM_GROUP = "system";
 
-	Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<String, PropertyStore>();
-	Map<String, PropertyStore> propertyStoresById = new HashMap<String, PropertyStore>();
+	private Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<String, PropertyStore>();
+	private Map<String, PropertyStore> propertyStoresById = new HashMap<String, PropertyStore>();
 
-	Set<PropertyStore> propertyStores = new HashSet<PropertyStore>();
-	Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();
+	private Set<PropertyStore> propertyStores = new HashSet<PropertyStore>();
+	private Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();
 
-	String resourceXmlPath;
-
-	PropertyStore defaultStore;
+	private String resourceXmlPath;
+	private PropertyStore defaultStore;
 
 	public PropertyTemplateRepositoryAbstractImpl(PropertyStore defaultStore) {
 		this.defaultStore = defaultStore;
@@ -280,7 +279,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		for(int i = 0; i < pnode.getAttributes().getLength(); i++) {
 			Node n = pnode.getAttributes().item(i);
 			if(!isKnownAttributeName(n.getNodeName())) {
-				template.attributes.put(n.getNodeName(), n.getNodeValue());
+				template.getAttributes().put(n.getNodeName(), n.getNodeValue());
 			}
 		}
 		

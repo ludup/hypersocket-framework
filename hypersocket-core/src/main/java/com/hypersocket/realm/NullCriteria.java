@@ -7,7 +7,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 
 public class NullCriteria implements CriteriaConfiguration {
 
-	String columnName = "resource";
+	private String columnName = "resource";
 	
 	public NullCriteria() {	
 	}

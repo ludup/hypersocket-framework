@@ -14,11 +14,11 @@ public abstract class PipedOperationOutputStream extends OutputStream implements
 
 static Logger log = LoggerFactory.getLogger(PipedOperationOutputStream.class);
 	
-	PipedOutputStream out = new PipedOutputStream();
-	PipedInputStream in = new PipedInputStream(out, 1024000);
-	OutputStream source;
-	boolean operationComplete = false;
-	boolean started = false;
+	private PipedOutputStream out = new PipedOutputStream();
+	private PipedInputStream in = new PipedInputStream(out, 1024000);
+	private OutputStream source;
+	private boolean operationComplete = false;
+	private boolean started = false;
 	
 	public PipedOperationOutputStream(OutputStream source) throws IOException {
 		this.source = source;

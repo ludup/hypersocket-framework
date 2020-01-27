@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.SystemPermission;
-import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 
 public class SessionReaperJob extends PermissionsAwareJob {
@@ -17,10 +16,7 @@ public class SessionReaperJob extends PermissionsAwareJob {
 	static Logger log = LoggerFactory.getLogger(SessionReaperJob.class);
 	
 	@Autowired
-	SessionService sessionService;
-	
-	@Autowired
-	RealmService realmService; 
+	private SessionService sessionService; 
 	
 	@Override
 	protected void executeJob(JobExecutionContext context) {

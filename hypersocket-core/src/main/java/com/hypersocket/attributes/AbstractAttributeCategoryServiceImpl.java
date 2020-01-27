@@ -12,7 +12,6 @@ import com.hypersocket.attributes.events.AttributeCategoryDeletedEvent;
 import com.hypersocket.attributes.events.AttributeCategoryEvent;
 import com.hypersocket.attributes.events.AttributeCategoryUpdatedEvent;
 import com.hypersocket.events.EventService;
-import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.properties.PropertyCategory;
@@ -31,10 +30,7 @@ public abstract class AbstractAttributeCategoryServiceImpl<A extends AbstractAtt
 	public static final String RESOURCE_BUNDLE = "UserAttributes";
 
 	@Autowired
-	I18NService i18nService;
-
-	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	// Should be set by sub-class
 	protected AttributeCategoryRepository<T> attributeCategoryRepository;

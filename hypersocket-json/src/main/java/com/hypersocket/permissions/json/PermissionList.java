@@ -18,7 +18,7 @@ import com.hypersocket.permissions.Permission;
 @XmlRootElement(name="permissions")
 public class PermissionList {
 
-	List<Permission> permissions;
+	private List<Permission> permissions;
 	
 	public PermissionList(List<Permission> permissions) {
 		this.permissions = permissions;

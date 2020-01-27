@@ -11,26 +11,22 @@ import com.hypersocket.server.handlers.HttpResponseProcessor;
 
 public interface ContentHandler {
 
-	public abstract boolean handlesRequest(HttpServletRequest request);
+	boolean handlesRequest(HttpServletRequest request);
 
-	public abstract void handleHttpRequest(HttpServletRequest request,
-			HttpServletResponse response,
+	void handleHttpRequest(HttpServletRequest request, HttpServletResponse response,
 			HttpResponseProcessor responseProcessor) throws IOException;
 
-	public abstract String getResourceName();
+	String getResourceName();
 
-	public abstract InputStream getResourceStream(String path)
-			throws FileNotFoundException;
+	InputStream getResourceStream(String path) throws FileNotFoundException;
 
-	public abstract long getResourceLength(String path)
-			throws FileNotFoundException;
+	long getResourceLength(String path) throws FileNotFoundException;
 
-	public abstract long getLastModified(String path)
-			throws FileNotFoundException;
+	long getLastModified(String path) throws FileNotFoundException;
 
-	public abstract int getResourceStatus(String path) throws RedirectException;
+	int getResourceStatus(String path) throws RedirectException;
 
-	public abstract void addAlias(String alias, String path);
+	void addAlias(String alias, String path);
 
 	void addFilter(ContentFilter filter);
 

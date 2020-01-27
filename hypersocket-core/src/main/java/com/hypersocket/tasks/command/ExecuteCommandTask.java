@@ -26,16 +26,15 @@ import com.hypersocket.utils.HypersocketUtils;
 public class ExecuteCommandTask extends AbstractTaskProvider {
 
 	public static final String EXECUTE_COMMAND_TASK = "executeCommand";
-
 	
 	@Autowired
-	ExecuteCommandRepository repository;
+	private ExecuteCommandRepository repository;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	public ExecuteCommandTask() {
 	}

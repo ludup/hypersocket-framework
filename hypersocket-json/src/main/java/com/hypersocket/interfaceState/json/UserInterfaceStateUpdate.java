@@ -2,10 +2,10 @@ package com.hypersocket.interfaceState.json;
 
 public class UserInterfaceStateUpdate {
 
-	Long resourceId;
-	String name;
-	String preferences;
-	boolean specific;
+	private Long resourceId;
+	private String name;
+	private String preferences;
+	private boolean specific;
 
 	public UserInterfaceStateUpdate() {
 

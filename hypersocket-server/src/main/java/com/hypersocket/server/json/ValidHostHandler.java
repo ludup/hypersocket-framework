@@ -20,13 +20,13 @@ import com.hypersocket.server.handlers.HttpResponseProcessor;
 public class ValidHostHandler extends HttpRequestHandler {
 
 	@Autowired
-	HypersocketServer server; 
+	private HypersocketServer server; 
 	
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	@Autowired
-	SystemConfigurationService systemConfigurationService; 
+	private SystemConfigurationService systemConfigurationService; 
 	
 	public ValidHostHandler() {
 		super("host", Integer.MIN_VALUE);

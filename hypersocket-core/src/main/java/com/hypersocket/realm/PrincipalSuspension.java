@@ -28,13 +28,13 @@ public class PrincipalSuspension extends Resource {
 	protected Principal principal;
 	
 	@Column(name = "start_time")
-	Date startTime;
+	private Date startTime;
 
 	@Column(name = "duration")
-	Long duration;
+	private Long duration;
 
 	@Column(name="suspension_type")
-	PrincipalSuspensionType suspensionType;
+	private PrincipalSuspensionType suspensionType;
 	
 	public PrincipalSuspension() {
 

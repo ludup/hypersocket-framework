@@ -28,7 +28,7 @@ import com.hypersocket.session.json.SessionTimeoutException;
 public class ServiceManagementController extends AuthenticatedController {
 
 	@Autowired
-	ServiceManagementService managementService; 
+	private ServiceManagementService managementService; 
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "services/list", method = RequestMethod.GET, produces = { "application/json" })

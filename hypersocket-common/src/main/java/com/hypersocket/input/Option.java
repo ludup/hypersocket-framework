@@ -9,10 +9,10 @@ package com.hypersocket.input;
 
 public class Option {
 
-	String name;
-	String value;
-	boolean selected;
-	boolean isNameResourceKey;
+	private String name;
+	private String value;
+	private boolean selected;
+	private boolean isNameResourceKey;
 	
 	public Option() {
 		

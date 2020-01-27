@@ -14,21 +14,21 @@ public class TemplateResource extends RealmResource {
 	private static final long serialVersionUID = -5189102854329906423L;
 
 	@Column(name="logo")
-	String templateLogo;
+	private String templateLogo;
 	
 	@Column(name="template_variables")
 	@Lob
-	String variables;
+	private String variables;
 	
 	@Column(name="template_script")
 	@Lob
-	String script;
+	private String script;
 
 	@Column(name="template_type")
-	TemplateType type;
+	private TemplateType type;
 	
 	@Column(name="template_status")
-	TemplateStatus status;
+	private TemplateStatus status;
 	
 	public String getVariables() {
 		return variables;

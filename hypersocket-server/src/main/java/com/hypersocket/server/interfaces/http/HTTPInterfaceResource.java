@@ -20,19 +20,19 @@ public class HTTPInterfaceResource extends InterfaceResource {
 	private static final long serialVersionUID = 7449184297753501756L;
 
 	@Column(name="protocol")
-	HTTPProtocol protocol;
+	private HTTPProtocol protocol;
 	
 	@OneToOne
-	CertificateResource certificate;
+	private CertificateResource certificate;
 
 	@Column(name="redirect_https")
-	Boolean redirectHTTPS;
+	private Boolean redirectHTTPS;
 	
 	@Column(name="redirect_port")
-	Integer redirectPort;
+	private Integer redirectPort;
 
 	@ManyToMany(fetch=FetchType.EAGER)
-	Set<CertificateResource> additionalCertificates = new HashSet<CertificateResource>();
+	private Set<CertificateResource> additionalCertificates = new HashSet<CertificateResource>();
 	
 	public HTTPProtocol getProtocol() {
 		return protocol;

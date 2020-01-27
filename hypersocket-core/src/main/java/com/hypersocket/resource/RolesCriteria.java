@@ -9,7 +9,8 @@ import com.hypersocket.repository.CriteriaConfiguration;
 
 public class RolesCriteria implements CriteriaConfiguration {
 
-	Role[] roles;
+	private Role[] roles;
+	
 	public RolesCriteria(Role... roles) {
 		this.roles = roles;
 	}

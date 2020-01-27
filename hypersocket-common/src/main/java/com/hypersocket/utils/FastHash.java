@@ -8,7 +8,7 @@ import net.jpountz.xxhash.XXHashFactory;
 
 public class FastHash {
 
-	StreamingXXHash32 hash32;
+	private StreamingXXHash32 hash32;
 
 	public FastHash() {
 		XXHashFactory factory = XXHashFactory.fastestInstance();

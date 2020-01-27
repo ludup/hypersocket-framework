@@ -11,10 +11,11 @@ import com.hypersocket.scheduler.PermissionsAwareJob;
 public abstract class TrackedJob extends PermissionsAwareJob {
 
 	@Autowired
-	JobResourceService jobService; 
+	private JobResourceService jobService; 
 	
-	JobDataMap data;
-	String uuid = null;
+	private JobDataMap data;
+	private String uuid = null;
+	
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		

@@ -30,19 +30,19 @@ public class ImportPrincipalLegacyIDTask extends AbstractTaskProvider {
 	public static final String RESOURCE_BUNDLE = "ImportPrincipalLegacyIDTask";
 	
 	@Autowired
-	ImportPrincipalLegacyIDTaskRepository repository;
+	private ImportPrincipalLegacyIDTaskRepository repository;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	I18NService i18nService; 
+	private I18NService i18nService; 
 
 	@Autowired
-	PrincipalRepository principalRepository; 
+	private PrincipalRepository principalRepository; 
 	
 	public ImportPrincipalLegacyIDTask() {
 	}

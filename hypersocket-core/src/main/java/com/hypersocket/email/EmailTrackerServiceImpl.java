@@ -31,19 +31,19 @@ public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl im
 	static Logger log = LoggerFactory.getLogger(EmailTrackerServiceImpl.class);
 	
 	@Autowired
-	EmailTrackerRepository repository;
+	private EmailTrackerRepository repository;
 	
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 	
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	@Autowired
-	ConfigurationService configurationService; 
+	private ConfigurationService configurationService; 
 	
 	@Autowired
-	SystemConfigurationService systemConfigurationService; 
+	private SystemConfigurationService systemConfigurationService; 
 	
 	@Autowired
 	FileUploadService fileService;

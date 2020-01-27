@@ -20,20 +20,20 @@ public class TaskProviderServiceImpl extends AbstractAuthenticatedServiceImpl im
 	public static final String RESOURCE_BUNDLE = "TaskProviderService";
 	
 	@Autowired
-	TriggerResourceRepository repository;
+	private TriggerResourceRepository repository;
 	
 	@Autowired
-	I18NService i18nService; 
+	private I18NService i18nService; 
 	
-	Map<String, TaskProvider> registeredTasks = new HashMap<String, TaskProvider>();
-	List<String> triggerTasks = new ArrayList<String>();
-	List<String> nonSystemTriggerTasks = new ArrayList<String>();
-	List<String> realmTriggerTasks = new ArrayList<String>();
-	List<String> automationTasks = new ArrayList<String>();
-	List<String> nonSystemAutomationTasks = new ArrayList<String>();
-	List<String> realmAutomationTasks = new ArrayList<String>();
+	private Map<String, TaskProvider> registeredTasks = new HashMap<String, TaskProvider>();
+	private List<String> triggerTasks = new ArrayList<String>();
+	private List<String> nonSystemTriggerTasks = new ArrayList<String>();
+	private List<String> realmTriggerTasks = new ArrayList<String>();
+	private List<String> automationTasks = new ArrayList<String>();
+	private List<String> nonSystemAutomationTasks = new ArrayList<String>();
+	private List<String> realmAutomationTasks = new ArrayList<String>();
 	
-	boolean disableSystemTasks = false;
+	private boolean disableSystemTasks = false;
 	
 	@PostConstruct
 	private void postConstruct() {

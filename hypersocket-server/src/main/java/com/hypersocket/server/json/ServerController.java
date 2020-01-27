@@ -37,7 +37,6 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.server.HypersocketServer;
-import com.hypersocket.session.SessionService;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
 
@@ -45,16 +44,13 @@ import com.hypersocket.session.json.SessionUtils;
 public class ServerController extends AuthenticatedController {
 
 	@Autowired
-	HypersocketServer server;
+	private HypersocketServer server;
 
 	@Autowired
-	SessionUtils sessionUtils;
+	private SessionUtils sessionUtils;
 
 	@Autowired
-	PermissionService permissionService;
-	
-	@Autowired
-	SessionService sessionService; 
+	private PermissionService permissionService; 
 	
 	@RequestMapping(value = "server/ping", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody

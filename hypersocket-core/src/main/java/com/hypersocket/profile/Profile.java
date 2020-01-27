@@ -28,21 +28,21 @@ public class Profile extends AbstractEntity<Long>{
 	
 	@Id
 	@Column(name="principal_id")
-	Long id;
+	private Long id;
 	
 	@OneToOne
-	Realm realm;
+	private Realm realm;
 	
 	@OneToMany(orphanRemoval=true, fetch=FetchType.EAGER, cascade=CascadeType.ALL)
 	@JoinColumn(name="profile_principal_id")
-	List<ProfileCredentials> credentials;
+	private List<ProfileCredentials> credentials;
 	
 	@Column(name="state")
-	ProfileCredentialsState state;
+	private ProfileCredentialsState state;
 	
 	@Column(name="completed")
 	@Temporal(TemporalType.DATE)
-	Date completed;
+	private Date completed;
 	
 	@Override
 	public Long getId() {

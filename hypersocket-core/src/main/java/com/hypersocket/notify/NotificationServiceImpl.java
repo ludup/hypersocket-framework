@@ -7,7 +7,7 @@ import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 
 public class NotificationServiceImpl extends AbstractAuthenticatedServiceImpl implements NotificationService {
 
-	List<NotificationProvider> providers = new ArrayList<NotificationProvider>();
+	private List<NotificationProvider> providers = new ArrayList<NotificationProvider>();
 	
 	@Override
 	public void registerProvider(NotificationProvider provider) {

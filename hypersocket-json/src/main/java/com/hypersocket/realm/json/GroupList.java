@@ -17,7 +17,7 @@ import com.hypersocket.realm.Principal;
 @XmlRootElement(name="groups")
 public class GroupList {
 
-	List<Principal> groups;
+	private List<Principal> groups;
 	
 	public GroupList() {
 		

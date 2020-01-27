@@ -26,7 +26,7 @@ public class DefaultEncryptor implements Encryptor {
 	static Logger log = LoggerFactory.getLogger(DefaultEncryptor.class);
 	
 	@Autowired
-	SecretKeyService secretKeyService;
+	private SecretKeyService secretKeyService;
 	
 	@Override
 	public String encryptString(String reference, String data, Realm realm)

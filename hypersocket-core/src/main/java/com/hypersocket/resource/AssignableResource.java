@@ -33,21 +33,21 @@ import com.hypersocket.permissions.Role;
 public abstract class AssignableResource extends RealmResource {
 
 	private static final long serialVersionUID = 7293251973484666341L;
+	
 	@ManyToMany(fetch=FetchType.EAGER)
 	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "resource_roles", joinColumns={@JoinColumn(name="resource_id")}, 
 			inverseJoinColumns={@JoinColumn(name="role_id")})
-	Set<Role> roles = new HashSet<Role>();
+	private Set<Role> roles = new HashSet<Role>();
 
 	@Transient
-	Set<Role> assignedRoles;
+	private Set<Role> assignedRoles;
 	
 	@Transient
-	Set<Role> unassignedRoles;
+	private Set<Role> unassignedRoles;
 
 	@Column(name="personal")
-	Boolean personal;
-
+	private Boolean personal;
 	
 	public AssignableResource() {
 	}

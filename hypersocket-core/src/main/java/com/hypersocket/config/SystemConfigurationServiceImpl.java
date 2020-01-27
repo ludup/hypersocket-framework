@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.RealmService;
@@ -36,16 +35,13 @@ public class SystemConfigurationServiceImpl extends
 			.getLogger(SystemConfigurationServiceImpl.class);
 
 	@Autowired
-	SystemConfigurationRepository repository;
+	private SystemConfigurationRepository repository;
 
 	@Autowired
-	PermissionService permissionService;
-
-	@Autowired
-	EventService eventService;
+	private EventService eventService;
 	
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 
 	@PostConstruct
 	private void postConstruct() {

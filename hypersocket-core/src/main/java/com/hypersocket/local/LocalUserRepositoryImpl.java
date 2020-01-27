@@ -25,7 +25,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.encrypt.EncryptionService;
-import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
@@ -45,14 +44,11 @@ import com.hypersocket.util.PrincipalIterator;
 
 @Repository
 public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl implements LocalUserRepository {
-
-	@Autowired
-	PermissionService permissionService;
 	
 	@Autowired
-	EncryptionService encryptionService;
+	private EncryptionService encryptionService;
 
-	EntityResourcePropertyStore entityPropertyStore;
+	private EntityResourcePropertyStore entityPropertyStore;
 	
 	@PostConstruct
 	private void postConstruct() {

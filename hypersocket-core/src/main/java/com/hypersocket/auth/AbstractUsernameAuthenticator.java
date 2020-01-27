@@ -19,19 +19,19 @@ import com.hypersocket.realm.RealmService;
 public abstract class AbstractUsernameAuthenticator implements Authenticator {
 
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 
 	@Autowired
-	AuthenticationService authenticationService;
+	private AuthenticationService authenticationService;
 
 	@Autowired
-	SystemConfigurationService systemConfigurationService;
+	private SystemConfigurationService systemConfigurationService;
 	
 	@Autowired
-	RealmRepository realmRepository;
+	private RealmRepository realmRepository;
 	
 	@Autowired
-	ConfigurationService configurationService; 
+	private ConfigurationService configurationService; 
 	
 	@Override
 	public AuthenticatorResult authenticate(AuthenticationState state,

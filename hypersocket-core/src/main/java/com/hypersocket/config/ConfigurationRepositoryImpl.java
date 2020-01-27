@@ -2,8 +2,6 @@ package com.hypersocket.config;
 
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,11 +11,6 @@ import com.hypersocket.resource.SimpleResource;
 
 @Repository
 public class ConfigurationRepositoryImpl extends ResourceTemplateRepositoryImpl implements ConfigurationRepository {
-
-	@PostConstruct
-	private void postConstruct() {
-
-	}
 
 	@Override
 	@Transactional

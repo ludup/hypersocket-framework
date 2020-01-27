@@ -7,7 +7,7 @@ import com.hypersocket.realm.Principal;
 
 public interface AuthenticatorExtender {
 
-	public AuthenticatorResult authenticate(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException;
+	AuthenticatorResult authenticate(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException;
 
 	boolean canAuthenticate(Principal principal);
 		

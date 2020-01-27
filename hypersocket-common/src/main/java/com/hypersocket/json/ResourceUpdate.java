@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class ResourceUpdate {
 
-	Long id;
-	String name;
-	PropertyItem[] properties;
+	private Long id;
+	private String name;
+	private PropertyItem[] properties;
 
 	public ResourceUpdate() {
 		

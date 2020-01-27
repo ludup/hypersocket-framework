@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.cache.CacheService;
-import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
@@ -31,13 +30,10 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 	protected abstract String getResourceKey();
 	
 	@Autowired
-	ClusteredSchedulerService schedulerService; 
+	private ClusteredSchedulerService schedulerService; 
 	
 	@Autowired
-	RealmService realmService; 
-	
-	@Autowired
-	CacheService cacheService; 
+	private CacheService cacheService; 
 	
 	@PostConstruct 
 	private void postConstruct() {

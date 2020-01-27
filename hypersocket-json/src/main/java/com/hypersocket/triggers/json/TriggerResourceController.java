@@ -62,13 +62,13 @@ import com.hypersocket.utils.HypersocketUtils;
 public class TriggerResourceController extends AbstractTriggerController {
 
 	@Autowired
-	TriggerResourceService resourceService;
+	private TriggerResourceService resourceService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/table", method = RequestMethod.GET, produces = { "application/json" })

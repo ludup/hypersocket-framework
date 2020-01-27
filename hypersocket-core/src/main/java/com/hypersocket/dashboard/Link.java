@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class Link {
 
-	String name;
-	String url;
-	String icon;
-	String desc;
-	Integer weight = 0;
+	private String name;
+	private String url;
+	private String icon;
+	private String desc;
+	private Integer weight = 0;
 	
 	public Link() {
 		

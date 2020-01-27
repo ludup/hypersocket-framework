@@ -13,7 +13,7 @@ public class CountKey extends RealmResource {
 	private static final long serialVersionUID = -2894955407636699115L;
 
 	@Column(name="count_value")
-	Long count;
+	private Long count;
 		
 	public void add(Long count) {
 		this.count += count;

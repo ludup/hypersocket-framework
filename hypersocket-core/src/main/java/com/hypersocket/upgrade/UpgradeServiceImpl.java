@@ -48,7 +48,6 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.Version;
-import com.hypersocket.session.SessionService;
 
 public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAware {
 
@@ -58,15 +57,10 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	private final ScriptEngineManager manager;
 	private ApplicationContext springContext;
 	private SessionFactory sessionFactory;
-	
-	@Autowired
-	SessionService sessionService; 
-	
-	List<UpgradeServiceListener> listeners = new ArrayList<UpgradeServiceListener>();
-	
-	String databaseType = null;
-	boolean fresh = true;
-	boolean done = false;
+	private List<UpgradeServiceListener> listeners = new ArrayList<UpgradeServiceListener>();
+	private String databaseType = null;
+	private boolean fresh = true;
+	private boolean done = false;
 	
 	public UpgradeServiceImpl() {
 		manager = new ScriptEngineManager();

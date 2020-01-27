@@ -30,13 +30,13 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 	static Logger log = LoggerFactory.getLogger(EmailBatchServiceImpl.class);
 
 	@Autowired
-	EmailBatchRepository repository;
+	private EmailBatchRepository repository;
 
 	@Autowired
-	EmailNotificationService emailService;
+	private EmailNotificationService emailService;
 
 	@Autowired
-	FileUploadService uploadService;
+	private FileUploadService uploadService;
 
 	@Override
 	protected BatchProcessingItemRepository<EmailBatchItem> getRepository() {

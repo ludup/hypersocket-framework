@@ -5,8 +5,8 @@ import com.hypersocket.events.SystemEventStatus;
 
 public class TaskResultHolder implements TaskResult {
 
-	SystemEvent event;
-	boolean publish;
+	private SystemEvent event;
+	private boolean publish;
 	
 	public TaskResultHolder(SystemEvent event, boolean publish) {
 		this.event = event;

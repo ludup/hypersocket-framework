@@ -11,7 +11,7 @@ public abstract class FeedbackEnabledJob extends PermissionsAwareJob implements 
 	public static final String FEEDBACK_ITEM = "feedback";
 	
 	@Autowired
-	FeedbackService feedbackService; 
+	private FeedbackService feedbackService; 
 	
 	protected FeedbackProgress progress;
 	

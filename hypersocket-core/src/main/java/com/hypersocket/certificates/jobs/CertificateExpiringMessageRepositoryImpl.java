@@ -15,7 +15,7 @@ import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
 public class CertificateExpiringMessageRepositoryImpl extends ResourceTemplateRepositoryImpl implements CertificateExpiringMessageRepository {
 
 	@Autowired
-	SchedulingResourceService resourceScheduler;
+	private SchedulingResourceService resourceScheduler;
 	
 	@PostConstruct
 	private void postConstruct() {

@@ -42,7 +42,7 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 	final static ResourceList<IconEntry> ICON_LIST = new ResourceList<IconEntry>(new ArrayList<IconEntry>());
 	
 	@Autowired
-	FileUploadService fileService; 
+	private FileUploadService fileService; 
 	
 	static {
 		for(AwesomeIcon a : AwesomeIcon.values()) {

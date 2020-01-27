@@ -7,11 +7,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class EventDefinition {
 
-	String i18nNamespace;
-	String resourceKey;
-	String resourceBundle;
-	Set<String> attributeNames = new HashSet<String>();
-	EventPropertyCollector propertyCollector;
+	private String i18nNamespace;
+	private String resourceKey;
+	private String resourceBundle;
+	private Set<String> attributeNames = new HashSet<String>();
+	private EventPropertyCollector propertyCollector;
 	
 	public EventDefinition(String resourceBundle, String resourceKey, String i18nNamespace,  EventPropertyCollector propertyCollector) {
 		this.resourceBundle = resourceBundle;

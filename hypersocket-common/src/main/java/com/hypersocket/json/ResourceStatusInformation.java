@@ -6,9 +6,9 @@ public class ResourceStatusInformation<T> extends ResourceStatus<T> {
 	Object[] args;
 
 	public ResourceStatusInformation(String message, Object... args) {
-		this.success = false;
+		setSuccess(false);
+		setMessage(message);
 		this.information = true;
-		this.message = message;
 		this.args = args;
 	}
 	

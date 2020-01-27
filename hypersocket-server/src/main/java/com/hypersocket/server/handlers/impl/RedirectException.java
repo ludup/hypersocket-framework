@@ -10,7 +10,8 @@ package com.hypersocket.server.handlers.impl;
 public class RedirectException extends Exception {
 
 	private static final long serialVersionUID = 8821545531151846549L;
-	boolean permanent;
+	
+	private boolean permanent;
 	
 	public RedirectException(String location) {
 		super(location);

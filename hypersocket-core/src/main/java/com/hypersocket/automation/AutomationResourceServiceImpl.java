@@ -64,39 +64,39 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	public static final String RESOURCE_BUNDLE = "AutomationResourceService";
 
 	@Autowired
-	AutomationResourceRepository repository;
+	private AutomationResourceRepository repository;
 
 	@Autowired
-	I18NService i18nService;
+	private I18NService i18nService;
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 
 	@Autowired
-	TaskProviderService taskService;
+	private TaskProviderService taskService;
 
 	@Autowired
-	RealmRepository realmRepository;
+	private RealmRepository realmRepository;
 
 	@Autowired
-	TriggerResourceService triggerService;
+	private TriggerResourceService triggerService;
 
 	@Autowired
-	SessionService sessionService;
+	private SessionService sessionService;
 	
 	@Autowired
-	ClusteredSchedulerService schedulerService;
+	private ClusteredSchedulerService schedulerService;
 	
 	@Autowired
-	SchedulingResourceService resourceScheduler;
+	private SchedulingResourceService resourceScheduler;
 	
 	@Autowired
-	TriggerResourceRepository triggerRepository; 
+	private TriggerResourceRepository triggerRepository; 
 	
-	AutomationController controller;
+	private AutomationController controller;
 	
 	public AutomationResourceServiceImpl() {
 		super("automationResource");

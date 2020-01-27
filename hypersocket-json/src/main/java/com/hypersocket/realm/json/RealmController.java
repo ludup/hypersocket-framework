@@ -66,7 +66,7 @@ public class RealmController extends ResourceController {
 	static Logger log = LoggerFactory.getLogger(RealmController.class);
 
 	@Autowired
-	UserVariableReplacementService userVariableReplacement;
+	private UserVariableReplacementService userVariableReplacement;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "realms/realm/{id}", method = RequestMethod.GET, produces = { "application/json" })

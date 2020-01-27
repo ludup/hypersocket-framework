@@ -16,13 +16,13 @@ import com.hypersocket.scheduler.PermissionsAwareJob;
 public class ProfileBatchUpdateJob extends PermissionsAwareJob {
 
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	@Autowired
-	ProfileCredentialsService profileService; 
+	private ProfileCredentialsService profileService; 
 	
 	@Autowired
-	ProfileRepository repository;
+	private ProfileRepository repository;
 	
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {

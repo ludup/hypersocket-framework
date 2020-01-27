@@ -57,16 +57,15 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	static final String RESOURCE_BUNDLE_DEFAULT = "AssignableResourceService";
 
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 
 	@Autowired
-	TransactionService transactionService;
+	private TransactionService transactionService;
 
 	@Autowired
-	EventService eventService;
+	private EventService eventService;
 	
-	String resourceCategory;
-
+	private String resourceCategory;
 	private String fingerprint;
 
 	@PostConstruct

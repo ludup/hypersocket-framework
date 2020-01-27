@@ -2,8 +2,9 @@ package com.hypersocket.properties;
 
 public class ImageProperty implements Property {
 
-	String resourceKey;
-	String value;
+	private String resourceKey;
+	private String value;
+	
 	ImageProperty(String resourceKey, String value) {
 		this.resourceKey = resourceKey;
 		this.value = value;

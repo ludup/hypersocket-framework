@@ -10,10 +10,9 @@ import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResourceService;
 
 public class AbstractTriggerController extends ResourceController {
-
 	
 	@Autowired
-	TriggerResourceService triggerService;
+	private TriggerResourceService triggerService;
 	
 	protected void processConditions(TriggerResourceUpdate resource, List<TriggerCondition> allConditions,
 			List<TriggerCondition> anyConditions) throws AccessDeniedException {

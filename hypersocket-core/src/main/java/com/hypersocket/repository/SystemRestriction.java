@@ -5,7 +5,7 @@ import org.hibernate.criterion.Restrictions;
 
 public class SystemRestriction implements CriteriaConfiguration {
 
-	boolean wantSystem = true;
+	private boolean wantSystem = true;
 	
 	public SystemRestriction(boolean wantSystem) {
 		this.wantSystem = wantSystem;

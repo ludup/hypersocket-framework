@@ -15,7 +15,8 @@ public class RoleDeletedEvent extends RoleEvent {
 
 	public static final String EVENT_RESOURCE_KEY = "role.deleted";
 	public static final String ATTR_PRINCIPALS_REVOKED = "attr.principalsRevoked";
-	Collection<Principal> revoked;
+	
+	private Collection<Principal> revoked;
 	
 	public RoleDeletedEvent(Object source, Session session, Realm realm,
 			Role resource, Collection<Principal> revoked) {

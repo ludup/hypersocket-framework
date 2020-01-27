@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class TriggerConditionUpdate {
 
-	Long id;
-	String attributeKey;
-	String conditionKey;
-	String conditionValue;
+	private Long id;
+	private String attributeKey;
+	private String conditionKey;
+	private String conditionValue;
 	
 	public TriggerConditionUpdate() {
 		

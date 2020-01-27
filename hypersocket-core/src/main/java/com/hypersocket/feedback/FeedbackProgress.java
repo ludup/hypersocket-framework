@@ -8,21 +8,18 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.hypersocket.util.SpringApplicationContextProvider;
-
-public class FeedbackProgress implements Serializable{
+public class FeedbackProgress implements Serializable {
 
 	private static final long serialVersionUID = 8164835181440211990L;
-	String uuid;
-	transient FeedbackService feedbackService;
-	LinkedList<Feedback> feedback = new LinkedList<Feedback>();
+	
+	private String uuid;
+	private LinkedList<Feedback> feedback = new LinkedList<Feedback>();
 	
 	public FeedbackProgress() {		
 	}
 	
 	synchronized void init(String uuid, FeedbackService feedbackService) {
 		this.uuid = uuid;
-		this.feedbackService = feedbackService;
 	}
 	
 	public String getUuid() {
@@ -63,7 +60,6 @@ public class FeedbackProgress implements Serializable{
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
         uuid = (String) stream.readObject();
         feedback = (LinkedList<Feedback>) stream.readObject();
-        feedbackService = SpringApplicationContextProvider.getApplicationContext().getBean("feedbackServiceImpl",FeedbackService.class);
     }
 
 	public boolean isConfirming() {

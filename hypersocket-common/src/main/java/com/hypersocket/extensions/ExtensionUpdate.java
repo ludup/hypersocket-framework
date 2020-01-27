@@ -2,15 +2,15 @@ package com.hypersocket.extensions;
 
 public class ExtensionUpdate {
 
-	String currentVersion;
-	String latestVersion;
-	String phase;
-	String[] repos;
-	boolean upgrade;
-	boolean canUpdate;
-	int missingComponentCount;
-	String customer;
-	String product; 
+	private String currentVersion;
+	private String latestVersion;
+	private String phase;
+	private String[] repos;
+	private boolean upgrade;
+	private boolean canUpdate;
+	private int missingComponentCount;
+	private String customer;
+	private String product; 
 	
 	public ExtensionUpdate() {
 		

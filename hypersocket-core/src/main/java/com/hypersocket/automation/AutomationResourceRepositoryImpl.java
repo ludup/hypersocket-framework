@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,15 +12,11 @@ import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
 import com.hypersocket.triggers.TriggerResource;
-import com.hypersocket.triggers.TriggerResourceRepository;
 
 @Repository
 public class AutomationResourceRepositoryImpl extends
 		AbstractResourceRepositoryImpl<AutomationResource> implements
 		AutomationResourceRepository {
-
-	@Autowired
-	TriggerResourceRepository triggerRepository;
 	
 	@Override
 	protected Class<AutomationResource> getResourceClass() {

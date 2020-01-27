@@ -15,14 +15,14 @@ public class SecretKeyResource extends RealmResource {
 
 	@Column(name="keydata")
 	@Lob
-	String keydata;
+	private String keydata;
 	
 	@Column(name="iv")
 	@Lob
-	String iv;
+	private String iv;
 	
 	@Column(name="keylength")
-	Integer keylength;
+	private Integer keylength;
 	
 	public String getKeydata() {
 		return keydata;

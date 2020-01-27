@@ -15,7 +15,7 @@ public class UserAttributeCategoryServiceImpl extends AbstractAttributeCategoryS
 	public static final String RESOURCE_BUNDLE = "UserAttributes";
 
 	@Autowired
-	UserAttributeCategoryRepository userAttributeCategoryRepository;
+	private UserAttributeCategoryRepository userAttributeCategoryRepository;
 
 	public UserAttributeCategoryServiceImpl() {
 		super(RESOURCE_BUNDLE, UserAttributePermission.class, UserAttributeCategory.class,

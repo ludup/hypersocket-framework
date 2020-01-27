@@ -5,10 +5,7 @@ import java.util.Map;
 
 public class StaticResolver implements ITokenResolver {
 
-	Map<String,Object> tokens = new HashMap<String,Object>();
-	public StaticResolver() {
-		
-	}
+	private Map<String,Object> tokens = new HashMap<String,Object>();
 	
 	public void addToken(String name, Object value) {
 		tokens.put(name, value);

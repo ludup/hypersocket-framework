@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 
 public class HypersocketServletConfig implements ServletConfig {
 
-	String servletName;
-	Properties initParameters;
-	ServletContext servletContext;
+	private String servletName;
+	private Properties initParameters;
+	private ServletContext servletContext;
 	
 	static Logger log = LoggerFactory.getLogger(HypersocketServletConfig.class);
 	

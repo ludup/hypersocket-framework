@@ -65,10 +65,10 @@ public class AutomationResourceController extends AbstractTriggerController {
 	static Logger log = LoggerFactory.getLogger(AutomationResourceController.class);
 	
 	@Autowired
-	AutomationResourceService resourceService;
+	private AutomationResourceService resourceService;
 
 	@Autowired
-	TriggerResourceService triggerService; 
+	private TriggerResourceService triggerService; 
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/list", method = RequestMethod.GET, produces = { "application/json" })

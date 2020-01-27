@@ -25,10 +25,10 @@ import com.hypersocket.triggers.ValidationException;
 public abstract class AbstractUpdateUserTask extends AbstractAccountTask {
 
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	@Autowired
-	EventService eventService; 
+	private EventService eventService; 
 	
 	@Override
 	protected TaskResult doExecute(Principal principal, Task task, Realm currentRealm, List<SystemEvent> event)

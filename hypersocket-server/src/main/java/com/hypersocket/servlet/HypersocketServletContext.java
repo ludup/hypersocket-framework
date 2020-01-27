@@ -39,13 +39,15 @@ import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 import com.hypersocket.server.HypersocketServer;
 
 public class HypersocketServletContext implements ServletContext {
-
-	Map<String,Object> attributes = new HashMap<String,Object>();
+	
 	static Logger log = LoggerFactory.getLogger(HypersocketServletContext.class);
-	ConfigurableMimeFileTypeMap mimeTypesMap = new ConfigurableMimeFileTypeMap();
-	Properties initParameters;
-	List<HypersocketServletConfig> configs = new ArrayList<>();
-	HypersocketServer server;
+
+	private Map<String,Object> attributes = new HashMap<String,Object>();
+	private ConfigurableMimeFileTypeMap mimeTypesMap = new ConfigurableMimeFileTypeMap();
+	private Properties initParameters;
+	private List<HypersocketServletConfig> configs = new ArrayList<>();
+	private HypersocketServer server;
+	
 	public HypersocketServletContext(HypersocketServer server) {
 		initParameters = new Properties();
 		this.server = server;

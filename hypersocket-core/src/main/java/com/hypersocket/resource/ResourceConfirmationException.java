@@ -4,7 +4,7 @@ public class ResourceConfirmationException extends ResourceException {
 
 	private static final long serialVersionUID = -5649629186555726606L;
 
-	String[] options;
+	private String[] options;
 	
 	public ResourceConfirmationException(String bundle, 
 			String resourceKey, 

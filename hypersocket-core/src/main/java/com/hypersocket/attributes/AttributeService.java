@@ -12,22 +12,22 @@ import com.hypersocket.resource.ResourceException;
 
 public interface AttributeService<A extends AbstractAttribute<?>, C extends RealmAttributeCategory<?>> extends AbstractAssignableResourceService<A> {
 
-	public A updateAttribute(A attribute, String name,
+	A updateAttribute(A attribute, String name,
 			Long category, String description, String defaultValue, int weight,
 			String type, String displayMode, Boolean readOnly, Boolean encrypted,
 			String variableName, Set<Role> roles, Collection<NameValuePair> options) throws AccessDeniedException, ResourceException;
 
-	public A createAttribute(String name, Long category,
+	A createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,
 			String displayMode, Boolean readOnly, Boolean encrypted, String variableName, Set<Role> roles, Collection<NameValuePair> options)
 			throws AccessDeniedException, ResourceException;
 
-	public void deleteAttribute(A attribute)
+	void deleteAttribute(A attribute)
 			throws AccessDeniedException, ResourceException;
 
-	public Long getMaximumAttributeWeight(C cat) throws AccessDeniedException;
+	Long getMaximumAttributeWeight(C cat) throws AccessDeniedException;
 
-	public A getAttributeByVariableName(String attributeName) throws AccessDeniedException;
+	A getAttributeByVariableName(String attributeName) throws AccessDeniedException;
 
 	PropertyResolver getPropertyResolver();
 

@@ -20,16 +20,16 @@ public class EmailReceipt extends SimpleResource {
 	private static final long serialVersionUID = 903483817231146776L;
 
 	@OneToOne
-	EmailTracker tracker;
+	private EmailTracker tracker;
 	
 	@Column(name="email_address")
-	String emailAddress;
+	private String emailAddress;
 	
 	@ManyToOne
-	Principal principal;
+	private Principal principal;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	Date opened;
+	private Date opened;
 
 	public EmailTracker getTracker() {
 		return tracker;
