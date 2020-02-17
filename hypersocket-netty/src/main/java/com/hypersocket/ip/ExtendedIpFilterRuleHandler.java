@@ -20,6 +20,6 @@ public class ExtendedIpFilterRuleHandler extends IpFilteringHandlerImpl {
 	@Override
     protected boolean accept(ChannelHandlerContext ctx, ChannelEvent e, InetSocketAddress inetSocketAddress)
             throws Exception {		
-		return ipRestrictionService.isAllowedAddress(inetSocketAddress.getAddress());
+		return ipRestrictionService.isAllowedAddress(inetSocketAddress.getAddress(), IPRestrictionService.DEFAULT_SERVICE, null);
     }
 }

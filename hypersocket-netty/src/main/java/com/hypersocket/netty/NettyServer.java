@@ -88,12 +88,12 @@ import com.hypersocket.session.SessionService;
 @Component
 public class NettyServer extends HypersocketServerImpl implements ObjectSizeEstimator  {
 
-	static final String RESOURCE_BUNDLE = "NettyServer";
+	public static final String RESOURCE_BUNDLE = "NettyServer";
 
 	static Logger log = LoggerFactory.getLogger(NettyServer.class);
 
 	@Autowired
-	ExtendedIpFilterRuleHandler ipFilterHandler;
+	private ExtendedIpFilterRuleHandler ipFilterHandler;
 
 	@Autowired
 	private SystemConfigurationService configurationService;

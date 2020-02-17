@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.server.handlers.HttpResponseProcessor;
 import com.hypersocket.servlet.HypersocketServletConfig;
@@ -17,7 +18,7 @@ import com.hypersocket.session.json.SessionUtils;
 public class H2ConsoleServlet extends ServletRequestHandler {
 
 	private SessionUtils sessionUtils;
-	private PermissionService permissionService; 
+	private PermissionService permissionService;
 	
 	public H2ConsoleServlet() {
 		super("console", new org.h2.server.web.WebServlet(), Integer.MIN_VALUE);
@@ -28,10 +29,13 @@ public class H2ConsoleServlet extends ServletRequestHandler {
 			
 			sessionUtils = ApplicationContextServiceImpl.getInstance().getBean(SessionUtils.class);
 			permissionService = ApplicationContextServiceImpl.getInstance().getBean(PermissionService.class);
+			SystemConfigurationService systemConfigurationService = ApplicationContextServiceImpl.getInstance().getBean(SystemConfigurationService.class);
 			
-			server.getServletContext().setInitParameter("db.user", "hypersocket");
-			server.getServletContext().setInitParameter("db.password", "hypersocket");
-			server.getServletContext().setInitParameter("db.url", "jdbc:h2:./h2/data");
+			server.getServletContext().setInitParameter("db.user", systemConfigurationService.getValue("jdbc.username"));
+			server.getServletContext().setInitParameter("db.password", systemConfigurationService.getValue("jdbc.password"));
+			
+			server.getServletContext().setInitParameter("db.url", "jdbc:h2:" + systemConfigurationService.getValue("jdbc.database"));
+			//server.getServletContext().setInitParameter("db.url", "jdbc:h2:./h2/data");
 			
 			HypersocketServletConfig servletConfig = new HypersocketServletConfig(getName(), server.getServletContext());
 			servletConfig.setInitParameter("webAllowOthers", "");

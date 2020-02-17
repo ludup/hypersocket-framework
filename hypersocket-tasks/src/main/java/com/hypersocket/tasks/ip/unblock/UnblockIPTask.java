@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
-import com.hypersocket.ip.IPRestrictionService;
+import com.hypersocket.ip.DefaultIPRestrictionProvider;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
@@ -43,7 +43,7 @@ public class UnblockIPTask extends AbstractTaskProvider {
 	private UnblockIPTaskRepository repository; 
 	
 	@Autowired
-	private IPRestrictionService ipRestrictionService;
+	private DefaultIPRestrictionProvider ipRestrictionProvider;
 	
 	@Autowired
 	private I18NService i18nService; 
@@ -92,7 +92,7 @@ public class UnblockIPTask extends AbstractTaskProvider {
 						log.info("Unblocking IP address "  + ipAddress);
 					}
 					
-					ipRestrictionService.unblockIPAddress(ipAddress);
+					ipRestrictionProvider.unblockIPAddress(ipAddress);
 					
 					blockTask.notifyUnblock(currentRealm.getName() + "_" + ipAddress, false);
 					

@@ -2,27 +2,26 @@ package com.hypersocket.ip;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
+
+import com.hypersocket.realm.Realm;
 
 public interface IPRestrictionService {
 
-	boolean isBlockedAddress(String addr) throws UnknownHostException;
+	String DEFAULT_SERVICE = "default";
 
-	boolean isBlockedAddress(InetAddress addr);
+	boolean isBlockedAddress(String addr, String service, Realm realm) throws UnknownHostException;
 
-	void blockIPAddress(String addr) throws UnknownHostException;
+	boolean isBlockedAddress(InetAddress addr, String service, Realm realm);
 
-	void unblockIPAddress(String addr) throws UnknownHostException;
+	boolean isAllowedAddress(InetAddress addr, String service, Realm realm);
 
-	void blockIPAddress(String addr, boolean permanent) throws UnknownHostException;
+	boolean isAllowedAddress(String ip, String service, Realm realm) throws UnknownHostException;
+	
+	void registerService(IPRestrictionConsumer console);
 
-	boolean isAllowedAddress(InetAddress addr);
-
-	void disallowIPAddress(String addr) throws UnknownHostException;
-
-	void allowIPAddress(String addr) throws UnknownHostException;
-
-	boolean isAllowedAddress(String ip) throws UnknownHostException;
-
-	void clearRules(boolean allowed, boolean blocked);
+	void registerProvider(IPRestrictionProvider provider);
+	
+	Collection<IPRestrictionConsumer> getServices();
 
 }

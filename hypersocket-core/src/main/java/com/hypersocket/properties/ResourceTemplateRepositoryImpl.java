@@ -780,9 +780,18 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		}
 
-		 if (template.isReadOnly()) {
-			 return;
-		 }
+		/*
+		 * TODO Discuss with LDP
+		 * 
+		 * Why is this here. I thought readOnly was only a UI hint (backed up with validation). I
+		 * am trying to save a group during a sync and set a readOnly property (gid), however this
+		 * code stops it ever being set.
+		 * 
+		 * How do I save a user or group during a sync and set a read only property?
+		 */
+//		 if (template.isReadOnly()) {
+//			 return;
+//		 }
 		 
 		 validate(template, value);
 

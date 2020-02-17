@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.ip.DefaultIPRestrictionProvider;
 import com.hypersocket.ip.IPRestrictionService;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
@@ -45,6 +46,9 @@ public class BlockIPTask extends AbstractTaskProvider {
 	
 	@Autowired
 	private IPRestrictionService ipRestrictionService; 
+	
+	@Autowired
+	private DefaultIPRestrictionProvider ipRestrictionProvider; 
 	
 	@Autowired
 	private I18NService i18nService;
@@ -103,7 +107,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 						log.info("Blocking IP address "  + ipAddress);
 					}
 					
-					if(ipRestrictionService.isBlockedAddress(ipAddress)) {
+					if(ipRestrictionService.isBlockedAddress(ipAddress, IPRestrictionService.DEFAULT_SERVICE, null)) {
 						if(log.isInfoEnabled()) {
 							log.info(ipAddress + " is already blocked.");
 						}
@@ -117,7 +121,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 						
 					} else {
 					
-						ipRestrictionService.blockIPAddress(ipAddress, val==0);
+						ipRestrictionProvider.blockIPAddress(ipAddress, val==0);
 						
 						if(log.isInfoEnabled()) {
 							log.info("Blocked IP address " + ipAddress);
