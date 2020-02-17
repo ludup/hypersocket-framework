@@ -66,15 +66,8 @@ public abstract class SessionEvent extends SystemEvent {
 		
 		addAttribute(ATTR_UUID, session.getId());
 		
-		AuthenticationService authService = ApplicationContextServiceImpl.getInstance().getBean(AuthenticationService.class);
-		 
-		if(authService.hasAuthenticatedContext()) {
-			addAttribute(ATTR_PRINCIPAL_NAME, authService.getCurrentPrincipal().getPrincipalName());
-			addAttribute(ATTR_PRINCIPAL_DESC, authService.getCurrentPrincipal().getDescription());
-		} else {
-			addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
-			addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipal().getDescription());
-		}
+		addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
+		addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipal().getDescription());
 		
 		addAttribute(ATTR_PRINCIPAL_REALM, currentRealm.getName());
 		addAttribute(ATTR_IP_ADDRESS, session.getRemoteAddress());
