@@ -167,10 +167,10 @@ public class Session extends AbstractEntity<String> {
 	}
 
 	protected Double calculateTotalSeconds() { 
-		return new BigDecimal(
-				new BigDecimal((signedOut!=null ? signedOut.getTime() : System.currentTimeMillis())
-						- getCreateDate().getTime()).doubleValue()
-				/ 1000).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue();
+		long time = signedOut!=null ? signedOut.getTime() : System.currentTimeMillis();
+		BigDecimal tmp = new BigDecimal(time	- getCreateDate().getTime());
+		tmp = tmp.multiply(new BigDecimal(1000));
+		return tmp.setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
 	
 	Principal getPrincipal() {
