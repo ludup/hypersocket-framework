@@ -74,7 +74,7 @@ public class TextProcessorTest extends AbstractTest {
 		TextProcessor tp = new TextProcessor();
 		tp.addResolver(new Resolver() {
 			@Override
-			public String evaluate(String variable) {
+			public String evaluate(String variable, TextProcessor processor) {
 				return "val" + variable.substring(3);
 			}
 		});

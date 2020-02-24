@@ -98,7 +98,7 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 			tp.addResolver(new Resolver() {
 	
 				@Override
-				public String evaluate(String variable) {
+				public String evaluate(String variable, TextProcessor processor) {
 					try {
 						return userVariableReplacementService.getVariableValue(principal, variable);
 					}
@@ -114,13 +114,13 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 		}
 		tp.addResolver(new Resolver() {
 			@Override
-			public String evaluate(String variable) {
+			public String evaluate(String variable, TextProcessor processor) {
 				return TriggerAttributeHelper.getAttribute(variable, events);
 			}
 		});
 		tp.addResolver(new Resolver() {
 			@Override
-			public String evaluate(String variable) {
+			public String evaluate(String variable, TextProcessor processor) {
 				if(defaultAttributes.contains(variable)) {
 					return triggerService.getDefaultVariableValue(variable);
 				}

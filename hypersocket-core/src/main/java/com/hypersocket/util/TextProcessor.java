@@ -1,5 +1,6 @@
 package com.hypersocket.util;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -16,6 +17,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,12 +27,25 @@ import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 @SuppressWarnings("restriction")
 public class TextProcessor {
+	
+	public static class ObjectNotation implements Resolver {
+		
+		@Override
+		public String evaluate(String variable, TextProcessor processor) {
+			try {
+				return BeanUtils.getProperty(processor.bindings, variable);
+			} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+				return null;
+			}
+		}
+		
+	}
 
 	final static String START_SCRIPT_TAG = "$(script";
 	final static String END_SCRIPT_TAG = "$(/script)";
 
 	public interface Resolver {
-		String evaluate(String variable);
+		String evaluate(String variable, TextProcessor processor);
 	}
 
 	class WhiteBlackListClassFilter implements ClassFilter {
@@ -56,6 +71,7 @@ public class TextProcessor {
 	private boolean unknownVariablesAreBlank = true;
 	private boolean evaluateScripts;
 	private boolean captureScriptErrors = true;
+	private String defaultScriptType = "text/javascript";
 
 	public TextProcessor() {
 		this(Locale.getDefault());
@@ -63,6 +79,14 @@ public class TextProcessor {
 
 	public TextProcessor(Locale locale) {
 		this.locale = locale;
+	}
+	
+	public String getDefaultScriptType() {
+		return defaultScriptType;
+	}
+
+	public void setDefaultScriptType(String defaultScriptType) {
+		this.defaultScriptType = defaultScriptType;
 	}
 
 	public void allowAllClasses() {
@@ -277,8 +301,10 @@ public class TextProcessor {
 					continue;
 				}
 
-				String lang = text.substring(openStart + START_SCRIPT_TAG.length() + 1, openStartEnd).trim();
-				if (StringUtils.isBlank(lang) || lang.equals("javascript"))
+				String lang = text.substring(openStart + START_SCRIPT_TAG.length(), openStartEnd).trim();
+				if (StringUtils.isBlank(lang))
+					lang = defaultScriptType;
+				if(lang.equals("javascript"))
 					lang = "text/javascript";
 
 				ScriptEngine eng = engines.get(lang);
@@ -354,7 +380,7 @@ public class TextProcessor {
 		List<Resolver> r = new LinkedList<>(resolvers);
 		r.add(new Resolver() {
 			@Override
-			public String evaluate(String variable) {
+			public String evaluate(String variable, TextProcessor processor) {
 				return allVars.get(variable);
 			}
 		});
@@ -367,7 +393,7 @@ public class TextProcessor {
 			String attributeName = matcher.group(1);
 			String replacement = null;
 			for (Resolver resolver : r) {
-				replacement = resolver.evaluate(attributeName);
+				replacement = resolver.evaluate(attributeName, this);
 				if (replacement != null) {
 					break;
 				}
