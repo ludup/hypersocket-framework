@@ -1691,6 +1691,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				} catch (ResourceChangeException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				} catch (Throwable e) {
+					log.error("Failed to create group.", e);
 					ResourceChangeException ex = new ResourceChangeException(RESOURCE_BUNDLE,
 							"groupUser.unexpectedError", e.getMessage(), e);
 					throw new IllegalStateException(ex.getMessage(), ex);
