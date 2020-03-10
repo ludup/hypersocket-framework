@@ -30,6 +30,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,11 +72,13 @@ public class Session extends AbstractEntity<String> {
 	@ManyToOne
 	@Fetch(FetchMode.SELECT)
 	@JoinColumn(name = "principal_id", insertable = true, updatable = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Principal principal;
 
 	@ManyToOne
 	@Fetch(FetchMode.SELECT)
 	@JoinColumn(name = "impersonating_principal_id", insertable = true, updatable = true)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Principal impersonatedPrincipal;
 
 	@Column(name = "inherit", nullable = true)
@@ -82,14 +86,17 @@ public class Session extends AbstractEntity<String> {
 
 	@ManyToOne
 	@JoinColumn(name = "current_realm_id")
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Realm currentRealm;
 
 	@ManyToOne
 	@JoinColumn(name = "realm_id")
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Realm realm;
 
 	@ManyToOne
 	@JoinColumn(name = "authentication_scheme")
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private AuthenticationScheme scheme;
 
 	@Column(name = "user_agent", nullable = false)

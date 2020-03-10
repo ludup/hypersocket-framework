@@ -2,8 +2,11 @@ package com.hypersocket.password.history;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.SimpleResource;
@@ -14,7 +17,8 @@ public class PasswordHistory extends SimpleResource {
 
 	private static final long serialVersionUID = 8886201399925580320L;
 
-	@OneToOne
+	@ManyToOne
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Principal principal;
 	
 	@Column(name="encoded_password")
