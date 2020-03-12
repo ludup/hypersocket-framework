@@ -1,6 +1,7 @@
 package com.hypersocket.tasks.user;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -91,7 +92,7 @@ public class UpdateAccountAddressesTask extends AbstractAccountTask {
 				}
 			}
 			if(changed) {
-				realmService.updateUser(p.getRealm(), p, p.getName(), new HashMap<String, String>(), new ArrayList<>(p.getLinkedPrincipals()));
+				realmService.updateUser(p.getRealm(), p, p.getName(), new HashMap<String, String>(), Collections.emptyList());
 			}
 			return new UpdateAccountAddressesTaskResult(this, currentRealm, p.getName(), task);
 		} catch (Exception e) {
