@@ -120,6 +120,9 @@ public class AuthenticationServiceImpl extends
 				RESOURCE_BUNDLE);
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
+		
+		schemeRepository.registerAuthenticationScheme(AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
+		schemeRepository.registerAuthenticationScheme(AuthenticationServiceImpl.AUTHENTICATION_SCHEME_USER_LOGIN_RESOURCE_KEY);
 
 		setupRealms();
 		setupFallback();
