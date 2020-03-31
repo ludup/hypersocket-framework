@@ -332,6 +332,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 							line = line.substring(0, line.length()-1);
 							statement += line;
 							try {
+								log.info("SQL: " + statement);
 								sessionFactory.getCurrentSession().createSQLQuery(statement).executeUpdate();
 							} catch (Throwable e) {
 								if(!ignoreErrors) {
@@ -347,6 +348,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 				
 				if(StringUtils.isNotBlank(statement)) {
 					try {
+						log.info("SQL: " + statement);
 						sessionFactory.getCurrentSession().createSQLQuery(statement).executeUpdate();
 					} catch (Throwable e) {
 						if(!ignoreErrors) {

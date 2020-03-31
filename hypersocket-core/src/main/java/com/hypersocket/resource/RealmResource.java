@@ -6,6 +6,8 @@ import javax.persistence.OneToOne;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Realm;
@@ -17,6 +19,7 @@ public abstract class RealmResource extends Resource {
 
 	@OneToOne
 	@JoinColumn(name="realm_id")
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	protected Realm realm;
 	
 	@JsonIgnore
