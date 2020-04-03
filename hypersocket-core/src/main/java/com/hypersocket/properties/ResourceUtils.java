@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.utils.HypersocketUtils;
 

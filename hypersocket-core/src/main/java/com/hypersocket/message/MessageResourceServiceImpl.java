@@ -551,7 +551,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 										case ALL:
 											item = new RecipientHolder(principal, principal.getEmail());
 											Iterator<String> it = ResourceUtils.explodeCollectionValues(
-													((UserPrincipal) principal).getSecondaryEmail()).iterator();
+													((UserPrincipal<?>) principal).getSecondaryEmail()).iterator();
 											if (it.hasNext())
 												childAddressIt = it;
 											break;
@@ -560,7 +560,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 											break;
 										case SECONDARY:
 											it = ResourceUtils.explodeCollectionValues(
-													((UserPrincipal) principal).getSecondaryEmail()).iterator();
+													((UserPrincipal<?>) principal).getSecondaryEmail()).iterator();
 											if (it.hasNext())
 												childAddressIt = it;
 											break;

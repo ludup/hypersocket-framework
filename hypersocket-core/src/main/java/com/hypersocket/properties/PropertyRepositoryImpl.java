@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.repository.AbstractRepositoryImpl;
 import com.hypersocket.repository.DistinctRootEntity;
-import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.ResourceRestriction;
+import com.hypersocket.resource.SimpleResource;
 
 @Repository
 public abstract class PropertyRepositoryImpl extends AbstractRepositoryImpl<Long> implements PropertyRepository {

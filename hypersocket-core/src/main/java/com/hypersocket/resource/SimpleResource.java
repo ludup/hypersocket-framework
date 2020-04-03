@@ -1,13 +1,19 @@
 package com.hypersocket.resource;
 
 
+import java.util.UUID;
+
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.PreRemove;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.properties.PropertyRepository;
 import com.hypersocket.repository.AbstractEntity;
-
-import javax.persistence.*;
-import java.util.UUID;
 
 @MappedSuperclass
 public abstract class SimpleResource extends AbstractEntity<Long> {

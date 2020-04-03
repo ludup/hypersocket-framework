@@ -36,7 +36,7 @@ import com.hypersocket.realm.UserPrincipal;
 @Entity
 @Table(name = "local_users")
 @XmlRootElement(name="user")
-public class LocalUser extends UserPrincipal implements Serializable {
+public class LocalUser extends UserPrincipal<LocalGroup> implements Serializable {
 	
 	private static final long serialVersionUID = 4490274955679793663L;
 

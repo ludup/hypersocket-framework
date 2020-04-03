@@ -184,7 +184,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	}
 	
 	@Override
-	public UserPrincipal getPrincipalByFullName(Realm realm, String fullName) {
+	public UserPrincipal<?> getPrincipalByFullName(Realm realm, String fullName) {
 		return userRepository.getUserByFullName(fullName, realm);
 	}
 

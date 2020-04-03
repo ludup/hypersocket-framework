@@ -8,8 +8,10 @@
 package com.hypersocket.realm;
 
 import java.util.Date;
+import java.util.Set;
 
-public abstract class UserPrincipal extends Principal {
+
+public abstract class UserPrincipal<G extends GroupPrincipal<?,?>> extends Principal {
 	
 	private static final long serialVersionUID = 6916181436630638375L;
 
@@ -36,4 +38,6 @@ public abstract class UserPrincipal extends Principal {
 	public abstract void setSecondaryMobile(String mobile);
 
 	public abstract void setMobile(String processTokenReplacements);
+
+	public abstract Set<G> getGroups();
 }

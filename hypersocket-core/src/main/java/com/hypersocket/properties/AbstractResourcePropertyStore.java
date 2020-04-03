@@ -15,8 +15,8 @@ import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.resource.RealmResource;
+import com.hypersocket.resource.SimpleResource;
 
 public abstract class AbstractResourcePropertyStore implements ResourcePropertyStore {
 

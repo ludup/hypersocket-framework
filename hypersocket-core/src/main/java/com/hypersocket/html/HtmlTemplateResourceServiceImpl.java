@@ -9,20 +9,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.events.EventService;
+import com.hypersocket.html.events.HtmlTemplateResourceCreatedEvent;
+import com.hypersocket.html.events.HtmlTemplateResourceDeletedEvent;
+import com.hypersocket.html.events.HtmlTemplateResourceEvent;
+import com.hypersocket.html.events.HtmlTemplateResourceUpdatedEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.html.events.HtmlTemplateResourceCreatedEvent;
-import com.hypersocket.html.events.HtmlTemplateResourceDeletedEvent;
-import com.hypersocket.html.events.HtmlTemplateResourceEvent;
-import com.hypersocket.html.events.HtmlTemplateResourceUpdatedEvent;
-import com.hypersocket.properties.EntityResourcePropertyStore;
 
 @Service
 public class HtmlTemplateResourceServiceImpl extends

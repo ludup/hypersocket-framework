@@ -1,7 +1,8 @@
 package com.hypersocket.json;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class JsonMapper {

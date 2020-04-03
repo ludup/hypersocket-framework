@@ -59,7 +59,7 @@ public class MissingPhoneNumberPostAuthenticationStep implements PostAuthenticat
 	@Override
 	public boolean requiresProcessing(AuthenticationState state) {
 		
-		UserPrincipal principal = (UserPrincipal) state.getPrincipal();
+		UserPrincipal<?> principal = (UserPrincipal<?>) state.getPrincipal();
 		String required = configurationService.getValue(state.getRealm(), "missingPhone.required");
 		boolean primariExists = StringUtils.isNotBlank(principal.getMobile());
 		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryMobile());
@@ -84,7 +84,7 @@ public class MissingPhoneNumberPostAuthenticationStep implements PostAuthenticat
 	public AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException {
 		String required = configurationService.getValue(state.getRealm(), "missingPhone.required");
 		
-		final UserPrincipal principal = (UserPrincipal)state.getPrincipal();
+		final UserPrincipal<?> principal = (UserPrincipal<?>)state.getPrincipal();
 		boolean primariExists = StringUtils.isNotBlank(principal.getMobile());
 		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryMobile());
 		boolean error = false;
@@ -153,7 +153,7 @@ public class MissingPhoneNumberPostAuthenticationStep implements PostAuthenticat
 	public FormTemplate createTemplate(AuthenticationState state) {
 		String required = configurationService.getValue(state.getRealm(), "missingPhone.required");
 		
-		UserPrincipal principal = (UserPrincipal)state.getPrincipal();
+		UserPrincipal<?> principal = (UserPrincipal<?>)state.getPrincipal();
 		boolean primariExists = StringUtils.isNotBlank(principal.getMobile());
 		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryMobile());
 		

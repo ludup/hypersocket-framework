@@ -1,14 +1,14 @@
 package com.hypersocket.quartz;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HypersocketPostgresSQLDelegate extends HypersocketStdJDBCDelegate {
 

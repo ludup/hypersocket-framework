@@ -2,8 +2,8 @@ package com.hypersocket.html.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.html.HtmlTemplateResource;
+import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.session.Session;
 
 public class HtmlTemplateResourceEvent extends ResourceEvent {

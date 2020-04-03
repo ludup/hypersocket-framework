@@ -7,6 +7,10 @@
  ******************************************************************************/
 package com.hypersocket.resource;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import com.hypersocket.bulk.BulkAssignment;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.EntityResourcePropertyStore;
@@ -14,10 +18,6 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.tables.ColumnSort;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 public interface AbstractAssignableResourceRepository<T extends AssignableResource>
 		extends AssignableResourceRepository, FindableResourceRepository<T> {

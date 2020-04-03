@@ -1,10 +1,11 @@
 package com.hypersocket.properties;
 
-import com.hypersocket.i18n.I18NService;
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import com.hypersocket.i18n.I18NService;
 
 @Component
 public class DatabasePropertiesFileConfigurationStoreHelper {

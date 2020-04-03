@@ -6,8 +6,8 @@ import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.events.SystemEventStatus;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.tasks.TaskResult;
 import com.hypersocket.tasks.Task;
+import com.hypersocket.tasks.TaskResult;
 
 public abstract class AbstractTaskResult extends SystemEvent implements TaskResult {
 

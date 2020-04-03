@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,7 +31,6 @@ import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;
-import com.hypersocket.upload.FileUploadService;
 import com.sshtools.icongenerator.AwesomeIcon;
 import com.sshtools.icongenerator.Colors;
 import com.sshtools.icongenerator.IconBuilder;
@@ -58,9 +56,6 @@ public class LogoController extends ResourceController {
 			ICON_LIST.getResources().add(e);
 		}
 	}
-
-	@Autowired
-	private FileUploadService resourceService;
 
 	/**
 	 * Generates an icon. Each icon is made up 3 separate elements, the final value

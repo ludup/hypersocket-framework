@@ -2,8 +2,8 @@ package com.hypersocket.message.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.message.MessageResource;
+import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.session.Session;
 
 public class MessageResourceEvent extends ResourceEvent {

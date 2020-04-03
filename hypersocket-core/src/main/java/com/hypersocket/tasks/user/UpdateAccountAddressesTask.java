@@ -1,6 +1,5 @@
 package com.hypersocket.tasks.user;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -71,7 +70,7 @@ public class UpdateAccountAddressesTask extends AbstractAccountTask {
 				changed = changed || !Objects.equals(p.getPrimaryEmail(), was);
 			}
 			if (p instanceof UserPrincipal) {
-				UserPrincipal up = (UserPrincipal) p;
+				UserPrincipal<?> up = (UserPrincipal<?>) p;
 				s = taskRepository.getValue(task, "updateAccountAddresses.primaryMobile");
 				if (StringUtils.isNotBlank(s)) {
 					was = up.getMobile();

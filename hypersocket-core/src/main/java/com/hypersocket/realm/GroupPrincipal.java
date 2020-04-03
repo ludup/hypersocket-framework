@@ -12,7 +12,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public abstract class GroupPrincipal<U extends UserPrincipal, G extends GroupPrincipal<U, G>> extends Principal {
+public abstract class GroupPrincipal<U extends UserPrincipal<?>, G extends GroupPrincipal<U, G>> extends Principal {
 
 	private static final long serialVersionUID = 1L;
 

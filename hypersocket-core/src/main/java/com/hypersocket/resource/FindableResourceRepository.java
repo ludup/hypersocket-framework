@@ -1,9 +1,9 @@
 package com.hypersocket.resource;
 
+import java.util.List;
+
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
-
-import java.util.List;
 
 public interface FindableResourceRepository<T extends SimpleResource> {
 

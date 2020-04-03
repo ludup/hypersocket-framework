@@ -13,7 +13,7 @@ public class PrincipalWithoutPasswordResolver extends StaticResolver {
 
 	static Set<String> salutations = new HashSet<String>(Arrays.asList("MR", "MS", "MRS", "DR", "PROF"));
 	
-	public PrincipalWithoutPasswordResolver(UserPrincipal principal) {
+	public PrincipalWithoutPasswordResolver(UserPrincipal<?> principal) {
 		super();
 		addToken("principalId", principal.getPrincipalName());
 		addToken("principalName", principal.getPrincipalName());

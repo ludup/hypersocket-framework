@@ -11,7 +11,7 @@ public class SessionResolver extends PrincipalWithoutPasswordResolver {
 
 	
 	public SessionResolver(Session session) {
-		super((UserPrincipal)session.getCurrentPrincipal());
+		super((UserPrincipal<?>)session.getCurrentPrincipal());
 		addToken("sessionId", session.getId());
 		addToken("sessionCreated", HypersocketUtils.formatDateTime(session.getCreateDate()));
 		addToken("sessionOs", session.getOs());

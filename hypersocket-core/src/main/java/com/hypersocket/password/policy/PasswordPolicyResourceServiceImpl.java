@@ -289,7 +289,7 @@ public class PasswordPolicyResourceServiceImpl extends
 			
 			if(policy.getMinimumAge() > 0 && !administrative) {
 				// Check age
-				UserPrincipal user = (UserPrincipal)principal;
+				UserPrincipal<?> user = (UserPrincipal<?>)principal;
 				if(user.getLastPasswordChange()!=null) {
 					Date changeDate = DateUtils.addDays(user.getLastPasswordChange(), 
 							policy.getMinimumAge());

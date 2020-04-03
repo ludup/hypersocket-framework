@@ -2,8 +2,8 @@ package com.hypersocket.jobs.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.jobs.JobResource;
+import com.hypersocket.realm.events.ResourceEvent;
 import com.hypersocket.session.Session;
 
 public class JobResourceEvent extends ResourceEvent {

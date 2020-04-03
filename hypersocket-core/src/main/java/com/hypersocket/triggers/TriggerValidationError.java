@@ -34,6 +34,14 @@ public class TriggerValidationError {
 	public void setAttributeValue(String attributeValue) {
 		this.attributeValue = attributeValue;
 	}
+
+	public ErrorType getType() {
+		return type;
+	}
+
+	public void setType(ErrorType type) {
+		this.type = type;
+	}
 	
 	
 

@@ -1,15 +1,12 @@
 package com.hypersocket.json;
 
-import com.hypersocket.error.ErrorEntity;
-import com.hypersocket.local.LocalUser;
-import com.hypersocket.local.LocalUserRepository;
-import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.resource.ResourceBadRequestException;
-import com.hypersocket.resource.ResourceNotFoundException;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
@@ -18,8 +15,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.UUID;
+import com.hypersocket.error.ErrorEntity;
+import com.hypersocket.local.LocalUser;
+import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.resource.ResourceBadRequestException;
+import com.hypersocket.resource.ResourceNotFoundException;
 
 @RestControllerAdvice(annotations = RestController.class)
 public class RestApiControllerAdvice {

@@ -4,10 +4,10 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tasks.Task;
 import com.hypersocket.triggers.AbstractTaskResult;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 public class ParsePhoneNumberTaskResult extends AbstractTaskResult {
 

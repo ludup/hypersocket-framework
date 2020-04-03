@@ -62,7 +62,7 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 	@Override
 	public boolean requiresProcessing(AuthenticationState state) {
 		
-		UserPrincipal principal = (UserPrincipal) state.getPrincipal();
+		UserPrincipal<?> principal = (UserPrincipal<?>) state.getPrincipal();
 		String required = configurationService.getValue(state.getRealm(), "missingEmail.required");
 		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
 		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
@@ -87,7 +87,7 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 	public AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException {
 		String required = configurationService.getValue(state.getRealm(), "missingEmail.required");
 		
-		final UserPrincipal principal = (UserPrincipal)state.getPrincipal();
+		final UserPrincipal<?> principal = (UserPrincipal<?>)state.getPrincipal();
 		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
 		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
 		boolean error = false;
@@ -156,7 +156,7 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 	public FormTemplate createTemplate(AuthenticationState state) {
 		String required = configurationService.getValue(state.getRealm(), "missingEmail.required");
 		
-		UserPrincipal principal = (UserPrincipal)state.getPrincipal();
+		UserPrincipal<?> principal = (UserPrincipal<?>)state.getPrincipal();
 		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
 		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
 		

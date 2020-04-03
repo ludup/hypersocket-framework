@@ -420,7 +420,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 
 	@Override
 	@Transactional(readOnly=true)
-	public UserPrincipal getUserByFullName(String fullName, Realm realm) {
+	public UserPrincipal<?> getUserByFullName(String fullName, Realm realm) {
 		return get("fullname", fullName, LocalUser.class, true, new DeletedCriteria(false), new RealmCriteria(realm));
 	}
 

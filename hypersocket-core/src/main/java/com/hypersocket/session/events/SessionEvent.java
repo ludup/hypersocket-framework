@@ -2,8 +2,6 @@ package com.hypersocket.session.events;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.hypersocket.ApplicationContextServiceImpl;
-import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.realm.Principal;

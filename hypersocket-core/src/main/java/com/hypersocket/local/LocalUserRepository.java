@@ -81,7 +81,7 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 
 	Principal getUserByEmail(String email, Realm realm);
 
-	UserPrincipal getUserByFullName(String fullName, Realm realm);
+	UserPrincipal<?> getUserByFullName(String fullName, Realm realm);
 
 	void resetRealm(Iterator<Principal> admins);
 
