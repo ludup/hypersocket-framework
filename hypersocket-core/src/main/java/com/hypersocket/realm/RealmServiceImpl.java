@@ -971,8 +971,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						proc.afterChangePassword(principal, newPassword, oldPassword);
 					}
 
-					eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), getCurrentRealm(),
-							provider, newPassword));
+					eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), 
+							getCurrentRealm(), provider, newPassword, principal));
 
 					return principal;
 				} catch (Throwable t) {
@@ -982,8 +982,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			@Override
 			public void doTransacationError(Throwable t) {
-				eventService.publishEvent(new ChangePasswordEvent(this, t, getCurrentSession(), getCurrentRealm(),
-						provider, newPassword));
+				eventService.publishEvent(new ChangePasswordEvent(this, 
+						t, getCurrentSession(), getCurrentRealm(),
+						provider, newPassword, principal));
 			}
 		});
 
