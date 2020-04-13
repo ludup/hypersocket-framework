@@ -15,11 +15,13 @@ public class SchedulerResource {
 	private String id;
 	private Date nextFire;
 	private Date lastFire;
+	private long timeTaken;
 	private String description;
 	private SchedulerJobState status = SchedulerJobState.MISSING;
 	private String error;
 	private String trace;
 	private Properties data = new Properties();
+	private String realm;
 
 	public SchedulerResource() {
 	}
@@ -39,6 +41,22 @@ public class SchedulerResource {
 		this.status = status;
 	}
 	
+	public long getTimeTaken() {
+		return timeTaken;
+	}
+
+	public void setTimeTaken(long timeTaken) {
+		this.timeTaken = timeTaken;
+	}
+
+	public String getRealm() {
+		return realm;
+	}
+
+	public void setRealm(String realm) {
+		this.realm = realm;
+	}
+
 	public Properties getData() {
 		return data;
 	}

@@ -89,6 +89,15 @@ function jobDateFormatter(value, row, index) {
 							},{
 								name : "description",
 								sortable: false
+							},{
+								name : "realm",
+								sortable: true
+							},{
+								name : "timeTaken",
+								sortable: true,
+								formatter: function(val, row, index) {
+									return val == 0 ? '' : msToTime(val, true);
+								}
 							}, {
 								name : "status",
 								sortable: true,

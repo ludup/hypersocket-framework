@@ -1,8 +1,3 @@
-<!-- 
-	Replace any Job or Jobs with Capitalized name of your resources e.g. Application or Applications
-	Replace any job or jobs with lower case name of your resources e.g. application or applications
- -->
-
 <div id="contentClusteredScheduler">
 	<div class="modal" id="addClusteredSchedulerForm" tabindex="-1" role="dialog" dialog-for="contentClusteredScheduler">
 		<div class="modal-dialog">
@@ -93,6 +88,15 @@ function jobDateFormatter(value, row, index) {
 							},{
 								name : "description",
 								sortable: false
+							},{
+								name : "realm",
+								sortable: true
+							},{
+								name : "timeTaken",
+								sortable: true,
+								formatter: function(val, row, index) {
+									return val == 0 ? '' : msToTime(val, true);
+								}
 							},{
 								name : "status",
 								sortable: true,

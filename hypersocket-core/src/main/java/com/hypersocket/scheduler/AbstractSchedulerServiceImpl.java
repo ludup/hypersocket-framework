@@ -47,12 +47,22 @@ import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
 import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticatedServiceImpl
 		implements SchedulerService, JobListener {
+
+	class Timer {
+		long started = System.currentTimeMillis();
+		long ended;
+
+		long took() {
+			return ended == 0 ? System.currentTimeMillis() - started : ended - started;
+		}
+	}
 
 	static Logger log = LoggerFactory.getLogger(AbstractSchedulerServiceImpl.class);
 
@@ -62,10 +72,13 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	private I18NService i18nService;
 	@Autowired
 	private PermissionService permissionService;
+	@Autowired
+	private RealmService realmService;
 
 	private Set<String> interrupting = Collections.synchronizedSet(new LinkedHashSet<>());
 	private Set<JobKey> running = Collections.synchronizedSet(new LinkedHashSet<>());
 	private Map<JobKey, Throwable> exceptions = new HashMap<>();
+	private Map<JobKey, Timer> timers = new HashMap<>();
 
 	@PostConstruct
 	private void postConstruct() throws SchedulerException {
@@ -404,10 +417,16 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 					} else if (s.getColumn() == SchedulerResourceColumns.GROUP) {
 						v1 = o1.getGroup();
 						v2 = o2.getGroup();
+					} else if (s.getColumn() == SchedulerResourceColumns.REALM) {
+						v1 = o1.getRealm() == null ? null : o1.getRealm().toLowerCase();
+						v2 = o2.getRealm() == null ? null : o2.getRealm().toLowerCase();
 					} else if (s.getColumn() == SchedulerResourceColumns.ID) {
 
 						v1 = o1.getId() == null ? null : o1.getId().toLowerCase();
 						v2 = o2.getId() == null ? null : o2.getId().toLowerCase();
+					} else if (s.getColumn() == SchedulerResourceColumns.TIMETAKEN) {
+						v1 = o1.getTimeTaken();
+						v2 = o2.getTimeTaken();
 					} else if (s.getColumn() == SchedulerResourceColumns.LASTFIRE) {
 						v1 = o1.getLastFire();
 						v2 = o2.getLastFire();
@@ -520,23 +539,33 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		String exceptionMessage = null;
 		String exceptionTrace = null;
 		Throwable e = exceptions.get(key);
-		if(e != null) {
+		if (e != null) {
 			StringWriter trace = new StringWriter();
 			e.printStackTrace(new PrintWriter(trace));
 			exceptionMessage = e.getMessage() == null ? "<no message supplied>" : e.getMessage();
 			exceptionTrace = trace.toString();
-			if(StringUtils.isNotBlank(exceptionMessage)) {
+			if (StringUtils.isNotBlank(exceptionMessage)) {
 				state = SchedulerJobState.COMPLETE_WITH_ERRORS;
 			}
 		}
 
 		SchedulerResource sr = new SchedulerResource(trigger, state);
 		JobDetail detail = scheduler.getJobDetail(key);
-		if(detail != null) {
+		if (detail != null) {
 			JobDataMap map = trigger.getJobDataMap();
-			for(Map.Entry<String, Object> en : map.entrySet()) {
+			for (Map.Entry<String, Object> en : map.entrySet()) {
 				sr.getData().put(en.getKey(), String.valueOf(en.getValue()));
+				if (en.getKey().equals("realm")) {
+					try {
+						sr.setRealm(realmService.getRealmById(Long.parseLong(en.getValue().toString())).getName());
+					} catch (Exception ex) {
+						sr.setRealm("Unknown " + en.getValue());
+					}
+				}
 			}
+		}
+		if (timers.containsKey(key)) {
+			sr.setTimeTaken(timers.get(key).took());
 		}
 		sr.setDescription(trigger.getJobDataMap().getString("jobName"));
 		sr.setError(exceptionMessage);
@@ -551,6 +580,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		}
 		scheduler.deleteJob(resource.getJobKey());
 		exceptions.remove(resource.getJobKey());
+		timers.remove(resource.getJobKey());
 		running.remove(resource.getJobKey());
 		interrupting.remove(resource.getJobKey().toString());
 	}
@@ -575,7 +605,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	@Override
 	public Collection<PropertyCategory> getPropertyTemplate(SchedulerResource resource) {
 		Collection<PropertyCategory> defs = getPropertyTemplate();
-		for(PropertyCategory cat : defs)
+		for (PropertyCategory cat : defs)
 			for (AbstractPropertyTemplate t : cat.getTemplates())
 				((SchedulerPropertyTemplate) t).setResource(resource);
 		return defs;
@@ -612,6 +642,12 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		description.getAttributes().put("inputType", "textarea");
 		pc.getTemplates().add(description);
 
+		SchedulerPropertyTemplate realm = new SchedulerPropertyTemplate();
+		realm.setResourceKey("realm");
+		realm.setWeight(350);
+		realm.getAttributes().put("inputType", "text");
+		pc.getTemplates().add(realm);
+
 		SchedulerPropertyTemplate nextFire = new SchedulerPropertyTemplate();
 		nextFire.setResourceKey("nextFire");
 		nextFire.setWeight(400);
@@ -623,12 +659,18 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		lastFire.setWeight(500);
 		lastFire.getAttributes().put("inputType", "time");
 		pc.getTemplates().add(lastFire);
-		
+
+		SchedulerPropertyTemplate timeTaken = new SchedulerPropertyTemplate();
+		timeTaken.setResourceKey("timeTaken");
+		timeTaken.setWeight(600);
+		timeTaken.getAttributes().put("inputType", "time");
+		pc.getTemplates().add(timeTaken);
+
 		PropertyCategory errpc = new PropertyCategory();
 		errpc.setBundle(RESOURCE_BUNDLE);
 		errpc.setCategoryKey("state");
 		errpc.setWeight(200);
-		
+
 		SchedulerPropertyTemplate status = new SchedulerPropertyTemplate();
 		status.setResourceKey("status");
 		status.setWeight(50);
@@ -656,17 +698,20 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		@Override
 		public String getValue() {
 			if (resource != null) {
-				System.out.println("Get " + getResourceKey());
 				if (getResourceKey().equals("id"))
 					return resource.getId();
 				if (getResourceKey().equals("name"))
 					return resource.getName();
 				if (getResourceKey().equals("group"))
 					return resource.getGroup();
+				if (getResourceKey().equals("realm"))
+					return resource.getRealm();
 				if (getResourceKey().equals("description"))
 					return resource.getDescription();
 				if (getResourceKey().equals("status"))
 					return resource.getStatus().name();
+				if (getResourceKey().equals("timeTaken"))
+					return String.valueOf(resource.getTimeTaken());
 				if (getResourceKey().equals("error"))
 					return resource.getError();
 				if (getResourceKey().equals("trace"))
@@ -691,27 +736,29 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 
 	public void jobToBeExecuted(JobExecutionContext context) {
 		JobKey jk = context.getTrigger().getJobKey();
+		timers.put(jk, new Timer());
 		running.add(jk);
 		exceptions.remove(jk);
 	}
 
 	public void jobExecutionVetoed(JobExecutionContext context) {
 		JobKey jk = context.getTrigger().getJobKey();
-		running.add(jk);
+		running.remove(jk);
+		timers.get(jk).ended = System.currentTimeMillis();
 		exceptions.remove(jk);
 	}
 
 	public void jobWasExecuted(JobExecutionContext context, JobExecutionException jobException) {
 		JobKey jk = context.getTrigger().getJobKey();
-		if(jobException != null) {
+		if (jobException != null) {
 			Throwable e = jobException;
-			if(jobException.getCause() != null)
+			if (jobException.getCause() != null)
 				e = jobException.getCause();
 			exceptions.put(jk, e);
-		}
-		else {
+		} else {
 			exceptions.remove(jk);
 		}
+		timers.get(jk).ended = System.currentTimeMillis();
 		running.remove(jk);
 		interrupting.remove(context.getTrigger().getJobKey().toString());
 	}
