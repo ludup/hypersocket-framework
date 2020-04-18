@@ -242,5 +242,15 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	<repositories>
+		<repository>
+			<id>plugins-snapshots-local</id>
+			<url>http://artifactory.javassh.com/plugins-snapshots-local</url>
+			<snapshots />
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
 
 </project>
