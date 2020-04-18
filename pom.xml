@@ -243,4 +243,25 @@
 		</pluginManagement>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>sonatype-oss-snapshots</id>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots />
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>sonatype-oss-shapshots-plugins</id>
+			<url>https://oss.sonatype.org/content/groups/public</url>
+			<snapshots/>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
 </project>
