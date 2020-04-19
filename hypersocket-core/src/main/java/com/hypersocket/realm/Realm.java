@@ -7,15 +7,25 @@
  ******************************************************************************/
 package com.hypersocket.realm;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
+import com.hypersocket.permissions.Role;
 import com.hypersocket.resource.Resource;
 
 @Entity
@@ -40,8 +50,21 @@ public class Realm extends Resource {
 	@Column(name="public_realm")
 	private Boolean publicRealm;
 	
+	@ManyToMany(/* fetch=FetchType.EAGER */)
+	@Fetch(FetchMode.SUBSELECT)
+	@JoinTable(name = "role_realms", joinColumns={@JoinColumn(name="principal_id")}, inverseJoinColumns={@JoinColumn(name="role_id")})
+	private Set<Role> roles = new HashSet<>();
+	
 	public boolean isDefaultRealm() {
 		return defaultRealm;
+	}
+
+	public Set<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
 	}
 
 	public void setDefaultRealm(boolean defaultRealm) {

@@ -176,7 +176,7 @@ public class Session extends AbstractEntity<String> {
 	protected Double calculateTotalSeconds() { 
 		long time = signedOut!=null ? signedOut.getTime() : System.currentTimeMillis();
 		BigDecimal tmp = new BigDecimal(time	- getCreateDate().getTime());
-		tmp = tmp.multiply(new BigDecimal(1000));
+		tmp = tmp.divide(new BigDecimal(1000));
 		return tmp.setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
 	
@@ -401,10 +401,10 @@ public class Session extends AbstractEntity<String> {
 	}
 
 	public Double getTotalSeconds() {
-		if(totalSeconds==null) {
+//		if(totalSeconds==null) {
 			return calculateTotalSeconds();
-		}
-		return totalSeconds;
+//		}
+//		return totalSeconds;
 	}
 
 	public Role getCurrentRole() {

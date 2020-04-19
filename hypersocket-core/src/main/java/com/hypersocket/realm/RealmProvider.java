@@ -31,8 +31,6 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	void assertCreateRealm(Map<String, String> properties) throws ResourceException;
 	
-	List<Principal> allPrincipals(Realm realm, PrincipalType... types);
-	
 	Iterator<Principal> iterateAllPrincipals(Realm realm, PrincipalType... types);
 
 	Principal getPrincipalByName(String principalName, Realm realm, PrincipalType... acceptTypes);

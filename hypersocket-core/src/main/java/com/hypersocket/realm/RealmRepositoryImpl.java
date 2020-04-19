@@ -8,12 +8,15 @@
 package com.hypersocket.realm;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +35,7 @@ public class RealmRepositoryImpl extends
 		AbstractSimpleResourceRepositoryImpl<Realm> implements
 		RealmRepository {
 
+	static Logger log = LoggerFactory.getLogger(RealmRepositoryImpl.class);
 
 	@Override
 	@Transactional
@@ -273,6 +277,16 @@ public class RealmRepositoryImpl extends
 	@Override
 	public boolean isDeletable() {
 		return false;
+	}
+	
+	@Override
+	@Transactional
+	public void deleteRealmRoles(Realm realm) {
+		realm = getResourceById(realm.getId());
+		int sz = realm.getRoles().size();
+		realm.setRoles(Collections.emptySet());
+		save(realm);
+		log.info(String.format("Deleted %d realm roles", sz));
 	}
 
 	@Override

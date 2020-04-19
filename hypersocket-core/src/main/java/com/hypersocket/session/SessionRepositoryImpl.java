@@ -442,4 +442,14 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		q.setParameter("r", realm);
 		log.info(String.format("Deleted %d Session", q.executeUpdate()));
 	}
+
+	@Override
+	public void cleanUp(Date maxDate) {
+		
+		Query query = createQuery("delete from Sessions where created < :maxDate", true);
+		query.setTimestamp("maxDate", maxDate);
+		
+		query.executeUpdate();
+		
+	}
 }

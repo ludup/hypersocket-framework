@@ -577,10 +577,20 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		Object entity = resolveTargetEntity(resource, template);
 		String methodName = "get" + StringUtils.capitalize(template.getResourceKey());
 		try {
-			
-			entity.getClass().getMethod(methodName, (Class<?>[])null);
+
+			entity.getClass().getMethod(methodName, (Class<?>[]) null);
 			return true;
-			
+
+		} catch (NoSuchMethodException e) {
+		} catch (SecurityException e) {
+		} catch (IllegalArgumentException e) {
+		}
+		methodName = "is" + StringUtils.capitalize(template.getResourceKey());
+		try {
+
+			entity.getClass().getMethod(methodName, (Class<?>[]) null);
+			return true;
+
 		} catch (NoSuchMethodException e) {
 		} catch (SecurityException e) {
 		} catch (IllegalArgumentException e) {

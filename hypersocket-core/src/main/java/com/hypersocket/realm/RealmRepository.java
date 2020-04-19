@@ -65,4 +65,6 @@ public interface RealmRepository extends
 
 	void deleteRealmSoftly(Realm realm);
 
+	void deleteRealmRoles(Realm realm);
+
 }

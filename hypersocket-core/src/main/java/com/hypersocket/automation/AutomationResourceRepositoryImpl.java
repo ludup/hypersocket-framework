@@ -8,9 +8,11 @@ import org.hibernate.FetchMode;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.TransactionOperation;
+import com.hypersocket.tasks.Task;
 import com.hypersocket.triggers.TriggerResource;
 
 @Repository
@@ -27,6 +29,14 @@ public class AutomationResourceRepositoryImpl extends
 	protected void processDefaultCriteria(Criteria criteria) {
 		super.processDefaultCriteria(criteria);
 		criteria.setFetchMode("triggers", FetchMode.SELECT);
+	}
+
+	@Override
+	public void deleteRealm(Realm realm) {
+		super.deleteRealm(realm);
+		
+		/* The parent task may have been orphaned, so explictly delete those too */
+		deleteResourcesOfClassFromRealm(realm, Task.class);
 	}
 
 	@SuppressWarnings("unchecked")

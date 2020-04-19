@@ -38,6 +38,7 @@ import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.i18n.I18NService;
@@ -47,7 +48,9 @@ import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.events.RealmDeletedEvent;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
 import com.hypersocket.utils.HypersocketUtils;
@@ -74,6 +77,8 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	private PermissionService permissionService;
 	@Autowired
 	private RealmService realmService;
+	@Autowired
+	private RealmRepository realmRepository;
 
 	private Set<String> interrupting = Collections.synchronizedSet(new LinkedHashSet<>());
 	private Set<JobKey> running = Collections.synchronizedSet(new LinkedHashSet<>());
@@ -81,11 +86,26 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	private Map<JobKey, Timer> timers = new HashMap<>();
 
 	@PostConstruct
-	private void postConstruct() throws SchedulerException {
+	private void postConstruct() throws SchedulerException, AccessDeniedException {
 
 		scheduler = configureScheduler();
 		scheduler.getListenerManager().addJobListener(this);
 		i18nService.registerBundle(RESOURCE_BUNDLE);
+		
+		for (SchedulerResource res : doGetResources(realmService.getSystemRealm())) {
+			if(res.getRealmId() != null) {
+				if(realmRepository.getRealmById(res.getRealmId()) == null)
+					doDeleteResource(res);
+			}
+		}
+	}
+
+	@EventListener
+	private void realmDeleted(RealmDeletedEvent rde) throws SchedulerException, AccessDeniedException {
+		for (SchedulerResource r : getResources(rde.getRealm())) {
+			doDeleteResource(r);
+		}
+
 	}
 
 	protected abstract Scheduler configureScheduler() throws SchedulerException;
@@ -475,11 +495,20 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			assertPermission(SystemPermission.SYSTEM);
 		}
+		return doGetResources(currentRealm);
+	}
+
+	public Collection<SchedulerResource> doGetResources(Realm currentRealm) throws SchedulerException {
 		List<SchedulerResource> r = new ArrayList<>();
+		Map<Long, Realm> realmCache = new HashMap<>();
 		for (String gn : scheduler.getJobGroupNames()) {
 			for (JobKey k : scheduler.getJobKeys(GroupMatcher.jobGroupEquals(gn))) {
 				try {
-					r.add(buildSchedulerResource(k));
+					SchedulerResource res = buildSchedulerResource(realmCache, k);
+					if (currentRealm.isSystem()
+							|| currentRealm.getId().equals(res.getRealmId())) {
+						r.add(res);
+					}
 				} catch (NotScheduledException e) {
 					// Should not happen
 				}
@@ -494,10 +523,11 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			assertPermission(SystemPermission.SYSTEM);
 		}
-		return buildSchedulerResource(new JobKey(id));
+		return buildSchedulerResource(null, new JobKey(id));
 	}
 
-	protected SchedulerResource buildSchedulerResource(JobKey key) throws SchedulerException, NotScheduledException {
+	protected SchedulerResource buildSchedulerResource(Map<Long, Realm> realmCache, JobKey key)
+			throws SchedulerException, NotScheduledException {
 
 		List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(key);
 		if (triggersOfJob.isEmpty()) {
@@ -553,13 +583,22 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		JobDetail detail = scheduler.getJobDetail(key);
 		if (detail != null) {
 			JobDataMap map = trigger.getJobDataMap();
-			for (Map.Entry<String, Object> en : map.entrySet()) {
-				sr.getData().put(en.getKey(), String.valueOf(en.getValue()));
-				if (en.getKey().equals("realm")) {
+			if (map.containsKey("realm")) {
+				Long realmId = map.getLong("realm");
+				sr.setRealmId(realmId);
+				if (realmCache != null && realmCache.containsKey(realmId)) {
+					Realm realm = realmCache.get(realmId);
+					sr.setRealm(realm == null ? "Unknown " + realmId : realm.getName());
+				} else {
 					try {
-						sr.setRealm(realmService.getRealmById(Long.parseLong(en.getValue().toString())).getName());
+						Realm realm = realmService.getRealmById(realmId);
+						if (realmCache != null)
+							realmCache.put(realmId, realm);
+						sr.setRealm(realm.getName());
 					} catch (Exception ex) {
-						sr.setRealm("Unknown " + en.getValue());
+						sr.setRealm("Unknown " + realmId);
+						if (realmCache != null)
+							realmCache.put(realmId, null);
 					}
 				}
 			}
@@ -578,6 +617,10 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			assertPermission(SystemPermission.SYSTEM);
 		}
+		doDeleteResource(resource);
+	}
+
+	public void doDeleteResource(SchedulerResource resource) throws SchedulerException {
 		scheduler.deleteJob(resource.getJobKey());
 		exceptions.remove(resource.getJobKey());
 		timers.remove(resource.getJobKey());

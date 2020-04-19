@@ -89,6 +89,11 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			protected List<I> listItems(int start, int length, ColumnSort[] sorting) {
 				return search(clazz, null, null, start, length, sorting, configs);
 			}
+			@Override
+			public void remove() {
+				delete(getCurrent());
+			}
+			
 		};
 	}
 	

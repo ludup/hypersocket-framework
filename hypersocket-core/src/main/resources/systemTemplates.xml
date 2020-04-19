@@ -24,6 +24,7 @@
 	    <property resourceKey="security.xFrameOptionsEnabled" inputType="switch" defaultValue="true" weight="100"/>
 	    <property resourceKey="security.strictTransportSecurity" inputType="switch" defaultValue="true" weight="200"/>
 	    <property resourceKey="security.xFrameOptionsValue" inputType="select" defaultValue="SAMEORIGIN" options="DENY,SAMEORIGIN" weight="300"/>
+	    <property resourceKey="security.sessionMaxAge" inputType="integer" defaultValue="365" weight="400"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.databaseSettings"
 		resourceBundle="DatabaseService" weight="200">
@@ -56,7 +57,9 @@
 	<propertyCategory resourceKey="category.schedulerSettings"
 		resourceBundle="SchedulerService" weight="300">
 		<property resourceKey="org.quartz.threadPool.threadCount" inputType="integer" store="schedulerConfiguration" 
-				  allowEmpty="false" weight="700" defaultValue="50" minValue="1" maxValue="1000"/>		
+				  allowEmpty="false" weight="700" defaultValue="50" minValue="1" maxValue="1000"/>	
+		<property resourceKey="scheduler.reconcileDisabled" inputType="switch"
+			defaultValue="false" weight="20" />	
 	</propertyCategory>
 	<propertyCategory resourceKey="category.dictionary"
 		resourceBundle="DictionaryResourceService" weight="700" group="dictionary">

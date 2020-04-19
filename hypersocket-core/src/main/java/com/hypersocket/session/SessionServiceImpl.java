@@ -18,6 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -36,6 +37,7 @@ import com.decibel.uasparser.UserAgentInfo;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -58,6 +60,10 @@ import com.hypersocket.tables.ColumnSort;
 public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		implements SessionService, ApplicationListener<ContextStartedEvent> {
 
+	static final String SESSION_REAPER_JOB = "sessionReaperJob";
+
+	static final String SESSION_CLEAN_UP_JOB = "sessionCleanUpJob";
+
 	@Autowired
 	private SessionRepository repository;
 
@@ -73,7 +79,12 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Autowired
 	private EventService eventService;
 
+	@Autowired
+	private SystemConfigurationService systemConfigurationService;
+
 	static final String SESSION_TIMEOUT = "session.timeout";
+
+	private static final String SESSION_MAX_AGE = "security.sessionMaxAge";
 
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
@@ -88,42 +99,46 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	/* BUG: This is contructed here, but never used? */
 	private OnlineUpdater updater;
-	
+
 	@PostConstruct
 	private void postConstruct() throws AccessDeniedException {
 
 		if (log.isInfoEnabled()) {
 			log.info("Loading User Agent database");
 		}
-		
+
 		parser = new UASparser();
 		updater = new OnlineUpdater(parser, "");
-		
+
 		if (log.isInfoEnabled()) {
 			log.info("Loaded User Agent database");
 		}
 
 		PermissionCategory cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE, "session.category");
-		
-		for(SessionPermission perm : SessionPermission.values()) {
+
+		for (SessionPermission perm : SessionPermission.values()) {
 			permissionService.registerPermission(perm, cat);
 		}
-		
+
 		eventService.registerEvent(SessionEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
-	
+
 	}
-	
+
 	@Override
 	public void registerReaperListener(SessionReaperListener listener) {
-		synchronized(listeners) {
+		synchronized (listeners) {
 			listeners.add(listener);
 		}
 	}
-	
+
 	@Override
 	public void setUAParser(UASparser parser, OnlineUpdater updater) {
+		if(this.updater != null) {
+			this.updater.interrupt();
+			this.updater = null;
+		}
 		this.parser = parser;
 		this.updater = updater;
 	}
@@ -143,7 +158,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		repository.saveEntity(session);
 		return session;
 	}
-	
+
 	@Override
 	public void updateSession(Session session) {
 		repository.saveEntity(session);
@@ -158,79 +173,71 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Session openSession(String remoteAddress, Principal principal,
-			AuthenticationScheme completedScheme, String userAgent,
-			Map<String, String> parameters) {
+	public Session openSession(String remoteAddress, Principal principal, AuthenticationScheme completedScheme,
+			String userAgent, Map<String, String> parameters) {
 		return openSession(remoteAddress, principal, completedScheme, userAgent, parameters, principal.getRealm());
 	}
-	
+
 	@Override
-	public Session openSession(String remoteAddress, Principal principal,
-			AuthenticationScheme completedScheme, String userAgent,
-			Map<String, String> parameters, Realm realm) {
+	public Session openSession(String remoteAddress, Principal principal, AuthenticationScheme completedScheme,
+			String userAgent, Map<String, String> parameters, Realm realm) {
 
 		Session session = null;
-		
+
 		if (userAgent == null) {
 			userAgent = "Unknown";
-		} else if(userAgent.startsWith("Hypersocket-Client")) {
-			
+		} else if (userAgent.startsWith("Hypersocket-Client")) {
+
 			String[] values = userAgent.split(";");
-			
+
 			String agent = "Hypersocket Client";
-			String agentVersion = "1.0"; 
-			if(values.length > 1) {
+			String agentVersion = "1.0";
+			if (values.length > 1) {
 				agentVersion = values[1];
 			}
 			String os = "Unknown";
-			if(values.length > 2) {
-				if(values[2].toLowerCase().startsWith("windows")) {
+			if (values.length > 2) {
+				if (values[2].toLowerCase().startsWith("windows")) {
 					os = "Windows";
-				} else if(values[2].toLowerCase().startsWith("mac os x")) {
+				} else if (values[2].toLowerCase().startsWith("mac os x")) {
 					os = "OS X";
-				} else if(values[2].toLowerCase().startsWith("linux")) {
+				} else if (values[2].toLowerCase().startsWith("linux")) {
 					os = "Linux";
 				} else {
 					os = values[2];
 				}
 			}
 			String osVersion = "Unknown";
-			if(values.length > 3) {
+			if (values.length > 3) {
 				osVersion = values[3];
 			}
-			
-			session = repository.createSession(remoteAddress, principal,
-					completedScheme, agent, agentVersion, os, osVersion, 
-					configurationService.getIntValue(
-					realm, SESSION_TIMEOUT), realm);
-		} else if("API_REST".equals(userAgent)){
-			session = repository.createSession(remoteAddress, principal,
-					completedScheme, "API_REST", "Unknown", "Unknown", "Unknown",
-					configurationService.getIntValue(
-							realm, SESSION_TIMEOUT), realm);
+
+			session = repository.createSession(remoteAddress, principal, completedScheme, agent, agentVersion, os,
+					osVersion, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
+		} else if ("API_REST".equals(userAgent)) {
+			session = repository.createSession(remoteAddress, principal, completedScheme, "API_REST", "Unknown",
+					"Unknown", "Unknown", configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
 		} else {
 			UserAgentInfo info;
 			try {
 				info = parser.parse(userAgent);
-				session = repository.createSession(remoteAddress, principal,
-						completedScheme, 
-						info.getUaFamily(), 
-						info.getBrowserVersionInfo(), 
-						info.getOsFamily(),
-						info.getOsName(), 
-						configurationService.getIntValue(realm, SESSION_TIMEOUT), 
-						realm);	
-				setCurrentRole(session, permissionService.getPersonalRole(principal));
+				if ("unknown".equals(info.getType())) {
+
+					session = repository.createSession(remoteAddress, principal, completedScheme, userAgent, userAgent,
+							userAgent, userAgent, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
+				} else {
+					session = repository.createSession(remoteAddress, principal, completedScheme, info.getUaFamily(),
+							info.getBrowserVersionInfo(), info.getOsFamily(), info.getOsName(),
+							configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
+					setCurrentRole(session, permissionService.getPersonalRole(principal));
+				}
 			} catch (IOException e) {
-				session = repository.createSession(remoteAddress, principal,
-						completedScheme, "Unknown", "Unknown", "Unknown", "Unknown", 
-						configurationService.getIntValue(
-						realm, SESSION_TIMEOUT), realm);
+				session = repository.createSession(remoteAddress, principal, completedScheme, userAgent, "Unknown",
+						"Unknown", "Unknown", configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
 			}
 
-			
 		}
-		
+
 		eventService.publishEvent(new SessionOpenEvent(this, session));
 		return session;
 	}
@@ -246,35 +253,32 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			return false;
 
 		repository.refresh(session);
-		
+
 		if (session.getSignedOut() == null) {
 
-			if(session.getTimeout() > 0) {
+			if (session.getTimeout() > 0) {
 				Calendar currentTime = Calendar.getInstance();
 				Calendar c = Calendar.getInstance();
-				if(session.getLastUpdated()!=null) {
+				if (session.getLastUpdated() != null) {
 					c.setTime(session.getLastUpdated());
 					c.add(Calendar.MINUTE, session.getTimeout());
 				}
 				if (log.isDebugEnabled()) {
-					log.debug("Checking session timeout currentTime="
-							+ currentTime.getTime() + " lastUpdated="
-							+ session.getLastUpdated() + " timeoutThreshold="
-							+ c.getTime());
+					log.debug("Checking session timeout currentTime=" + currentTime.getTime() + " lastUpdated="
+							+ session.getLastUpdated() + " timeoutThreshold=" + c.getTime());
 				}
-	
+
 				if (c.before(currentTime)) {
 					if (log.isDebugEnabled()) {
 						log.debug("Session has timed out");
 					}
 					closeSession(session);
-	
+
 					if (log.isDebugEnabled()) {
-						log.debug("Session "
-								+ session.getPrincipal().getPrincipalName() + "/"
-								+ session.getId() + " is now closed");
+						log.debug("Session " + session.getPrincipal().getPrincipalName() + "/" + session.getId()
+								+ " is now closed");
 					}
-	
+
 					return false;
 				}
 			}
@@ -331,40 +335,36 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void switchRealm(Session session, Realm realm)
-			throws AccessDeniedException {
+	public void switchRealm(Session session, Realm realm) throws AccessDeniedException {
 
-		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION,
-					SystemPermission.SYSTEM, SystemPermission.SWITCH_REALM);
-		
+		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SystemPermission.SYSTEM,
+				SystemPermission.SWITCH_REALM);
+
 		if (log.isInfoEnabled()) {
-			log.info("Switching " + session.getPrincipal().getName() + " to "
-					+ realm.getName() + " realm");
+			log.info("Switching " + session.getPrincipal().getName() + " to " + realm.getName() + " realm");
 		}
 
 		session.setCurrentRealm(realm);
 		repository.updateSession(session);
 	}
 
-	protected void assertImpersonationPermission() throws AccessDeniedException {	
+	protected void assertImpersonationPermission() throws AccessDeniedException {
 		assertPermission(UserPermission.IMPERSONATE);
 	}
 
 	@Override
-	public void switchPrincipal(Session session, Principal principal)
-			throws AccessDeniedException {
+	public void switchPrincipal(Session session, Principal principal) throws AccessDeniedException {
 		switchPrincipal(session, principal, false);
 	}
 
 	@Override
-	public void switchPrincipal(Session session, Principal principal,
-			boolean inheritPermissions) throws AccessDeniedException {
+	public void switchPrincipal(Session session, Principal principal, boolean inheritPermissions)
+			throws AccessDeniedException {
 
 		assertImpersonationPermission();
 
 		if (log.isInfoEnabled()) {
-			log.info("Switching " + session.getPrincipal().getName() + " to "
-					+ principal.getName());
+			log.info("Switching " + session.getPrincipal().getName() + " to " + principal.getName());
 		}
 
 		session.setImpersonatedPrincipal(principal);
@@ -375,12 +375,11 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		repository.updateSession(session);
 	}
 
-	
 	@Override
 	public Role switchRole(Session session, Long id) throws AccessDeniedException, ResourceNotFoundException {
 
 		elevatePermissions(RolePermission.READ);
-		
+
 		try {
 			Role role = permissionService.getRoleById(id, getCurrentRealm());
 			switchRole(session, role);
@@ -389,21 +388,19 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			clearElevatedPermissions();
 		}
 	}
-	
+
 	@Override
 	public void switchRole(Session session, Role role) throws AccessDeniedException {
 		if (log.isInfoEnabled()) {
 			log.info(String.format("Switching %s role from %s to %s", session.getCurrentPrincipal().getPrincipalName(),
-					session.getCurrentRole().getName(),
-					role.getName()));
+					session.getCurrentRole().getName(), role.getName()));
 		}
 
 		setCurrentRole(role);
 	}
-	
+
 	@Override
-	public void registerResourceSession(Session session,
-			ResourceSession<?> resourceSession) {
+	public void registerResourceSession(Session session, ResourceSession<?> resourceSession) {
 
 		if (!resourceSessions.containsKey(session)) {
 			resourceSessions.put(session, new ArrayList<ResourceSession<?>>());
@@ -425,8 +422,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void unregisterResourceSession(Session session,
-			ResourceSession<?> resourceSession) {
+	public void unregisterResourceSession(Session session, ResourceSession<?> resourceSession) {
 
 		if (resourceSessions.containsKey(session)) {
 			resourceSessions.get(session).remove(resourceSession);
@@ -436,7 +432,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public List<Session> getActiveSessions() throws AccessDeniedException {
 
-		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			assertPermission(SystemPermission.SYSTEM);
 		}
 
@@ -446,129 +442,127 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Long getActiveSessionCount(boolean distinctUsers) throws AccessDeniedException {
 
-		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			throw new AccessDeniedException();
 		}
-		
+
 		return repository.getActiveSessionCount(distinctUsers);
 	}
-	
+
 	@Override
 	public Long getActiveSessionCount(boolean distinctUsers, Realm realm) throws AccessDeniedException {
 
-		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			throw new AccessDeniedException();
 		}
-		
+
 		return repository.getActiveSessionCount(distinctUsers, realm);
 	}
-	
+
 	@Override
 	public Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers) throws AccessDeniedException {
-		
-		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			throw new AccessDeniedException();
 		}
-		
+
 		return repository.getSessionCount(startDate, endDate, distinctUsers);
-		
+
 	}
-	
+
 	@Override
-	public Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers, Realm realm) throws AccessDeniedException {
-		
-		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+	public Long getSessionCount(Date startDate, Date endDate, boolean distinctUsers, Realm realm)
+			throws AccessDeniedException {
+
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			throw new AccessDeniedException();
 		}
-		
+
 		return repository.getSessionCount(startDate, endDate, distinctUsers, realm);
-		
+
 	}
 
 	@Override
-	public Map<String,Long> getBrowserCount(Date startDate, Date endDate) throws AccessDeniedException {
-		
-		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+	public Map<String, Long> getBrowserCount(Date startDate, Date endDate) throws AccessDeniedException {
+
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			throw new AccessDeniedException();
 		}
-		
+
 		return repository.getBrowserCount(startDate, endDate);
-		
-	}
-	
-	@Override
-	public Map<String,Long> getBrowserCount(Date startDate, Date endDate, Realm realm) throws AccessDeniedException {
-		
-		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
-			throw new AccessDeniedException();
-		}
-		
-		return repository.getBrowserCount(startDate, endDate, realm);
-		
+
 	}
 
 	@Override
-	public Map<String,Long> getIPCount(Date startDate, Date endDate) throws AccessDeniedException {
-		
-		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+	public Map<String, Long> getBrowserCount(Date startDate, Date endDate, Realm realm) throws AccessDeniedException {
+
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			throw new AccessDeniedException();
 		}
-		
+
+		return repository.getBrowserCount(startDate, endDate, realm);
+
+	}
+
+	@Override
+	public Map<String, Long> getIPCount(Date startDate, Date endDate) throws AccessDeniedException {
+
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			throw new AccessDeniedException();
+		}
+
 		return repository.getIPCount(startDate, endDate);
-		
+
 	}
-	
+
 	@Override
-	public Map<String,Long> getOSCount(Date startDate, Date endDate) throws AccessDeniedException {
-		
-		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+	public Map<String, Long> getOSCount(Date startDate, Date endDate) throws AccessDeniedException {
+
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			throw new AccessDeniedException();
 		}
-		
+
 		return repository.getOSCount(startDate, endDate);
-		
+
 	}
-	
+
 	@Override
-	public Map<String,Long> getOSCount(Date startDate, Date endDate, Realm realm) throws AccessDeniedException {
-		
-		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+	public Map<String, Long> getOSCount(Date startDate, Date endDate, Realm realm) throws AccessDeniedException {
+
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			throw new AccessDeniedException();
 		}
-		
+
 		return repository.getOSCount(startDate, endDate, realm);
-		
+
 	}
-	
+
 	@Override
-	public Map<String,Long> getPrincipalUsage(Date startDate, Date endDate) throws AccessDeniedException {
-		
-		if(!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+	public Map<String, Long> getPrincipalUsage(Date startDate, Date endDate) throws AccessDeniedException {
+
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			throw new AccessDeniedException();
 		}
-		
+
 		return repository.getPrincipalUsage(getCurrentRealm(), 5, startDate, endDate);
-		
+
 	}
-	
+
 	@Override
 	public <T> SessionResourceToken<T> createSessionToken(T resource) {
 
-		SessionResourceToken<T> token = new SessionResourceToken<T>(
-				getCurrentSession(), resource);
+		SessionResourceToken<T> token = new SessionResourceToken<T>(getCurrentSession(), resource);
 		sessionTokens.put(token.getShortCode(), token);
 		return token;
 	}
 
 	@Override
-	public <T> SessionResourceToken<T> getSessionToken(String shortCode,
-			Class<T> resourceClz) {
+	public <T> SessionResourceToken<T> getSessionToken(String shortCode, Class<T> resourceClz) {
 
 		if (sessionTokens.containsKey(shortCode)) {
 
 			@SuppressWarnings("unchecked")
-			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens
-					.get(shortCode);
+			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens.get(shortCode);
 
 			if (isLoggedOn(token.getSession(), true)) {
 				return token;
@@ -584,8 +578,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		if (sessionTokens.containsKey(shortCode)) {
 
 			@SuppressWarnings("unchecked")
-			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens
-					.get(shortCode);
+			SessionResourceToken<T> token = (SessionResourceToken<T>) sessionTokens.get(shortCode);
 
 			if (resourceClz.isAssignableFrom(token.getResource().getClass()) && isLoggedOn(token.getSession(), true)) {
 				return token.getResource();
@@ -596,24 +589,22 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Session getNonCookieSession(String remoteAddr, String token,
-			String authenticationSchemeResourceKey)
+	public Session getNonCookieSession(String remoteAddr, String token, String authenticationSchemeResourceKey)
 			throws AccessDeniedException {
 
-			Session session = nonCookieSessions.get(token);
+		Session session = nonCookieSessions.get(token);
 
-			if (session != null) {
-				if (!isLoggedOn(session, true)) {
-					throw new AccessDeniedException();
-				}
-				return session;
+		if (session != null) {
+			if (!isLoggedOn(session, true)) {
+				throw new AccessDeniedException();
 			}
-			throw new AccessDeniedException();
+			return session;
+		}
+		throw new AccessDeniedException();
 	}
 
 	@Override
-	public void registerNonCookieSession(String remoteAddr,
-			String token, String authenticationSchemeResourceKey,
+	public void registerNonCookieSession(String remoteAddr, String token, String authenticationSchemeResourceKey,
 			Session session) {
 
 		session.setNonCookieKey(token);
@@ -623,13 +614,13 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void revertPrincipal(Session session) throws AccessDeniedException {
 
-		if(session.getImpersonatedPrincipal()==null) {
+		if (session.getImpersonatedPrincipal() == null) {
 			throw new AccessDeniedException("You are not impersonating anyone!");
 		}
 
 		if (log.isInfoEnabled()) {
-			log.info("Switching " + session.getCurrentPrincipal().getName()
-					+ " to " + session.getPrincipal().getName());
+			log.info(
+					"Switching " + session.getCurrentPrincipal().getName() + " to " + session.getPrincipal().getName());
 		}
 
 		session.setImpersonatedPrincipal(null);
@@ -642,67 +633,69 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void onApplicationEvent(ContextStartedEvent event) {
 
-		executeInSystemContext(new Runnable() {
-
-			@Override
-			public void run() {
-				if (log.isInfoEnabled()) {
-					log.info("Scheduling session reaper job");
-				}
-
-				for (Session session : repository.getSystemSessions()) {
-					if (systemSession != null && systemSession.equals(session)) {
-						continue;
-					}
-					closeSession(session);
-				}
-				
-				for(Session session : repository.getActiveSessions()) {
-					if(session.isTransient()) {
-						closeSession(session);
-					}
-					else if(!session.isSystem()) {
-						if(isLoggedOn(session, false)) {
-							if(realmService.getRealmPropertyBoolean(session.getPrincipalRealm(), "session.closeOnShutdown")) {
-									closeSession(session);
-									continue;
-							}
-						}
-						notifyReaperListeners(session);
-					}
-				}
-
-				try {
-					if(schedulerService.jobDoesNotExists("sessionReaperJob")){
-						JobDataMap data = new JobDataMap();
-						data = new JobDataMap();
-						data.put("jobName", "sessionReaperJob");
-						
-						schedulerService.scheduleIn(SessionReaperJob.class, "sessionReaperJob", data, 60000, 60000);
-					}
-				} catch (SchedulerException e) {
-					log.error("Failed to schedule session reaper job", e);
-				} 
+		executeInSystemContext(() -> {
+			if (log.isInfoEnabled()) {
+				log.info("Scheduling session reaper job");
 			}
-			
+
+			for (Session session : repository.getSystemSessions()) {
+				if (systemSession != null && systemSession.equals(session)) {
+					continue;
+				}
+				closeSession(session);
+			}
+
+			for (Session session : repository.getActiveSessions()) {
+				if (session.isTransient()) {
+					closeSession(session);
+				} else if (!session.isSystem()) {
+					if (isLoggedOn(session, false)) {
+						if (realmService.getRealmPropertyBoolean(session.getPrincipalRealm(),
+								"session.closeOnShutdown")) {
+							closeSession(session);
+							continue;
+						}
+					}
+					notifyReaperListeners(session);
+				}
+			}
+
+			try {
+				if (schedulerService.jobDoesNotExists(SESSION_REAPER_JOB)) {
+					JobDataMap data = new JobDataMap();
+					data = new JobDataMap();
+					data.put("jobName", SESSION_REAPER_JOB);
+
+					schedulerService.scheduleIn(SessionReaperJob.class, SESSION_REAPER_JOB, data, 60000, 60000);
+				}
+				if (schedulerService.jobDoesNotExists(SESSION_CLEAN_UP_JOB)) {
+					JobDataMap data = new JobDataMap();
+					data = new JobDataMap();
+					data.put("jobName", SESSION_CLEAN_UP_JOB);
+					schedulerService.scheduleIn(SessionCleanUpJob.class, SESSION_CLEAN_UP_JOB, data, (int)TimeUnit.DAYS.toMillis(1), (int)TimeUnit.DAYS.toMillis(1));
+				}
+			} catch (SchedulerException e) {
+				log.error("Failed to schedule session reaper job", e);
+			}
+
 		});
 
 	}
 
 	@Override
-	public List<?> searchResources(Realm realm, String searchPattern, int start, int length,
-			ColumnSort[] sorting) throws AccessDeniedException {
-		
+	public List<?> searchResources(Realm realm, String searchPattern, int start, int length, ColumnSort[] sorting)
+			throws AccessDeniedException {
+
 		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SessionPermission.READ);
-		
+
 		return repository.search(realm, searchPattern, start, length, sorting);
 	}
 
 	@Override
 	public Long getResourceCount(Realm realm, String searchPattern) throws AccessDeniedException {
-		
+
 		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SessionPermission.READ);
-		
+
 		return repository.getResourceCount(realm, searchPattern);
 	}
 
@@ -710,28 +703,28 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public void executeInSystemContext(Runnable r) {
 		executeInSystemContext(r, realmService.getSystemRealm(), realmService.getSystemPrincipal());
 	}
-	
+
 	@Override
 	public void executeInSystemContext(Runnable r, Realm realm) {
 		executeInSystemContext(r, realm, realmService.getSystemPrincipal());
 	}
-	
+
 	@Override
 	public void executeInSystemContext(Runnable r, Realm currentRealm, Principal principal) {
-		
+
 		setCurrentSession(getSystemSession(), currentRealm, principal, Locale.getDefault());
 		try {
 			r.run();
 		} finally {
 			clearPrincipalContext();
 		}
-	
+
 	}
 
 	@Override
 	public void notifyReaperListeners(Session session) {
-		synchronized(listeners) {
-			for(SessionReaperListener listener : listeners) {
+		synchronized (listeners) {
+			for (SessionReaperListener listener : listeners) {
 				listener.processSession(session);
 			}
 		}
@@ -740,6 +733,15 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void deleteRealm(Realm realm) {
 		repository.deleteRealm(realm);
+	}
+
+	@Override
+	public void cleanUp() throws AccessDeniedException {
+		int maxAge = Integer.parseInt(systemConfigurationService.getValue(SESSION_MAX_AGE));
+		Calendar maxCal = Calendar.getInstance();
+		maxCal.add(Calendar.DAY_OF_YEAR, -maxAge);
+		Date maxDate = maxCal.getTime();
+		repository.cleanUp(maxDate);
 	}
 
 }

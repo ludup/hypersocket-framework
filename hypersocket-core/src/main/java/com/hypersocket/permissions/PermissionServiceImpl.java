@@ -32,6 +32,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -78,6 +79,8 @@ import com.hypersocket.utils.HypersocketUtils;
 @Service
 public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		implements PermissionService, ApplicationListener<SystemEvent> {
+
+	private static final boolean CACHE_PERMISSIONS = "true".equals(System.getProperty("hypersocket.cachePermissions", "true"));
 
 	static Logger log = LoggerFactory.getLogger(PermissionServiceImpl.class);
 
@@ -422,7 +425,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		
 		synchronized (permissionsCache) {
 			/* We do this up front to only keep the permission cache lock held for a short time */
-			if (!permissionsCache.containsKey(cacheKey) || ( permissions = permissionsCache.get(cacheKey))==null) {
+			if (!CACHE_PERMISSIONS || !permissionsCache.containsKey(cacheKey) || ( permissions = permissionsCache.get(cacheKey))==null) {
 				needPerms = true;
 			}
 		}
@@ -640,6 +643,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
+	@Transactional
 	public void verifyPermission(Principal principal, PermissionStrategy strategy, PermissionType... permissions)
 			throws AccessDeniedException {
 		if (principal == null) {

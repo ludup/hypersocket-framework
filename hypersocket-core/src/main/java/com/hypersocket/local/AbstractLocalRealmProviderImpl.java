@@ -128,30 +128,6 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	
 	@Override
 	@Transactional(readOnly=true)
-	public List<Principal> allPrincipals(Realm realm, PrincipalType... types) {
-
-		ArrayList<Principal> result = new ArrayList<Principal>();
-
-		for (PrincipalType type : types) {
-			switch (type) {
-			case USER:
-				result.addAll(userRepository.allUsers(realm));
-				break;
-			case GROUP:
-				result.addAll(userRepository.allGroups(realm));
-				break;
-			case SERVICE:
-			case SYSTEM:
-			case TEMPLATE:
-				break;
-			}
-		}
-
-		return result;
-	}
-
-	@Override
-	@Transactional(readOnly=true)
 	public Principal getPrincipalByName(String principalName, Realm realm,
 			PrincipalType... acceptTypes) {
 

@@ -2,11 +2,14 @@ package com.hypersocket.realm.ou;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.realm.ProfilePermission;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.UserPermission;
@@ -33,5 +36,8 @@ public class OrganizationalUnitServiceImpl extends AbstractAuthenticatedServiceI
 		return repository.getResources(realm);
 	}
 	
-	
+	@PostConstruct
+	private void setup() {
+		EntityResourcePropertyStore.registerResourceService(OrganizationalUnit.class, repository);
+	}
 }

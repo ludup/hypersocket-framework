@@ -6,9 +6,12 @@ import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.hibernate.Criteria;
+import org.hibernate.Query;
+import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,57 +28,76 @@ import com.hypersocket.tables.ColumnSort;
 public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Principal> implements PrincipalRepository {
 	final static Logger LOG = LoggerFactory.getLogger(PrincipalRepositoryImpl.class);
 
+	@Autowired
+	private SessionFactory sessionFactory;
+
 	@Override
-	@Transactional(readOnly=true)
-	public List<Principal> search(Realm realm, PrincipalType type, String searchColumn, String searchPattern, int start, int length,
-			ColumnSort[] sorting) {
-		return super.search(realm, searchColumn, searchPattern, start, length, sorting, new DeletedCriteria(false), new PrincipalTypeCriteria(type));
+	public void deleteRealm(Realm realm) {
+		Query q = sessionFactory.getCurrentSession().createSQLQuery(
+				"delete l from principal_links l left join principals p ON p.resource_id = l.principals_resource_id WHERE p.realm_id = "
+						+ realm.getId());
+		q.executeUpdate();
+		q = sessionFactory.getCurrentSession().createSQLQuery(
+				"delete l from principal_links l left join principals p ON p.resource_id = l.linkedPrincipals_resource_id WHERE p.realm_id = "
+						+ realm.getId());
+		q.executeUpdate();
 	}
 
 	@Override
-	@Transactional(readOnly=true)
-	public long getResourceCount(Realm realm,  PrincipalType type,String searchColumn, String searchPattern) {
-		return super.getResourceCount(realm, searchColumn, searchPattern, new DeletedCriteria(false), new PrincipalTypeCriteria(type));
+	@Transactional(readOnly = true)
+	public List<Principal> search(Realm realm, PrincipalType type, String searchColumn, String searchPattern, int start,
+			int length, ColumnSort[] sorting) {
+		return super.search(realm, searchColumn, searchPattern, start, length, sorting, new DeletedCriteria(false),
+				new PrincipalTypeCriteria(type));
 	}
-	
+
 	@Override
-	@Transactional(readOnly=true)
-	public long getResourceCount(Collection<Realm> realms,  PrincipalType type) {
+	@Transactional(readOnly = true)
+	public long getResourceCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern) {
+		return super.getResourceCount(realm, searchColumn, searchPattern, new DeletedCriteria(false),
+				new PrincipalTypeCriteria(type));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public long getResourceCount(Collection<Realm> realms, PrincipalType type) {
 		return super.getResourceCount(realms, "", "", new DeletedCriteria(false), new PrincipalTypeCriteria(type));
 	}
-	
+
 	@Override
-	@Transactional(readOnly=true)
-	public long getResourceCount(Realm realm,  PrincipalType type) {
+	@Transactional(readOnly = true)
+	public long getResourceCount(Realm realm, PrincipalType type) {
 		return super.getResourceCount(realm, "", "", new DeletedCriteria(false), new PrincipalTypeCriteria(type));
 	}
 
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public Collection<Principal> getPrincpalsByName(final String username, final PrincipalType... types) {
-		return list(Principal.class, new DeletedCriteria(false), new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
-			
-			@Override
-			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.or(Restrictions.eq("name", username).ignoreCase(),
-						Restrictions.eq("primaryEmail", username).ignoreCase()));
-			}
-		});
+		return list(Principal.class, new DeletedCriteria(false), new PrincipalTypesCriteria(types),
+				new CriteriaConfiguration() {
+
+					@Override
+					public void configure(Criteria criteria) {
+						criteria.add(Restrictions.or(Restrictions.eq("name", username).ignoreCase(),
+								Restrictions.eq("primaryEmail", username).ignoreCase()));
+					}
+				});
 	}
-	
+
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public Collection<Principal> getPrincpalsByName(final String username, Realm realm, final PrincipalType... types) {
-		return list(Principal.class, new RealmCriteria(realm), new DeletedCriteria(false), new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
-			
-			@Override
-			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.or(Restrictions.eq("name", username).ignoreCase(),
-						Restrictions.eq("primaryEmail", username).ignoreCase()));
-			}
-		});
+		return list(Principal.class, new RealmCriteria(realm), new DeletedCriteria(false),
+				new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
+
+					@Override
+					public void configure(Criteria criteria) {
+						criteria.add(Restrictions.or(Restrictions.eq("name", username).ignoreCase(),
+								Restrictions.eq("primaryEmail", username).ignoreCase()));
+					}
+				});
 	}
-	
+
 	@Override
 	protected Class<Principal> getResourceClass() {
 		return Principal.class;
@@ -84,31 +106,31 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	class PrincipalTypeCriteria implements CriteriaConfiguration {
 
 		PrincipalType type;
-		
+
 		PrincipalTypeCriteria(PrincipalType type) {
 			this.type = type;
 		}
-		
+
 		@Override
 		public void configure(Criteria criteria) {
 			criteria.add(Restrictions.eq("principalType", type));
 		}
-		
+
 	}
 
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public Collection<Principal> allPrincipals() {
 		return allEntities(Principal.class, new DeletedCriteria(false), new HiddenCriteria(false));
 	}
-	
+
 	public boolean isDeletable() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public Principal getPrincipalByReference(String reference, Realm realm) {
-		if(NumberUtils.isCreatable(reference)) {
+		if (NumberUtils.isCreatable(reference)) {
 			return getResourceById(Long.parseLong(reference));
 		} else {
 			return getResourceByName(reference, realm);
@@ -116,21 +138,21 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	}
 
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public List<?> searchDeleted(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
 			ColumnSort[] sorting, int start, int length, CriteriaConfiguration... criteriaConfiguration) {
-		return super.search(getResourceClass(), searchColumn, searchPattern, start,
-				length, sorting, ArrayUtils.addAll(criteriaConfiguration,
-						new RealmCriteria(realm), new PrincipalTypeCriteria(type), new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
+		return super.search(getResourceClass(), searchColumn, searchPattern, start, length, sorting,
+				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
+						new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
 	}
 
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional(readOnly = true)
 	public Long getDeletedCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
 			CriteriaConfiguration... criteriaConfiguration) {
 		return getCount(getResourceClass(), searchColumn, searchPattern,
-				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(
-						realm), new PrincipalTypeCriteria(type), new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
+				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
+						new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
 	}
 
 	@Override
@@ -139,6 +161,6 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 		user.setLocallyDeleted(false);
 		user.setDeleted(false);
 		save(user);
-		flush();		
+		flush();
 	}
 }

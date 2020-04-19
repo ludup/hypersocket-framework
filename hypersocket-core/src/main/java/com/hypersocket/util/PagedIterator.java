@@ -31,6 +31,10 @@ public abstract class PagedIterator<T> implements Iterator<T> {
 		this.sorting = sorting;
 		this.pageSize = pageSize;
 	}
+	
+	public T getCurrent() {
+		return current;
+	}
 
 	@Override
 	public boolean hasNext() {

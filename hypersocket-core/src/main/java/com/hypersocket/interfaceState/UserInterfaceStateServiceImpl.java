@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
@@ -47,6 +48,8 @@ public class UserInterfaceStateServiceImpl extends
 				repository.deleteRealm(realm);
 			}	
 		});
+		
+		EntityResourcePropertyStore.registerResourceService(UserInterfaceState.class, repository);
 	}
 
 	@Override

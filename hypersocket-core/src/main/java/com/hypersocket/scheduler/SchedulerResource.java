@@ -22,6 +22,7 @@ public class SchedulerResource {
 	private String trace;
 	private Properties data = new Properties();
 	private String realm;
+	private Long realmId;
 
 	public SchedulerResource() {
 	}
@@ -63,6 +64,14 @@ public class SchedulerResource {
 
 	public String getName() {
 		return name;
+	}
+
+	public Long getRealmId() {
+		return realmId;
+	}
+
+	public void setRealmId(Long realmId) {
+		this.realmId = realmId;
 	}
 
 	public void setName(String name) {

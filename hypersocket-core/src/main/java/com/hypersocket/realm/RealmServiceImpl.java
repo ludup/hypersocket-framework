@@ -1426,6 +1426,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 							 */
 
 							Realm deletedRealm = getRealmById(realm.getId());
+							deletedRealm.getRoles();
 
 							clearCache(deletedRealm);
 
@@ -1433,8 +1434,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 							fireRealmDelete(deletedRealm);
 
-							for (FindableResourceRepository<?> repository : EntityResourcePropertyStore
-									.getRepositories()) {
+							Collection<FindableResourceRepository<?>> repos = EntityResourcePropertyStore
+									.getRepositories();
+							log.info(String.format("Repositories: %s", repos));
+							for (FindableResourceRepository<?> repository : repos) {
 								if (repository instanceof AbstractSimpleResourceRepository
 										&& !(repository instanceof RealmRepository)
 										&& !(repository instanceof PermissionRepository)) {
@@ -1461,7 +1464,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 							passwordPolicyService.deleteRealm(realm);
 							configurationService.deleteRealm(realm);
-
+							realmRepository.deleteRealmRoles(realm);
 							realmRepository.deleteRealm(deletedRealm);
 							return null;
 						} catch (ResourceException e) {

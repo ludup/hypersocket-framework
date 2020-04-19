@@ -16,6 +16,7 @@ import java.io.Reader;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,7 +62,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	private String databaseType = null;
 	private boolean fresh = true;
 	private boolean done = false;
-	
+
 	public UpgradeServiceImpl() {
 		manager = new ScriptEngineManager();
 	}
@@ -70,12 +71,12 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	public void registerListener(UpgradeServiceListener listener) {
 		listeners.add(listener);
 	}
-	
+
 	@Autowired
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
-	
+
 	public void setApplicationContext(ApplicationContext springContext) throws BeansException {
 		this.springContext = springContext;
 	}
@@ -85,14 +86,14 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	}
 
 	public final void setScripts(Resource[] scripts) {
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			log.info("Have upgrade scripts " + Arrays.asList(scripts));
 		}
 		this.scripts = scripts;
 	}
-	
+
 	public String getDatabaseType() {
-		if(databaseType!=null) {
+		if (databaseType != null) {
 			return databaseType;
 		}
 		try {
@@ -102,28 +103,28 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 				public void execute(Connection connection) throws SQLException {
 					DatabaseMetaData metaData = connection.getMetaData();
 					databaseType = metaData.getDatabaseProductName();
-					if(databaseType.equals("Apache Derby")) {
+					if (databaseType.equals("Apache Derby")) {
 						databaseType = "derby";
-					} else if(databaseType.equals("MySQL")) {
+					} else if (databaseType.equals("MySQL")) {
 						databaseType = "mysql";
-					} else if(databaseType.equals("PostgreSQL")) {
+					} else if (databaseType.equals("PostgreSQL")) {
 						databaseType = "postgres";
-					} else if(databaseType.equals("Microsoft SQL Server")) {
+					} else if (databaseType.equals("Microsoft SQL Server")) {
 						databaseType = "mssql";
-					} else if(databaseType.equals("H2")) {
+					} else if (databaseType.equals("H2")) {
 						databaseType = "mysql";
 					} else {
 						log.info(databaseType + " is not a supported database type");
 						databaseType = "unknown";
 					}
 				}
-				
+
 			});
-			
+
 			return databaseType;
 		} catch (HibernateException e) {
 			log.error("Could not determine database type", e);
-		} 
+		}
 		return "unknown";
 	}
 
@@ -132,7 +133,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	}
 
 	public void upgrade(TransactionTemplate txnTemplate) {
-		
+
 		try {
 			txnTemplate.execute(new TransactionCallback<Object>() {
 				public Object doInTransaction(TransactionStatus status) {
@@ -141,12 +142,11 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 						if (log.isInfoEnabled()) {
 							log.info("Starting upgrade");
 						}
-						
-						fresh = sessionFactory.getCurrentSession()
-								.createCriteria(Upgrade.class).list().size() == 0;
-						
-						if(log.isInfoEnabled()) {
-							if(fresh) {
+
+						fresh = sessionFactory.getCurrentSession().createCriteria(Upgrade.class).list().size() == 0;
+
+						if (log.isInfoEnabled()) {
+							if (fresh) {
 								log.info("Database is fresh");
 							} else {
 								log.info("Upgrading existing database");
@@ -154,7 +154,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 						}
 						List<UpgradeOp> ops = buildUpgradeOps();
 						Map<String, Object> beans = new HashMap<String, Object>();
-						
+
 						// Do all the SQL upgrades first
 						doOps(ops, beans, "sql", getDatabaseType());
 
@@ -163,11 +163,12 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 						if (log.isInfoEnabled()) {
 							log.info("Finished upgrade");
 						}
+						sessionFactory.getCurrentSession().flush();
+						sessionFactory.getCurrentSession().clear();
 
-						for(UpgradeServiceListener listener : listeners) {
+						for (UpgradeServiceListener listener : listeners) {
 							listener.onUpgradeFinished();
 						}
-
 					} catch (Throwable e) {
 						log.error("Failed to upgrade", e);
 						throw new IllegalStateException("Errors upgrading database");
@@ -179,25 +180,25 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			throw new IllegalStateException(e.getMessage(), e);
 		}
 
-
 		if (log.isInfoEnabled()) {
 			log.info("Completed upgrade");
 		}
-			
-		for(UpgradeServiceListener listener : listeners) {
+
+		for (UpgradeServiceListener listener : listeners) {
 			listener.onUpgradeComplete();
 		}
-		
+
 		done = true;
-	
+
 	}
-	
+
 	@Override
 	public boolean isDone() {
 		return done;
 	}
 
-	protected void doOps(List<UpgradeOp> ops, Map<String, Object> beans, String... languages) throws ScriptException, IOException {
+	protected void doOps(List<UpgradeOp> ops, Map<String, Object> beans, String... languages)
+			throws ScriptException, IOException {
 		List<String> l = Arrays.asList(languages);
 		for (UpgradeOp op : ops) {
 			if (l.contains(op.getLanguage())) {
@@ -213,20 +214,21 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 				// If version for the script found is greater than the current
 				// version then run the script
 				if (op.getVersion().compareTo(currentVersion) > 0) {
-					if(log.isInfoEnabled()) {
-						log.info("Module " + op.getModule() + "/" + op.getLanguage() + " is currently at version " + currentVersion
-							+ ". Running the script " + op.getUrl() + " will take the module to version " + op.getVersion());
+					if (log.isInfoEnabled()) {
+						log.info("Module " + op.getModule() + "/" + op.getLanguage() + " is currently at version "
+								+ currentVersion + ". Running the script " + op.getUrl()
+								+ " will take the module to version " + op.getVersion());
 					}
 					executeScript(beans, op.getUrl());
-					if(log.isInfoEnabled()) {
+					if (log.isInfoEnabled()) {
 						log.info("Module " + op.getModule() + "/" + op.getLanguage() + " is now at " + op.getVersion());
 					}
 					upgrade.setVersion(op.getVersion().toString());
 					sessionFactory.getCurrentSession().saveOrUpdate(upgrade);
 				} else {
-					if(log.isInfoEnabled()) {
-						log.info("Module " + op.getModule() + "/" + op.getLanguage() + " is at version " + currentVersion
-							+ ", no need to run script for " + op.getVersion());
+					if (log.isInfoEnabled()) {
+						log.info("Module " + op.getModule() + "/" + op.getLanguage() + " is at version "
+								+ currentVersion + ", no need to run script for " + op.getVersion());
 					}
 				}
 			}
@@ -243,15 +245,15 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			URL url = script.getURL();
 
 			url.getFile();
-			
+
 			String name = url.getPath();
 			int idx;
-			if((idx = name.lastIndexOf("/")) > -1) {
-				name = name.substring(idx+1);
+			if ((idx = name.lastIndexOf("/")) > -1) {
+				name = name.substring(idx + 1);
 			}
-			
+
 			// Skip if this looks like an inner class
-			if(name.indexOf('$') != -1)
+			if (name.indexOf('$') != -1)
 				continue;
 
 			// Java identifiers (i.e. .java upgrade 'scripts') may only contain
@@ -271,10 +273,10 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 	}
 
 	private void executeScript(Map<String, Object> beans, URL script) throws ScriptException, IOException {
-		if(log.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			log.info("Executing script " + script);
 		}
-		
+
 		if (script.getPath().endsWith(".js")) {
 			ScriptContext context = new SimpleScriptContext();
 			ScriptEngine engine = buildEngine(beans, script, context);
@@ -296,7 +298,8 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			path = path.substring(0, idx).replace("/", ".");
 			try {
 				@SuppressWarnings("unchecked")
-				Class<? extends Runnable> clazz = (Class<? extends Runnable>) getClass().getClassLoader().loadClass(path);
+				Class<? extends Runnable> clazz = (Class<? extends Runnable>) getClass().getClassLoader()
+						.loadClass(path);
 				Runnable r = clazz.newInstance();
 				springContext.getAutowireCapableBeanFactory().autowireBean(r);
 				r.run();
@@ -312,50 +315,42 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 				boolean ignoreErrors = false;
 				while ((line = r.readLine()) != null) {
 					line = line.trim();
-					if(line.startsWith("EXIT IF FRESH")) {
-						if(isFreshInstall()) {
+					if (line.toUpperCase().startsWith("EXIT IF FRESH")) {
+						if (isFreshInstall()) {
 							break;
 						}
 						continue;
-					} 
-					if(line.startsWith("TRY")) {
+					}
+					if (line.toUpperCase().startsWith("TRY")) {
 						ignoreErrors = true;
 						continue;
 					}
-					if(line.startsWith("CATCH")) {
+					if (line.toUpperCase().startsWith("CATCH")) {
 						ignoreErrors = false;
 						continue;
 					}
-					
-					if(!line.startsWith("/*") && !line.startsWith("//")) {
-						if(line.endsWith(";")) {
-							line = line.substring(0, line.length()-1);
+
+					if (!line.startsWith("/*") && !line.startsWith("//")) {
+						if (line.endsWith(";")) {
+							line = line.substring(0, line.length() - 1);
 							statement += line;
-							try {
-								log.info("SQL: " + statement);
-								sessionFactory.getCurrentSession().createSQLQuery(statement).executeUpdate();
-							} catch (Throwable e) {
-								if(!ignoreErrors) {
-									throw e;
-								}
-							} 
+
+							executeStatement(statement, ignoreErrors);
 							statement = "";
 						} else {
 							statement += line + "\n";
 						}
-					} 
+					}
 				}
-				
-				if(StringUtils.isNotBlank(statement)) {
-					try {
-						log.info("SQL: " + statement);
-						sessionFactory.getCurrentSession().createSQLQuery(statement).executeUpdate();
-					} catch (Throwable e) {
-						if(!ignoreErrors) {
-							throw e;
-						}
-					} 
+
+				if (StringUtils.isNotBlank(statement)) {
+					executeStatement(statement, ignoreErrors);
 				}
+			} catch (Exception e) {
+				if(e instanceof IOException)
+					throw (IOException)e;
+				else
+					throw new IOException("Failed upgrade.", e);
 			} finally {
 				r.close();
 			}
@@ -363,13 +358,47 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 
 	}
 
+	public void executeStatement(String statement, boolean ignoreErrors) throws Exception {
+		statement = statement.trim();
+		if (statement.toUpperCase().startsWith("DROP ALL FOREIGN KEYS FOR ")) {
+			String tableName = statement.substring(26).trim();
+			List<String> queries = new ArrayList<>();
+			sessionFactory.getCurrentSession().doWork((c) -> {
+				DatabaseMetaData dm = c.getMetaData();
+				ResultSet rs = dm.getImportedKeys(null, null, tableName);
+				while (rs.next()) {
+					queries.add(String.format("ALTER TABLE %s DROP FOREIGN KEY %s", tableName, rs.getString("FK_NAME")));
+				}
+			});
+			for (String q : queries) {
+				try {
+					log.info("SQL: " + q);
+					sessionFactory.getCurrentSession().createSQLQuery(q).executeUpdate();
+				} catch (Exception e) {
+					if (!ignoreErrors) {
+						throw e;
+					}
+				}
+			}
+		} else {
+			try {
+				log.info("SQL: " + statement);
+				sessionFactory.getCurrentSession().createSQLQuery(statement).executeUpdate();
+			} catch (Exception e) {
+				if (!ignoreErrors) {
+					throw e;
+				}
+			}
+		}
+	}
+
 	@Override
 	public boolean isFreshInstall() {
 		return fresh;
 	}
-	
-	private ScriptEngine buildEngine(Map<String, Object> beans, URL script, ScriptContext context) throws ScriptException,
-			IOException {
+
+	private ScriptEngine buildEngine(Map<String, Object> beans, URL script, ScriptContext context)
+			throws ScriptException, IOException {
 		// Create a new scope for the beans
 		Bindings engineScope = context.getBindings(ScriptContext.ENGINE_SCOPE);
 		for (String key : beans.keySet()) {
@@ -380,11 +409,11 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 		// Execute the script
 		String name = script.getPath();
 		int idx;
-		if((idx = name.indexOf("/")) > -1) {
-			name = name.substring(idx+1);
+		if ((idx = name.indexOf("/")) > -1) {
+			name = name.substring(idx + 1);
 		}
-		if((idx=name.lastIndexOf(".")) > -1) {
-			name = name.substring(idx+1);
+		if ((idx = name.lastIndexOf(".")) > -1) {
+			name = name.substring(idx + 1);
 		}
 		ScriptEngine engine = manager.getEngineByExtension(name);
 		if (engine == null) {

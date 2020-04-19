@@ -17,9 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
+import com.hypersocket.tasks.Task;
 import com.hypersocket.tasks.TaskProvider;
 
 @Repository
@@ -136,5 +138,13 @@ public class TriggerResourceRepositoryImpl extends
 				criteria.add(Restrictions.eq("event", resourceKey));
 			}
 		});
+	}
+
+	@Override
+	public void deleteRealm(Realm realm) {
+		super.deleteRealm(realm);
+		
+		/* The parent task may have been orphaned, so explictly delete those too */
+		deleteResourcesOfClassFromRealm(realm, Task.class);
 	}
 }

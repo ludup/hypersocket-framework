@@ -30,6 +30,8 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.permissions.Role;
@@ -42,9 +44,12 @@ public abstract class Principal extends RealmResource {
 	private static final long serialVersionUID = -2289438956153713201L;
 	
 	@ManyToMany(fetch = FetchType.LAZY)
-	@Cascade({ CascadeType.SAVE_UPDATE, CascadeType.MERGE })
+	@Cascade({ CascadeType.SAVE_UPDATE, CascadeType.MERGE, CascadeType.DELETE_ORPHAN })
 	@JoinTable(name = "role_principals", joinColumns = { @JoinColumn(name = "principal_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
 	@Fetch(FetchMode.SELECT)
+	/* @OnDelete(action = OnDeleteAction.CASCADE) 
+	 * https://hibernate.atlassian.net/browse/HHH-5875
+	 * Have added constraints via Db script anyway */
 	private Set<Role> roles = new HashSet<Role>();
 	
 	@Fetch(FetchMode.SELECT)
@@ -52,12 +57,13 @@ public abstract class Principal extends RealmResource {
 	private Set<PrincipalSuspension> suspensions;
 	
 	@Fetch(FetchMode.SELECT)
-	@OneToMany(fetch = FetchType.LAZY)
+	@OneToMany(orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinTable(name="principal_links", joinColumns = { @JoinColumn(name = "principals_resource_id") }, inverseJoinColumns = { @JoinColumn(name = "linkedPrincipals_resource_id") })
 	private Set<Principal> linkedPrincipals;
 	
 	@ManyToOne
 	@JoinColumn(name="parent_principal")
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Principal parentPrincipal;
 
 	@Column(name="principal_type")

@@ -133,4 +133,7 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	void executeInSystemContext(Runnable r, Realm currentRealm);
 	
 	void executeInSystemContext(Runnable r, Realm currentRealm, Principal principal);
+	
+	void cleanUp() throws AccessDeniedException;
 }
+
