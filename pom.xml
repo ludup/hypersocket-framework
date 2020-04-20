@@ -109,12 +109,6 @@
 							<goal>jar-no-fork</goal>
 						</goals>
 					</execution>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
 				</executions>
 			</plugin>
 			<plugin>
