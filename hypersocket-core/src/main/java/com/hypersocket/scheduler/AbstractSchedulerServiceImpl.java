@@ -592,6 +592,8 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 				} else {
 					try {
 						Realm realm = realmService.getRealmById(realmId);
+						if(realm == null)
+							throw new Exception("No realm");
 						if (realmCache != null)
 							realmCache.put(realmId, realm);
 						sr.setRealm(realm.getName());
