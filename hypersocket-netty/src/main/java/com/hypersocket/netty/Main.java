@@ -18,6 +18,7 @@ import java.util.prefs.Preferences;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.PropertyConfigurator;
+import org.hibernate.SessionFactory;
 import org.jboss.netty.logging.InternalLoggerFactory;
 import org.jboss.netty.logging.Slf4JLoggerFactory;
 import org.slf4j.Logger;
@@ -281,8 +282,7 @@ public class Main {
 		}
 
 		UpgradeService upgradeService = (UpgradeService) applicationContext.getBean("upgradeService");
-
-		upgradeService.upgrade(txnTemplate);
+		upgradeService.upgrade((SessionFactory) applicationContext.getBean("sessionFactory"), txnTemplate);
 
 	}
 

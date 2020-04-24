@@ -4,58 +4,80 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
-@Table(name="email_batch_items")
+@Table(name = "email_batch_items")
 public class EmailBatchItem extends RealmResource {
 
 	private static final long serialVersionUID = 7712547601212721547L;
 
-	@Column(name="subject", length=1024)
+	@Column(name = "subject", length = 1024)
 	private String subject;
-	
-	@Column(name="text")
+
+	@Column(name = "text")
 	@Lob
 	private String text;
 
-	@Column(name="html")
+	@Column(name = "html")
 	@Lob
 	private String html;
-	
-	@Column(name="reply_name")
+
+	@Column(name = "reply_name")
 	private String replyToName;
-	
-	@Column(name="reply_email")
+
+	@Column(name = "reply_email")
 	private String replyToEmail;
-	
-	@Column(name="to_name")
+
+	@Column(name = "to_name")
 	private String toName;
-	
-	@Column(name="to_email")
+
+	@Column(name = "to_email")
 	private String toEmail;
-	
-	@Column(name="track")
+
+	@Column(name = "track")
 	private boolean track;
-	
-	@Column(name="archive")
+
+	@Column(name = "archive")
 	private Boolean archive = Boolean.FALSE;
-	
-	@Column(name="attachments")
+
+	@Column(name = "attachments")
 	@Lob
 	private String attachments;
-	
+
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date schedule;
-	
-	@Column(name="context")
+
+	@Column(name = "context")
 	private String context;
-	
+
+	@ManyToOne
+	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "email_batch_items_cascade_1"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	protected Realm realm;
+
+	@Override
+	protected Realm doGetRealm() {
+		return realm;
+	}
+
+	@Override
+	public void setRealm(Realm realm) {
+		this.realm = realm;
+	}
+
 	public String getContext() {
 		return context;
 	}
@@ -147,7 +169,7 @@ public class EmailBatchItem extends RealmResource {
 	public void setArchive(Boolean archive) {
 		this.archive = archive;
 	}
-	
+
 	public Boolean getArchive() {
 		return archive == null ? Boolean.FALSE : archive;
 	}

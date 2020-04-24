@@ -4,13 +4,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Arrays;
+import java.util.Objects;
 
 import javax.net.ssl.SSLSession;
 import javax.security.cert.X509Certificate;
 
 import org.bouncycastle.util.encoders.Base64;
 
-import com.google.common.base.Objects;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -85,11 +85,11 @@ public class X509KnownHost {
 	}
 	
 	public boolean matches(X509KnownHost h) {
-		return Arrays.equals(sig, h.sig) && Objects.equal(hostname, h.hostname) && Objects.equal(port, h.port);
+		return Arrays.equals(sig, h.sig) && Objects.equals(hostname, h.hostname) && Objects.equals(port, h.port);
 	}
 	
 	public boolean hostMatches(X509KnownHost h) {
-		return Objects.equal(hostname, h.hostname) && Objects.equal(port, h.port);
+		return Objects.equals(hostname, h.hostname) && Objects.equals(port, h.port);
 	}
 
 	public String getDetail() {

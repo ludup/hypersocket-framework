@@ -61,7 +61,7 @@
 				<prop key="hibernate.connection.characterEncoding">UTF-8</prop>
 				<prop key="hibernate.connection.charSet">UTF-8</prop>
 				<prop key="hibernate.jdbc.use_streams_for_binary">true</prop>
-				<!-- <prop key="hibernate.id.new_generator_mappings">false</prop> -->
+				<prop key="hibernate.id.new_generator_mappings">false</prop>
 				
 				<!-- https://hibernate.atlassian.net/browse/HHH-9106 -->
 				<prop key="hibernate.event.merge.entity_copy_observer">allow</prop>

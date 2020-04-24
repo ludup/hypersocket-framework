@@ -2,73 +2,93 @@ package com.hypersocket.message;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.hypersocket.html.HtmlTemplateResource;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
-@Table(name="message_resource", uniqueConstraints = @UniqueConstraint(columnNames = {"resource_key", "realm_id"}))
+@Table(name = "message_resource", uniqueConstraints = @UniqueConstraint(columnNames = { "resource_key", "realm_id" }))
 public class MessageResource extends RealmResource {
 
 	private static final long serialVersionUID = -5676595715637581705L;
 
-	@Column(name="resource_key", nullable=true)
+	@Column(name = "resource_key", nullable = true)
 	private String resourceKey;
-	
-	@Column(name="subject", length=1024)
+
+	@Column(name = "subject", length = 1024)
 	private String subject;
-	
-	@Column(name="body")
+
+	@Column(name = "body")
 	@Lob
 	private String body;
-	
-	@Column(name="html")
+
+	@Column(name = "html")
 	@Lob
 	private String html;
-	
-	@Column(name="enabled")
+
+	@Column(name = "enabled")
 	private Boolean enabled;
-	
-	@Column(name="track")
+
+	@Column(name = "track")
 	private Boolean track;
-	
-	@Column(name="system_only")
+
+	@Column(name = "system_only")
 	private Boolean systemOnly;
-	
-	@Column(name="use_template")
+
+	@Column(name = "use_template")
 	private Boolean useTemplate;
-	
-	@Column(name="attachments", length=1024)
+
+	@Column(name = "attachments", length = 1024)
 	private String attachments;
-	
-	@Column(name="deliver_strategy")
+
+	@Column(name = "deliver_strategy")
 	private EmailDeliveryStrategy deliveryStrategy;
-	
-	@Column(name="additional", length=1024)
+
+	@Column(name = "additional", length = 1024)
 	private String additionalTo;
-	
-	@Column(name="reply_name", length=1024)
+
+	@Column(name = "reply_name", length = 1024)
 	private String replyToName;
-	
-	@Column(name="reply_email", length=1024)
+
+	@Column(name = "reply_email", length = 1024)
 	private String replyToEmail;
 
-	@Column(name="variables")
+	@Column(name = "variables")
 	@Lob
 	private String supportedVariables;
 
 	@ManyToOne
-	@JoinColumn(name="html_template")
+	@JoinColumn(name = "html_template")
 	private HtmlTemplateResource htmlTemplate;
-	
-	@Column(name="archive")
+
+	@Column(name = "archive")
 	private Boolean archive;
-	
+
+	@ManyToOne
+	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "message_resource_cascade_1"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	protected Realm realm;
+
+	@Override
+	protected Realm doGetRealm() {
+		return realm;
+	}
+
+	@Override
+	public void setRealm(Realm realm) {
+		this.realm = realm;
+	}
+
 	public String getSubject() {
 		return subject;
 	}
@@ -150,13 +170,13 @@ public class MessageResource extends RealmResource {
 	}
 
 	public EmailDeliveryStrategy getDeliveryStrategy() {
-		return deliveryStrategy==null ? EmailDeliveryStrategy.PRIMARY : deliveryStrategy;
+		return deliveryStrategy == null ? EmailDeliveryStrategy.PRIMARY : deliveryStrategy;
 	}
 
 	public void setDeliveryStrategy(EmailDeliveryStrategy deliveryStrategy) {
 		this.deliveryStrategy = deliveryStrategy;
 	}
-	
+
 	public String getResourceKey() {
 		return resourceKey;
 	}
@@ -180,6 +200,5 @@ public class MessageResource extends RealmResource {
 	public void setArchive(Boolean archive) {
 		this.archive = archive;
 	}
-	
-	
+
 }

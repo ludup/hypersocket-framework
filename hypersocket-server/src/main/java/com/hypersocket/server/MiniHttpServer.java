@@ -152,7 +152,8 @@ public class MiniHttpServer extends Thread implements Closeable {
 			
 			SSLContext sc = null;
 			try {
-				Security.addProvider(new BouncyCastleProvider());
+				if("true".equals(System.getProperty("hypersocket.bc", "true")))
+					Security.addProvider(new BouncyCastleProvider());
 				KeyStore ks = null;
 				KeyManagerFactory kmf = null;
 

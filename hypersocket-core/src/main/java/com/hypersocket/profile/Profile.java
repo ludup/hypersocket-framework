@@ -7,13 +7,17 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -30,7 +34,9 @@ public class Profile extends AbstractEntity<Long>{
 	@Column(name="principal_id")
 	private Long id;
 	
-	@OneToOne
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "realm_resource_id", foreignKey = @ForeignKey(name = "profiles_cascade_1"))
+	@ManyToOne
 	private Realm realm;
 	
 	@OneToMany(orphanRemoval=true, fetch=FetchType.EAGER, cascade=CascadeType.ALL)

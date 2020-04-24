@@ -6,11 +6,18 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.hypersocket.certificates.CertificateResource;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.server.interfaces.InterfaceResource;
 
 @Entity
@@ -33,6 +40,21 @@ public class HTTPInterfaceResource extends InterfaceResource {
 
 	@ManyToMany(fetch=FetchType.EAGER)
 	private Set<CertificateResource> additionalCertificates = new HashSet<CertificateResource>();
+
+	@ManyToOne
+	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "http_interfaces_cascade_1"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	protected Realm realm;
+
+	@Override
+	protected Realm doGetRealm() {
+		return realm;
+	}
+
+	@Override
+	public void setRealm(Realm realm) {
+		this.realm = realm;
+	}
 	
 	public HTTPProtocol getProtocol() {
 		return protocol;

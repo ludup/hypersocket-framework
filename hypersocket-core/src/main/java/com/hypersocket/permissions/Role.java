@@ -15,15 +15,19 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Principal;
@@ -32,57 +36,72 @@ import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name = "roles")
-@XmlRootElement(name="role")
+@XmlRootElement(name = "role")
 public class Role extends RealmResource {
 
 	private static final long serialVersionUID = -9007753723140808832L;
 
-	@ManyToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
 //	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
-	@JoinTable(name = "role_permissions", 
-		joinColumns = {@JoinColumn(name="role_id")}, 
-		inverseJoinColumns = {@JoinColumn(name="permission_id")})
+	@JoinTable(name = "role_permissions", joinColumns = { @JoinColumn(name = "role_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "permission_id") })
 	private Set<Permission> permissions = new HashSet<>();
 
-	@ManyToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
 //	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
-	@JoinTable(name = "role_principals", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
+	@JoinTable(name = "role_principals", joinColumns = { @JoinColumn(name = "role_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "principal_id") })
 	private Set<Principal> principals = new HashSet<>();
-	
-	@ManyToMany(fetch=FetchType.EAGER)
+
+	@ManyToMany(fetch = FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
-	@JoinTable(name = "role_realms", joinColumns={@JoinColumn(name="role_id")}, inverseJoinColumns={@JoinColumn(name="principal_id")})
+	@JoinTable(name = "role_realms", joinColumns = { @JoinColumn(name = "role_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "principal_id") })
 	private Set<Realm> realms = new HashSet<>();
-	
-	@Column(name="all_users", nullable=false)
+
+	@Column(name = "all_users", nullable = false)
 	private boolean allUsers;
-	
-	@Column(name="all_permissions", nullable=false)
+
+	@Column(name = "all_permissions", nullable = false)
 	private boolean allPermissions;
 
-	@Column(name="all_realms", nullable=false)
+	@Column(name = "all_realms", nullable = false)
 	private Boolean allRealms = Boolean.FALSE;
-	
-	@Column(name="personal_role", nullable=true)
+
+	@Column(name = "personal_role", nullable = true)
 	private Boolean personalRole = new Boolean(false);
-	
-	@Column(name="role_type")
+
+	@Column(name = "role_type")
 	private RoleType type;
-	
-	@Column(name="principal_name")
+
+	@Column(name = "principal_name")
 	private String principalName;
-	
+	@ManyToOne
+	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "roles_cascade_1"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	protected Realm realm;
+
+	@Override
+	protected Realm doGetRealm() {
+		return realm;
+	}
+
+	@Override
+	public void setRealm(Realm realm) {
+		this.realm = realm;
+	}
+
 	@JsonIgnore
 	public Set<Permission> getPermissions() {
 		return permissions;
 	}
-	
+
 	public void setPermissions(Set<Permission> permissions) {
 		this.permissions = permissions;
-	}	
-	
+	}
+
 	@JsonIgnore
 	public Set<Principal> getPrincipals() {
 		return principals;
@@ -91,19 +110,19 @@ public class Role extends RealmResource {
 	public void setPrincipals(Set<Principal> principals) {
 		this.principals = principals;
 	}
-	
+
 	public boolean isAllUsers() {
 		return allUsers;
 	}
-	
+
 	public void setAllUsers(boolean allUsers) {
 		this.allUsers = allUsers;
 	}
-	
+
 	public boolean isPersonalRole() {
-		return personalRole!=null && personalRole.booleanValue();
+		return personalRole != null && personalRole.booleanValue();
 	}
-	
+
 	public boolean isAllPermissions() {
 		return allPermissions;
 	}
@@ -133,21 +152,21 @@ public class Role extends RealmResource {
 	}
 
 	public String getPrincipalName() {
-		return principalName == null ? 
-				isPersonalRole() ? StringUtils.substringAfter(getName(), "/") : getName()
-			   : principalName;
+		return principalName == null ? isPersonalRole() ? StringUtils.substringAfter(getName(), "/") : getName()
+				: principalName;
 	}
 
 	public void setPrincipalName(String principalName) {
 		this.principalName = principalName;
 	}
-	
+
 	@JsonIgnore
 	public Set<Realm> getPermissionRealms() {
 		/**
-		 * Protection against a role having no realms. Default it to the roles own realm.
+		 * Protection against a role having no realms. Default it to the roles own
+		 * realm.
 		 */
-		if(Objects.isNull(realms) || realms.isEmpty()) {
+		if (Objects.isNull(realms) || realms.isEmpty()) {
 			return new HashSet<Realm>(Arrays.asList(getRealm()));
 		}
 		return realms;

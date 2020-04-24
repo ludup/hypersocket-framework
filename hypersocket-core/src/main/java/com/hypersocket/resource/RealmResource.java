@@ -1,13 +1,9 @@
 package com.hypersocket.resource;
 
-import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.OneToOne;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Realm;
@@ -16,23 +12,19 @@ import com.hypersocket.realm.Realm;
 public abstract class RealmResource extends Resource {
 
 	private static final long serialVersionUID = 7483847758596964348L;
-
-	@OneToOne
-	@JoinColumn(name="realm_id")
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	protected Realm realm;
 	
 	@JsonIgnore
 	public Realm getRealm() {
-		return realm;
+		return doGetRealm();
 	}
+	
+	protected abstract Realm doGetRealm();
 
-	public void setRealm(Realm realm) {
-		this.realm = realm;
-	}
+	public abstract void setRealm(Realm realm);
 	
 	protected void doHashCodeOnKeys(HashCodeBuilder builder) {
 		super.doHashCodeOnKeys(builder);
+		Realm realm = getRealm();
 		builder.append(realm==null ? -1 : realm.getId());
 	}
 	

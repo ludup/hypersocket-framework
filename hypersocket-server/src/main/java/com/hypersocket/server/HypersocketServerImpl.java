@@ -125,7 +125,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	private HypersocketServletContext servletContext;
 	
 	public HypersocketServerImpl() {
-		Security.addProvider(new BouncyCastleProvider());
+		if("true".equals(System.getProperty("hypersocket.bc", "true")))
+			Security.addProvider(new BouncyCastleProvider());
 		
 
 		/* The context is the whole 'webapp'. It's path is the base path, i.e. /product-name */

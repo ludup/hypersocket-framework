@@ -4,65 +4,86 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
-@Table(name="ssl_certificates")
+@Table(name = "ssl_certificates")
 public class CertificateResource extends RealmResource {
 
 	private static final long serialVersionUID = 2494558616152991393L;
 
-	@Column(name="type")
+	@Column(name = "type")
 	private CertificateType type;
-	
-	@Column(name="cn")
+
+	@Column(name = "cn")
 	private String commonName;
-	
-	@Column(name="ou")
+
+	@Column(name = "ou")
 	private String organizationalUnit;
-	
-	@Column(name="o")
+
+	@Column(name = "o")
 	private String organization;
-	
-	@Column(name="l")
+
+	@Column(name = "l")
 	private String location;
-	
-	@Column(name="s")
+
+	@Column(name = "s")
 	private String state;
-	
-	@Column(name="c")
+
+	@Column(name = "c")
 	private String country;
 
-	@Column(name="private_key", nullable=false)
+	@Column(name = "private_key", nullable = false)
 	@Lob
 	private String privateKey;
-	
-	@Column(name="certificate", nullable=true)
+
+	@Column(name = "certificate", nullable = true)
 	@Lob
 	private String certificate;
-	
-	@Column(name="bundle", nullable=true)
+
+	@Column(name = "bundle", nullable = true)
 	@Lob
 	private String bundle;
-	
-	@Column(name="signature_type")
+
+	@Column(name = "signature_type")
 	private String signatureAlgorithm;
-	
-	@Column(name="provider")
+
+	@Column(name = "provider")
 	private String provider;
-	
+
 	@Temporal(TemporalType.DATE)
 	private Date expiryDate;
-	
+
 	@Temporal(TemporalType.DATE)
 	private Date issueDate;
-	
+	@ManyToOne
+	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "ssl_certificates_cascade_1"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	protected Realm realm;
+
+	@Override
+	protected Realm doGetRealm() {
+		return realm;
+	}
+
+	@Override
+	public void setRealm(Realm realm) {
+		this.realm = realm;
+	}
+
 	public String getProvider() {
 		return provider;
 	}
@@ -183,5 +204,5 @@ public class CertificateResource extends RealmResource {
 	public void setIssueDate(Date issueDate) {
 		this.issueDate = issueDate;
 	}
-	
+
 }

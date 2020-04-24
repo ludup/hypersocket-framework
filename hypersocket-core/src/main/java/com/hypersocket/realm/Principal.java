@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -42,56 +43,71 @@ import com.hypersocket.resource.RealmResource;
 public abstract class Principal extends RealmResource {
 
 	private static final long serialVersionUID = -2289438956153713201L;
-	
+
 	@ManyToMany(fetch = FetchType.LAZY)
 	@Cascade({ CascadeType.SAVE_UPDATE, CascadeType.MERGE, CascadeType.DELETE_ORPHAN })
-	@JoinTable(name = "role_principals", joinColumns = { @JoinColumn(name = "principal_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
+	@JoinTable(name = "role_principals", joinColumns = { @JoinColumn(name = "principal_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "role_id") })
 	@Fetch(FetchMode.SELECT)
-	/* @OnDelete(action = OnDeleteAction.CASCADE) 
-	 * https://hibernate.atlassian.net/browse/HHH-5875
-	 * Have added constraints via Db script anyway */
+	/*
+	 * @OnDelete(action = OnDeleteAction.CASCADE)
+	 * https://hibernate.atlassian.net/browse/HHH-5875 Have added constraints via Db
+	 * script anyway
+	 */
 	private Set<Role> roles = new HashSet<Role>();
-	
+
 	@Fetch(FetchMode.SELECT)
-	@OneToMany(fetch = FetchType.EAGER, mappedBy="principal")
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "principal")
 	private Set<PrincipalSuspension> suspensions;
-	
+
 	@Fetch(FetchMode.SELECT)
 	@OneToMany(orphanRemoval = true, fetch = FetchType.LAZY)
-	@JoinTable(name="principal_links", joinColumns = { @JoinColumn(name = "principals_resource_id") }, inverseJoinColumns = { @JoinColumn(name = "linkedPrincipals_resource_id") })
+	@JoinTable(name = "principal_links", joinColumns = {
+			@JoinColumn(name = "principals_resource_id") }, inverseJoinColumns = {
+					@JoinColumn(name = "linkedPrincipals_resource_id") })
 	private Set<Principal> linkedPrincipals;
-	
+
 	@ManyToOne
-	@JoinColumn(name="parent_principal")
+	@JoinColumn(name = "parent_principal", foreignKey = @ForeignKey(name = "principals_cascade_2"))
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Principal parentPrincipal;
 
-	@Column(name="principal_type")
+	@Column(name = "principal_type")
 	private PrincipalType principalType = getType();
-	
-	@Column(name="primary_email")
+
+	@Column(name = "primary_email")
 	private String primaryEmail;
-	
-	@Column(name="ou", length=1024)
+
+	@Column(name = "ou", length = 1024)
 	private String organizationalUnit;
-	
+
 	public Long getId() {
 		return super.getId();
 	}
-	
-	@JsonIgnore
-	public Realm getRealm() {
-		return super.getRealm();
+
+	@ManyToOne
+	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "principals_cascade_1"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	protected Realm realm;
+
+	@Override
+	protected Realm doGetRealm() {
+		return realm;
 	}
-	
+
+	@Override
+	public void setRealm(Realm realm) {
+		this.realm = realm;
+	}
+
 	public String getRealmName() {
 		return super.getRealm().getName();
 	}
-	
+
 	public String getPrimaryEmail() {
 		return primaryEmail;
 	}
-	
+
 	public String getPrincipalDescription() {
 		return StringUtils.defaultString(getDescription(), getPrincipalName());
 	}
@@ -99,19 +115,19 @@ public abstract class Principal extends RealmResource {
 	public void setPrimaryEmail(String primaryEmail) {
 		this.primaryEmail = primaryEmail;
 	}
-	
+
 	public abstract String getEmail();
-	
+
 	public abstract Date getExpires();
-	
+
 	public abstract PrincipalStatus getPrincipalStatus();
-	
+
 	public boolean isLocallyDeleted() {
 		return false;
 	}
-	
+
 	public boolean isPrimaryAccount() {
-		return super.getRealm().getOwner()==null;
+		return super.getRealm().getOwner() == null;
 	}
 
 	@Transient
@@ -120,22 +136,22 @@ public abstract class Principal extends RealmResource {
 	public final PrincipalType getPrincipalType() {
 		return principalType;
 	}
-	
+
 	public void setPrincipalType(PrincipalType type) {
 		this.principalType = type;
 	}
 
 	public abstract String getDescription();
-	
+
 	@XmlElement(name = "principalName")
 	public String getPrincipalName() {
 		return getName();
 	}
-	
+
 	public boolean isLinked() {
-		return parentPrincipal!=null;
+		return parentPrincipal != null;
 	}
-	
+
 	@JsonIgnore
 	public Set<PrincipalSuspension> getSuspensions() {
 		return suspensions;
@@ -145,7 +161,7 @@ public abstract class Principal extends RealmResource {
 		builder.append(getRealm());
 		builder.append(getName());
 	}
-	
+
 	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
 		Principal r = (Principal) obj;
 		builder.append(getRealm(), r.getRealm());
@@ -153,16 +169,16 @@ public abstract class Principal extends RealmResource {
 	}
 
 	public boolean isSuspended() {
-		if(suspensions!=null) {
-			for(PrincipalSuspension s : suspensions) {
-				if(s.isActive()) {
+		if (suspensions != null) {
+			for (PrincipalSuspension s : suspensions) {
+				if (s.isActive()) {
 					return true;
 				}
 			}
 		}
 		return false;
 	}
-	
+
 	@JsonIgnore
 	public Set<Principal> getLinkedPrincipals() {
 		return linkedPrincipals;
@@ -179,7 +195,7 @@ public abstract class Principal extends RealmResource {
 	public void setParentPrincipal(Principal parentPrincipal) {
 		this.parentPrincipal = parentPrincipal;
 	}
-	
+
 	public String getOrganizationalUnit() {
 		return organizationalUnit;
 	}

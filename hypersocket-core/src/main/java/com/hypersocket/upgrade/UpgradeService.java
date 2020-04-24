@@ -9,6 +9,10 @@ package com.hypersocket.upgrade;
 
 import java.io.IOException;
 
+import javax.script.ScriptException;
+import javax.sql.DataSource;
+
+import org.hibernate.SessionFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -20,11 +24,13 @@ public interface UpgradeService {
     
     boolean hasUpgrades()  throws IOException;
     
-    void upgrade(TransactionTemplate txnTemplate);
+    void upgrade(SessionFactory sessionFactory, TransactionTemplate txnTemplate);
 
 	void registerListener(UpgradeServiceListener listener);
 
 	boolean isFreshInstall();
 
 	boolean isDone();
+
+	void preUpgrade(DataSource dataSource) throws IOException;
 }

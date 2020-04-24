@@ -6,17 +6,22 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.SessionFactory;
 import org.hibernate.cache.spi.RegionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBuilder;
 
 import com.hypersocket.cache.HypersocketCacheRegionFactoryServiceInitiator;
+import com.hypersocket.upgrade.UpgradeService;
 
 public class HypersocketAnnotationSessionFactoryBean extends
 		LocalSessionFactoryBean{
@@ -25,6 +30,15 @@ public class HypersocketAnnotationSessionFactoryBean extends
 	private DatabaseInformation databaseInformation;
 
 	static Logger log = LoggerFactory.getLogger(HypersocketAnnotationSessionFactoryBean.class);
+	
+//	@Autowired
+//	private UpgradeService upgradeService;
+	
+//	@Autowired
+//	private PlatformTransactionManager transactionManager;
+	
+	@Autowired
+	private ApplicationContext applicationContext;
 	
 	@Override
 	public void setPackagesToScan(String...packagesToScan) {
@@ -94,7 +108,12 @@ public class HypersocketAnnotationSessionFactoryBean extends
 				getHibernateProperties().put(key, Boolean.parseBoolean(ormOnStartUp));
 			}
 		}  
+
+		UpgradeService upgradeService = (UpgradeService) applicationContext.getBean("upgradeService");
 		getHibernateProperties().put("hibernate.cache.region.factory_class", regionFactory);
+		DataSource ds = (DataSource) applicationContext.getBean("dataSource");
+		upgradeService.preUpgrade(ds);
+
 		super.afterPropertiesSet();
 	}
 	

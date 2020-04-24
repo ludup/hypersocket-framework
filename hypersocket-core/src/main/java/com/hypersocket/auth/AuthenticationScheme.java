@@ -14,17 +14,22 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
@@ -38,45 +43,60 @@ public class AuthenticationScheme extends RealmResource {
 
 	@Column(name = "priority")
 	private Integer priority;
-	
-	@Column(name = "max_modules", nullable=true)
+
+	@Column(name = "max_modules", nullable = true)
 	private Integer maximumModules;
 
-	@Column(name = "type", nullable=true)
+	@Column(name = "type", nullable = true)
 	private AuthenticationModuleType type;
-	
+
 	@Column(name = "allowed_modules")
 	private String allowedModules;
-	
+
 	@Column(name = "last_button_resource_key")
 	private String lastButtonResourceKey;
-	
-	@ManyToMany(fetch=FetchType.EAGER, cascade = CascadeType.REMOVE)
+
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@Fetch(FetchMode.SELECT)
-	@JoinTable(name = "scheme_allowed_roles", joinColumns={@JoinColumn(name="resource_id")}, 
-			inverseJoinColumns={@JoinColumn(name="role_id")})
+	@JoinTable(name = "scheme_allowed_roles", joinColumns = {
+			@JoinColumn(name = "resource_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
 	private Set<Role> allowedRoles = new HashSet<Role>();
-	
-	@ManyToMany(fetch=FetchType.EAGER, cascade = CascadeType.REMOVE)
+
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@Fetch(FetchMode.SELECT)
-	@JoinTable(name = "scheme_denied_roles", joinColumns={@JoinColumn(name="resource_id")}, 
-			inverseJoinColumns={@JoinColumn(name="role_id")})
+	@JoinTable(name = "scheme_denied_roles", joinColumns = { @JoinColumn(name = "resource_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "role_id") })
 	private Set<Role> deniedRoles = new HashSet<Role>();
-	
-	@OneToMany(fetch=FetchType.LAZY, mappedBy="scheme", cascade = CascadeType.REMOVE) 
+
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "scheme", cascade = CascadeType.REMOVE)
 	@JsonIgnore
 	private Set<AuthenticationModule> modules;
-	
+
 	@Column
 	private String deniedRoleError;
-	
+
 	@Column
 	private Boolean supportsHomeRedirect;
-	
+
+	@ManyToOne
+	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "auth_schemes_cascade_1"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	protected Realm realm;
+
+	@Override
+	protected Realm doGetRealm() {
+		return realm;
+	}
+
+	@Override
+	public void setRealm(Realm realm) {
+		this.realm = realm;
+	}
+
 	public String getResourceKey() {
 		return resourceKey;
 	}
-	
+
 	public Set<AuthenticationModule> getModules() {
 		return modules;
 	}
@@ -98,7 +118,7 @@ public class AuthenticationScheme extends RealmResource {
 	}
 
 	public void setMaximumModules(Integer maximumModules) {
-		if(maximumModules==null) {
+		if (maximumModules == null) {
 			this.maximumModules = 10;
 		} else {
 			this.maximumModules = maximumModules;
@@ -106,11 +126,11 @@ public class AuthenticationScheme extends RealmResource {
 	}
 
 	public AuthenticationModuleType getType() {
-		return type==null ? AuthenticationModuleType.HTML : type;
+		return type == null ? AuthenticationModuleType.HTML : type;
 	}
 
 	public void setType(AuthenticationModuleType type) {
-		if(type==null) {
+		if (type == null) {
 			this.type = AuthenticationModuleType.HTML;
 		} else {
 			this.type = type;
@@ -120,7 +140,7 @@ public class AuthenticationScheme extends RealmResource {
 	public String getAllowedModules() {
 		return allowedModules;
 	}
-	
+
 	public void setAllowedModules(String allowedModules) {
 		this.allowedModules = allowedModules;
 	}
@@ -128,11 +148,11 @@ public class AuthenticationScheme extends RealmResource {
 	public String getLastButtonResourceKey() {
 		return lastButtonResourceKey == null ? "text.logon" : lastButtonResourceKey;
 	}
-	
+
 	public void setLastButtonResourceKey(String lastButtonResourceKey) {
 		this.lastButtonResourceKey = lastButtonResourceKey;
 	}
-	
+
 	@JsonIgnore
 	public Set<Role> getAllowedRoles() {
 		return allowedRoles;
@@ -153,12 +173,11 @@ public class AuthenticationScheme extends RealmResource {
 	}
 
 	public boolean supportsHomeRedirect() {
-		return supportsHomeRedirect==null ? Boolean.FALSE : supportsHomeRedirect;
+		return supportsHomeRedirect == null ? Boolean.FALSE : supportsHomeRedirect;
 	}
 
 	public void setSupportsHomeRedirect(boolean supportsHomeRedirect) {
 		this.supportsHomeRedirect = supportsHomeRedirect;
 	}
-	
 
 }

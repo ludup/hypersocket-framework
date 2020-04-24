@@ -4,10 +4,15 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -26,9 +31,13 @@ public class EmailTracker extends SimpleResource {
 	private String emailAddress;
 	
 	@ManyToOne
+	@JoinColumn(name = "principal_resource_id", foreignKey = @ForeignKey(name = "email_tracking_cascade_2"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Principal principal;
-	
+
 	@ManyToOne
+	@JoinColumn(name = "realm_resource_id", foreignKey = @ForeignKey(name = "email_tracking_cascade_1"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Realm realm;
 	
 	@Temporal(TemporalType.TIMESTAMP)

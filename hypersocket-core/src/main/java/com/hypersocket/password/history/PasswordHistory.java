@@ -2,6 +2,8 @@ package com.hypersocket.password.history;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -19,6 +21,7 @@ public class PasswordHistory extends SimpleResource {
 
 	@ManyToOne
 	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(foreignKey = @ForeignKey(name = "password_history_cascade_1"))
 	private Principal principal;
 	
 	@Column(name="encoded_password")

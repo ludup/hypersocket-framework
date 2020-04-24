@@ -2,9 +2,16 @@ package com.hypersocket.upload;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.RealmResource;
 
 @Entity
@@ -24,19 +31,34 @@ public class FileUpload extends RealmResource {
 
 	@Column(name = "type")
 	private String type;
-	
+
 	@Column(name = "is_public")
 	private Boolean isPublic;
-	
-	@Column(name="short_code", nullable=true)
+
+	@Column(name = "short_code", nullable = true)
 	private String shortCode;
-	
+
+	@ManyToOne
+	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "uploaded_files_cascade_1"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	protected Realm realm;
+
+	@Override
+	protected Realm doGetRealm() {
+		return realm;
+	}
+
+	@Override
+	public void setRealm(Realm realm) {
+		this.realm = realm;
+	}
+
 	@Transient
 	private String url;
 
 	@Transient
 	private String content;
-	
+
 	public FileUpload() {
 	}
 
@@ -75,7 +97,7 @@ public class FileUpload extends RealmResource {
 	public void setShortCode(String shortCode) {
 		this.shortCode = shortCode;
 	}
-	
+
 	public String getShortCode() {
 		return shortCode;
 	}
