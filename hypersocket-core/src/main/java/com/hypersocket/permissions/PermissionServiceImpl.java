@@ -621,12 +621,12 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	private String debugPermissionState(Principal principal, Set<Permission> principalPermissions,
 			Set<PermissionType> derivedPrincipalPermissions, PermissionType... permissions) {
 		StringBuilder bui = new StringBuilder();
-		bui.append(String.format("This permission failure involved the principal %s (of type %s).\n",
-				principal.getPrincipalName(), principal.getType()));
+		bui.append(String.format("This permission failure involved the principal %s (of type %s). The current principal is %s (of type %s)\n",
+				principal.getPrincipalName(), principal.getType(), getCurrentPrincipal().getPrincipalName(), getCurrentPrincipal().getType()));
 		
 		bui.append("The permissions required were (* means have, ! means missing) :-\n");
 		for(PermissionType p : permissions) {
-			bui.append(String.format("  %sResource Key: %s, Class: %s", derivedPrincipalPermissions.contains(p) ? "*" : "!", p.getResourceKey(), p.getClass().getName()));
+			bui.append(String.format("  %sResource Key: %s, Class: %s\n", derivedPrincipalPermissions.contains(p) ? "*" : "!", p.getResourceKey(), p.getClass().getName()));
 		}
 		
 		bui.append("The primary permissions discovered were :-\n");
@@ -636,7 +636,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		if(!derivedPrincipalPermissions.isEmpty()) {
 			bui.append("The derived permissions discovered were :-\n");
 			for(PermissionType p : derivedPrincipalPermissions) {
-				bui.append(String.format("  Resource Key: %s, Class: %s", p.getResourceKey(), p.getClass().getName()));
+				bui.append(String.format("  Resource Key: %s, Class: %s\n", p.getResourceKey(), p.getClass().getName()));
 			}
 		}
 		return bui.toString();
