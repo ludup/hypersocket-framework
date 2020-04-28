@@ -505,8 +505,8 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 			for (JobKey k : scheduler.getJobKeys(GroupMatcher.jobGroupEquals(gn))) {
 				try {
 					SchedulerResource res = buildSchedulerResource(realmCache, k);
-					if (currentRealm.isSystem()
-							|| currentRealm.getId().equals(res.getRealmId())) {
+					if (currentRealm != null && (currentRealm.isSystem()
+							|| currentRealm.getId().equals(res.getRealmId()))) {
 						r.add(res);
 					}
 				} catch (NotScheduledException e) {
