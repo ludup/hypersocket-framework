@@ -68,7 +68,8 @@ public class MessageResource extends RealmResource {
 	private String supportedVariables;
 
 	@ManyToOne
-	@JoinColumn(name = "html_template")
+	@JoinColumn(name = "html_template", foreignKey = @ForeignKey(name = "message_resource_cascade_2"))
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private HtmlTemplateResource htmlTemplate;
 
 	@Column(name = "archive")
