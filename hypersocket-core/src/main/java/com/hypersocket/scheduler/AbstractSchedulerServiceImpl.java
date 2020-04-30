@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
+import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
@@ -91,11 +92,17 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		scheduler = configureScheduler();
 		scheduler.getListenerManager().addJobListener(this);
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-		
-		for (SchedulerResource res : doGetResources(realmService.getSystemRealm())) {
-			if(res.getRealmId() != null) {
-				if(realmRepository.getRealmById(res.getRealmId()) == null)
-					doDeleteResource(res);
+	}
+	
+	@EventListener
+	private void ready(SystemEvent wce) throws SchedulerException {
+		/* Moved this here due to https://logonboxlimited.slack.com/archives/DJVSBK1PV/p1588258404017000 */
+		if(wce.getResourceKey().equals("event.webappCreated")) {
+			for (SchedulerResource res : doGetResources(realmService.getSystemRealm())) {
+				if(res.getRealmId() != null) {
+					if(realmRepository.getRealmById(res.getRealmId()) == null)
+						doDeleteResource(res);
+				}
 			}
 		}
 	}
