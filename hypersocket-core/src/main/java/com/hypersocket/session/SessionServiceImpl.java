@@ -713,9 +713,11 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public void executeInSystemContext(Runnable r, Realm currentRealm, Principal principal) {
 
 		setCurrentSession(getSystemSession(), currentRealm, principal, Locale.getDefault());
+		elevatePermissions(SystemPermission.SYSTEM);
 		try {
 			r.run();
 		} finally {
+			clearElevatedPermissions();
 			clearPrincipalContext();
 		}
 

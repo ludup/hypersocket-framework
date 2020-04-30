@@ -750,7 +750,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		List<Principal> associated = getAssociatedPrincipals(existing);
 		try {
 
-			assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
+			assertAnyPermission(ProfilePermission.UPDATE, UserPermission.UPDATE, RealmPermission.UPDATE);
 
 			for (PrincipalProcessor processor : principalProcessors) {
 				processor.beforeUpdate(user, properties);
