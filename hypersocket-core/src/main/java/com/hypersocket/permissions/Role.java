@@ -51,8 +51,12 @@ public class Role extends RealmResource {
 	@ManyToMany(fetch = FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
 //	@Cascade({CascadeType.SAVE_UPDATE, CascadeType.MERGE})
-	@JoinTable(name = "role_principals", joinColumns = { @JoinColumn(name = "role_id") }, inverseJoinColumns = {
+	@JoinTable(foreignKey = @ForeignKey(name = "role_principals_cascade_1"), inverseForeignKey = @ForeignKey(name = "role_principals_cascade_2"), name = "role_principals", joinColumns = { @JoinColumn(name = "role_id") }, inverseJoinColumns = {
 			@JoinColumn(name = "principal_id") })
+	/* BUG: https://hibernate.atlassian.net/browse/HHH-11856
+	 * 
+	 * This is a total pain
+	 **/
 	private Set<Principal> principals = new HashSet<>();
 
 	@ManyToMany(fetch = FetchType.EAGER)
