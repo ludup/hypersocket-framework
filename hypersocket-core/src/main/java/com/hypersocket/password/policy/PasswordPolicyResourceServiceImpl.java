@@ -59,15 +59,13 @@ import edu.vt.middleware.password.PasswordGenerator;
 import edu.vt.middleware.password.UppercaseCharacterRule;
 
 @Service
-public class PasswordPolicyResourceServiceImpl extends
-		AbstractAssignableResourceServiceImpl<PasswordPolicyResource> 
-			implements PasswordPolicyResourceService, PrincipalProcessor,
-			PolicyResolver {
+public class PasswordPolicyResourceServiceImpl extends AbstractAssignableResourceServiceImpl<PasswordPolicyResource>
+		implements PasswordPolicyResourceService, PrincipalProcessor, PolicyResolver {
 
 	public static final String RESOURCE_BUNDLE = "PasswordPolicyResourceService";
 
 	static Logger log = LoggerFactory.getLogger(PasswordPolicyResourceServiceImpl.class);
-	
+
 	@Autowired
 	private PasswordPolicyResourceRepository repository;
 
@@ -79,21 +77,21 @@ public class PasswordPolicyResourceServiceImpl extends
 
 	@Autowired
 	private EventService eventService;
-	
+
 	@Autowired
 	private RealmService realmService;
-	
+
 	@Autowired
 	private PasswordAnalyserService analyserService;
-	
-	@Autowired
-	private PasswordHistroyService passwordHistoryService; 
 
 	@Autowired
-	private AuthenticationService authenticationService; 
+	private PasswordHistroyService passwordHistoryService;
 
-	private Map<String,PolicyResolver> passwordPolicyResolvers = new HashMap<String,PolicyResolver>();
-	
+	@Autowired
+	private AuthenticationService authenticationService;
+
+	private Map<String, PolicyResolver> passwordPolicyResolvers = new HashMap<String, PolicyResolver>();
+
 	public PasswordPolicyResourceServiceImpl() {
 		super("passwordPolicy");
 	}
@@ -103,7 +101,8 @@ public class PasswordPolicyResourceServiceImpl extends
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		PermissionCategory cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE, "category.passwordPolicy");
+		PermissionCategory cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE,
+				"category.passwordPolicy");
 
 		for (PasswordPolicyResourcePermission p : PasswordPolicyResourcePermission.values()) {
 			permissionService.registerPermission(p, cat);
@@ -111,69 +110,68 @@ public class PasswordPolicyResourceServiceImpl extends
 
 		repository.loadPropertyTemplates("passwordPolicyResourceTemplate.xml");
 
-
-
 		eventService.registerEvent(PasswordPolicyResourceEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(PasswordPolicyResourceCreatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(PasswordPolicyResourceUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(PasswordPolicyResourceDeletedEvent.class, RESOURCE_BUNDLE);
 
 		EntityResourcePropertyStore.registerResourceService(PasswordPolicyResource.class, repository);
-		
+
 		authenticationService.registerListener(new AuthenticationServiceAdapter() {
 			@Override
 			public void modifyTemplate(AuthenticationState state, FormTemplate template, boolean authenticated) {
-				if(template instanceof ChangePasswordTemplate) {
-					template.getInputFields().add(new DivField("logonPasswordPolicyHolder", "${uiPath}/content/injectedPasswordPolicy.html"));
+				if (template instanceof ChangePasswordTemplate) {
+					template.getInputFields().add(
+							new DivField("logonPasswordPolicyHolder", "${uiPath}/content/injectedPasswordPolicy.html"));
 				}
 			}
 		});
-		
+
 		realmService.registerPrincipalProcessor(this);
 
 		passwordPolicyResolvers.put(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY, this);
-		
+
 		realmService.registerRealmListener(new RealmAdapter() {
 
 			@Override
 			public void onCreateRealm(Realm realm) throws ResourceException {
 
-				 try {
-					 PasswordPolicyResource policy = new PasswordPolicyResource();
-					 policy.setContainDictionaryWord(false);
-					 policy.setContainUsername(false);
-					 policy.setAdditionalAnalysis(true);
-					 policy.setDN("LocalUserDefaultPolicy");
-					 policy.setMaximumAge(0);
-					 policy.setMaximumLength(64);
-					 policy.setMinimumAge(0);
-					 policy.setMinimumCriteriaMatches(4);
-					 policy.setMinimumDigits(1);
-					 policy.setMinimumLower(1);
-					 policy.setMinimumSymbol(1);
-					 policy.setMinimumUpper(1);
-					 policy.setMinimumLength(8);
-					 policy.setName("Local Account Default Policy");
-					 policy.setPasswordHistory(0);
-					 policy.setPriority(Integer.MAX_VALUE);
-					 policy.setProvider(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY);
-					 policy.setRealm(realm);
-					 policy.setSystem(true);
-					 policy.setAllowEdit(true);
-					 policy.setDefaultPolicy(true);
-					 policy.setValidSymbols("?!@#$%&");
-					 
-					createResource(policy, new HashMap<String,String>());
+				try {
+					PasswordPolicyResource policy = new PasswordPolicyResource();
+					policy.setContainDictionaryWord(false);
+					policy.setContainUsername(false);
+					policy.setAdditionalAnalysis(true);
+					policy.setDN("LocalUserDefaultPolicy");
+					policy.setMaximumAge(0);
+					policy.setMaximumLength(64);
+					policy.setMinimumAge(0);
+					policy.setMinimumCriteriaMatches(4);
+					policy.setMinimumDigits(1);
+					policy.setMinimumLower(1);
+					policy.setMinimumSymbol(1);
+					policy.setMinimumUpper(1);
+					policy.setMinimumLength(8);
+					policy.setName("Local Account Default Policy");
+					policy.setPasswordHistory(0);
+					policy.setPriority(Integer.MAX_VALUE);
+					policy.setProvider(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY);
+					policy.setRealm(realm);
+					policy.setSystem(true);
+					policy.setAllowEdit(true);
+					policy.setDefaultPolicy(true);
+					policy.setValidSymbols("?!@#$%&");
+
+					createResource(policy, new HashMap<String, String>());
 				} catch (AccessDeniedException e) {
 					throw new IllegalStateException(e.getMessage(), e);
-				} 
+				}
 			}
 
 			@Override
 			public boolean hasCreatedDefaultResources(Realm realm) {
 				return repository.getPolicyByDN("LocalUserDefaultPolicy", realm) != null;
 			}
-			
+
 		});
 	}
 
@@ -181,7 +179,7 @@ public class PasswordPolicyResourceServiceImpl extends
 	public void registerPolicyResolver(String resourceKey, PolicyResolver resolver) {
 		passwordPolicyResolvers.put(resourceKey, resolver);
 	}
-	
+
 	@Override
 	protected AbstractAssignableResourceRepository<PasswordPolicyResource> getRepository() {
 		return repository;
@@ -232,7 +230,7 @@ public class PasswordPolicyResourceServiceImpl extends
 			Map<String, String> properties) throws AccessDeniedException, ResourceException {
 
 		resource.setName(name);
-		
+
 		updateResource(resource, roles, properties);
 
 		return resource;
@@ -271,60 +269,56 @@ public class PasswordPolicyResourceServiceImpl extends
 		return PasswordPolicyResource.class;
 	}
 
-	
 	@Override
-	public void beforeChangePassword(Principal principal, String newPassword, String oldPassword) throws ResourceException {
-		
-		if(!realmService.canChangePassword(principal)) {
+	public void beforeChangePassword(Principal principal, String newPassword, String oldPassword)
+			throws ResourceException {
+
+		if (!realmService.canChangePassword(principal)) {
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.cannotChangePassword");
 		}
-		
+
 		checkPassword(principal, newPassword, false);
 
 	}
 
-	private void checkPassword(Principal principal, String newPassword, boolean administrative) throws ResourceException {
+	private void checkPassword(Principal principal, String newPassword, boolean administrative)
+			throws ResourceException {
 		try {
 			PasswordPolicyResource policy = resolvePolicy(principal);
-			
-			if(policy.getMinimumAge() > 0 && !administrative) {
+
+			if (policy.getMinimumAge() > 0 && !administrative) {
 				// Check age
-				UserPrincipal<?> user = (UserPrincipal<?>)principal;
-				if(user.getLastPasswordChange()!=null) {
-					Date changeDate = DateUtils.addDays(user.getLastPasswordChange(), 
-							policy.getMinimumAge());
-					if(new Date().before(changeDate)) {
-						throw new ResourceChangeException(RESOURCE_BUNDLE, 
-								"error.passwordPolicy.tooSoon", 
+				UserPrincipal<?> user = (UserPrincipal<?>) principal;
+				if (user.getLastPasswordChange() != null) {
+					Date changeDate = DateUtils.addDays(user.getLastPasswordChange(), policy.getMinimumAge());
+					if (new Date().before(changeDate)) {
+						throw new ResourceChangeException(RESOURCE_BUNDLE, "error.passwordPolicy.tooSoon",
 								HypersocketUtils.formatDate(changeDate, "HH:mm dd MMM yyyy"));
 					}
 				}
 			}
-			
-			if(policy.getPasswordHistory() > 0) {
+
+			if (policy.getPasswordHistory() > 0) {
 				// Verify history
-				if(!passwordHistoryService.checkPassword(principal, newPassword, policy.getPasswordHistory())) {
-					throw new ResourceChangeException(RESOURCE_BUNDLE, 
-							"error.passwordHistoryViolation",
+				if (!passwordHistoryService.checkPassword(principal, newPassword, policy.getPasswordHistory())) {
+					throw new ResourceChangeException(RESOURCE_BUNDLE, "error.passwordHistoryViolation",
 							policy.getPasswordHistory());
 				}
 			}
-			
+
 			validatePassword(principal.getPrincipalName(), policy, newPassword);
-			
+
 		} catch (ResourceNotFoundException e) {
 			log.info(String.format("No password policy found for %s", principal.getPrincipalName()));
 		}
 	}
-	
-	private void validatePassword(String username, PasswordPolicyResource policy, String password) throws ResourceException {
+
+	private void validatePassword(String username, PasswordPolicyResource policy, String password)
+			throws ResourceException {
 		try {
-			analyserService.analyse(getCurrentLocale(), 
-					username, 
-					password.toCharArray(), 
-					policy);
+			analyserService.analyse(getCurrentLocale(), username, password.toCharArray(), policy);
 		} catch (PasswordPolicyException e) {
-			switch(e.getType()) {
+			switch (e.getType()) {
 			case containsDictionaryWords:
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.passwordPolicy.containsDictionaryWords");
 			case containsUsername:
@@ -350,10 +344,10 @@ public class PasswordPolicyResourceServiceImpl extends
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.passwordPolicy.error");
 		}
 	}
-	
+
 	@Override
 	public void beforeUpdate(Principal principal, Map<String, String> properties) throws ResourceException {
-	
+
 	}
 
 	@Override
@@ -361,17 +355,20 @@ public class PasswordPolicyResourceServiceImpl extends
 	}
 
 	@Override
-	public void beforeCreate(Realm realm, String realmModule, String username, Map<String,String> properties) throws ResourceException {
+	public void beforeCreate(Realm realm, String realmModule, String username, Map<String, String> properties)
+			throws ResourceException {
 
 	}
-	
+
 	@Override
-	public void afterCreate(Principal principal, String password, Map<String, String> properties) throws ResourceException {
+	public void afterCreate(Principal principal, String password, Map<String, String> properties)
+			throws ResourceException {
 		passwordHistoryService.recordPassword(principal, password);
 	}
 
 	@Override
-	public void afterChangePassword(Principal principal, String newPassword, String oldPassword) throws ResourceException {
+	public void afterChangePassword(Principal principal, String newPassword, String oldPassword)
+			throws ResourceException {
 		passwordHistoryService.recordPassword(principal, newPassword);
 	}
 
@@ -384,34 +381,37 @@ public class PasswordPolicyResourceServiceImpl extends
 	public void afterSetPassword(Principal principal, String password) throws ResourceException {
 
 	}
-	
+
 	@Override
 	public PasswordPolicyResource resolvePolicy(Principal currentPrincipal) throws ResourceNotFoundException {
-		
+
 		/**
-		 * We first check for assigned policies as these will override anything a connector might provide.
+		 * We first check for assigned policies as these will override anything a
+		 * connector might provide.
 		 */
 		Collection<PasswordPolicyResource> assignedPolicies = getPersonalResources(currentPrincipal);
-		if(!assignedPolicies.isEmpty()) {
+		if (!assignedPolicies.isEmpty()) {
 			PasswordPolicyResource resolvedPolicy = null;
-			for(PasswordPolicyResource policy : assignedPolicies) {
-				if(resolvedPolicy==null || policy.getPriority() < resolvedPolicy.getPriority()) {
+			for (PasswordPolicyResource policy : assignedPolicies) {
+				if (resolvedPolicy == null || policy.getPriority() < resolvedPolicy.getPriority()) {
 					resolvedPolicy = policy;
 				}
 			}
 			return resolvedPolicy;
 		}
-		
+
 		/**
 		 * Now check the realm for its default policy for the user
 		 */
 		PasswordPolicyResource realmPolicy = null;
-		if(passwordPolicyResolvers.containsKey(currentPrincipal.getRealmModule())) {
-			realmPolicy = passwordPolicyResolvers.get(currentPrincipal.getRealmModule()).resolvePrincipalPasswordPolicy(currentPrincipal);
+		if (passwordPolicyResolvers.containsKey(currentPrincipal.getRealmModule())) {
+			realmPolicy = passwordPolicyResolvers.get(currentPrincipal.getRealmModule())
+					.resolvePrincipalPasswordPolicy(currentPrincipal);
 		}
-		
-		if(realmPolicy==null) {
-			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.noPolicyAssigned", currentPrincipal.getPrincipalName());
+
+		if (realmPolicy == null) {
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.noPolicyAssigned",
+					currentPrincipal.getPrincipalName());
 		}
 		return realmPolicy;
 	}
@@ -440,65 +440,93 @@ public class PasswordPolicyResourceServiceImpl extends
 	public Collection<PasswordPolicyResource> getPoliciesByGroup(Principal principal) {
 		return Collections.emptyList();
 	}
-	
+
 	@Override
 	public String generatePassword(PasswordPolicyResource policy) {
 		return generatePassword(policy, policy.getMinimumLength());
 	}
-	
+
 	@Override
 	public String generatePassword(PasswordPolicyResource policy, int length) {
-		
+
 		// create a password generator
 		PasswordGenerator generator = new PasswordGenerator();
 
 		// create character rules to generate passwords with
 		List<CharacterRule> rules = new ArrayList<CharacterRule>();
-		
+
 		int minDigis = policy.getMinimumDigits();
 		int minLowercase = policy.getMinimumLower();
 		int minUppcase = policy.getMinimumUpper();
 		int minNonAlpha = policy.getMinimumSymbol();
-		
-		/* If there are no special requirements, make some up. It seems this
-		 * library needs at least one rule */
-		if(minDigis < 1 && minLowercase<1 && minUppcase < 1 &&  minNonAlpha < 1) {
+
+		/*
+		 * If there are no special requirements, make some up. It seems this library
+		 * needs at least one rule
+		 */
+		if (minDigis < 1 && minLowercase < 1 && minUppcase < 1 && minNonAlpha < 1) {
 			rules.add(new DigitCharacterRule(1));
 			rules.add(new LowercaseCharacterRule(1));
 			rules.add(new UppercaseCharacterRule(1));
 			rules.add(new PolicyNonAlphaNumericCharacterRule(1, policy.getValidSymbols()));
 		}
-		
-		if(minDigis > 0) {
+
+		if (minDigis > 0) {
 			rules.add(new DigitCharacterRule(minDigis));
 		}
-		if(minLowercase > 0) {
+		if (minLowercase > 0) {
 			rules.add(new LowercaseCharacterRule(minLowercase));
 		}
-		if(minUppcase > 0) {
+		if (minUppcase > 0) {
 			rules.add(new UppercaseCharacterRule(minUppcase));
 		}
-		if(minNonAlpha > 0) {
+		if (minNonAlpha > 0) {
 			rules.add(new PolicyNonAlphaNumericCharacterRule(minNonAlpha, policy.getValidSymbols()));
 		}
 		
-		return generator.generatePassword(Math.max(policy.getMinimumLength(), Math.min(policy.getMaximumLength(),length)), rules);
+		if(length == 0) {
+			length = minDigis + minLowercase + minNonAlpha + minUppcase;
+		}
+		
+		if(length == 0) {
+			length = policy.getMinimumLength();
+		}
+		
+		if(length == 0) {
+			/* Arbitrary minimum */
+			length = 10;
+		}
+		
+		if(policy.getMaximumLength() != 0 && length > policy.getMaximumLength()) {
+			length = policy.getMaximumLength();
+		}
+		
+		if(policy.getMinimumLength() > 0 && length < policy.getMinimumLength())
+			length = policy.getMinimumLength();
+		
+		if(length < 4) {
+			/* Absolute minimum for generation */
+			length = 4;
+		}
+		
+		return generator.generatePassword(length, rules);
 	}
-	
+
 	class PolicyNonAlphaNumericCharacterRule extends NonAlphanumericCharacterRule {
 		String validSymbols;
+
 		public PolicyNonAlphaNumericCharacterRule(int num, String validSymbols) {
 			super(num);
 			this.validSymbols = validSymbols;
 		}
+
 		@Override
 		public String getValidCharacters() {
 			return validSymbols;
 		}
-		
-		
+
 	}
-	
+
 	@Override
 	public void deleteRealm(Realm realm) {
 		repository.deleteRealm(realm);
