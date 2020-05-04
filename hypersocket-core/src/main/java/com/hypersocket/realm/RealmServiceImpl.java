@@ -2906,7 +2906,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 							: HypersocketUtils.formatDate(princ.getLastPasswordChange(), "yyyy-MM-dd HH:mm:ss"));
 				if(includeAttributes.contains(TEXT_PASSWORD_EXPIRY)) 
 					map.put(TEXT_PASSWORD_EXPIRY, princ.getPasswordExpiry() == null ? ""
-							: HypersocketUtils.formatDate(princ.getLastPasswordChange(), "yyyy-MM-dd HH:mm:ss"));
+							: HypersocketUtils.formatDate(princ.getPasswordExpiry(), "yyyy-MM-dd HH:mm:ss"));
 				if(includeAttributes.contains(TEXT_LAST_SIGN_ON)) 
 					map.put(TEXT_LAST_SIGN_ON, princ.getLastSignOn() == null ? ""
 							: HypersocketUtils.formatDate(princ.getLastSignOn(), "yyyy-MM-dd HH:mm:ss"));
