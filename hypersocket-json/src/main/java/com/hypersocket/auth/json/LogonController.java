@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.AuthenticationRequiredResult;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.FallbackAuthenticationRequired;
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.json.AuthenticationRedirectResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.ResourceStatus;
@@ -47,7 +48,9 @@ import com.hypersocket.session.json.SessionUtils;
 public class LogonController extends AuthenticatedController {
 
 	@Autowired
-	private PermissionService permissionService; 
+	private PermissionService permissionService;
+	@Autowired
+	private I18NService i18nService;
 	
 	@RequestMapping(value = "logon/reset", method = { RequestMethod.GET, RequestMethod.POST}, produces = "application/json")
 	@ResponseBody
@@ -254,6 +257,20 @@ public class LogonController extends AuthenticatedController {
 				}
 			} else {
 
+				if(!success && requireRedirect) {
+					if(StringUtils.isNotBlank(state.getHomePage()))
+						throw new RedirectException(state.getHomePage());
+					else if(state.getInitialScheme() != null) {
+						AuthenticationState.clearCurrentState(request);
+						request.getSession().setAttribute("flash", i18nService.getResource("error.genericLogonError", state.getLocale()));
+						throw new RedirectException(System.getProperty(
+								"hypersocket.appPath", "/hypersocket") + "/" + state.getInitialSchemeResourceKey());
+					}
+					else
+						/* NOTE, no access to HypersocketServer here so cant get ui path */
+						throw new RedirectException("/");
+				}
+				
 				checkRedirect(request, response);
 				
 				return new AuthenticationRequiredResult(
