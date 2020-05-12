@@ -1,31 +1,61 @@
 package com.hypersocket.batch;
 
-import java.util.Collection;
+import javax.annotation.PostConstruct;
 
 import org.hibernate.Query;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hypersocket.properties.ResourceUtils;
-import com.hypersocket.repository.DeletedCriteria;
-import com.hypersocket.resource.AbstractResourceRepositoryImpl;
-import com.hypersocket.resource.RealmResource;
+import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
+import com.hypersocket.realm.RealmService;
+import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.repository.AbstractRepositoryImpl;
+import com.hypersocket.resource.ResourceException;
 
-public abstract class BatchProcessingItemRepositoryImpl<T extends RealmResource> 
-		extends AbstractResourceRepositoryImpl<T> implements BatchProcessingItemRepository<T> {
-
+public abstract class BatchProcessingItemRepositoryImpl<T extends AbstractEntity<Long>> 
+		extends AbstractRepositoryImpl<Long> implements BatchProcessingItemRepository<T> {
 	
-	@Transactional
+	@Autowired
+	private RealmService realmService;
+
+	@PostConstruct
+	private void setup() {
+		realmService.registerRealmListener(new RealmAdapter() {
+
+			@Override
+			public void onDeleteRealm(Realm realm) throws ResourceException, AccessDeniedException {
+				deleteRealm(realm);
+			}
+			
+		});
+	}
+
 	@Override
-	public Collection<T> getAllResourcesAndMarkDeleted() {
-		Collection<T> results = list(getResourceClass(), new DeletedCriteria(false));
-		
-		if(!results.isEmpty()) {
-			Query query = getCurrentSession().createQuery("UPDATE EmailBatchItem b SET b.deleted = :del WHERE b.id in (:idList)");
-			query.setParameter("del", true);
-			query.setParameterList("idList", ResourceUtils.createResourceIdArray(results));
-			query.executeUpdate();
-		}
-		
-		return results;
+	@Transactional
+	public void deleteRealm(Realm realm) {
+		Query q = createQuery(String.format("delete from %s where realm = :r", getEntityClass().getSimpleName()), true);
+		q.setParameter("r", realm);
+		q.executeUpdate();
+		flush();
+	}
+	
+	@Override
+	public abstract Class<? extends T> getEntityClass();
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public T saveItem(T entity) {
+		return (T) save(entity);
+	}
+
+	@Override
+	@Transactional
+	public void markAllAsDeleted() {
+		Query q = createQuery(String.format("update %s set deleted = :r", getEntityClass().getSimpleName()), true);
+		q.setParameter("r", true);
+		q.executeUpdate();
+		flush();
 	}
 }

@@ -1,6 +1,6 @@
 package com.hypersocket.batch;
 
-import java.util.Collection;
+import java.util.Iterator;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
@@ -10,14 +10,17 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.cache.CacheService;
-import com.hypersocket.resource.RealmResource;
-import com.hypersocket.resource.ResourceException;
+import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
+import com.hypersocket.tables.ColumnSort;
 
-public abstract class BatchProcessingServiceImpl<T extends RealmResource> implements BatchProcessingService<T> {
+public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>> implements BatchProcessingService<T> {
 
 	static Logger log = LoggerFactory.getLogger(BatchProcessingServiceImpl.class);
 	
@@ -55,12 +58,14 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 	}
 
 	
-	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional(isolation = Isolation.SERIALIZABLE)
 	public  void processBatchItems() {
 		
 		/**
 		 * Check for the status of this job running across the cluster. We don't want to run it again.
+		 * 
+		 * TODO: This should not be necessary any more due to transaction lock above
 		 */
 		synchronized(this) {
 		
@@ -75,43 +80,45 @@ public abstract class BatchProcessingServiceImpl<T extends RealmResource> implem
 		
 		
 		try {
-			/**
-			 * We now get all resources and mark them as deleted to prevent further invocations
-			 * of this batch job rescheduling the batch item. Once this method returns the
-			 * batch item should never be returned again.
-			 */
-			Collection<T> items = getRepository().getAllResourcesAndMarkDeleted();
-				
-			if(items.isEmpty()) {
-				if(log.isDebugEnabled()) {
-					log.debug(String.format("There are no batch items to process"));
-				}
-				return;
-			}
-				
 			if(log.isInfoEnabled()) {
-				log.info(String.format("Processing %d batch items", items.size()));
+				log.info("Processing batch items");
 			}
-				
-			for(T item : items) {
-				
+			
+			int succeeded = 0;
+			int failed = 0;
+			
+			/* Mark all entries as deleted. This will cause them to lock, and so if this process is
+			 * run again, then that transaction will lock entirely until this one is complete, by
+			 * which time all of the deleted rows will have been entirely removed.
+			 * 
+			 */
+			getRepository().markAllAsDeleted();
+			
+			/* Now iterate over all those that were marked as deleted */
+			for(@SuppressWarnings("unchecked") Iterator<T> itemIt = (Iterator<T>) getRepository().iterate(getRepository().getEntityClass(), new ColumnSort[] {}, new DeletedCriteria(true)); itemIt.hasNext(); ) {
+				T item = itemIt.next();
 				boolean processed = true; 
 				try {
 					processed = process(item);			
 				} catch(Throwable t) {
 					log.error("Failed to process batch item", t);
-					processed = onProcessFailure(item);
+					//processed = onProcessFailure(item);
+					onProcessFailure(item);
 				} finally {
-					if(processed) {
-						try {
-							getRepository().deleteResource(item);
-						} catch (ResourceException e) {
-							log.error("Failed to delete batch item resource", e);
-						}
-					}
+					 if(processed) { 
+						 /* Finally physically remove the item */
+						 itemIt.remove();
+						 succeeded++;
+					 }
+					 else
+						 failed++;
 				}
 			}
-		
+
+			if(log.isInfoEnabled()) {
+				log.info(String.format("Processed batch items. %d processed and deleted, %d failed a.", succeeded, failed));
+			}
+			
 		} finally {
 			synchronized(this) {
 				Cache<String,Boolean> cache = cacheService.getCacheOrCreate(getJobKey(), String.class, Boolean.class);

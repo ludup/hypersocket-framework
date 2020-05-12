@@ -1,12 +1,16 @@
 package com.hypersocket.batch;
 
-import java.util.Collection;
+import com.hypersocket.realm.Realm;
+import com.hypersocket.repository.AbstractEntity;
+import com.hypersocket.repository.AbstractRepository;
 
-import com.hypersocket.resource.AbstractResourceRepository;
-import com.hypersocket.resource.RealmResource;
+public interface BatchProcessingItemRepository<T extends AbstractEntity<Long>> extends AbstractRepository<Long> {
 
-public interface BatchProcessingItemRepository<T extends RealmResource> extends AbstractResourceRepository<T> {
+	T saveItem(T object);
 
-	Collection<T> getAllResourcesAndMarkDeleted();
+	void deleteRealm(Realm realm);
+	
+	Class<? extends T> getEntityClass();
 
+	void markAllAsDeleted();
 }

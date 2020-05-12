@@ -5,9 +5,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.PostConstruct;
 
 import org.codemonkey.simplejavamail.MailException;
 import org.slf4j.Logger;
@@ -18,7 +15,6 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.batch.BatchProcessingItemRepository;
 import com.hypersocket.batch.BatchProcessingServiceImpl;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
@@ -114,7 +110,6 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 			throws ResourceException {
 
 		EmailBatchItem item = new EmailBatchItem();
-		item.setName(UUID.randomUUID().toString());
 		item.setRealm(realm);
 		item.setContext(context);
 		item.setSubject(subject);
@@ -131,11 +126,6 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 			item.setSchedule(schedule);
 		}
 
-		repository.saveResource(item);
-	}
-	
-	@PostConstruct
-	private void setup() {
-		EntityResourcePropertyStore.registerResourceService(EmailBatchItem.class, repository);
+		repository.merge(item);
 	}
 }

@@ -5,6 +5,9 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
@@ -16,14 +19,19 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.RealmResource;
+import com.hypersocket.repository.AbstractEntity;
 
 @Entity
 @Table(name = "email_batch_items")
-public class EmailBatchItem extends RealmResource {
+public class EmailBatchItem extends AbstractEntity<Long> {
 
 	private static final long serialVersionUID = 7712547601212721547L;
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE)
+	@Column(name="resource_id")
+	private Long id;
+	
 	@Column(name = "subject", length = 1024)
 	private String subject;
 
@@ -66,14 +74,20 @@ public class EmailBatchItem extends RealmResource {
 	@ManyToOne
 	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "email_batch_items_cascade_1"))
 	@OnDelete(action = OnDeleteAction.CASCADE)
-	protected Realm realm;
+	private Realm realm;
 
-	@Override
-	protected Realm doGetRealm() {
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Realm getRealm() {
 		return realm;
 	}
 
-	@Override
 	public void setRealm(Realm realm) {
 		this.realm = realm;
 	}
