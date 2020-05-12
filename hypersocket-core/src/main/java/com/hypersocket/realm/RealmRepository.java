@@ -67,4 +67,6 @@ public interface RealmRepository extends
 
 	void deleteRealmRoles(Realm realm);
 
+	long countPrimaryRealms();
+
 }

@@ -139,21 +139,10 @@ public class HypersocketUtils {
 	 * @param format
 	 * @return
 	 */
-	public static String formatDate(Date date, String format) {
-		
-		/* BUG: This is a bad idea. Date formatters are not thread safe */
-		
-		/*
-		if(!dateFormats.containsKey(format)) {
-			dateFormats.put(format, new SimpleDateFormat(format));
-		}
-		
+	public static String formatDate(Date date, String format) {		
 		if(date==null) {
 			return "";
 		}
-		
-		return dateFormats.get(format).format(date);
-		*/
 		
 		return new SimpleDateFormat(format).format(date);
 	}

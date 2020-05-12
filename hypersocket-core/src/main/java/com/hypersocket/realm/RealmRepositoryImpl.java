@@ -108,6 +108,14 @@ public class RealmRepositoryImpl extends
 				new DeletedCriteria(false), new DistinctRootEntity(),
 				new PublicRealmCriteria());
 	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public long countPrimaryRealms() {
+		return getCount(Realm.class, new HiddenFilter(),
+				new DeletedCriteria(false), 
+				new PublicRealmCriteria());
+	}
 
 	@Override
 	@Transactional(readOnly = true)
