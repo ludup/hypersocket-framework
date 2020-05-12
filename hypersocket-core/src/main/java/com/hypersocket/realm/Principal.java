@@ -61,7 +61,7 @@ public abstract class Principal extends RealmResource {
 	private Set<PrincipalSuspension> suspensions;
 
 	@Fetch(FetchMode.SELECT)
-	@OneToMany(orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "principal_links", joinColumns = {
 			@JoinColumn(name = "principals_resource_id") }, inverseJoinColumns = {
 					@JoinColumn(name = "linkedPrincipals_resource_id") })
