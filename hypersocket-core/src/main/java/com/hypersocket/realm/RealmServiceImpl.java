@@ -320,8 +320,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				return "missingPhone.label";
 			}
 		});
-		
-
 	}
 
 	@Override

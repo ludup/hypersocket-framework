@@ -22,6 +22,8 @@ import com.hypersocket.tables.ColumnSort;
 
 public interface DictionaryResourceService  {
 
+	String FEATURE_DICTIONARY = "dictionary";
+
 	Word updateResource(Word resourceById, Locale locale, String name)
 			throws ResourceException, AccessDeniedException;
 

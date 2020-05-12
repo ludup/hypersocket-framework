@@ -282,7 +282,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	}
 	
 	public final boolean isEnabled() {
-		return !"false".equals(System.getProperty("hypersocket.mail")) && systemConfigurationService.getBooleanValue("smtp.on") && (Objects.isNull(controller) || controller.canSend());
+		return !"false".equals(System.getProperty("hypersocket.mail", "true")) && systemConfigurationService.getBooleanValue("smtp.on") && (Objects.isNull(controller) || controller.canSend());
 	}
 	
 	private void send(Realm realm, 

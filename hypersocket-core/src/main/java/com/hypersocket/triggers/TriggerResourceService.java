@@ -21,6 +21,8 @@ import com.hypersocket.resource.TransactionAdapter;
 public interface TriggerResourceService extends
 		AbstractResourceService<TriggerResource> {
 
+	String FEATURE_TRIGGERS = "triggers";
+
 	TriggerResource createResource(
 			String name,
 			TriggerType type,
