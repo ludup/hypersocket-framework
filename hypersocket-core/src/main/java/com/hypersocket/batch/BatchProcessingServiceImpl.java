@@ -116,7 +116,7 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 			}
 
 			if(log.isInfoEnabled()) {
-				log.info(String.format("Processed batch items. %d processed and deleted, %d failed a.", succeeded, failed));
+				log.info(String.format("Processed batch items. %d processed and deleted, %d failed and deleted.", succeeded, failed));
 			}
 			
 		} finally {
