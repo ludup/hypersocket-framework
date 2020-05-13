@@ -18,8 +18,6 @@ import com.hypersocket.triggers.TriggerResultType;
 public interface AutomationResourceService extends
 		AbstractResourceService<AutomationResource> {
 
-	String FEATURE_AUTOMATIONS = "automation";
-
 	AutomationResource updateResource(AutomationResource resourceById, String name, Map<String,String> properties)
 			throws ResourceException, AccessDeniedException;
 
