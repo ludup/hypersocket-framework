@@ -5,6 +5,7 @@ import java.util.Iterator;
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
 
+import org.hibernate.exception.LockAcquisitionException;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -80,8 +81,8 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 		
 		
 		try {
-			if(log.isInfoEnabled()) {
-				log.info("Processing batch items");
+			if(log.isDebugEnabled()) {
+				log.debug("Processing batch items");
 			}
 			
 			int succeeded = 0;
@@ -92,7 +93,13 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 			 * which time all of the deleted rows will have been entirely removed.
 			 * 
 			 */
-			getRepository().markAllAsDeleted();
+			try {
+				getRepository().markAllAsDeleted();
+			}
+			catch(LockAcquisitionException lae) {
+				log.warn("Database locked, the batch process cannot complete. This is likely a running synchronize, or other job that has written a realm that has a batch item ready.");
+				return;
+			}
 			
 			/* Now iterate over all those that were marked as deleted */
 			for(@SuppressWarnings("unchecked") Iterator<T> itemIt = (Iterator<T>) getRepository().iterate(getRepository().getEntityClass(), new ColumnSort[] {}, new DeletedCriteria(true)); itemIt.hasNext(); ) {
@@ -115,10 +122,9 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 				}
 			}
 
-			if(log.isInfoEnabled()) {
-				log.info(String.format("Processed batch items. %d processed and deleted, %d failed and deleted.", succeeded, failed));
+			if(log.isDebugEnabled()) {
+				log.debug(String.format("Processed batch items. %d processed and deleted, %d failed and deleted.", succeeded, failed));
 			}
-			
 		} finally {
 			synchronized(this) {
 				Cache<String,Boolean> cache = cacheService.getCacheOrCreate(getJobKey(), String.class, Boolean.class);
