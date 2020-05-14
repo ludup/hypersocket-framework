@@ -1274,28 +1274,25 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				clearPrincipalContext();
 			}
 
-			/**
-			 * Not currently used but left in case we want this in future.
-			 */
-			// boolean reconfigured = false;
-			// for(PropertyCategory cat : getRealmPropertyTemplates(realm)) {
-			// for(AbstractPropertyTemplate t : cat.getTemplates()) {
-			// if(t.getAttributes().containsKey("reconfigure") &&
-			// "true".equalsIgnoreCase(t.getAttributes().get("reconfigure"))) {
-			// if(properties.containsKey(t.getResourceKey())) {
-			// reconfigured = true;
-			// break;
-			// }
-			// }
-			// }
-			// if(reconfigured) {
-			// break;
-			// }
-			// }
-			//
-			// if(reconfigured) {
-			// setRealmProperty(realm, "realm.initialReconcile", "true");
-			// }
+			boolean reconfigured = false;
+			for (PropertyCategory cat : getRealmPropertyTemplates(realm)) {
+				for (AbstractPropertyTemplate t : cat.getTemplates()) {
+					if (t.getAttributes().containsKey("reconfigure")
+							&& "true".equalsIgnoreCase(t.getAttributes().get("reconfigure"))) {
+						if (properties.containsKey(t.getResourceKey())) {
+							reconfigured = true;
+							break;
+						}
+					}
+				}
+				if (reconfigured) {
+					break;
+				}
+			}
+
+			if (reconfigured) {
+				setRealmProperty(realm, "realm.initialReconcile", "true");
+			}
 
 			String oldName = realm.getName();
 
