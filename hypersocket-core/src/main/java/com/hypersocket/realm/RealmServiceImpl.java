@@ -1291,7 +1291,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			if (reconfigured) {
-				setRealmProperty(realm, "realm.initialReconcile", "true");
+				setRealmProperty(realm, "realm.reconcileRebuildCache", "true");
 			}
 
 			String oldName = realm.getName();
