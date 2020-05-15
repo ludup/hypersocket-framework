@@ -22,6 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -1268,31 +1269,34 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			setupSystemContext(realm);
 			try {
 				Map<String, String> existingProperties = getRealmProperties(realm);
+				
+				boolean reconfigured = false;
+				for (PropertyCategory cat : getRealmPropertyTemplates(realm)) {
+					for (AbstractPropertyTemplate t : cat.getTemplates()) {
+						if (t.getAttributes().containsKey("reconfigure")
+								&& "true".equalsIgnoreCase(t.getAttributes().get("reconfigure"))) {
+							if (properties.containsKey(t.getResourceKey()) && !Objects.equals(properties.get(t.getResourceKey()), existingProperties.get(t.getResourceKey()))) {
+								reconfigured = true;
+								break;
+							}
+						}
+					}
+					if (reconfigured) {
+						break;
+					}
+				}
 				existingProperties.putAll(properties);
 				realmProvider.testConnection(existingProperties, realm);
+
+				if (reconfigured) {
+					log.info("A realm property that was tagged with 'reconfigure' has been changed, the next sync. will rebuild the cache and retrieve all filtered objects.");
+					realmProvider.setValue(realm, "realm.reconcileRebuildCache", "true");
+					realmProvider.setValue(realm, "realm.upToDate", "false");
+				}
 			} finally {
 				clearPrincipalContext();
 			}
 
-			boolean reconfigured = false;
-			for (PropertyCategory cat : getRealmPropertyTemplates(realm)) {
-				for (AbstractPropertyTemplate t : cat.getTemplates()) {
-					if (t.getAttributes().containsKey("reconfigure")
-							&& "true".equalsIgnoreCase(t.getAttributes().get("reconfigure"))) {
-						if (properties.containsKey(t.getResourceKey())) {
-							reconfigured = true;
-							break;
-						}
-					}
-				}
-				if (reconfigured) {
-					break;
-				}
-			}
-
-			if (reconfigured) {
-				setRealmProperty(realm, "realm.reconcileRebuildCache", "true");
-			}
 
 			String oldName = realm.getName();
 

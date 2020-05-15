@@ -24,7 +24,6 @@ public class UserUpdatedEvent extends UserEvent {
 	private Map<String, String[]> allChangedProperties = new HashMap<>();
 	private Map<String, String[]> changedProperties = new HashMap<>();
 	private Map<String, String> addedProperties = new HashMap<>();
-	private Map<String, String> removedProperties = new HashMap<>();
 	
 	public UserUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
@@ -50,13 +49,6 @@ public class UserUpdatedEvent extends UserEvent {
 				addedProperties.put(en.getKey(), en.getValue());
 				allChangedProperties.put(en.getKey(), new String[] { en.getValue() });
 			} 
-		}
-		for(Map.Entry<String, String> en : oldProperties.entrySet()) {
-			if(!properties.containsKey(en.getKey())) {
-				changes.add(String.format("%s was removed with a value of %s", en.getKey(), en.getValue()));
-				removedProperties.put(en.getKey(), en.getValue());
-				allChangedProperties.put(en.getKey(), new String[] { en.getValue() });
-			}
 		}
 		
 		// Find principal additions
@@ -100,7 +92,4 @@ public class UserUpdatedEvent extends UserEvent {
 		return addedProperties;
 	}
 
-	public Map<String, String> getRemovedProperties() {
-		return removedProperties;
-	}
 }
