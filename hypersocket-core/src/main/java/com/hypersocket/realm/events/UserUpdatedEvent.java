@@ -1,6 +1,7 @@
 package com.hypersocket.realm.events;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +20,11 @@ public class UserUpdatedEvent extends UserEvent {
 	public static final String EVENT_RESOURCE_KEY = "event.userUpdated";
 
 	public static final String ATTR_CHANGES = "attr.changes";
+
+	private Map<String, String[]> allChangedProperties = new HashMap<>();
+	private Map<String, String[]> changedProperties = new HashMap<>();
+	private Map<String, String> addedProperties = new HashMap<>();
+	private Map<String, String> removedProperties = new HashMap<>();
 	
 	public UserUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
@@ -33,12 +39,24 @@ public class UserUpdatedEvent extends UserEvent {
 		for(Map.Entry<String, String> en : properties.entrySet()) {
 			if(oldProperties.containsKey(en.getKey())) {
 				final String oldVal = oldProperties.get(en.getKey());
-				if(!Objects.equals(en.getValue(), oldVal))
-					changes.add(String.format("%s was changed from %s to %s", en.getKey(), oldVal, en.getValue())); 
+				if(!Objects.equals(en.getValue(), oldVal)) {
+					changes.add(String.format("%s was changed from %s to %s", en.getKey(), oldVal, en.getValue()));
+					changedProperties.put(en.getKey(), new String[] {oldVal, en.getValue()});
+					allChangedProperties.put(en.getKey(), new String[] {oldVal, en.getValue()});
+				}
 			}
 			else {
 				changes.add(String.format("%s was added with a value of %s", en.getKey(), en.getValue()));
+				addedProperties.put(en.getKey(), en.getValue());
+				allChangedProperties.put(en.getKey(), new String[] { en.getValue() });
 			} 
+		}
+		for(Map.Entry<String, String> en : oldProperties.entrySet()) {
+			if(!properties.containsKey(en.getKey())) {
+				changes.add(String.format("%s was removed with a value of %s", en.getKey(), en.getValue()));
+				removedProperties.put(en.getKey(), en.getValue());
+				allChangedProperties.put(en.getKey(), new String[] { en.getValue() });
+			}
 		}
 		
 		// Find principal additions
@@ -68,5 +86,21 @@ public class UserUpdatedEvent extends UserEvent {
 
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
+	}
+
+	public Map<String, String[]> getAllChangedProperties() {
+		return allChangedProperties;
+	}
+
+	public Map<String, String[]> getChangedProperties() {
+		return changedProperties;
+	}
+
+	public Map<String, String> getAddedProperties() {
+		return addedProperties;
+	}
+
+	public Map<String, String> getRemovedProperties() {
+		return removedProperties;
 	}
 }

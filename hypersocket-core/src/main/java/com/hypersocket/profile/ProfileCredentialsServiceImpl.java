@@ -27,6 +27,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.events.UserDeletedEvent;
+import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
@@ -252,6 +253,19 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 	public void onCredentialsUpdated(ProfileCredentialsEvent event) {
 		if(event.isSuccess()) {
 			fireProfileUpdateJob(event.getTargetPrincipal());
+		}
+	}
+
+	@EventListener
+	public void onUserUpdated(UserUpdatedEvent event) {
+		if(event.isSuccess()) {
+			if(event.getAllChangedProperties().containsKey("email") || 
+			   event.getAllChangedProperties().containsKey("mobile") || 
+			   event.getAllChangedProperties().containsKey("secondaryEmail") || 
+			   event.getAllChangedProperties().containsKey("secondaryMobile")) {
+				log.info(String.format("Profile for %s needs update due to change in primary or secondary address changes. %s", event.getTargetPrincipal().getName(), event.getAllChangedProperties() ));
+				fireProfileUpdateJob(event.getTargetPrincipal());
+			}
 		}
 	}
 
