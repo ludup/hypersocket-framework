@@ -46,6 +46,7 @@ public abstract class BatchProcessingItemRepositoryImpl<T extends AbstractEntity
 
 	@SuppressWarnings("unchecked")
 	@Override
+	@Transactional
 	public T saveItem(T entity) {
 		return (T) save(entity);
 	}
