@@ -1,12 +1,14 @@
 package com.hypersocket.tests.json.logon;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.apache.http.client.ClientProtocolException;
 import org.junit.Test;
 
-import com.hypersocket.json.JsonSession;
 import com.hypersocket.tests.AbstractServerTest;
+import com.hypersocket.tests.JsonSession;
 
 public class WithAdminPermissionTest extends AbstractServerTest{
 

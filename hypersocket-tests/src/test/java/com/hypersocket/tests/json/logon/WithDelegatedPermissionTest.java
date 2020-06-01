@@ -9,9 +9,9 @@ import org.junit.Test;
 import com.hypersocket.auth.AuthenticationPermission;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.JsonRoleResourceStatus;
-import com.hypersocket.json.JsonSession;
 import com.hypersocket.realm.UserPermission;
 import com.hypersocket.tests.AbstractServerTest;
+import com.hypersocket.tests.JsonSession;
 
 public class WithDelegatedPermissionTest extends AbstractServerTest {
 
