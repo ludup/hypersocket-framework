@@ -509,8 +509,6 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	public void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Iterator<Principal> principals, Collection<String> emails, Date schedule,
 			List<EmailAttachment> attachments, String context) {
-		if(schedule == null)
-			schedule = new Date();
 
 		EmailDeliveryStrategy strategy = message.getDeliveryStrategy();
 
