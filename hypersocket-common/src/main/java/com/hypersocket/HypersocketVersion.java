@@ -24,9 +24,9 @@ public class HypersocketVersion {
 	
 	public static String getVersion() {
 		if(Boolean.getBoolean("hypersocket.development")) {
-			return System.getProperty("hypersocket.devVersion", getVersion("hypersocket-framework"));
+			return System.getProperty("hypersocket.devVersion", getVersion("hypersocket-common"));
 		}
-		return getVersion("hypersocket-framework");
+		return getVersion("hypersocket-common");
 	}
 	
 	public static String getSerial() {
