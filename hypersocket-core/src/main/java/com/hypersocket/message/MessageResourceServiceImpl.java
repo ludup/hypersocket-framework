@@ -704,16 +704,8 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 					}
 				}
 
-				if (schedule != null) {
-
-					attachmentsListString = ResourceUtils.implodeValues(attachmentUUIDs);
-
-					batchService.scheduleEmail(realm, subjectWriter.toString(), bodyWriter.toString(),
-							htmlWriter.toString(), replyTo != null ? replyTo.getName() : message.getReplyToName(),
-							replyTo != null ? replyTo.getEmail() : message.getReplyToEmail(), recipient.getName(),
-							recipient.getEmail(), message.getArchive(), message.getTrack(), attachmentsListString, schedule, context);
-
-				} else {
+				if(Boolean.getBoolean("hypersocket.disableBatchEmails") || Objects.isNull(schedule)) {
+					
 					List<EmailAttachment> emailAttachments = new ArrayList<EmailAttachment>();
 					if (attachments != null) {
 						emailAttachments.addAll(attachments);
@@ -737,6 +729,13 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 							htmlWriter.toString(), message.getReplyToName(), message.getReplyToEmail(),
 							new RecipientHolder[] { recipient }, message.getArchive(), message.getTrack(), 50,
 							context, emailAttachments.toArray(new EmailAttachment[0]));
+				} else {
+					attachmentsListString = ResourceUtils.implodeValues(attachmentUUIDs);
+
+					batchService.scheduleEmail(realm, subjectWriter.toString(), bodyWriter.toString(),
+							htmlWriter.toString(), replyTo != null ? replyTo.getName() : message.getReplyToName(),
+							replyTo != null ? replyTo.getEmail() : message.getReplyToEmail(), recipient.getName(),
+							recipient.getEmail(), message.getArchive(), message.getTrack(), attachmentsListString, schedule, context);
 
 				}
 			}

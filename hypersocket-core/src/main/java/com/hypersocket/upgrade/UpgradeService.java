@@ -9,7 +9,6 @@ package com.hypersocket.upgrade;
 
 import java.io.IOException;
 
-import javax.script.ScriptException;
 import javax.sql.DataSource;
 
 import org.hibernate.SessionFactory;
