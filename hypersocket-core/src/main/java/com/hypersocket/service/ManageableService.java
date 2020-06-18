@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(as=ManageableService.class)
 public interface ManageableService {
 
-	void stopService();
+	void stop();
 	
-	boolean startService();
+	boolean start();
 	
 	boolean isSystem();
 	
