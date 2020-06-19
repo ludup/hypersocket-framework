@@ -90,7 +90,7 @@ public class UpdateAccountAddressesTask extends AbstractAccountTask {
 				}
 			}
 			if(changed) {
-				realmService.updateUser(p.getRealm(), p, p.getName(), new HashMap<String, String>(), realmService.getUserGroups(p));
+				realmService.updateUser(p.getRealm(), p, p.getName(), new HashMap<String, String>(), null);
 			}
 			return new UpdateAccountAddressesTaskResult(this, currentRealm, p.getName(), task);
 		} catch (Exception e) {
