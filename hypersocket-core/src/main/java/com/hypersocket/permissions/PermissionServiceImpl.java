@@ -685,6 +685,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public boolean hasSystemPermission(Principal principal) {
 
+		if(principal.getType()==PrincipalType.SYSTEM) {
+			return true;
+		}
+		
 		Set<Permission> principalPermissions = getPrincipalPermissions(principal.getRealm(), principal);
 		if(hasAuthenticatedContext() && principal.equals(getCurrentPrincipal())) {
 			if (hasElevatedPermissions()) {
