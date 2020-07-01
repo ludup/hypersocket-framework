@@ -446,7 +446,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	@Override
 	public void cleanUp(Date maxDate) {
 		
-		Query query = createQuery("delete from Sessions where created < :maxDate", true);
+		Query query = createQuery("delete from Session where created < :maxDate", true);
 		query.setTimestamp("maxDate", maxDate);
 		
 		query.executeUpdate();
