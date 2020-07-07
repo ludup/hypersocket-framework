@@ -135,7 +135,7 @@ public class MiniHttpServer extends Thread implements Closeable {
 	private SSLServerSocket sslServersocket;
 
 	public static final String HYPERSOCKET_BOOT_HTTP_SERVER = "hypersocket.bootHttpServer";
-	public static final String HYPERSOCKET_BOOT_HTTP_SERVER_DEFAULT = "false";
+	public static final String HYPERSOCKET_BOOT_HTTP_SERVER_DEFAULT = "true";
 
 	public MiniHttpServer(int http, int https, File keystoreFile) throws IOException {
 		super("MiniHttpServer");

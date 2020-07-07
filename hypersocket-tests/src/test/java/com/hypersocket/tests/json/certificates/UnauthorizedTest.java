@@ -100,7 +100,7 @@ public class UnauthorizedTest extends AbstractServerTest {
 
 	@Test(expected = ClientProtocolException.class)
 	public void test03_updateCertificate() throws Exception {
-		assertNotEquals(0, certificateID);
+		assertNotEquals(0l, certificateID);
 		ResourceUpdate update = new ResourceUpdate();
 		update.setName("TestCertificate");
 		update.setId(certificateID);
