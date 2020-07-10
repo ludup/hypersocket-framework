@@ -31,6 +31,7 @@ import com.hypersocket.HypersocketVersion;
 import com.hypersocket.utils.FileUtils;
 import com.hypersocket.utils.HttpUtilsHolder;
 import com.hypersocket.utils.HypersocketUtils;
+import com.sshtools.common.logger.Log;
 
 public abstract class AbstractExtensionUpdater {
 
@@ -150,7 +151,12 @@ public abstract class AbstractExtensionUpdater {
 		try {
 
 			if(!checked) {
-				checkForUpdates();
+				if(!checkForUpdates()) {
+					if(log.isInfoEnabled()) {
+						log.info("No updates");
+					}
+					return false;
+				}
 			}
 			
 			File tmpFolder = Files.createTempDirectory("hypersocket").toFile();
