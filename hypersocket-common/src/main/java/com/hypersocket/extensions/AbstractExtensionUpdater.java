@@ -31,7 +31,6 @@ import com.hypersocket.HypersocketVersion;
 import com.hypersocket.utils.FileUtils;
 import com.hypersocket.utils.HttpUtilsHolder;
 import com.hypersocket.utils.HypersocketUtils;
-import com.sshtools.common.logger.Log;
 
 public abstract class AbstractExtensionUpdater {
 
