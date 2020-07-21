@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
@@ -105,6 +106,9 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	@Override
 	public void setupSystemContext(Principal principal) {
+		if(Objects.isNull(principal)) {
+			throw new IllegalStateException("Principal object cannot be null when starting a System context");
+		}
 		setCurrentSession(sessionService.getSystemSession(), principal.getRealm(), principal, Locale.getDefault());
 	}
 	
