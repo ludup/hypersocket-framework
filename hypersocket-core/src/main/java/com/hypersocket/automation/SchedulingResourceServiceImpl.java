@@ -1,5 +1,6 @@
 package com.hypersocket.automation;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -63,23 +64,23 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 		Date start = calculateDateTime(resource.getRealm(), startDate, startTime);
 		Date end = calculateDateTime(resource.getRealm(), endDate, endTime);
 
-		int interval = 0;
+		long interval = 0;
 		int repeat = -1;
 
 		if (repeatValue > 0) {
 
 			switch (repeatType) {
 			case DAYS:
-				interval = repeatValue * (60000 * 60 * 24);
+				interval = (long)repeatValue * (60000l * 60l * 24l);
 				break;
 			case HOURS:
-				interval = repeatValue * (60000 * 60);
+				interval = (long)repeatValue * (60000l * 60l);
 				break;
 			case MINUTES:
-				interval = repeatValue * 60000;
+				interval = (long)repeatValue * 60000l;
 				break;
 			case SECONDS:
-				interval = repeatValue * 1000;
+				interval = (long)repeatValue * 1000l;
 				break;
 			case NEVER:
 			default:
@@ -106,7 +107,7 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 				}
 			} else if(interval > 0) {
 				while(start.before(now)) {
-					start = DateUtils.addMilliseconds(start, interval);
+					start = new Date(start.getTime() + interval);
 				}
 			}
 		}
