@@ -38,7 +38,7 @@ public abstract class Resource extends SimpleResource {
 	@Column(name="resource_category", nullable=true)
 	private String resourceCategory;
 	
-	@Column(name="system", nullable=false)
+	@Column(name="system_resource", nullable=false)
 	private boolean system = false;
 	
 	@Column(name="read_only", nullable=true)
