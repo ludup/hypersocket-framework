@@ -1,4 +1,10 @@
 EXIT IF FRESH;
+TRY;
 ALTER TABLE sessions RENAME COLUMN `system` TO `system_session`;
+CATCH;
+TRY;
 ALTER TABLE resources RENAME COLUMN `system` TO `system_resource`;
+CATCH;
+TRY;
 ALTER TABLE permissions RENAME COLUMN `system` TO `system_permission`;
+CATCH;
