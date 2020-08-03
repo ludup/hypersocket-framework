@@ -47,10 +47,10 @@ public class Permission extends AbstractEntity<Long> {
 	@JoinColumn(name="category_id", nullable=false)
 	private PermissionCategory category;
 
-	@Column(name="hidden", nullable=false)
+	@Column(name="hidden")
 	private boolean hidden;
 	
-	@Column(name="system", nullable=false)
+	@Column(name="system_permission")
 	private boolean system;
 	
 	@ManyToMany(fetch=FetchType.LAZY)

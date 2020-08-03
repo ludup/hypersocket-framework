@@ -123,7 +123,7 @@ public class Session extends AbstractEntity<String> {
 	@Column(name = "total_seconds")
 	private Double totalSeconds;
 
-	@Column(name = "system")
+	@Column(name = "system_session")
 	private Boolean system;
 
 	@Column(name = "transient")
