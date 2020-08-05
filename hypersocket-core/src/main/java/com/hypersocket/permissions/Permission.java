@@ -50,7 +50,7 @@ public class Permission extends AbstractEntity<Long> {
 	@Column(name="hidden")
 	private boolean hidden;
 	
-	@Column(name="system_permission")
+	@Column(name="system_permission", nullable=false)
 	private boolean system;
 	
 	@ManyToMany(fetch=FetchType.LAZY)
