@@ -1,13 +1,13 @@
 EXIT IF FRESH;
 TRY;
+UPDATE sessions SET `system` = 0 WHERE `system` IS NULL;
 ALTER TABLE sessions RENAME COLUMN `system` TO `system_session`;
-UPDATE sessions SET `system_session` = 0 WHERE `system_session` IS NULL;
 CATCH;
 TRY;
+UPDATE resources SET `system` = 0 WHERE `system` IS NULL;
 ALTER TABLE resources RENAME COLUMN `system` TO `system_resource`;
-UPDATE resources SET `system_resource` = 0 WHERE `system_resource` IS NULL;
 CATCH;
 TRY;
+UPDATE permissions SET `system` = 0 WHERE `system` IS NULL;
 ALTER TABLE permissions RENAME COLUMN `system` TO `system_permission`;
-UPDATE permissions SET `system_permission` = 0 WHERE `system_permission` IS NULL;
 CATCH;
