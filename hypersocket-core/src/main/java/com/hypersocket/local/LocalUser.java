@@ -65,13 +65,13 @@ public class LocalUser extends UserPrincipal<LocalGroup> implements Serializable
 	@Column(name="email")
 	private String email;
 
-	@Column(name="secondary_email")
+	@Column(name="secondary_email", length=8000)
 	private String secondaryEmail;
 	
 	@Column(name="mobile")
 	private String mobile;
 	
-	@Column(name="secondary_mobile")
+	@Column(name="secondary_mobile", length=8000)
 	private String secondaryMobile;
 	
 	@Column(name="realm_category")

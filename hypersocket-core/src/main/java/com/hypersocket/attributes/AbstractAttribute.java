@@ -6,7 +6,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import com.hypersocket.properties.NameValuePair;
@@ -23,8 +22,7 @@ public abstract class AbstractAttribute<C extends RealmAttributeCategory<?>> ext
 	@Column(name="description")
 	private String description;
 	
-	@Lob
-	@Column(name="default_value", nullable=true)
+	@Column(name="default_value", nullable=true, length=8000 /*SQL server limit */)
 	private String defaultValue;
 
 	@Column(name="weight")
@@ -48,8 +46,7 @@ public abstract class AbstractAttribute<C extends RealmAttributeCategory<?>> ext
 	@Column(name="variable_name")
 	private String variableName;
 	
-	@Lob
-	@Column(name="options")
+	@Column(name="options", length = 8096)
 	private String options;
 
 	@Column(name="linked_resource_id")
