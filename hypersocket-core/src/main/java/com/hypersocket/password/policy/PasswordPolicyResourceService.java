@@ -1,6 +1,7 @@
 package com.hypersocket.password.policy;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,6 +35,8 @@ public interface PasswordPolicyResourceService extends
 	void registerPolicyResolver(String resourceKey, PolicyResolver resolver);
 
 	PasswordPolicyResource getPolicyByDN(String dn, Realm realm);
+	
+	Iterator<PasswordPolicyResource> iterate(Realm realm);
 
 	PasswordPolicyResource getDefaultPasswordPolicy(Realm realm);
 	

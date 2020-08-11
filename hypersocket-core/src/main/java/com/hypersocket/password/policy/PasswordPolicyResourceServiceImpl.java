@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,8 +45,10 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserPrincipal;
+import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
+import com.hypersocket.resource.RealmCriteria;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -535,5 +538,10 @@ public class PasswordPolicyResourceServiceImpl extends AbstractAssignableResourc
 	@Override
 	public PasswordPolicyResource getLocalPolicy(Realm realm) {
 		return getDefaultPolicy(realm, LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY);
+	}
+
+	@Override
+	public Iterator<PasswordPolicyResource> iterate(Realm realm) {
+		return repository.iterate(PasswordPolicyResource.class, null, new RealmCriteria(realm), new DeletedCriteria(false));
 	}
 }
