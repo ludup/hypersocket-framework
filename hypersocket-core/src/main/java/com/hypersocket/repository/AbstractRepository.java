@@ -42,5 +42,7 @@ public interface AbstractRepository<K> {
 	void assosicate(Object entity);
 
 	<I> Iterator<I> iterate(Class<I> clazz, ColumnSort[] sorting, CriteriaConfiguration... configs);
+
+	List<?> total(Class<?> clz, String column, Sort order, CriteriaConfiguration... configs);
 	
 }

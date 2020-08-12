@@ -462,6 +462,31 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		
 		return criteria.list();
 	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public List<?> total(Class<?> clz, String column, Sort order, CriteriaConfiguration... configs) {
+
+		Criteria criteria = createCriteria(clz);
+
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		
+		ProjectionList projectionList = Projections.projectionList();
+		projectionList.add(Projections.sum(column), "total");
+		criteria.setProjection(projectionList);
+		
+		if(order.equals(Sort.DESC)) {
+			criteria.addOrder(Order.desc("total"));
+		} else {
+			criteria.addOrder(Order.asc("total"));
+		}
+		
+		return criteria.list();
+	}
 
 	@Override
 	@Transactional(readOnly = true)
