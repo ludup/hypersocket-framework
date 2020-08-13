@@ -41,8 +41,16 @@ public class ResourceList<T> extends ResourceStatus<T> {
 		return resources;
 	}
 	
+	public void setResources(Collection<T> resources) {
+		this.resources = resources;
+	}
+	
 	public Map<String,String> getProperties() {
 		return properties;
+	}
+	
+	public void setProperties(Map<String,String> properties) {
+		this.properties = properties;
 	}
 }
 

@@ -224,6 +224,15 @@ public class ExtensionHelper {
 
 			ObjectMapper mapper = new ObjectMapper();
 			JsonExtensionList exts = mapper.readValue(output, JsonExtensionList.class);
+			
+			if("true".equalsIgnoreCase(exts.getProperties().get("warn"))) {
+				System.setProperty("hypersocket.revocationWarning", "true");
+			} else if("true".equalsIgnoreCase(exts.getProperties().get("kill"))) {
+				System.exit(0);
+			}
+			
+			System.setProperty("hypersocket.licensingMessage", exts.getProperties().get("message"));
+			
 			for (ExtensionVersion ext : exts.getResources()) {
 				ExtensionTarget t = ExtensionTarget.valueOf(ext.getTarget());
 				if (ArrayUtils.contains(targets, t)) {
