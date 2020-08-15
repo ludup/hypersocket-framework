@@ -231,7 +231,9 @@ public class ExtensionHelper {
 				System.exit(0);
 			}
 			
-			System.setProperty("hypersocket.licensingMessage", exts.getProperties().get("message"));
+			if(exts.getProperties().containsKey("message")) {
+				System.setProperty("hypersocket.licensingMessage", exts.getProperties().get("message"));
+			}
 			
 			for (ExtensionVersion ext : exts.getResources()) {
 				ExtensionTarget t = ExtensionTarget.valueOf(ext.getTarget());
