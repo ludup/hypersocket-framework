@@ -130,6 +130,8 @@ public class RealmRepositoryImpl extends
 						criteria.add(Restrictions.eq("deleted", false));
 						if(!currentRealm.isSystem()) {
 							criteria.add(Restrictions.eq("parent", currentRealm));
+						} else {
+							criteria.add(Restrictions.isNull("parent"));
 						}
 						if(!filter.isEmpty()) {
 							criteria.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(filter)));
@@ -269,14 +271,31 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional(readOnly=true)
 	public Collection<Realm> getRealmsByParent(final Realm realm) {
-		if(realm.isSystem()) {
-			return allRealms();
-		}
+
 		return list(Realm.class, new DeletedCriteria(false), new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("parent", realm));
+			}
+			
+		});
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<Realm> getPublicRealmsByParent(final Realm realm) {
+		return list(Realm.class, new DeletedCriteria(false), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				if(!realm.isSystem()) {
+					criteria.add(Restrictions.eq("parent", realm));
+				} else {
+					criteria.add(Restrictions.isNull("parent"));
+				}
+				criteria.add(Restrictions.isNull("owner"));
+				criteria.add(Restrictions.eq("publicRealm", true));
 			}
 			
 		});

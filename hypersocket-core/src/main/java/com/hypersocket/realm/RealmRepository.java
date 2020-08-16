@@ -69,4 +69,6 @@ public interface RealmRepository extends
 
 	long countPrimaryRealms();
 
+	Collection<Realm> getPublicRealmsByParent(Realm realm);
+
 }

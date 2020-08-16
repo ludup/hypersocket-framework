@@ -1096,7 +1096,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Realm createPrimaryRealm(String name, String module, Map<String, String> properties)
 			throws AccessDeniedException, ResourceException, ResourceConfirmationException {
-		return createRealm(name, module, null, null, properties);
+		return createRealm(name, module, 
+				getCurrentRealm().isSystem() ? null : getCurrentRealm(),  
+					null, properties);
 	}
 
 	@Override
@@ -2788,6 +2790,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Collection<Realm> getRealmsByParent(Realm currentRealm) {
 		return realmRepository.getRealmsByParent(currentRealm);
+	}
+	
+	@Override
+	public Collection<Realm> getPublicRealmsByParent(Realm currentRealm) {
+		return realmRepository.getPublicRealmsByParent(currentRealm);
 	}
 
 	@Override
