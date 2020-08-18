@@ -21,6 +21,7 @@ import com.hypersocket.session.Session;
 public interface AuthenticationService extends PasswordEnabledAuthenticatedService {
 
 	public static final String RESOURCE_BUNDLE = "AuthenticationService";
+	public static final String AUTHENTICATION_SCHEME = "authenticationScheme";
 
 	void registerAuthenticator(Authenticator authenticator);
 

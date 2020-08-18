@@ -116,6 +116,8 @@ public abstract class Principal extends RealmResource {
 		this.primaryEmail = primaryEmail;
 	}
 
+	public abstract String getOtherName();
+	
 	public abstract String getEmail();
 
 	public abstract Date getExpires();

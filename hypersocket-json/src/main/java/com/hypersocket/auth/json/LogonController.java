@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.hypersocket.auth.AuthenticationRequiredResult;
+import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.FallbackAuthenticationRequired;
 import com.hypersocket.i18n.I18NService;
@@ -192,7 +194,13 @@ public class LogonController extends AuthenticatedController {
 			// Previous session has timed out
 		}
 
-
+		if(Objects.isNull(scheme)) {
+			/**
+			 * LDP - This allows the scheme to be preset in a previous API call so that we don't have to 
+			 * specify the scheme when we start the login flow.
+			 */
+			scheme = (String) request.getSession().getAttribute(AuthenticationService.AUTHENTICATION_SCHEME);
+		}
 		try {
 			if(state!=null) {
 				state.setLastErrorMsg(null);

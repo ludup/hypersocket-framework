@@ -50,4 +50,9 @@ public class FakePrincipal extends Principal {
 	public Date getExpires() {
 		return null;
 	}
+
+	@Override
+	public String getOtherName() {
+		return getPrincipalName();
+	}
 }

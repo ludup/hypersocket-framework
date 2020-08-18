@@ -47,6 +47,11 @@ public class LocalGroup extends GroupPrincipal<LocalUser, LocalGroup> {
 		return PrincipalStatus.ENABLED;
 	}
 	
+	@Override
+	public String getOtherName() {
+		return getPrincipalName();
+	}
+	
 	public String getIcon() {
 		return "fa-database";
 	}

@@ -102,6 +102,11 @@ public class LocalUser extends UserPrincipal<LocalGroup> implements Serializable
 		return type;
 	}
 	
+	@Override
+	public String getOtherName() {
+		return getPrincipalName();
+	}
+	
 	@JsonIgnore
 	public LocalUserCredentials getCredentials() {
 		return credentials;
