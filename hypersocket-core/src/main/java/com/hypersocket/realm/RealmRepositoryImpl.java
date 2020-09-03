@@ -283,6 +283,25 @@ public class RealmRepositoryImpl extends
 	}
 
 	@Override
+	@Transactional(readOnly=true)
+	public Collection<Realm> getPublicRealmsByParent(final Realm realm) {
+		return list(Realm.class, new DeletedCriteria(false), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				if(!realm.isSystem()) {
+					criteria.add(Restrictions.eq("parent", realm));
+				} else {
+					criteria.add(Restrictions.isNull("parent"));
+				}
+				criteria.add(Restrictions.isNull("owner"));
+				criteria.add(Restrictions.eq("publicRealm", true));
+			}
+			
+		});
+	}
+	
+	@Override
 	public boolean isDeletable() {
 		return false;
 	}

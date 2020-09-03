@@ -2793,6 +2793,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
+	public Collection<Realm> getPublicRealmsByParent(Realm currentRealm) {
+		return realmRepository.getPublicRealmsByParent(currentRealm);
+	}
+	
+	@Override
 	public Map<String, String> getRealmProperties(Realm realm) {
 		RealmProvider provider = getProviderForRealm(realm);
 		return provider.getProperties(realm);
