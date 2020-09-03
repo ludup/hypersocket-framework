@@ -168,7 +168,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Realm getDefaultRealm();
 
-	List<Realm> allRealms(boolean ignoreMissingProvider) throws AccessDeniedException;
+	List<Realm> allRealms(boolean ignoreMissingProvider);
 
 	Realm setDefaultRealm(Realm realm) throws AccessDeniedException;
 

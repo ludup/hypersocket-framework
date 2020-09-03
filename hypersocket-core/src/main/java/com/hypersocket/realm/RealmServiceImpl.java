@@ -915,14 +915,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public List<Realm> allRealms() throws AccessDeniedException {
-		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
-
 		return filterRealms(null, false);
 	}
 
 	@Override
-	public List<Realm> allRealms(boolean ignoreMissingProvider) throws AccessDeniedException {
-		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
+	public List<Realm> allRealms(boolean ignoreMissingProvider) {
 		return filterRealms(null, ignoreMissingProvider);
 	}
 
