@@ -339,5 +339,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	void undeleteUsers(Realm realm, List<Principal> users) throws ResourceException, AccessDeniedException;
 
+	Collection<Realm> getPublicRealmsByParent(Realm currentRealm);
+
+	Principal getPrincipalByUUID(String uuid);
+
 }
 

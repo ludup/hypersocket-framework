@@ -100,6 +100,11 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 		return get("id", id, getResourceClass());
 	}
 	
+	@Transactional(readOnly=true)
+	public T getResourceByUUID(String id) {
+		return get("reference", id, getResourceClass());
+	}
+	
 	@Override
 	@Transactional(readOnly=true)
 	public T getResourceByLegacyId(Long id) {
