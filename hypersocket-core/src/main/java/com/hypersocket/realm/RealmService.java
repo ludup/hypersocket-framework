@@ -341,5 +341,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Collection<Realm> getPublicRealmsByParent(Realm currentRealm);
 
+	Principal getPrincipalByUUID(String uuid);
+
 }
 

@@ -19,6 +19,8 @@ public interface AbstractSimpleResourceRepository<T extends SimpleResource> exte
 	T getResourceByName(String name, Realm realm, boolean deleted);
 
 	T getResourceById(Long id);
+	
+	T getResourceByUUID(String id);
 
 	void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws ResourceException;
       

@@ -3002,4 +3002,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		});
 		
 	}
+
+	@Override
+	public Principal getPrincipalByUUID(String uuid) {
+		Principal principal = principalRepository.getResourceByUUID(uuid);
+		return principal;
+	}
 }
