@@ -217,10 +217,11 @@ public class AuthenticationServiceImpl extends
 				
 				AuthenticationScheme basicScheme = schemeRepository.getSchemeByResourceKey2(realm, AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
 				List<String> modules = new ArrayList<String>();
-				List<AuthenticationModule> basicModules = repository.getModulesForScheme(basicScheme);
-				for(AuthenticationModule m : basicModules ) {
-					modules.add(m.getTemplate());
-				}
+				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
+				try {
+					Class.forName("com.logonbox.authenticator.LogonBoxAuthenticatorHtml");
+					modules.add("logonboxHtml");
+				} catch(ClassNotFoundException e) { }
 				
 				if (log.isInfoEnabled()) {
 					log.info("Creating " + AUTHENTICATION_SCHEME_NAME
@@ -244,7 +245,7 @@ public class AuthenticationServiceImpl extends
 					throw new IllegalStateException(e.getMessage(), e);
 				}
 				
-				
+				List<AuthenticationModule> basicModules = repository.getModulesForScheme(basicScheme);
 				AuthenticationModule m = basicModules.iterator().next();
 				m.setTemplate(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 				m.setIndex(0);
