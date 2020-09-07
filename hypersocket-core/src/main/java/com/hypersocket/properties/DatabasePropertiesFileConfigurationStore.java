@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +17,12 @@ import org.w3c.dom.Element;
 
 public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileConfigurationStore {
 
+	public static final String MYSQL_TIMEZONE = "serverTimezone";
+	public static final String MYSQL_LOCAL_SOCKET = "localSocket";
+
+	
 	public static final String MYSQL = "MYSQL";
+	public static final String MYSQL_LOCAL = "MYSQL_LOCAL";
 	public static final String POSTGRES = "POSTGRES";
 	public static final String MSSQL = "MSSQL";
 	public static final String DERBY = "DERBY";
@@ -39,6 +43,7 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 	public static final String JDBC_ACQUIRE_RETRY_DELAY = "jdbc.acquireRetryDelay"; // 1000
 	public static final String JDBC_ACQUIRE_RETRY_ATTEMPTS = "jdbc.acquireRetryAttempts"; // 10
 	public static final String JDBC_TIMEZONE = "jdbc.timeZone"; // 10
+	public static final String JDBC_LOCAL_SOCKET = "jdbc.localSocket"; // /var/run/mysqld/mysqld.sock
 	
 
 	public static final String INSTALLER_DATABASE_HOST = "${installer:databaseHost}";
@@ -108,13 +113,19 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 				}else{
 					properties.put(JDBC_HOST, value);
 				}
-			}else if(JDBC_TIMEZONE.equals(template.getResourceKey())){
-				if(MYSQL.equals(currentVendor)) {
+			} else if(JDBC_TIMEZONE.equals(template.getResourceKey())){
+				if(MYSQL.equals(currentVendor) || MYSQL_LOCAL.equals(currentVendor)) {
 					properties.put(JDBC_TIMEZONE, value);
 				}else{
 					properties.put(JDBC_TIMEZONE, null);
 				}
-			}else if(JDBC_PORT.equals(template.getResourceKey())){
+			} else if(JDBC_LOCAL_SOCKET.equals(template.getResourceKey())){
+				if(MYSQL_LOCAL.equals(currentVendor)) {
+					properties.put(JDBC_LOCAL_SOCKET, value);
+				}else{
+					properties.put(JDBC_LOCAL_SOCKET, null);
+				}
+			} else if(JDBC_PORT.equals(template.getResourceKey())){
 				if(DERBY.equals(currentVendor) || H2.equals(currentVendor)) {
 					properties.put(JDBC_PORT, null);
 				}else{
@@ -129,18 +140,33 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 				properties.put(template.getResourceKey(), value);
 			}
 
-			if(properties.containsKey(JDBC_VENDOR) && properties.containsKey(JDBC_HOST) && properties.containsKey(JDBC_PORT) && properties.containsKey(JDBC_DATABASE)){
+			if(properties.containsKey(JDBC_VENDOR) && properties.containsKey(JDBC_DATABASE)){
 				String jdbcUrlTemplate = vendorTemplateProperties.getProperty(JDBC_URL);
-				String jdbcUrl = StringUtils.replaceEach(jdbcUrlTemplate,
-										new String[] {INSTALLER_DATABASE_HOST, INSTALLER_DATABASE_PORT,
-												INSTALLER_DATABASE_NAME, DERBY_DATA,
-												INSTALLER_DATABASE_TIMEZONE},
-										new String[] {properties.getProperty(JDBC_HOST), properties.getProperty(JDBC_PORT),
-												properties.getProperty(JDBC_DATABASE),
-												String.format("derby:%s", properties.getProperty(JDBC_DATABASE)),
-												URLEncoder.encode(properties.getProperty(JDBC_TIMEZONE), "UTF-8")});
+				if(properties.containsKey(JDBC_HOST) && properties.containsKey(JDBC_PORT)) {
+					properties.put(JDBC_URL, StringUtils.replaceEach(jdbcUrlTemplate,
+											new String[] {INSTALLER_DATABASE_HOST, INSTALLER_DATABASE_PORT,
+													INSTALLER_DATABASE_NAME, DERBY_DATA},
+											new String[] {properties.getProperty(JDBC_HOST), properties.getProperty(JDBC_PORT),
+													properties.getProperty(JDBC_DATABASE),
+													String.format("derby:%s", properties.getProperty(JDBC_DATABASE))
+													}));
+				}
+				else
+					properties.put(JDBC_URL, StringUtils.replaceEach(jdbcUrlTemplate,
+											new String[] {
+													INSTALLER_DATABASE_NAME, DERBY_DATA},
+											new String[] {properties.getProperty(JDBC_HOST), properties.getProperty(JDBC_PORT),
+													properties.getProperty(JDBC_DATABASE),
+													String.format("derby:%s", properties.getProperty(JDBC_DATABASE))
+													}));
+			}
 
-				properties.put(JDBC_URL, jdbcUrl);
+			if(properties.containsKey(JDBC_URL) && properties.containsKey(JDBC_TIMEZONE)){
+				properties.put(JDBC_URL, properties.getProperty(JDBC_URL) + "&" + MYSQL_TIMEZONE + "=" + properties.getProperty(JDBC_TIMEZONE));
+			}
+
+			if(properties.containsKey(JDBC_URL) && properties.containsKey(JDBC_LOCAL_SOCKET)){
+				properties.put(JDBC_URL, properties.getProperty(JDBC_URL) + "&" + MYSQL_LOCAL_SOCKET + "=" + properties.getProperty(JDBC_LOCAL_SOCKET));
 			}
 
 			saveProperties();
@@ -171,8 +197,11 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 				properties.setProperty(JDBC_PORT, tokens.get(JDBCURIParser.PORT));
 			if(tokens.containsKey(JDBCURIParser.DATABASE))
 				properties.setProperty(JDBC_DATABASE, tokens.get(JDBCURIParser.DATABASE));
-			if(tokens.containsKey(JDBCURIParser.MYSQL_TIMEZONE)) {
-				properties.setProperty(JDBC_TIMEZONE, tokens.get(JDBCURIParser.MYSQL_TIMEZONE));
+			if(tokens.containsKey(MYSQL_TIMEZONE)) {
+				properties.setProperty(JDBC_TIMEZONE, tokens.get(MYSQL_TIMEZONE));
+			}
+			if(tokens.containsKey(MYSQL_LOCAL_SOCKET)) {
+				properties.setProperty(JDBC_LOCAL_SOCKET, tokens.get(MYSQL_LOCAL_SOCKET));
 			}
 		}
 	}
@@ -204,6 +233,7 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 	static class JDBCURIParser {
 
 		public static final String SCHEME_MYSQL = "mysql";
+		public static final String SCHEME_MARIADB = "mariadb";
 		public static final String SCHEME_POSTGRESQL = "postgresql";
 		public static final String SCHEME_MSSQL = "sqlserver";
 		public static final String SCHEME_DERBY = "derby";
@@ -215,13 +245,13 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 		public static String PATH = "PATH";
 		public static String DATABASE = "DATABASE";
 
-		public static final String MYSQL_TIMEZONE = "serverTimezone";
-
 		public static Map<String, String> parse(String uri){
 			if(StringUtils.isBlank(uri)){
 				throw new IllegalArgumentException("Uri cannot be null or blank.");
 			}
-			if(uri.contains(SCHEME_MYSQL)){
+			if(uri.contains(SCHEME_MARIADB)){
+				return parseMaria(uri);
+			} else if(uri.contains(SCHEME_MYSQL)){
 				return parseMySql(uri);
 			}else if(uri.contains(SCHEME_POSTGRESQL)){
 				return parsePostgres(uri);
@@ -241,6 +271,18 @@ public class DatabasePropertiesFileConfigurationStore extends  PropertiesFileCon
 			Map<String, String> tksn = makeTokens(toParse);
 			if(tksn.containsKey(MYSQL_TIMEZONE)) {
 				tksn.put(JDBC_TIMEZONE, tksn.get(MYSQL_TIMEZONE));
+			}
+			return tksn;
+		}
+
+		private static Map<String, String> parseMaria(String uri){
+			String toParse = uri.replaceAll("jdbc:", "");
+			Map<String, String> tksn = makeTokens(toParse);
+			if(tksn.containsKey(MYSQL_TIMEZONE)) {
+				tksn.put(JDBC_TIMEZONE, tksn.get(MYSQL_TIMEZONE));
+			}
+			if(tksn.containsKey(MYSQL_LOCAL_SOCKET)) {
+				tksn.put(JDBC_LOCAL_SOCKET, tksn.get(MYSQL_LOCAL_SOCKET));
 			}
 			return tksn;
 		}
