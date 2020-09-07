@@ -27,11 +27,11 @@ public interface PrincipalRepository extends AbstractResourceRepository<Principa
 
 	Principal getPrincipalByReference(String reference, Realm realm);
 
-	List<?> searchDeleted(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
-			ColumnSort[] sorting, int start, int length, CriteriaConfiguration... criteriaConfiguration);
+	List<?> searchDeleted(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+			ColumnSort[] sorting, int start, int length, boolean local, CriteriaConfiguration... criteriaConfiguration);
 
-	Long getDeletedCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
-			CriteriaConfiguration... criteriaConfiguration);
+	Long getDeletedCount(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+			boolean local, CriteriaConfiguration... criteriaConfiguration);
 
 	void undelete(Realm realm, Principal user) throws ResourceChangeException;
 

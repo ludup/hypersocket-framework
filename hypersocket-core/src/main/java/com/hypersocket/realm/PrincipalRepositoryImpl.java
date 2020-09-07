@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.HiddenCriteria;
+import com.hypersocket.repository.LocallyDeletedCriteria;
 import com.hypersocket.repository.PrincipalTypesCriteria;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.RealmCriteria;
@@ -139,20 +140,20 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<?> searchDeleted(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
-			ColumnSort[] sorting, int start, int length, CriteriaConfiguration... criteriaConfiguration) {
-		return super.search(getResourceClass(), searchColumn, searchPattern, start, length, sorting,
+	public List<?> searchDeleted(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+			ColumnSort[] sorting, int start, int length, boolean local, CriteriaConfiguration... criteriaConfiguration) {
+		return super.search(clazz, searchColumn, searchPattern, start, length, sorting,
 				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
-						new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
+						local ? new LocallyDeletedCriteria(true): new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public Long getDeletedCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern,
-			CriteriaConfiguration... criteriaConfiguration) {
-		return getCount(getResourceClass(), searchColumn, searchPattern,
+	public Long getDeletedCount(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+			boolean local, CriteriaConfiguration... criteriaConfiguration) {
+		return getCount(clazz, searchColumn, searchPattern,
 				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
-						new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
+						local ? new LocallyDeletedCriteria(true): new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
 	}
 
 	@Override
