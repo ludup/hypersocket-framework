@@ -137,6 +137,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	@PostConstruct
 	private void setup() {
 	    servletContext = new HypersocketServletContext(this);
+	    
+	    String basePath = getBasePath();
+	    if(!basePath.equals("/hypersocket")) {
+	    	addUrlRewrite("/hypersocket/(.*)", "${basePath}/$1");
+	    }
 	}
 	
 	@Override
