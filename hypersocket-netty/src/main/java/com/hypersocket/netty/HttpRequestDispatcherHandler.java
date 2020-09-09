@@ -162,7 +162,15 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			InetSocketAddress remoteAddress = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
 			if(nettyRequest.containsHeader("X-Forwarded-For")) {
 				String[] ips = nettyRequest.getHeader("X-Forwarded-For").split(",");
-				remoteAddress = new InetSocketAddress(ips[0], remoteAddress.getPort());
+				
+				/* Some proxies might senda port number. It seems a bit ambiguous if
+				 * this is in the spec or not, depending on where you look. 
+				 * 
+				 * Let's support it anyway
+				 */
+				String[] ipAndPort = ips[0].split(":");
+				
+				remoteAddress = new InetSocketAddress(ips[0], ipAndPort.length > 1 ? Integer.parseInt(ipAndPort[1]) : remoteAddress.getPort());
 			} else if(nettyRequest.containsHeader("Forwarded")) {
 				StringTokenizer t = new StringTokenizer(nettyRequest.getHeader("Forwarded"), ";");
 				while(t.hasMoreTokens()) {
