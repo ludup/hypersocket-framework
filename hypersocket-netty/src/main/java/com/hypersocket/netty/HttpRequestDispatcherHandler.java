@@ -253,6 +253,10 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						uri = matcher.replaceAll(uri);
 						servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
 						servletRequest.parseUri(uri);
+						reverseUri = servletRequest.getRequestURI();
+						reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
+						reverseUri = reverseUri.replace(server.getUiPath(), "${uiPath}");
+						reverseUri = reverseUri.replace(server.getBasePath(), "${basePath}");
 						break;
 					}
 				}
