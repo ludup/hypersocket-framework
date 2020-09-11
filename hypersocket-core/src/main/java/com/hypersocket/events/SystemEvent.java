@@ -23,6 +23,7 @@ public abstract class SystemEvent extends AbstractEvent {
 	private Realm currentRealm;
 	private long altTimestamp = -1;
 	protected boolean hidden;
+	protected boolean consoleLog = true;
 	
 	private Map<String,String> attributes = new HashMap<String,String>();
 	
@@ -116,6 +117,10 @@ public abstract class SystemEvent extends AbstractEvent {
 	
 	public boolean isHidden() {
 		return hidden;
+	}
+	
+	public boolean isConsoleLog() {
+		return consoleLog;
 	}
 
 }

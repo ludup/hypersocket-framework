@@ -17,6 +17,7 @@ import com.hypersocket.batch.BatchProcessingServiceImpl;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.triggers.ValidationException;
@@ -36,6 +37,9 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 
 	@Autowired
 	private FileUploadService uploadService;
+
+	@Autowired
+	private RealmService realmService;
 
 	@Override
 	protected BatchProcessingItemRepository<EmailBatchItem> getRepository() {
@@ -72,7 +76,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 				}
 			}
 
-			emailService.sendEmail(item.getRealm(), item.getSubject(), item.getText(), item.getHtml(),
+			emailService.sendEmail(realmService.getRealmById(item.getRealm()), item.getSubject(), item.getText(), item.getHtml(),
 					item.getReplyToName(), 
 					item.getReplyToEmail(),
 					new RecipientHolder[] { new RecipientHolder(item.getToName(), item.getToEmail()) }, 
@@ -83,7 +87,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 			
 		} catch (MailException | AccessDeniedException | ValidationException e) {
 			log.error("I could not send an email in realm {} to user {} with subject {}",
-					item.getRealm().getName(),
+					item.getRealm(),
 					item.getToEmail(), 
 					item.getSubject(),
 					e);
@@ -110,7 +114,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 			throws ResourceException {
 
 		EmailBatchItem item = new EmailBatchItem();
-		item.setRealm(realm);
+		item.setRealm(realm.getId());
 		item.setContext(context);
 		item.setSubject(subject);
 		item.setText(body);
@@ -128,4 +132,5 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 
 		repository.merge(item);
 	}
+
 }

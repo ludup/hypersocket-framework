@@ -31,6 +31,9 @@ import com.hypersocket.tables.ColumnSort;
 public class DictionaryResourceRepositoryImpl extends AbstractSimpleResourceRepositoryImpl<Word>
 		implements DictionaryResourceRepository {
 
+	/* Match hibernate.jdbc.batch_size */
+	static final int BATCH_SIZE = 50;
+	
 	@Override
 	protected Class<Word> getResourceClass() {
 		return Word.class;
@@ -145,7 +148,7 @@ public class DictionaryResourceRepositoryImpl extends AbstractSimpleResourceRepo
 				for (Locale l : locales) {
 					Word w = new Word(l, line, index++);
 					save(w);
-					if (index % 1000 == 0) {
+					if (index % BATCH_SIZE == 0) {
 						flush();
 					}
 				}

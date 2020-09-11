@@ -48,8 +48,8 @@ public class CertificateExpiringNotificationJob extends PermissionsAwareJob {
 						"certificate.reminder.days")) {
 					Date startDate = DateUtils.addDays(HypersocketUtils.today(), days);
 					Date endDate = DateUtils.addDays(startDate, 1);
-					if(log.isInfoEnabled()) {
-						log.info(String.format("Processing certificates that expire in %d days between %s and %s", days, 
+					if(log.isDebugEnabled()) {
+						log.debug(String.format("Processing certificates that expire in %d days between %s and %s", days, 
 								HypersocketUtils.formatDateTime(startDate), HypersocketUtils.formatDateTime(endDate)));
 					}
 					

@@ -6,7 +6,6 @@ import com.hypersocket.dictionary.Word;
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.events.SessionEvent;
-import com.hypersocket.utils.HypersocketUtils;
 
 @SuppressWarnings("serial")
 public class DictionaryResourceEvent extends SessionEvent {
@@ -28,10 +27,7 @@ public class DictionaryResourceEvent extends SessionEvent {
 		
 		this.resource = resource;
 		
-		addAttribute(ATTR_RESOURCE_ID, Long.toString(resource.getId()));
 		addAttribute(ATTR_RESOURCE_NAME, resource.getName());
-		addAttribute(ATTR_CREATED, HypersocketUtils.formatDateTime(resource.getCreateDate()));
-		addAttribute(ATTR_LAST_MODIFIED, HypersocketUtils.formatDateTime(resource.getModifiedDate()));
 	}
 
 	public DictionaryResourceEvent(Object source, String resourceKey,

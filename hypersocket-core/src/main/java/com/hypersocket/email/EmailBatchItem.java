@@ -10,7 +10,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -18,7 +17,6 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
 
 @Entity
@@ -29,9 +27,9 @@ public class EmailBatchItem extends AbstractEntity<Long> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
-	@Column(name="resource_id")
+	@Column(name = "resource_id")
 	private Long id;
-	
+
 	@Column(name = "subject", length = 1024)
 	private String subject;
 
@@ -71,10 +69,9 @@ public class EmailBatchItem extends AbstractEntity<Long> {
 	@Column(name = "context")
 	private String context;
 
-	@ManyToOne
 	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "email_batch_items_cascade_1"))
 	@OnDelete(action = OnDeleteAction.CASCADE)
-	private Realm realm;
+	private Long realm;
 
 	public Long getId() {
 		return id;
@@ -84,11 +81,11 @@ public class EmailBatchItem extends AbstractEntity<Long> {
 		this.id = id;
 	}
 
-	public Realm getRealm() {
+	public long getRealm() {
 		return realm;
 	}
 
-	public void setRealm(Realm realm) {
+	public void setRealm(long realm) {
 		this.realm = realm;
 	}
 

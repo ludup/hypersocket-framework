@@ -697,6 +697,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			provider.reconcileUser(principal);
+			log.info(String.format("Created user %s in realm %s", principal.getName(), realm.getName()));
 			eventService.publishEvent(new UserCreatedEvent(this, getCurrentSession(), realm, provider, principal,
 					principals, filterSecretProperties(principal, provider, properties), passwordCreator.getPassword(),
 					forceChange, selfCreated));
@@ -773,6 +774,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				processor.afterUpdate(principal, properties);
 			}
 
+			log.info(String.format("Updated properties user %s in realm %s", principal.getName(), principal.getRealm().getName()));
 			eventService.publishEvent(
 					new UserUpdatedEvent(this, getCurrentSession(), principal.getRealm(), provider, principal,
 							getAssociatedPrincipals(principal), filterSecretProperties(principal, provider, properties),
@@ -817,6 +819,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				processor.afterUpdate(principal, properties);
 			}
 
+			log.info(String.format("Updated user %s in realm %s", principal.getName(), principal.getRealm().getName()));
 			eventService.publishEvent(new UserUpdatedEvent(this, getCurrentSession(), realm, provider, principal,
 					getAssociatedPrincipals(principal), filterSecretProperties(principal, provider, properties),
 					previousPrincipals, filterSecretProperties(principal, provider, oldProperties)));
@@ -1623,6 +1626,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			Principal principal = provider.createGroup(realm, name, properties, principals, groups);
 
+			log.info(String.format("Created group %s in realm %s", principal.getName(), realm.getName()));
 			eventService.publishEvent(
 					new GroupCreatedEvent(this, getCurrentSession(), realm, provider, principal, principals));
 			return principal;
@@ -1698,6 +1702,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						processor.afterUpdate(principal, properties);
 					}
 
+					log.info(String.format("Created group %s in realm %s", principal.getName(), realm.getName()));
 					eventService.publishEvent(new GroupUpdatedEvent(this, getCurrentSession(), realm, provider,
 							principal, all, assigned, unassigned));
 

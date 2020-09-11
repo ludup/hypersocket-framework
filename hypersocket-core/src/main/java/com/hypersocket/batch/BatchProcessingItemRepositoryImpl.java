@@ -36,7 +36,7 @@ public abstract class BatchProcessingItemRepositoryImpl<T extends AbstractEntity
 	@Transactional
 	public void deleteRealm(Realm realm) {
 		Query q = createQuery(String.format("delete from %s where realm = :r", getEntityClass().getSimpleName()), true);
-		q.setParameter("r", realm);
+		q.setParameter("r", realm.getId());
 		q.executeUpdate();
 		flush();
 	}
@@ -49,14 +49,5 @@ public abstract class BatchProcessingItemRepositoryImpl<T extends AbstractEntity
 	@Transactional
 	public T saveItem(T entity) {
 		return (T) save(entity);
-	}
-
-	@Override
-	@Transactional
-	public void markAllAsDeleted() {
-		Query q = createQuery(String.format("update %s set deleted = :r", getEntityClass().getSimpleName()), true);
-		q.setParameter("r", true);
-		q.executeUpdate();
-		flush();
 	}
 }

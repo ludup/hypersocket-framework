@@ -21,6 +21,10 @@ public class GroupUpdatedEvent extends GroupEvent {
 	private Collection<Principal> granted;
 	private Collection<Principal> revoked;
 	
+	{
+		consoleLog = false;
+	}
+	
 	public GroupUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,
 			Collection<Principal> associatedPrincipals,

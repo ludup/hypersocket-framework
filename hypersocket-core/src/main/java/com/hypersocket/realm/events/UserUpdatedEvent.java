@@ -24,6 +24,11 @@ public class UserUpdatedEvent extends UserEvent {
 	private Map<String, String[]> allChangedProperties = new HashMap<>();
 	private Map<String, String[]> changedProperties = new HashMap<>();
 	private Map<String, String> addedProperties = new HashMap<>();
+
+	
+	{
+		consoleLog = false;
+	}
 	
 	public UserUpdatedEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal,

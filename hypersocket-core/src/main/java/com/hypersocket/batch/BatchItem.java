@@ -7,13 +7,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
 
 @Entity
@@ -30,10 +28,9 @@ public class BatchItem extends AbstractEntity<Long> {
 	@Column(name="resource_id")
 	private Long id;
 	
-	@ManyToOne
 	@JoinColumn(name= "realm_id", foreignKey = @ForeignKey(name = "batch_processing_items_cascade_1"))
 	@OnDelete(action = OnDeleteAction.CASCADE)
-	private Realm realm;
+	private Long realm;
 	
 
 	public Long getId() {
@@ -44,11 +41,11 @@ public class BatchItem extends AbstractEntity<Long> {
 		this.id = id;
 	}
 
-	public Realm getRealm() {
+	public long getRealm() {
 		return realm;
 	}
 
-	public void setRealm(Realm realm) {
+	public void setRealm(long realm) {
 		this.realm = realm;
 	}
 
