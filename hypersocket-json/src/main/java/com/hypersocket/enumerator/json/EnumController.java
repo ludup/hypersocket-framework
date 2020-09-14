@@ -1,8 +1,10 @@
 package com.hypersocket.enumerator.json;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 
+import com.hypersocket.annotation.EnumDisplayName;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.json.ResourceList;
@@ -48,10 +51,22 @@ public class EnumController extends AuthenticatedController {
 				}
 			}
 			Class<?> enumType = Class.forName(className);
+			Method displayName = null;
+			for(Method m : enumType.getDeclaredMethods()) {
+				if(Objects.nonNull(m.getAnnotation(EnumDisplayName.class))) {
+					displayName = m;
+					break;
+				}
+			}
 			List<NameValuePair> results = new ArrayList<NameValuePair>();
 			for(Enum<?> enumConstant : (Enum<?>[]) enumType.getEnumConstants()) {
 				if(!ignoredTypes.contains(enumConstant.name())) {
-					results.add(new NameValuePair(enumConstant.name(), String.valueOf(enumConstant.ordinal())));
+					if(Objects.nonNull(displayName)) {
+						results.add(new NameValuePair(displayName.invoke(enumConstant).toString(), 
+								String.valueOf(enumConstant.ordinal())));
+					} else {
+						results.add(new NameValuePair(enumConstant.name(), String.valueOf(enumConstant.ordinal())));
+					}
 				}
 			}
 			return new ResourceList<NameValuePair>(results);
