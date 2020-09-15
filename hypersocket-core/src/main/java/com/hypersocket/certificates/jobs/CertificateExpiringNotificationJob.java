@@ -38,7 +38,7 @@ public class CertificateExpiringNotificationJob extends PermissionsAwareJob {
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		
-		for(CertificateResource resource : repository.allRealmsResources()) {
+		for(CertificateResource resource : repository.getResources(getCurrentRealm())) {
 			
 			try {
 				X509Certificate x509 = resourceService.getX509Certificate(resource);
