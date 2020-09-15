@@ -28,14 +28,14 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.databaseSettings"
 		resourceBundle="DatabaseService" weight="200">
-		<property resourceKey="jdbc.vendor" inputType="select" defaultValue="MYSQL" options="MYSQL,POSTGRES,MSSQL,DERBY,H2" store="databaseConfiguration"
+		<property resourceKey="jdbc.vendor" inputType="select" defaultValue="MYSQL_LOCAL" options="MYSQL,MYSQL_LOCAL,POSTGRES,MSSQL,DERBY,H2" store="databaseConfiguration"
 			allowEmpty="false" weight="100" />
 		<property resourceKey="jdbc.database" inputType="text" store="databaseConfiguration"
 			allowEmpty="false" weight="200" defaultValue="hypersocket" />	
-		<property resourceKey="jdbc.host" inputType="text" store="databaseConfiguration" visibilityDependsOn="jdbc.vendor,jdbc.vendor"
-				  visibilityDependsValue="!DERBY,!H2" allowEmpty="false" weight="300" defaultValue="localhost" />
-		<property resourceKey="jdbc.port" inputType="integer" store="databaseConfiguration"  visibilityDependsOn="jdbc.vendor,jdbc.vendor"
-				  visibilityDependsValue="!DERBY,!H2" allowEmpty="false" weight="400" defaultValue="3306" minValue="1" maxValue="65535"/>
+		<property resourceKey="jdbc.host" inputType="text" store="databaseConfiguration" visibilityDependsOn="jdbc.vendor"
+				  visibilityDependsValue="MSSQL|MYSQL|POSTGRES" allowEmpty="false" weight="300" defaultValue="localhost" />
+		<property resourceKey="jdbc.port" inputType="integer" store="databaseConfiguration"  visibilityDependsOn="jdbc.vendor"
+				  visibilityDependsValue="MSSQL|MYSQL|POSTGRES" allowEmpty="false" weight="400" defaultValue="3306" minValue="1" maxValue="65535"/>
 		<property resourceKey="jdbc.username" inputType="text" store="databaseConfiguration"
 			allowEmpty="true" weight="500" defaultValue="hypersocket" />
 		<property resourceKey="jdbc.password" inputType="password" store="databaseConfiguration"
@@ -52,7 +52,10 @@
 				  allowEmpty="false" weight="1100" defaultValue="10" minValue="1" maxValue="100"/>
 		<property resourceKey="jdbc.timeZone" inputType="select" defaultValue="UTC" store="databaseConfiguration" allowEmpty="false" weight="1200" 
 				  emptySelectionAllowed="true" url="configuration/timeZone/list"  visibilityDependsOn="jdbc.vendor"
-				  visibilityDependsValue="MYSQL"/>
+				  visibilityDependsValue="MYSQL|MYSQL_LOCAL"/>
+		<property resourceKey="jdbc.localSocket" inputType="text" defaultValue="/var/run/mysqld/mysqld.sock" store="databaseConfiguration" allowEmpty="false" weight="1300" 
+				  emptySelectionAllowed="false" visibilityDependsOn="jdbc.vendor"
+				  visibilityDependsValue="MYSQL_LOCAL"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.schedulerSettings"
 		resourceBundle="SchedulerService" weight="300">

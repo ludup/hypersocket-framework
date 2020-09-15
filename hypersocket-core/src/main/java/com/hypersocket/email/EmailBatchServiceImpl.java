@@ -83,7 +83,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 			
 		} catch (MailException | AccessDeniedException | ValidationException e) {
 			log.error("I could not send an email in realm {} to user {} with subject {}",
-					item.getRealm().getName(),
+					item.getRealm(),
 					item.getToEmail(), 
 					item.getSubject(),
 					e);
@@ -128,4 +128,5 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 
 		repository.merge(item);
 	}
+
 }

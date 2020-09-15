@@ -82,9 +82,6 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 
 		return properties;
 	}
-	
-	
-
 
 	protected void saveProperties() throws IOException {
 		

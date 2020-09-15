@@ -50,13 +50,4 @@ public abstract class BatchProcessingItemRepositoryImpl<T extends AbstractEntity
 	public T saveItem(T entity) {
 		return (T) save(entity);
 	}
-
-	@Override
-	@Transactional
-	public void markAllAsDeleted() {
-		Query q = createQuery(String.format("update %s set deleted = :r", getEntityClass().getSimpleName()), true);
-		q.setParameter("r", true);
-		q.executeUpdate();
-		flush();
-	}
 }

@@ -1,5 +1,7 @@
 package com.hypersocket.batch;
 
+import java.util.List;
+
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.repository.AbstractRepository;
@@ -12,5 +14,5 @@ public interface BatchProcessingItemRepository<T extends AbstractEntity<Long>> e
 	
 	Class<? extends T> getEntityClass();
 
-	void markAllAsDeleted();
+	void markAllAsDeleted(List<Long> excludeRealms);
 }
