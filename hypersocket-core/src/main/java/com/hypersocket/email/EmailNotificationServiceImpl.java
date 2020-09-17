@@ -16,13 +16,13 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import org.apache.http.auth.InvalidCredentialsException;
-import org.codemonkey.simplejavamail.MailException;
-import org.codemonkey.simplejavamail.Mailer;
-import org.codemonkey.simplejavamail.TransportStrategy;
-import org.codemonkey.simplejavamail.email.Email;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.simplejavamail.MailException;
+import org.simplejavamail.email.Email;
+import org.simplejavamail.mailer.Mailer;
+import org.simplejavamail.mailer.config.TransportStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +73,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	public final static String SMTP_PORT = "smtp.port";
 	public final static String SMTP_PROTOCOL = "smtp.protocol";
 	public final static String SMTP_USERNAME = "smtp.username";
+	public final static String SMTP_SESSION_TIMEOUT = "smtp.sessionTimeout";
 	public final static String SMTP_PASSWORD = "smtp.password";
 	public final static String SMTP_FROM_ADDRESS = "smtp.fromAddress";
 	public final static String SMTP_FROM_NAME = "smtp.fromName";
@@ -151,6 +152,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		} else {
 			mail = new Mailer(createSession(realm));
 		}
+		
+		mail.setSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000);
 		
 		String archiveAddress = configurationService.getValue(realm, "email.archiveAddress");
 		List<RecipientHolder> archiveRecipients = new ArrayList<RecipientHolder>();

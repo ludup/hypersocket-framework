@@ -5,7 +5,7 @@ import java.util.List;
 import javax.mail.Message.RecipientType;
 
 import org.apache.http.auth.InvalidCredentialsException;
-import org.codemonkey.simplejavamail.MailException;
+import org.simplejavamail.MailException;
 
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
