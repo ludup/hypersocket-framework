@@ -130,7 +130,7 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 								criteria.add(Restrictions.not(Restrictions.in("realm", running)));
 						}
 					});
-			if (itemIt.hasNext()) {
+			while (itemIt.hasNext()) {
 				T item = itemIt.next();
 				boolean processed = true;
 				try {
