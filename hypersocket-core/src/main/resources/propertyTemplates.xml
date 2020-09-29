@@ -29,7 +29,7 @@
 			weight="900" defaultValue="250" minValue="0" maxValue="60000"  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.doNotSendToNoReply" inputType="switch"
 			weight="1000" defaultValue="true" visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
-		<property resourceKey="smtp.sessionTimeout" inputType="integer" weight="1100" defaultValue="60" minValue="30" maxValue="3600" />
+		<property resourceKey="smtp.sessionTimeout" inputType="integer" weight="1100" defaultValue="60" visibilityDependsOn="smtp.enabled" visibilityDependsValue="true" minValue="30" maxValue="3600" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.emailExtra"
 		resourceBundle="EmailService" weight="600"  group="messages">
