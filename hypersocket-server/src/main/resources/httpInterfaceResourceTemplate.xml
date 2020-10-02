@@ -14,7 +14,7 @@
 		<property resourceKey="certificate" inputType="select" emptySelectionAllowed="true" valueAttr="id"
 			url="certificates/list" defaultValue="" weight="300" visibilityDependsOn="protocol" visibilityDependsValue="HTTPS"/>
 		<property resourceKey="additionalCertificates" inputType="multipleSearchInput" emptySelectionAllowed="true" valueAttr="id"
-			url="certificates/table" defaultValue="" remoteSearch="true" weight="300" visibilityDependsOn="protocol" visibilityDependsValue="HTTPS"/>
+			url="certificates/all" defaultValue="" remoteSearch="true" weight="300" visibilityDependsOn="protocol" visibilityDependsValue="HTTPS"/>
 		<property resourceKey="redirectHTTPS" inputType="switch" defaultValue="true" weight="400"  visibilityDependsOn="protocol" visibilityDependsValue="HTTP"/>
 		<property resourceKey="redirectPort" inputType="integer" minValue="1"
 			maxValue="65535" restart="true" defaultValue="80" weight="500" visibilityDependsOn="protocol" visibilityDependsValue="HTTP"/>

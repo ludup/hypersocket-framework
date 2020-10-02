@@ -143,6 +143,42 @@ public class CertificateResourceController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "certificates/all", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public BootstrapTableResult<?> alLCertificates(final HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+
+		try {
+			return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
+
+				@Override
+				public Column getColumn(String col) {
+					return CertificateResourceColumns.valueOf(col.toUpperCase());
+				}
+
+				@Override
+				public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
+						ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
+					return resourceService.searchResources(null, searchColumn,
+							searchPattern, start, length, sorting);
+				}
+
+				@Override
+				public Long getTotalCount(String searchColumn, String searchPattern)
+						throws UnauthorizedException, AccessDeniedException {
+					return resourceService.getResourceCount(null, searchColumn,
+							searchPattern);
+				}
+			});
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "certificates/template", method = RequestMethod.GET, produces = { "application/json" })
