@@ -169,7 +169,7 @@ public class LogoController extends ResourceController {
 		
 		if(text.startsWith("icon")) {
 			String iconName = text.substring(4).replace(" ", "_").toUpperCase();
-			if(iconName.length()>5) {
+			if(iconName.length()>0) {
 				try {
 					icon = AwesomeIcon.valueOf(iconName);
 				}
