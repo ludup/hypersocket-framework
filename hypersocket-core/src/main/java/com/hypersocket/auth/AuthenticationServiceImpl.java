@@ -215,12 +215,15 @@ public class AuthenticationServiceImpl extends
 							+ realm.getName());
 				}
 				
+				Map<String,String> properties = new HashMap<>();
+				
 				AuthenticationScheme basicScheme = schemeRepository.getSchemeByResourceKey2(realm, AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
 				List<String> modules = new ArrayList<String>();
 				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 				try {
 					Class.forName("com.logonbox.authenticator.LogonBoxAuthenticatorHtml");
 					modules.add("logonboxHtml");
+					properties.put("lb.enableRegistration", "true");
 				} catch(ClassNotFoundException e) { }
 				
 				if (log.isInfoEnabled()) {
@@ -240,7 +243,7 @@ public class AuthenticationServiceImpl extends
 				userLoginScheme.setSupportsHomeRedirect(true);
 			
 				try {
-					schemeRepository.saveResource(userLoginScheme);
+					schemeRepository.saveResource(userLoginScheme, properties);
 				} catch (ResourceException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				}
