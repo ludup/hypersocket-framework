@@ -38,6 +38,10 @@ public abstract class TransactionalJob implements Job, InterruptableJob {
 		
 	}
 	
+	protected void transactionOver(JobExecutionContext context) throws JobExecutionException { 
+		
+	}
+	
 	protected void afterTransaction(boolean transactionFailed) {
 		
 	}
@@ -56,32 +60,37 @@ public abstract class TransactionalJob implements Job, InterruptableJob {
 	@Override
 	public void execute(final JobExecutionContext context) throws JobExecutionException {
 		jobThread = Thread.currentThread();
-		beforeTransaction(context);
-	
 		try {
-			transactionService.doInTransaction(new TransactionCallbackWithError<Void>() {
-
-				@Override
-				public Void doInTransaction(TransactionStatus status) {
-					onExecute(context);
-					return null;
-				}
-
-				@Override
-				public void doTransacationError(Throwable e) {
-					onTransactionFailure(e);
-					transactionFailed = true;
-					
-				}
-			});
-		} catch (ResourceException e) {
-			log.error("Job transaction failed", e);
-		}
+			beforeTransaction(context);
 		
-		if(!transactionFailed) {
-			onTransactionComplete();
-		}
+			try {
+				transactionService.doInTransaction(new TransactionCallbackWithError<Void>() {
+	
+					@Override
+					public Void doInTransaction(TransactionStatus status) {
+						onExecute(context);
+						return null;
+					}
+	
+					@Override
+					public void doTransacationError(Throwable e) {
+						onTransactionFailure(e);
+						transactionFailed = true;
+						
+					}
+				});
+			} catch (ResourceException e) {
+				log.error("Job transaction failed", e);
+			}
+			
+			if(!transactionFailed) {
+				onTransactionComplete();
+			}
 
-		afterTransaction(transactionFailed);
+			afterTransaction(transactionFailed);
+		}
+		finally {
+			transactionOver(context);
+		}
 	}
 }
