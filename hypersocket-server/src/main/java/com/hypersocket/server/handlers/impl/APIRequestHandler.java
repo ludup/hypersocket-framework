@@ -13,6 +13,8 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.server.HypersocketServerImpl;
 import com.hypersocket.server.handlers.HttpResponseProcessor;
@@ -39,6 +41,16 @@ public class APIRequestHandler extends ServletRequestHandler {
 			 */
 			response.addHeader("Access-Control-Allow-Credentials", "true");
 			response.addHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
+			
+			String requestHeaders = request.getHeader("Access-Control-Request-Headers");
+			if (StringUtils.isNotEmpty(requestHeaders)) {
+				response.addHeader("Access-Control-Allow-Headers", requestHeaders);
+			}
+			
+			String requestMethod = request.getHeader("Access-Control-Request-Method");
+			if (StringUtils.isNotEmpty(requestMethod)) {
+				response.addHeader("Access-Control-Request-Method", requestMethod);
+			}
 			
 		}
 		
