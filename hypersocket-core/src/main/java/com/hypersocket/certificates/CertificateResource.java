@@ -69,6 +69,7 @@ public class CertificateResource extends RealmResource {
 
 	@Temporal(TemporalType.DATE)
 	private Date issueDate;
+	
 	@ManyToOne
 	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "ssl_certificates_cascade_1"))
 	@OnDelete(action = OnDeleteAction.CASCADE)
