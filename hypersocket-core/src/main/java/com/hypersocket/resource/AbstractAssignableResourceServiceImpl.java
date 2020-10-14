@@ -144,7 +144,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 				}
 			}
 			
-			T existing = getResourceByName(resource.getName(), resource.getRealm());
+			T existing = getExistingResourceBySameName(resource);
 			
 			if(resource.getPersonal()) {
 				existing = getPersonalResourceByName(resource.getName());
@@ -874,5 +874,13 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		assertPermission(getReadPermission());
 		
 		return getRepository().getResourcesByIds(ids);
+	}
+	
+	private T getExistingResourceBySameName(T resource) throws ResourceNotFoundException, AccessDeniedException {
+		try {
+			return getResourceByName(resource.getName(), resource.getRealm());
+		} catch (ResourceNotFoundException e) {
+			return null;
+		}
 	}
 }
