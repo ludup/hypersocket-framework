@@ -11,6 +11,7 @@ import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
@@ -24,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Inheritance(strategy=InheritanceType.JOINED)
-@Table(name="resources")
+@Table(name="resources", indexes = {@Index(columnList = "name", name = "name")})
 public abstract class Resource extends SimpleResource {
 	
 	private static final long serialVersionUID = 6795842573539622186L;
