@@ -7,6 +7,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -94,7 +96,7 @@ public class LogoController extends ResourceController {
 	public void downloadLogo(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String type,
 			@PathVariable String name, @PathVariable String spec,
-			@PathVariable String ext) throws AccessDeniedException,
+			@PathVariable String ext, @RequestParam(required = false) Integer requestedSize) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException, IOException,
 			ResourceNotFoundException {
 
@@ -118,6 +120,10 @@ public class LogoController extends ResourceController {
 
 		// Parse spec
 		int size = Integer.parseInt(arr[0]);
+		if(Objects.nonNull(requestedSize)) {
+			size = requestedSize;
+		}
+		
 		IconShape shape = isAuto(arr[1]) ? IconShape.values()[Math
 				.abs(isAutoBasedOnName(arr[1]) ? name.hashCode() : type
 						.hashCode())
