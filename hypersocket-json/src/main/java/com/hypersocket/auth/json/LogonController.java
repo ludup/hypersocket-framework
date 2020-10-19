@@ -85,6 +85,17 @@ public class LogonController extends AuthenticatedController {
 			RedirectException {
 		
 		
+		Session session;
+		try {
+			session = sessionUtils.touchSession(request, response);
+			if (session != null && sessionService.isLoggedOn(session, false)) {
+				sessionService.closeSession(session);
+				request.getSession().removeAttribute(
+						SessionUtils.AUTHENTICATED_SESSION);
+			}
+		} catch (UnauthorizedException | SessionTimeoutException | AccessDeniedException e) {
+		}
+		
 		
 		AuthenticationState.clearCurrentState(request);
 		
