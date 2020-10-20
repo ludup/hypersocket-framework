@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
@@ -536,6 +537,10 @@ public class HypersocketUtils {
 		for(int i = 0 ; i < args.length; i++)
 			a[i] = args[i] == null ? null : String.valueOf(args[i]);
 		return a;
+	}
+
+	public static boolean isEmailAddress(String email) {
+		return Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE).matcher(email).matches();
 	}
 
 }
