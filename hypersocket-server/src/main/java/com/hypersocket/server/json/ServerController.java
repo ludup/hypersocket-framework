@@ -1,5 +1,6 @@
 package com.hypersocket.server.json;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -90,6 +91,13 @@ public class ServerController extends AuthenticatedController {
 	public ResourceStatus<String> whatsMyIp(HttpServletRequest request,
 			HttpServletResponse response) {
 		return new ResourceStatus<String>(request.getRemoteAddr());
+	}
+	
+	@RequestMapping(value = "goto/{menu}", method = RequestMethod.GET)
+	public void jumpTo(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String menu) throws IOException {
+		String location = server.getUiPath() + "#menu=" + menu;
+		response.sendRedirect(location);
 	}
 
 	@AuthenticationRequired
