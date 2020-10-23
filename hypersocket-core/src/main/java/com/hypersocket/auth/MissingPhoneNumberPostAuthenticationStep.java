@@ -1,11 +1,14 @@
 package com.hypersocket.auth;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +19,7 @@ import com.hypersocket.input.FormTemplate;
 import com.hypersocket.input.ParagraphField;
 import com.hypersocket.input.TextInputField;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserPrincipal;
 import com.hypersocket.resource.ResourceException;
@@ -24,6 +28,8 @@ import com.hypersocket.session.SessionService;
 @Component
 public class MissingPhoneNumberPostAuthenticationStep implements PostAuthenticationStep{
 
+	static Logger log = LoggerFactory.getLogger(MissingPhoneNumberPostAuthenticationStep.class);
+	
 	public static final String RESOURCE_KEY = "missingPhone";
 	public static final String RESOURCE_BUNDLE = "MissingEmailAddressService";
 	
@@ -127,23 +133,24 @@ public class MissingPhoneNumberPostAuthenticationStep implements PostAuthenticat
 		if(error){
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}else{
-			final Map<String,String> properties = new HashMap<String,String>();
 			if((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists){
-				properties.put("mobile", (String)parameters.get(PARAM_PRIMARY));
+				principal.setMobile((String)parameters.get(PARAM_PRIMARY));
 			}
 			if((REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required)) && !secondaryExists){
-				properties.put("secondaryMobile", (String)parameters.get(PARAM_SECONDARY));
+				principal.setSecondaryMobile((String)parameters.get(PARAM_SECONDARY));
 			}
 			
 			sessionService.executeInSystemContext(new Runnable() {
 				public void run() {
 					try {
-						realmService.updateUserProperties(principal, properties);
+						realmService.updateUserProperties(principal, 
+								Collections.<String,String>emptyMap());
 					} catch (ResourceException | AccessDeniedException e) {
-						e.printStackTrace();
+						log.error("Failed to update users phone number", e);
+//						throw new IllegalStateException(e.getMessage(), e);
 					}
 				}
-			}, state.getRealm(), state.getPrincipal());
+			});
 			
 			return AuthenticatorResult.AUTHENTICATION_SUCCESS;
 		}
