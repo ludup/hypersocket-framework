@@ -1,6 +1,6 @@
 package com.hypersocket.auth;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,8 @@ import com.hypersocket.session.SessionService;
 @Component
 public class MissingEmailAddressPostAuthenticationStep implements PostAuthenticationStep{
 
+	static Logger log = LoggerFactory.getLogger(MissingEmailAddressPostAuthenticationStep.class);
+	
 	public static final String RESOURCE_KEY = "missingEmailAddress";
 	public static final String RESOURCE_BUNDLE = "MissingEmailAddressService";
 	
@@ -130,20 +134,22 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 		if(error){
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}else{
-			final Map<String,String> properties = new HashMap<String,String>();
+			
 			if((REQUIRE_ALL.equals(required) || REQUIRE_PRIMARY.equals(required)) && !primariExists){
-				properties.put("email", (String)parameters.get(PARAM_PRIMARY));
+				principal.setPrimaryEmail((String)parameters.get(PARAM_PRIMARY));
 			}
 			if((REQUIRE_ALL.equals(required) || REQUIRE_SECONDARY.equals(required)) && !secondaryExists){
-				properties.put("secondaryEmail", (String)parameters.get(PARAM_SECONDARY));
+				principal.setSecondaryEmail((String)parameters.get(PARAM_SECONDARY));
 			}
 			
 			sessionService.executeInSystemContext(new Runnable() {
 				public void run() {
 					try {
-						realmService.updateUserProperties(principal, properties);
+						realmService.updateUserProperties(principal, 
+								Collections.<String,String>emptyMap());
 					} catch (ResourceException | AccessDeniedException e) {
-						e.printStackTrace();
+						log.error("Failed to update users email address", e);
+//						throw new IllegalStateException(e.getMessage(), e);
 					}
 				}
 			});
