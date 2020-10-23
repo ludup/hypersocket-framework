@@ -89,6 +89,7 @@ import com.hypersocket.session.SessionService;
 public class NettyServer extends HypersocketServerImpl implements ObjectSizeEstimator  {
 
 	public static final String RESOURCE_BUNDLE = "NettyServer";
+	public static final String HTTPD = "httpd";
 
 	static Logger log = LoggerFactory.getLogger(NettyServer.class);
 
