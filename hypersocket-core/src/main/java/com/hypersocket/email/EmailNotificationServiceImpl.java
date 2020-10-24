@@ -144,10 +144,15 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		Mailer mail;
 		
 		if(StringUtils.isNotBlank(getSMTPValue(realm, SMTP_USERNAME))) {
+			
+			String pwd = getSMTPDecryptedValue(realm, SMTP_PASSWORD);
+			
+			log.info("REMOVE ME: {}", pwd);
+			
 			mail = new Mailer(getSMTPValue(realm, SMTP_HOST), 
 					getSMTPIntValue(realm, SMTP_PORT), 
 					getSMTPValue(realm, SMTP_USERNAME),
-					getSMTPDecryptedValue(realm, SMTP_PASSWORD),
+					pwd,
 					TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)]);
 		} else {
 			mail = new Mailer(createSession(realm));
