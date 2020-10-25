@@ -43,9 +43,21 @@
 	   	    <property resourceKey="proxy.type" inputType="select" defaultValue="HTTP" options="HTTP,SOCKS" weight="400"/>
 	   	    <property resourceKey="proxy.bypass" inputType="multipleTextInput" defaultValue="" weight="400"/>
 	</propertyCategory>
-	<propertyCategory resourceKey="category.security" resourceBundle="HypersocketServer" weight="400">
-	    <property resourceKey="server.blockIPs" inputType="multipleTextInput"
+	<propertyCategory resourceKey="category.ipRestrictions" resourceBundle="HypersocketServer" weight="400">
+	     <property resourceKey="server.blockIPs" inputType="multipleTextInput"
 			restart="false" weight="8888" allowEmpty="true"/>
+	    <property resourceKey="server.allowedIPs" inputType="multipleTextInput"
+			restart="false" weight="8889" allowEmpty="true"/>
+	</propertyCategory>
+	<propertyCategory resourceKey="category.geoRestrictions" resourceBundle="HypersocketServer" weight="400">
+	     <property resourceKey="ipstack.accesskey" inputType="text"
+			restart="false" weight="0" allowEmpty="true" developmentValue="06c4553e8c8f2216596a7c26d9e281a9"/>
+	    <property resourceKey="server.blockedCountries" inputType="multipleSelect" valueAttr="code"
+			restart="false" weight="100" allowEmpty="true" url="${uiPath}/json/countries.json" 
+			isResourceList="false" visibilityDependsOn="ipstack.accesskey" visibilityDependsValue="!"/>
+		 <property resourceKey="server.allowedCountries" inputType="multipleSelect" valueAttr="code"
+			restart="false" weight="200" allowEmpty="true" url="${uiPath}/json/countries.json" 
+			remoteSearch="false" isResourceList="false" visibilityDependsOn="ipstack.accesskey" visibilityDependsValue="!"/>
 	</propertyCategory>
 		<propertyCategory resourceKey="category.authentication"
 		 resourceBundle="AuthenticationService" weight="0">
