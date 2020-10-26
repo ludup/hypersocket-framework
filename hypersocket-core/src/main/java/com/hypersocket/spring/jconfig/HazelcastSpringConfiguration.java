@@ -29,6 +29,7 @@ import com.hazelcast.cache.HazelcastCachingProvider;
 import com.hazelcast.config.AwsConfig;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.EvictionPolicy;
+import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MaxSizeConfig;
@@ -54,8 +55,11 @@ public class HazelcastSpringConfiguration {
 	private String userDir;
 
 	@Bean
-	Config config(NetworkConfig networkConfig) {
+	Config config(NetworkConfig networkConfig, @Qualifier("hazelcastProperties") Properties hazelcastProperties) {
 		Config config = new Config();
+		
+		GroupConfig groupConfig = new GroupConfig(hazelcastProperties.getProperty("ha.hazelcast.group", "hypersocket"));
+		config.setGroupConfig(groupConfig);
 		config.setInstanceName(applicationContext.getId());
 		config.setNetworkConfig(networkConfig);
 		config.setProperty("hazelcast.logging.type", "log4j");
