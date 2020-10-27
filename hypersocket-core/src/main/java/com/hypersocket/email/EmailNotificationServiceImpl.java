@@ -34,6 +34,7 @@ import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.email.events.EmailEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -141,105 +142,112 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			return;
 		}
 		
-		Mailer mail;
+		elevatePermissions(SystemPermission.SYSTEM);
 		
-		if(StringUtils.isNotBlank(getSMTPValue(realm, SMTP_USERNAME))) {
-			mail = new Mailer(getSMTPValue(realm, SMTP_HOST), 
-					getSMTPIntValue(realm, SMTP_PORT), 
-					getSMTPValue(realm, SMTP_USERNAME),
-					getSMTPDecryptedValue(realm, SMTP_PASSWORD),
-					TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)]);
-		} else {
-			mail = new Mailer(createSession(realm));
-		}
+		try {
 		
-		mail.setSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000);
-		
-		String archiveAddress = configurationService.getValue(realm, "email.archiveAddress");
-		List<RecipientHolder> archiveRecipients = new ArrayList<RecipientHolder>();
-
-		if(archive && StringUtils.isNotBlank(archiveAddress)) {
-			populateEmailList(new String[] {archiveAddress} , archiveRecipients, RecipientType.TO);
-		}
-		
-		boolean noNoReply = configurationService.getBooleanValue(realm, SMTP_DO_NOT_SEND_TO_NO_REPLY);
-
-		for(RecipientHolder r : recipients) {
+			Mailer mail;
 			
-			if(StringUtils.isBlank(r.getEmail())) {
-				log.warn(String.format("Missing email address for %s", r.getName()));
-				continue;
-			}
-			
-			if(noNoReply && isNoReply(StringUtils.left(r.getEmail(), r.getEmail().indexOf('@')))) {
-				log.warn(String.format("Skipping no reply email address for %s", r.getEmail()));
-				continue;
-			}
-			
-			
-			ServerResolver serverResolver = new ServerResolver(realm);
-			
-			String messageSubject = processDefaultReplacements(recipeintSubject, r, serverResolver);
-			String messageText = processDefaultReplacements(receipientText, r, serverResolver);
-			
-			
-			if(StringUtils.isNotBlank(receipientHtml)) {
-			
-				/**
-				 * Send a HTML email and generate tracking if required. Make sure
-				 * only the recipients get a tracking email. We don't want to 
-				 * track the archive emails.
-				 */
-				String trackingImage = configurationService.getValue(realm, "email.trackingImage");
-				String nonTrackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
-				
-				String messageHtml = processDefaultReplacements(receipientHtml, r, serverResolver);
-				messageHtml = messageHtml.replace("${htmlTitle}", messageSubject);
-				
-				String archiveRecipientHtml = messageHtml.replace("__trackingImage__", nonTrackingUri);
-
-				if(track && StringUtils.isNotBlank(trackingImage)) {
-					String trackingUri = trackerService.generateTrackingUri(trackingImage, messageSubject, r.getName(), r.getEmail(), realm);
-					messageHtml = messageHtml.replace("__trackingImage__", trackingUri);
-				} else {
-					messageHtml = messageHtml.replace("__trackingImage__", nonTrackingUri);
-				}
-
-				send(realm, mail, 
-						messageSubject, 
-						messageText,
-						messageHtml, 
-						replyToName, 
-						replyToEmail, 
-						r, 
-						delay,
-						context, attachments);
-				
-				for(RecipientHolder recipient : archiveRecipients) {
-					send(realm, mail, messageSubject, messageText, archiveRecipientHtml, 
-							replyToName, replyToEmail, recipient, delay, context, attachments);
-				}
-				
+			if(StringUtils.isNotBlank(getSMTPValue(realm, SMTP_USERNAME))) {
+				mail = new Mailer(getSMTPValue(realm, SMTP_HOST), 
+						getSMTPIntValue(realm, SMTP_PORT), 
+						getSMTPValue(realm, SMTP_USERNAME),
+						getSMTPDecryptedValue(realm, SMTP_PASSWORD),
+						TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)]);
 			} else {
+				mail = new Mailer(createSession(realm));
+			}
 			
-				/**
-				 * Send plain email without any tracking
-				 */
-				send(realm, mail, 
-						messageSubject, 
-						messageText, 
-						"", 
-						replyToName, 
-						replyToEmail, 
-						r, 
-						delay,
-						context, attachments);
+			mail.setSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000);
+			
+			String archiveAddress = configurationService.getValue(realm, "email.archiveAddress");
+			List<RecipientHolder> archiveRecipients = new ArrayList<RecipientHolder>();
+	
+			if(archive && StringUtils.isNotBlank(archiveAddress)) {
+				populateEmailList(new String[] {archiveAddress} , archiveRecipients, RecipientType.TO);
+			}
+			
+			boolean noNoReply = configurationService.getBooleanValue(realm, SMTP_DO_NOT_SEND_TO_NO_REPLY);
+	
+			for(RecipientHolder r : recipients) {
 				
-				for(RecipientHolder recipient : archiveRecipients) {
-					send(realm, mail, messageSubject, messageText, "", 
-							replyToName, replyToEmail, recipient, delay, context, attachments);
+				if(StringUtils.isBlank(r.getEmail())) {
+					log.warn(String.format("Missing email address for %s", r.getName()));
+					continue;
+				}
+				
+				if(noNoReply && isNoReply(StringUtils.left(r.getEmail(), r.getEmail().indexOf('@')))) {
+					log.warn(String.format("Skipping no reply email address for %s", r.getEmail()));
+					continue;
+				}
+				
+				
+				ServerResolver serverResolver = new ServerResolver(realm);
+				
+				String messageSubject = processDefaultReplacements(recipeintSubject, r, serverResolver);
+				String messageText = processDefaultReplacements(receipientText, r, serverResolver);
+				
+				
+				if(StringUtils.isNotBlank(receipientHtml)) {
+				
+					/**
+					 * Send a HTML email and generate tracking if required. Make sure
+					 * only the recipients get a tracking email. We don't want to 
+					 * track the archive emails.
+					 */
+					String trackingImage = configurationService.getValue(realm, "email.trackingImage");
+					String nonTrackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
+					
+					String messageHtml = processDefaultReplacements(receipientHtml, r, serverResolver);
+					messageHtml = messageHtml.replace("${htmlTitle}", messageSubject);
+					
+					String archiveRecipientHtml = messageHtml.replace("__trackingImage__", nonTrackingUri);
+	
+					if(track && StringUtils.isNotBlank(trackingImage)) {
+						String trackingUri = trackerService.generateTrackingUri(trackingImage, messageSubject, r.getName(), r.getEmail(), realm);
+						messageHtml = messageHtml.replace("__trackingImage__", trackingUri);
+					} else {
+						messageHtml = messageHtml.replace("__trackingImage__", nonTrackingUri);
+					}
+	
+					send(realm, mail, 
+							messageSubject, 
+							messageText,
+							messageHtml, 
+							replyToName, 
+							replyToEmail, 
+							r, 
+							delay,
+							context, attachments);
+					
+					for(RecipientHolder recipient : archiveRecipients) {
+						send(realm, mail, messageSubject, messageText, archiveRecipientHtml, 
+								replyToName, replyToEmail, recipient, delay, context, attachments);
+					}
+					
+				} else {
+				
+					/**
+					 * Send plain email without any tracking
+					 */
+					send(realm, mail, 
+							messageSubject, 
+							messageText, 
+							"", 
+							replyToName, 
+							replyToEmail, 
+							r, 
+							delay,
+							context, attachments);
+					
+					for(RecipientHolder recipient : archiveRecipients) {
+						send(realm, mail, messageSubject, messageText, "", 
+								replyToName, replyToEmail, recipient, delay, context, attachments);
+					}
 				}
 			}
+		} finally {
+			clearElevatedPermissions();
 		}
 	}
 	
@@ -306,7 +314,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		} else {
 			try {
 				p = realmService.getPrincipalByEmail(realm, r.getEmail());
-			} catch (ResourceNotFoundException e) {
+			} catch (AccessDeniedException | ResourceNotFoundException e) {
 			}
 		}
 		
@@ -408,7 +416,6 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail(), context));
 			throw e;
 		}
-
 	}
 	
 	@Override
