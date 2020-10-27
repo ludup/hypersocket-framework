@@ -636,11 +636,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public Principal createUser(Realm realm, String username, Map<String, String> properties,
 			List<Principal> principals, String password, boolean forceChange, boolean selfCreated,
 			boolean sendNotifications) throws ResourceException, AccessDeniedException {
-		if("true".equalsIgnoreCase(properties.get("createLocalAccount"))) {
-			return createLocalUser(realm, username, properties, principals, 
-					password, forceChange, selfCreated, sendNotifications);
-		}
-		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null,
+		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, (Principal)null,
 				getProviderForRealm(realm), sendNotifications);
 	}
 
@@ -648,10 +644,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			List<Principal> principals, final String password, boolean forceChange, boolean selfCreated,
 			Principal parent, RealmProvider provider, boolean sendNotifications)
 			throws ResourceException, AccessDeniedException {
-		if("true".equalsIgnoreCase(properties.get("createLocalAccount"))) {
-			return createLocalUser(realm, username, properties, principals, 
-					password, forceChange, selfCreated, sendNotifications);
-		}
 		return createUser(realm, username, properties, principals, new DefaultPasswordCreator(password), forceChange,
 				selfCreated, parent, provider, sendNotifications);
 	}
@@ -660,10 +652,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public Principal createUser(Realm realm, String username, Map<String, String> properties,
 			List<Principal> principals, PasswordCreator password, boolean forceChange, boolean selfCreated,
 			boolean sendNotifications) throws ResourceException, AccessDeniedException {
-		if("true".equalsIgnoreCase(properties.get("createLocalAccount"))) {
-			return createLocalUser(realm, username, properties, principals, 
-					password, forceChange, selfCreated, sendNotifications);
-		}
 		return createUser(realm, username, properties, principals, password, forceChange, selfCreated, null,
 				getProviderForRealm(realm), sendNotifications);
 	}
@@ -678,6 +666,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			assertAnyPermission(UserPermission.CREATE, RealmPermission.CREATE);
 
+			if("true".equalsIgnoreCase(properties.get("createLocalAccount"))) {
+				provider = getLocalProvider();
+			}
+			
 			if (provider.isReadOnly(realm)) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
