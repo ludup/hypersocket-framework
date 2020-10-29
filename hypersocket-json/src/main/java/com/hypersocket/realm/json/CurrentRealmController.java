@@ -8,11 +8,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -1503,6 +1505,69 @@ public class CurrentRealmController extends ResourceController {
 					request.getParameter("attributes"), sortArray, 
 					response.getOutputStream(), sessionUtils.getLocale(request));
 			
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/resolve/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Principal> getCustomerFromUser(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String id)
+			throws AccessDeniedException, UnauthorizedException,
+			ResourceNotFoundException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Principal principal = null;
+			if(NumberUtils.isCreatable(id)) {
+				return new ResourceStatus<>(realmService.getPrincipalById(Long.parseLong(id)));
+			}
+			if(Objects.isNull(principal)) {
+				return new ResourceStatus<>( realmService.getPrincipalByName(getCurrentRealm(), id, PrincipalType.USER));
+			}
+			throw new ResourceNotFoundException(RealmServiceImpl.RESOURCE_BUNDLE, "error.resolve", id);
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/administrators", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Principal> getAdministrators(HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException,
+			ResourceNotFoundException, SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Role role = permissionService.getRealmAdministratorRole(getCurrentRealm());
+			if(role ==null)
+				throw new IllegalStateException("No administrator role.");
+			return new ResourceList<Principal>(role.getPrincipals());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/systemAdministrators", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<Principal> getSystemAdministrators(HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException,
+			ResourceNotFoundException, SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Role role = permissionService.getSystemAdministratorRole();
+			if(role ==null)
+				throw new IllegalStateException("No system administrator role.");
+			return new ResourceList<Principal>(role.getPrincipals());
 		} finally {
 			clearAuthenticatedContext();
 		}
