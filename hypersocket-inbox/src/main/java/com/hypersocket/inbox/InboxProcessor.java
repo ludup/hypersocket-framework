@@ -128,27 +128,28 @@ public class InboxProcessor {
 			MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(x);
 			String contentType = part.getContentType().toLowerCase();
 
-			if (Part.INLINE.equalsIgnoreCase(part.getDisposition())
-					|| Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
-				File attachment = File.createTempFile("email", "attachment");
-				OutputStream out = new FileOutputStream(attachment);
-				InputStream in = part.getInputStream();
-				try {
-					IOUtils.copy(in, out);
-					attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
-				} finally {
-					IOUtils.closeQuietly(out);
-					IOUtils.closeQuietly(in);
-				}
-
-			}
-			else if (contentType.startsWith("text/plain")) {
+			if (contentType.startsWith("text/plain")) {
 				textContent.append(part.getContent().toString());
 			} else if (contentType.startsWith("text/html")) {
 				htmlContent.append(part.getContent().toString());
 			} else if (contentType.startsWith("multipart")) {
 				processMultipart((Multipart) part.getContent(), textContent, htmlContent, attachments);
-			} 
+			} else {
+				if (Part.INLINE.equalsIgnoreCase(part.getDisposition())
+						|| Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+					File attachment = File.createTempFile("email", "attachment");
+					OutputStream out = new FileOutputStream(attachment);
+					InputStream in = part.getInputStream();
+					try {
+						IOUtils.copy(in, out);
+						attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
+					} finally {
+						IOUtils.closeQuietly(out);
+						IOUtils.closeQuietly(in);
+					}
+
+				}
+			}
 		}
 	}
 
