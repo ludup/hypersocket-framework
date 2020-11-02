@@ -124,13 +124,19 @@ public class ExtensionHelper {
 										remote.setState(ExtensionState.UPDATABLE);
 									}
 								}
-							} else {
-								if (log.isInfoEnabled()) {
-									log.info(extensionId + " is installed but not provided by online store");
-								}
-								loadLocalExtension(local, props, currentArchive);
-								extsByName.put(local.getExtensionId(), local);
-							}
+							} 
+							
+							/**
+							 * LDP - I think this keeps old extensions alive. Don't include and the update
+							 * code should remove the extension.
+							 */
+//							else {
+//								if (log.isInfoEnabled()) {
+//									log.info(extensionId + " is installed but not provided by online store");
+//								}
+//								loadLocalExtension(local, props, currentArchive);
+//								extsByName.put(local.getExtensionId(), local);
+//							}
 
 						} catch (Throwable e) {
 							log.error("Failed to parse local extension definition " + props.getProperty("extension.id"),
