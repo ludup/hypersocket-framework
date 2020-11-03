@@ -50,7 +50,6 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
-import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
@@ -75,7 +74,6 @@ import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
-import com.hypersocket.session.json.SessionUtils;
 
 public abstract class HypersocketServerImpl implements HypersocketServer, 
 				ApplicationListener<SystemEvent> {
@@ -739,7 +737,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 			return configurationService.getValue("server.defaultRedirect");
 		}
 		
-		// TODO
 		HttpSession session = request.getSession(false);
 		Session state = session == null ? null : (Session)session.getAttribute("authenticatedSession");
 		boolean authenticated = state != null && !state.isClosed();
