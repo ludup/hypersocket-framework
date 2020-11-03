@@ -125,7 +125,7 @@ public class CollectMailTask extends AbstractTaskProvider {
 			receiver.downloadEmails(protocol, host, port, userName, password, false, secure, new EmailProcessor() {
 				@Override
 				public void processEmail(Address[] from, Address[] replyTo, Address[] to, Address[] cc, String subject,
-						String textContent, String htmlContent, Date sent, Date received,
+						String textContent, String htmlContent, String rawSource, Date sent, Date received,
 						EmailAttachment... attachments) {
 					List<String> attachmentUUIDs = new ArrayList<>();
 					TaskResult result = null;
@@ -154,23 +154,23 @@ public class CollectMailTask extends AbstractTaskProvider {
 								} catch (ResourceException e) {
 									log.error(String.format("Failed to attach %s", filename), e);
 									result = new CollectMailTaskResult(this, e, currentRealm, task, from, replyTo, to, cc,
-											subject, textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0]));
+											subject, textContent, htmlContent, rawSource, sent, received, attachmentUUIDs.toArray(new String[0]));
 									break;
 								} catch (AccessDeniedException e) {
 									log.error(String.format("Access denied for attaching %s", filename),
 											e);
 									result = new CollectMailTaskResult(this, e, currentRealm, task, from, replyTo, to, cc,
-											subject, textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0]));
+											subject, textContent, htmlContent, rawSource, sent, received, attachmentUUIDs.toArray(new String[0]));
 									break;
 								} catch (IOException e) {
 									log.error(String.format("I/O error attaching %s", filename), e);
 									result = new CollectMailTaskResult(this, e, currentRealm, task, from, replyTo, to, cc,
-											subject, textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0]));
+											subject, textContent, htmlContent, rawSource, sent, received, attachmentUUIDs.toArray(new String[0]));
 									break;
 								} catch (Exception e) {
 									log.error(String.format("I/O error attaching %s", filename), e);
 									result = new CollectMailTaskResult(this, e, currentRealm, task, from, replyTo, to, cc,
-											subject, textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0]));
+											subject, textContent, htmlContent, rawSource, sent, received, attachmentUUIDs.toArray(new String[0]));
 									break;
 								}
 							}
@@ -179,7 +179,7 @@ public class CollectMailTask extends AbstractTaskProvider {
 					
 					if(Objects.isNull(result)) {
 						results.add(new CollectMailTaskResult(this, true, currentRealm, task, from, replyTo, to, cc,
-							subject, textContent, htmlContent, sent, received, attachmentUUIDs.toArray(new String[0])));
+							subject, textContent, htmlContent, rawSource, sent, received, attachmentUUIDs.toArray(new String[0])));
 					} else {
 						results.add(result);
 					}
