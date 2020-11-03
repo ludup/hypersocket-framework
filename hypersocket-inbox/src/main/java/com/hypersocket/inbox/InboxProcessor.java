@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
@@ -13,6 +14,7 @@ import javax.mail.Address;
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 import javax.mail.Folder;
+import javax.mail.Header;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -97,7 +99,18 @@ public class InboxProcessor {
 					List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
 					try {
 						
-						String rawContent = IOUtils.toString(msg.getInputStream(), "UTF-8");
+						StringBuffer rawContent = new StringBuffer();
+						
+						Enumeration<Header> headers = msg.getAllHeaders();
+						while(headers.hasMoreElements()) {
+							Header header = headers.nextElement();
+							rawContent.append(header.getName());
+							rawContent.append(": ");
+							rawContent.append(header.getValue());
+							rawContent.append(System.lineSeparator());
+						}
+						
+						rawContent.append(IOUtils.toString(msg.getInputStream(), "UTF-8"));
 						
 						if (contentType.contains("text/plain")) {
 							textContent.append(msg.getContent().toString());
@@ -109,7 +122,7 @@ public class InboxProcessor {
 
 						processor.processEmail(msg.getFrom(), msg.getReplyTo(), msg.getRecipients(RecipientType.TO),
 								msg.getRecipients(RecipientType.CC), msg.getSubject(), textContent.toString(),
-								htmlContent.toString(), msg.getSentDate(), msg.getReceivedDate(),
+								htmlContent.toString(),  rawContent.toString(),  msg.getSentDate(), msg.getReceivedDate(),
 								attachments.toArray(new EmailAttachment[0]));
 
 					} catch (IOException e) {

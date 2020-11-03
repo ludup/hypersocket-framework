@@ -26,20 +26,21 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 	public static final String ATTR_SUBJECT = "attr.subject";
 	public static final String ATTR_TEXT_CONTENT = "attr.textContent";
 	public static final String ATTR_HTML_CONTENT = "attr.htmlContent";
+	public static final String ATTR_RAW_SOURCE = "attr.rawSource";
 	public static final String ATTR_DATE_SENT = "attr.dateSent";
 	public static final String ATTR_DATE_RECEIVED = "attr.dateReceived";
 	public static final String ATTR_ATTACHMENTS = "attr.attachments";
 
 	public CollectMailTaskResult(Object source, boolean success, Realm currentRealm, Task task, Address[] from,
 			Address[] replyTo, Address[] to, Address[] cc, String subject, String textContent, String htmlContent,
-			Date sent, Date received, String... attachments) {
+			String rawSource, Date sent, Date received, String... attachments) {
 		super(source, EVENT_RESOURCE_KEY, success, currentRealm, task);
-		addAttributes(from, replyTo, to, cc, subject, textContent, htmlContent, sent, received, attachments);
+		addAttributes(from, replyTo, to, cc, subject, textContent, htmlContent, rawSource, sent, received, attachments);
 	}
 	
 	private void addAttributes(Address[] from,
 			Address[] replyTo, Address[] to, Address[] cc, String subject, String textContent, String htmlContent,
-			Date sent, Date received, String... attachments) {
+			String rawSource, Date sent, Date received, String... attachments) {
 		// Not thread safe
 		DateFormat rfc2113 = new SimpleDateFormat("EEE, dd MMM yyyyy HH:mm:ss z");
 		
@@ -53,6 +54,7 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 		addAttribute(ATTR_CC, StringUtils.join(cc, '\n'));
 		addAttribute(ATTR_SUBJECT, StringUtils.defaultIfBlank(subject, ""));
 		addAttribute(ATTR_TEXT_CONTENT, StringUtils.defaultIfBlank(textContent, ""));
+		addAttribute(ATTR_RAW_SOURCE, StringUtils.defaultIfBlank(rawSource, ""));
 		addAttribute(ATTR_HTML_CONTENT, StringUtils.defaultIfBlank(htmlContent, ""));
 		addAttribute(ATTR_DATE_SENT, sent == null ? "" : rfc2113.format(sent));
 		addAttribute(ATTR_DATE_RECEIVED, received == null ? "" : rfc2113.format(received));
@@ -67,9 +69,9 @@ public class CollectMailTaskResult extends AbstractTaskResult {
 	
 	public CollectMailTaskResult(Object source, Throwable e, Realm currentRealm, Task task, Address[] from,
 			Address[] replyTo, Address[] to, Address[] cc, String subject, String textContent, String htmlContent,
-			Date sent, Date received, String... attachments) {
+			String rawSource, Date sent, Date received, String... attachments) {
 		super(source, EVENT_RESOURCE_KEY, e, currentRealm, task);
-		addAttributes(from, replyTo, to, cc, subject, textContent, htmlContent, sent, received, attachments);
+		addAttributes(from, replyTo, to, cc, subject, textContent, htmlContent, rawSource, sent, received, attachments);
 	}
 
 	@Override
