@@ -114,13 +114,15 @@ public interface HypersocketServer {
 
 	void processDefaultResponse(HttpServletRequest request, HttpServletResponse response, boolean disableCache);
 
-	String getDefaultRedirectPath();
+	String getDefaultRedirectPath(HttpServletRequest request, HttpServletResponse response);
 
 	void setDefaultRedirectPath(String path);
 
-	HomePageResolver getHomePageResolver();
+	List<HomePageResolver> getHomePageResolvers();
 
-	void setHomePageResolver(HomePageResolver homePageResolver);
+	void addHomePageResolver(HomePageResolver homePageResolver);
+
+	void removeHomePageResolver(HomePageResolver homePageResolver);
 
 	String processReplacements(String str);
 }

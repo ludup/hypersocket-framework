@@ -35,7 +35,9 @@ import javax.net.ssl.X509ExtendedKeyManager;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -48,6 +50,7 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
+import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
@@ -56,6 +59,7 @@ import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.server.HomePageResolver.AuthenticationRequirements;
 import com.hypersocket.server.events.ServerStartedEvent;
 import com.hypersocket.server.events.ServerStartingEvent;
 import com.hypersocket.server.events.ServerStoppedEvent;
@@ -69,7 +73,9 @@ import com.hypersocket.servlet.HypersocketServletConfig;
 import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
+import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
+import com.hypersocket.session.json.SessionUtils;
 
 public abstract class HypersocketServerImpl implements HypersocketServer, 
 				ApplicationListener<SystemEvent> {
@@ -102,7 +108,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	private Map<HTTPInterfaceResource,SSLContext> sslContexts = new HashMap<HTTPInterfaceResource,SSLContext>();
 	private Map<HTTPInterfaceResource,KeyStore> sslCertificates = new HashMap<HTTPInterfaceResource,KeyStore>();
 	private String defaultRedirectPath = null;
-	private HomePageResolver homePageResolver = null; 
+	private List<HomePageResolver> homePageResolvers = new ArrayList<>(); 
 	
 	private List<HttpRequestHandler> httpHandlers = Collections
 			.synchronizedList(new ArrayList<HttpRequestHandler>());
@@ -728,13 +734,31 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	}
 
 	@Override
-	public String getDefaultRedirectPath() {
+	public String getDefaultRedirectPath(HttpServletRequest request, HttpServletResponse response) {
 		if(StringUtils.isNotBlank(configurationService.getValue("server.defaultRedirect"))) {
 			return configurationService.getValue("server.defaultRedirect");
 		}
 		
-		if(homePageResolver!=null) {
-			return homePageResolver.getHomePage().replace("${uiPath}", getUiPath()).replace("${basePath}", getBasePath());
+		// TODO
+		HttpSession session = request.getSession(false);
+		Session state = session == null ? null : (Session)session.getAttribute("authenticatedSession");
+		boolean authenticated = state != null && !state.isClosed();
+		
+		/* First look for the most recently added specific resolver for this authentication state */
+		for(int i = homePageResolvers.size() - 1 ; i >= 0; i--) {
+			HomePageResolver r = homePageResolvers.get(i);
+			if( (r.getAuthenticationRequirements() == AuthenticationRequirements.AUTHENTICATED && authenticated) ||
+				(r.getAuthenticationRequirements() == AuthenticationRequirements.NOT_AUTHENTICATED && !authenticated)) {
+				return r.getHomePage().replace("${uiPath}", getUiPath()).replace("${basePath}", getBasePath());
+			}
+		}
+		
+		/* Now look for the most recently added resolver that applies to any authentication state */
+		for(int i = homePageResolvers.size() - 1 ; i >= 0; i--) {
+			HomePageResolver r = homePageResolvers.get(i);
+			if(r.getAuthenticationRequirements() == AuthenticationRequirements.ANY) {
+				return r.getHomePage().replace("${uiPath}", getUiPath()).replace("${basePath}", getBasePath());
+			}
 		}
 		
 		return (defaultRedirectPath==null ? getUiPath() : defaultRedirectPath).replace("${uiPath}", getUiPath()).replace("${basePath}", getBasePath());
@@ -746,13 +770,18 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	}
 
 	@Override
-	public HomePageResolver getHomePageResolver() {
-		return homePageResolver;
+	public List<HomePageResolver> getHomePageResolvers() {
+		return homePageResolvers;
 	}
 
 	@Override
-	public void setHomePageResolver(HomePageResolver homePageResolver) {
-		this.homePageResolver = homePageResolver;
+	public void addHomePageResolver(HomePageResolver homePageResolver) {
+		homePageResolvers.add(homePageResolver);
+	}
+
+	@Override
+	public void removeHomePageResolver(HomePageResolver homePageResolver) {
+		homePageResolvers.remove(homePageResolver);
 	}
 
 }
