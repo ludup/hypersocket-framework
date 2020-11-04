@@ -8,11 +8,10 @@
 package com.hypersocket.session.json;
 
 import java.util.Enumeration;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -274,33 +273,18 @@ public class SessionUtils {
 		Realm currentRealm = getCurrentRealmOrDefault(request);
 		String requestOrigin = request.getHeader("Origin");
 		
-		if(!Objects.isNull(requestOrigin)) {
+		if(configurationService.getBooleanValue(currentRealm, "cors.enabled") && !Objects.isNull(requestOrigin)) {
 			
-			Set<String> origins = new HashSet<>();
-			/**
-			 * We hard code our own extensions to avoid the user having 
-			 * to configure CORS or disable it.
-			 */
-			origins.add("chrome-extension://nbdlpjacpjcngebcjapombjkmjbjnpbc");
-	//		TODO
-	//		origins.add("moz-extension://");
-			
-			if(configurationService.getBooleanValue(currentRealm, "cors.enabled")) {
-				
-				origins.addAll(ResourceUtils.explodeCollectionValues(
-						configurationService.getValue(currentRealm, "cors.origins")));
-				
+			List<String> origins = ResourceUtils.explodeCollectionValues(configurationService.getValue(currentRealm, "cors.origins"));
+		
+			if(log.isInfoEnabled()) {
+				log.info("CORS request for origin {}", requestOrigin);
 			}
-			
-			if(log.isDebugEnabled()) {
-				log.debug("CORS request for origin {}", requestOrigin);
-			}
-			
 			if(origins.contains(requestOrigin)) {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
