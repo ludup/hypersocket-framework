@@ -99,7 +99,9 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 				databaseType = "derby";
 			} else if (databaseType.equals("MySQL")) {
 				databaseType = "mysql";
-			} else if (databaseType.equals("PostgreSQL")) {
+			} else if (databaseType.equals("MariaDB")) {
+				databaseType = "mysql";
+			}  else if (databaseType.equals("PostgreSQL")) {
 				databaseType = "postgres";
 			} else if (databaseType.equals("Microsoft SQL Server")) {
 				databaseType = "mssql";
@@ -156,7 +158,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			// Do all the SQL upgrades first
 			try {
 				connection.setAutoCommit(false);
-				doOps(connection, ops, beans, "pre.sql", getDatabaseType(connection));
+				doOps(connection, ops, beans, "pre.sql", "pre." + getDatabaseType(connection));
 				connection.commit();
 			} catch (IOException | ScriptException e2) {
 				connection.rollback();
@@ -199,6 +201,40 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 						sessionFactory.getCurrentSession().doWork((connection) -> {
 							try {
 								doOps(connection, ops, beans, "sql", getDatabaseType(connection), "js", "class");
+								
+
+								// Also mark all the pre.sql ops as done now we definitely have an upgrade table
+								List<String> l = Arrays.asList("pre.sql", "pre." + getDatabaseType(connection));
+								for (UpgradeOp op : ops) {
+									if (l.contains(op.getLanguage())) {
+										Upgrade upgrade = getUpgrade(connection, op.getModule(), op.getLanguage());
+										if (upgrade == null) {
+											String v = "0.0.0";
+											if (op.getLanguage().equals("java")) {
+												v = "0.0.9";
+											}
+											upgrade = new Upgrade(v, op.getModule(), op.getLanguage());
+										}
+										Version currentVersion = new Version(upgrade.getVersion());
+										// If version for the script found is greater than the current
+										// version then run the script
+										if (op.getVersion().compareTo(currentVersion) > 0) {
+											if (log.isInfoEnabled()) {
+												log.info("Pre-Module " + op.getModule() + "/" + op.getLanguage() + " is now at " + op.getVersion());
+											}
+											upgrade.setVersion(op.getVersion().toString());
+											saveOrUpdate(connection, upgrade);
+										} else {
+											if (log.isInfoEnabled()) {
+												log.info("Pre-Module " + op.getModule() + "/" + op.getLanguage() + " is at version "
+														+ currentVersion + ", no need to run script for " + op.getVersion());
+											}
+										}
+									}
+								}
+								
+								
+								
 							} catch (IOException | ScriptException ioe) {
 								throw new IllegalStateException("Failed to run upgrade scripts.", ioe);
 							}
