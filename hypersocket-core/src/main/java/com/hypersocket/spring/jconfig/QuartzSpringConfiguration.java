@@ -38,6 +38,7 @@ public class QuartzSpringConfiguration {
 	
 	private static final String POSTGRES = "postgres";
 	private static final String MYSQL = "mysql";
+	private static final String MARIADB = "MariaDB";
 	private static final String H2 = "h2";
 	
 	private static final String ORACLE = "oracle";
@@ -49,6 +50,7 @@ public class QuartzSpringConfiguration {
 	static {
 		databaseScript.put(POSTGRES, "/conf/quartz-tables-postgres.sql");
 		databaseScript.put(MYSQL, "/conf/quartz-tables-mysql.sql");
+		databaseScript.put(MARIADB, "/conf/quartz-tables-mysql.sql");
 		databaseScript.put(H2, "/conf/quartz-tables-h2.sql");
 		databaseScript.put(ORACLE, "/conf/quartz-tables-oracle.sql");
 		databaseScript.put(MSSQL, "/conf/quartz-tables-mssql.sql");
@@ -202,6 +204,8 @@ public class QuartzSpringConfiguration {
 			return databaseScript.get(MSSQL);
 		}else if(databaseProductName.toLowerCase().contains("derby")){
 			return databaseScript.get(DERBY);
+		}else if(databaseProductName.toLowerCase().contains("mariadb")){
+			return databaseScript.get(MARIADB);
 		}
 		
 		throw new IllegalArgumentException(String.format("Script not found for database %s",databaseProductName));
