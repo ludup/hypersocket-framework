@@ -2,6 +2,7 @@ package com.hypersocket;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -39,6 +40,15 @@ public class ApplicationContextServiceImpl {
 	
 	public boolean containsBean(String name) {
 		return applicationContext.containsBean(name);
+	}
+	
+	public boolean containsBean(Class<?> clz) {
+		try {
+			applicationContext.getBean(clz);
+			return true;
+		} catch(NoSuchBeanDefinitionException e) {
+			return false;
+		}
 	}
 
 	public AutowireCapableBeanFactory getAutowireCapableBeanFactory() {
