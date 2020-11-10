@@ -7,5 +7,5 @@ import javax.mail.Address;
 public interface EmailProcessor {
 
 	void processEmail(Address[] from, Address[] replyTo, Address[] to, Address[] cc, String subject, String textContent,
-			String htmlContent, Date sent, Date received, EmailAttachment... attachments);
+			String htmlContent, String rawContent, Date sent, Date received, EmailAttachment... attachments);
 }

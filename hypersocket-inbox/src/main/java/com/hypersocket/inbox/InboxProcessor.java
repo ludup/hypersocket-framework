@@ -6,13 +6,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.mail.Address;
 import javax.mail.Flags;
 import javax.mail.Flags.Flag;
 import javax.mail.Folder;
+import javax.mail.Header;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -23,10 +26,19 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage.RecipientType;
 import javax.mail.search.FlagTerm;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class InboxProcessor {
 
+	static Logger log = LoggerFactory.getLogger(InboxProcessor.class);
+	
 	private Properties generateServerProperties(String protocol, String host, String port) {
 		Properties properties = new Properties();
 
@@ -90,31 +102,7 @@ public class InboxProcessor {
 					if (!allMessages)
 						msg.setFlag(Flag.SEEN, true);
 
-					
-					String contentType = msg.getContentType().toLowerCase();
-					StringBuffer textContent = new StringBuffer();
-					StringBuffer htmlContent = new StringBuffer();
-					List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
-					try {
-						
-						String rawContent = IOUtils.toString(msg.getInputStream(), "UTF-8");
-						
-						if (contentType.contains("text/plain")) {
-							textContent.append(msg.getContent().toString());
-						} else if (contentType.contains("text/html")) {
-							htmlContent.append(msg.getContent().toString());
-						} else if (contentType.contains("multipart")) {
-							processMultipart((Multipart) msg.getContent(), textContent, htmlContent, attachments);
-						}
-
-						processor.processEmail(msg.getFrom(), msg.getReplyTo(), msg.getRecipients(RecipientType.TO),
-								msg.getRecipients(RecipientType.CC), msg.getSubject(), textContent.toString(),
-								htmlContent.toString(), msg.getSentDate(), msg.getReceivedDate(),
-								attachments.toArray(new EmailAttachment[0]));
-
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					parseMessage(msg, processor);
 
 				}
 			} finally {
@@ -126,14 +114,87 @@ public class InboxProcessor {
 		}
 	}
 
+	public void parseMessage(Message msg, EmailProcessor processor) throws MessagingException {
+		
+		
+		String contentType = msg.getContentType().toLowerCase();
+		StringBuffer textContent = new StringBuffer();
+		StringBuffer htmlContent = new StringBuffer();
+		List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
+		try {
+			
+			StringBuffer rawContent = new StringBuffer();
+			
+			Enumeration<Header> headers = msg.getAllHeaders();
+			while(headers.hasMoreElements()) {
+				Header header = headers.nextElement();
+				rawContent.append(header.getName());
+				rawContent.append(": ");
+				rawContent.append(header.getValue());
+				rawContent.append(System.lineSeparator());
+			}
+			
+			rawContent.append(IOUtils.toString(msg.getInputStream(), "UTF-8"));
+			
+			if (contentType.contains("text/plain")) {
+				textContent.append(msg.getContent().toString());
+			} else if (contentType.contains("text/html")) {
+				htmlContent.append(msg.getContent().toString());
+			} else if (contentType.contains("multipart")) {
+				processMultipart((Multipart) msg.getContent(), textContent, htmlContent, attachments);
+			}
+
+			processor.processEmail(msg.getFrom(), msg.getReplyTo(), msg.getRecipients(RecipientType.TO),
+					msg.getRecipients(RecipientType.CC), msg.getSubject(), textContent.toString(),
+					htmlContent.toString(),  rawContent.toString(),  msg.getSentDate(), msg.getReceivedDate(),
+					attachments.toArray(new EmailAttachment[0]));
+
+		} catch (IOException e) {
+			log.error("Failed to parse message", e);
+		}
+		
+	}
+
 	private void processMultipart(Multipart multiPart, StringBuffer textContent, StringBuffer htmlContent,
 			List<EmailAttachment> attachments) throws IOException, MessagingException {
 		for (int x = 0; x < multiPart.getCount(); x++) {
 			MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(x);
 			String contentType = part.getContentType().toLowerCase();
 
-			if (isInlineButNotEmailBodyContent(part, textContent, htmlContent)
-					|| Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+			if (isInlineButNotEmailBodyContent(part, textContent, htmlContent)) {
+				
+				String id = part.getContentID();
+				if(id.startsWith("<")) {
+					id = id.substring(1);
+				}
+				if(id.endsWith(">")) {
+					id = id.substring(0, id.length()-1);
+				}
+				
+				Document doc = Jsoup.parse(htmlContent.toString());
+				Elements els = doc.getElementsByAttributeValueContaining("src", "cid:" + id);
+				Element img = els.first();
+				if(Objects.nonNull(img)) {
+					String content = Base64.encodeBase64String(IOUtils.toByteArray(part.getInputStream()));
+					img.attr("src", String.format("data:%s;base64,%s", part.getContentType(), content));
+					htmlContent.setLength(0);
+					htmlContent.append(doc.toString());
+				} else {
+					File attachment = File.createTempFile("email", "attachment");
+					OutputStream out = new FileOutputStream(attachment);
+					InputStream in = part.getInputStream();
+					try {
+						IOUtils.copy(in, out);
+						attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
+					} finally {
+						IOUtils.closeQuietly(out);
+						IOUtils.closeQuietly(in);
+					}
+					attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
+				}
+				
+				
+			} else if(Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
 				File attachment = File.createTempFile("email", "attachment");
 				OutputStream out = new FileOutputStream(attachment);
 				InputStream in = part.getInputStream();
@@ -144,7 +205,7 @@ public class InboxProcessor {
 					IOUtils.closeQuietly(out);
 					IOUtils.closeQuietly(in);
 				}
-
+				
 			} else if (contentType.startsWith("text/plain")) {
 				textContent.append(part.getContent().toString());
 			} else if (contentType.startsWith("text/html")) {
