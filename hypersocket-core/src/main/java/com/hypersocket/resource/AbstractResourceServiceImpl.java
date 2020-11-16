@@ -272,8 +272,6 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			changedDefault = true;
 		}
 
-		getRepository().populateEntityFields(resource, properties);
-		
 		if(!checkUnique(resource, false)) {
 			ResourceChangeException ex = new ResourceChangeException(
 					RESOURCE_BUNDLE_DEFAULT, "generic.alreadyExists.error",
