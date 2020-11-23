@@ -49,4 +49,6 @@ public interface TaskProvider {
 	boolean isRealmTask();
 
 	boolean isRealmSupported(Realm realm);
+	
+	String getDisplayMode();
 }
