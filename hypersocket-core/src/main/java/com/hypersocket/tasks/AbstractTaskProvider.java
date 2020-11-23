@@ -38,6 +38,10 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	protected String[] processTokenReplacements(String[] values, List<SystemEvent> events) {
 		return processTokenReplacements(values, events, false);
 	}
+	
+	public String getDisplayMode() {
+		return null;
+	}
 
 	protected String[] processTokenReplacements(String[] values, List<SystemEvent> events, boolean evaluateScripts) {
 		for (int i = 0; i < values.length; i++) {

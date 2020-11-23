@@ -47,6 +47,7 @@ import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import com.hypersocket.tasks.TaskDefinition;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.TriggerCondition;
@@ -283,17 +284,17 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/tasks", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	public ResourceList<SelectOption> getTasks(HttpServletRequest request)
+	public ResourceList<TaskDefinition> getTasks(HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		setupAuthenticatedContext(sessionUtils.getSession(request),
 				sessionUtils.getLocale(request));
 		try {
-			List<SelectOption> result = new ArrayList<SelectOption>();
-			for (String task : resourceService.getTasks()) {
-				result.add(new SelectOption(task, task));
+			List<TaskDefinition> result = new ArrayList<>();
+			for (TaskDefinition task : resourceService.getTasks()) {
+				result.add(task);
 			}
-			return new ResourceList<SelectOption>(result);
+			return new ResourceList<>(result);
 		} finally {
 			clearAuthenticatedContext();
 		}

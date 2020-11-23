@@ -12,9 +12,9 @@ public interface TaskProviderService extends AuthenticatedService {
 
 	TaskProvider getTaskProvider(Task task);
 
-	List<String> getTriggerTasks();
+	List<TaskDefinition> getTriggerTasks();
 
-	List<String> getAutomationTasks();
+	List<TaskDefinition> getAutomationTasks();
 
 	boolean isDisableSystemTasks();
 

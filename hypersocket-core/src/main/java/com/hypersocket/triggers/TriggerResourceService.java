@@ -17,6 +17,7 @@ import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
+import com.hypersocket.tasks.TaskDefinition;
 
 public interface TriggerResourceService extends
 		AbstractResourceService<TriggerResource> {
@@ -81,7 +82,7 @@ public interface TriggerResourceService extends
 
 	void stop();
 
-	Collection<String> getTasks() throws AccessDeniedException;
+	Collection<TaskDefinition> getTasks() throws AccessDeniedException;
 
 	void deleteResource(TriggerResource resource)
 			throws ResourceException, AccessDeniedException;

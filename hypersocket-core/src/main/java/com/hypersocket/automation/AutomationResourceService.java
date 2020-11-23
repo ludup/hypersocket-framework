@@ -11,6 +11,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.tasks.TaskDefinition;
 import com.hypersocket.triggers.TriggerCondition;
 import com.hypersocket.triggers.TriggerResource;
 import com.hypersocket.triggers.TriggerResultType;
@@ -34,7 +35,7 @@ public interface AutomationResourceService extends
 	Collection<PropertyCategory> getPropertyTemplate(String resourceKey)
 			throws AccessDeniedException;
 
-	Collection<String> getTasks() throws AccessDeniedException;
+	Collection<TaskDefinition> getTasks() throws AccessDeniedException;
 
 	void scheduleDailyJobs();
 

@@ -45,6 +45,7 @@ import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.session.SessionService;
+import com.hypersocket.tasks.TaskDefinition;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.TriggerCondition;
@@ -365,7 +366,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	}
 
 	@Override
-	public Collection<String> getTasks() throws AccessDeniedException {
+	public Collection<TaskDefinition> getTasks() throws AccessDeniedException {
 
 		assertPermission(AutomationResourcePermission.READ);
 

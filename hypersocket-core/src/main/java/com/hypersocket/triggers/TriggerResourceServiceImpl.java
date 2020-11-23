@@ -50,6 +50,7 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.session.SessionService;
+import com.hypersocket.tasks.TaskDefinition;
 import com.hypersocket.tasks.TaskProvider;
 import com.hypersocket.tasks.TaskProviderService;
 import com.hypersocket.triggers.events.TriggerExecutedEvent;
@@ -533,7 +534,7 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 
 	
 	@Override
-	public Collection<String> getTasks() throws AccessDeniedException {
+	public Collection<TaskDefinition> getTasks() throws AccessDeniedException {
 
 		assertPermission(TriggerResourcePermission.READ);
 
