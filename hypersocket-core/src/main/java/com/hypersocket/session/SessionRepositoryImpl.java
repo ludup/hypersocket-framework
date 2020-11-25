@@ -53,6 +53,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 			String userAgentVersion,
 			String os,
 			String osVersion,
+			Map<String, String> parameters,
 			int timeout,
 			Realm realm) {
 
@@ -67,6 +68,11 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		session.setTimeout(timeout);
 		session.setPrincipalRealm(realm);
 		session.setSystem(false);
+		
+		if (parameters != null && !parameters.isEmpty()) {
+			session.setStateParameters(parameters);
+		}
+		
 		save(session);
 		return session;
 	}

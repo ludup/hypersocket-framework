@@ -1,6 +1,9 @@
 package com.hypersocket.session.json;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,6 +41,13 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 
 @Controller
 public class SessionController extends ResourceController { 
+	
+	private static final Set<String> sessionStateParams = new HashSet<>();
+	
+	static {
+		sessionStateParams.add(SessionServiceImpl.LOCATION_COUNTRY_CODE);
+		sessionStateParams.add(SessionServiceImpl.LOCATION_REGION_CODE);
+	}
 	
 	@RequestMapping(value = "session/touch", method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody
@@ -248,8 +258,9 @@ public class SessionController extends ResourceController {
 				@Override
 				public List<?> getPage(String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting)
 						throws UnauthorizedException, AccessDeniedException {
-					return sessionService.searchResources(sessionUtils.getCurrentRealm(request), searchPattern, start,
-							length, sorting);
+					
+					return sessionService.searchResourcesWithStateParameters(sessionUtils.getCurrentRealm(request), searchPattern, start,
+							length, sorting, sessionStateParams);
 				}
 
 				@Override
@@ -257,6 +268,43 @@ public class SessionController extends ResourceController {
 					return sessionService.getResourceCount(sessionUtils.getCurrentRealm(request), searchPattern);
 				}
 			});
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "session/geoInfoByCountry", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Map<String, Long>> geoInfoByCountry(final HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+
+		try {
+			
+			return new ResourceStatus<Map<String, Long>>(sessionService.getSessionGeoInfoByCountryCount());
+			
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "session/geoInfoByRegion/{countryCode}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Map<String, Long>> geoInfoByRegion(final HttpServletRequest request, HttpServletResponse response, @PathVariable("countryCode") String countryCode)
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+
+		try {
+			
+			return new ResourceStatus<Map<String, Long>>(sessionService.getSessionGeoInfoByRegionCount(countryCode));
+			
 		} finally {
 			clearAuthenticatedContext();
 		}

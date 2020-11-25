@@ -1,4 +1,4 @@
-package com.hypersocket.ip;
+package com.hypersocket.session;
 
 import java.io.Serializable;
 

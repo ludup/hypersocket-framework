@@ -49,11 +49,7 @@
 	    <property resourceKey="server.allowedIPs" inputType="multipleTextInput"
 			restart="false" weight="8889" allowEmpty="true"/>
 	</propertyCategory>
-	<propertyCategory resourceKey="category.geoRestrictions" resourceBundle="HypersocketServer" weight="400">
-	     <property resourceKey="ipstack.accesskey" inputType="text"
-			restart="false" weight="0" allowEmpty="true" developmentValue="06c4553e8c8f2216596a7c26d9e281a9"/>
-	</propertyCategory>
-		<propertyCategory resourceKey="category.authentication"
+	<propertyCategory resourceKey="category.authentication"
 		 resourceBundle="AuthenticationService" weight="0">
 		<property resourceKey="auth.chooseRealm" inputType="switch" defaultValue="false" weight="0" />
 		<property resourceKey="auth.validateHost" inputType="switch" defaultValue="false" weight="100" />

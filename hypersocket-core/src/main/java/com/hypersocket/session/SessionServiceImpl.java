@@ -16,12 +16,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.cache.Cache;
+import javax.cache.expiry.CreatedExpiryPolicy;
+import javax.cache.expiry.Duration;
 
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -34,8 +39,10 @@ import org.springframework.stereotype.Service;
 import com.decibel.uasparser.OnlineUpdater;
 import com.decibel.uasparser.UASparser;
 import com.decibel.uasparser.UserAgentInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
+import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
@@ -55,10 +62,19 @@ import com.hypersocket.session.events.SessionClosedEvent;
 import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.utils.HttpUtils;
 
 @Service
 public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		implements SessionService, ApplicationListener<ContextStartedEvent> {
+
+	public static final String LOCATION_REGION_CODE = "location_region_code";
+
+	public static final String LOCATION_COUNTRY_CODE = "location_country_code";
+
+	public static final String LOCATION_LON = "location_lon";
+
+	public static final String LOCATION_LAT = "location_lat";
 
 	static final String SESSION_REAPER_JOB = "sessionReaperJob";
 
@@ -99,6 +115,14 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	/* BUG: This is contructed here, but never used? */
 	private OnlineUpdater updater;
+	
+	@Autowired
+	private HttpUtils httpUtils;
+	
+	@Autowired
+	private CacheService cacheService; 
+	
+	ObjectMapper o = new ObjectMapper();
 
 	@PostConstruct
 	private void postConstruct() throws AccessDeniedException {
@@ -183,6 +207,12 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			String userAgent, Map<String, String> parameters, Realm realm) {
 
 		Session session = null;
+		
+		if (parameters == null) {
+			parameters = new HashMap<String, String>();
+		}
+		
+		populateGeoInfoIfEnabled(remoteAddress, parameters, realm);
 
 		if (userAgent == null) {
 			userAgent = "Unknown";
@@ -213,10 +243,10 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 
 			session = repository.createSession(remoteAddress, principal, completedScheme, agent, agentVersion, os,
-					osVersion, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
+					osVersion, parameters, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
 		} else if ("API_REST".equals(userAgent)) {
 			session = repository.createSession(remoteAddress, principal, completedScheme, "API_REST", "Unknown",
-					"Unknown", "Unknown", configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
+					"Unknown", "Unknown", parameters, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
 		} else {
 			UserAgentInfo info;
 			try {
@@ -224,20 +254,22 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				if ("unknown".equals(info.getType())) {
 
 					session = repository.createSession(remoteAddress, principal, completedScheme, userAgent, userAgent,
-							userAgent, userAgent, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
+							userAgent, userAgent, parameters, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
 				} else {
 					session = repository.createSession(remoteAddress, principal, completedScheme, info.getUaFamily(),
 							info.getBrowserVersionInfo(), info.getOsFamily(), info.getOsName(),
-							configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
+							parameters, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
 					setCurrentRole(session, permissionService.getPersonalRole(principal));
 				}
 			} catch (IOException e) {
 				session = repository.createSession(remoteAddress, principal, completedScheme, userAgent, "Unknown",
-						"Unknown", "Unknown", configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
+						"Unknown", "Unknown", parameters, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
 			}
 
 		}
 
+		
+		
 		eventService.publishEvent(new SessionOpenEvent(this, session));
 		return session;
 	}
@@ -690,6 +722,33 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		return repository.search(realm, searchPattern, start, length, sorting);
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<?> searchResourcesWithStateParameters(Realm currentRealm, String searchPattern, int start, int length,
+			ColumnSort[] sorting, Set<String> stateParamNames) throws AccessDeniedException {
+		List<Session> sessions = (List<Session>) this.searchResources(currentRealm, searchPattern, start, length, sorting);
+		List<SessionWithState> withStates = new ArrayList<>();
+		if (sessions != null) {
+			for (Session session : sessions) {
+				SessionWithState sessionWithState = new SessionWithState();
+				Map<String, String> stateMap = new HashMap<>();
+				if (stateParamNames != null) {
+					for (String param : stateParamNames) {
+						String value = session.getStateParameter(param);
+						stateMap.put(param, value);
+					}
+				}
+				
+				sessionWithState.setId(session.getId());
+				sessionWithState.setName(session.getName());
+				sessionWithState.setSession(session);
+				sessionWithState.setStateMap(stateMap);
+				withStates.add(sessionWithState);
+			}
+		}
+		return withStates;
+	}
 
 	@Override
 	public Long getResourceCount(Realm realm, String searchPattern) throws AccessDeniedException {
@@ -744,6 +803,132 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		maxCal.add(Calendar.DAY_OF_YEAR, -maxAge);
 		Date maxDate = maxCal.getTime();
 		repository.cleanUp(maxDate);
+	}
+	
+	
+	@Override
+	public Map<String, Long> getSessionGeoInfoByCountryCount() throws AccessDeniedException {
+		List<Session> sessions = getActiveSessions();
+		Map<String, Long> countMapByCountry = new HashMap<>();
+		
+		if (sessions != null) {
+			for (Session session : sessions) {
+				String countryCode = session.getStateParameter(LOCATION_COUNTRY_CODE);
+				
+				String code = null;
+				if (StringUtils.isNotBlank(countryCode)) {
+					code = countryCode;
+				} else {
+					code = "Global";
+				}
+				
+				Long count = countMapByCountry.get(code);
+				if (count == null) {
+					count = 0l;
+				}
+				
+				count++;
+				
+				countMapByCountry.put(code, count);
+			}
+		}
+		
+		return countMapByCountry;
+	}
+	
+	@Override
+	public Map<String, Long> getSessionGeoInfoByRegionCount(String countryCode) throws AccessDeniedException {
+		List<Session> sessions = getActiveSessions();
+		Map<String, Long> countMapByRegion = new HashMap<>();
+		
+		if (sessions != null && StringUtils.isNotBlank(countryCode)) {
+			for (Session session : sessions) {
+				
+				String regionCode = session.getStateParameter(LOCATION_REGION_CODE);
+				if (StringUtils.isBlank(regionCode)) {
+					continue;
+				}
+				
+				String countryCodeFromSession = session.getStateParameter(LOCATION_COUNTRY_CODE);
+				if (!countryCode.equals(countryCodeFromSession)) {
+					continue;
+				}
+				
+				String code = String.format("%s-%s", countryCode, regionCode);
+				
+				Long count = countMapByRegion.get(code);
+				if (count == null) {
+					count = 0l;
+				}
+				
+				count++;
+				
+				countMapByRegion.put(code, count);
+			}
+		}
+		
+		return countMapByRegion;
+	}
+	
+	private void populateGeoInfoIfEnabled(String remoteAddress, Map<String, String> parameters, Realm realm) {
+		IStackLocation location = lookupGeoIP(realm, remoteAddress);
+		if (location != null) {
+			
+			if (StringUtils.isNotBlank(location.latitude)) {
+				parameters.put(LOCATION_LAT, location.latitude);
+			}
+			
+			if (StringUtils.isNotBlank(location.longitude)) {
+				parameters.put(LOCATION_LON, location.longitude);
+			}
+			
+			if (StringUtils.isNotBlank(location.country_code)) {
+				parameters.put(LOCATION_COUNTRY_CODE, location.country_code);
+			}
+			
+			if (StringUtils.isNotBlank(location.region_code)) {
+				parameters.put(LOCATION_REGION_CODE, location.region_code);
+			}
+			
+		}
+	}
+	
+	private IStackLocation lookupGeoIP(Realm realm, String ipAddress) {
+		try {
+			
+			String accessKey = configurationService.getValue(realm, "ipstack.accesskey");
+			
+			if (StringUtils.isBlank(accessKey)) {
+				return null;
+			}
+		
+			Cache<String,IStackLocation> cached = cacheService.getCacheOrCreate(
+					"geoIPs", String.class, IStackLocation.class,  
+					CreatedExpiryPolicy.factoryOf(Duration.ONE_DAY));
+			
+			IStackLocation loc = cached.get(ipAddress);
+			
+			if(Objects.nonNull(loc)) {
+				return loc;
+			}
+			
+			String locationJson = httpUtils.doHttpGetContent(
+					String.format("http://api.ipstack.com/%s?access_key=%s", 
+								ipAddress, accessKey),
+							false, 
+							new HashMap<String,String>());
+			
+			IStackLocation location =  o.readValue(locationJson, IStackLocation.class);
+			cached.put(ipAddress, location);
+		
+			return location;
+
+		} catch (Exception e) {
+			log.error("Problem in fetching geo ip info.", e);
+		}
+		
+		return null;
+		
 	}
 
 }

@@ -10,6 +10,7 @@ package com.hypersocket.session;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.decibel.uasparser.OnlineUpdater;
 import com.decibel.uasparser.UASparser;
@@ -107,6 +108,8 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 			throws AccessDeniedException;
 
 	List<?> searchResources(Realm currentRealm, String searchPattern, int start, int length, ColumnSort[] sorting) throws AccessDeniedException;
+	
+	List<?> searchResourcesWithStateParameters(Realm currentRealm, String searchPattern, int start, int length, ColumnSort[] sorting, Set<String> stateParamNames) throws AccessDeniedException;
 
 	Long getResourceCount(Realm currentRealm, String searchPattern) throws AccessDeniedException;
 
@@ -135,5 +138,9 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	void executeInSystemContext(Runnable r, Realm currentRealm, Principal principal);
 	
 	void cleanUp() throws AccessDeniedException;
+	
+	Map<String, Long> getSessionGeoInfoByCountryCount() throws AccessDeniedException;
+	 
+	Map<String, Long> getSessionGeoInfoByRegionCount(String countryCode) throws AccessDeniedException;
 }
 
