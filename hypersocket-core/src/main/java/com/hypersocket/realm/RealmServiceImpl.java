@@ -680,7 +680,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			for (PrincipalProcessor processor : principalProcessors) {
 				processor.beforeCreate(realm, provider.getModule(), username, properties);
 			}
-
+ 
 			Principal principal = provider.createUser(realm, username, properties, principals, passwordCreator,
 					forceChange);
 

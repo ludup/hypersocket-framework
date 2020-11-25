@@ -1039,18 +1039,18 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
-	public Long getRoleCount(String searchPattern, String searchColumn) throws AccessDeniedException {
+	public Long getRoleCount(String searchPattern, String searchColumn, RoleType... types) throws AccessDeniedException {
 		assertPermission(RolePermission.READ);
 
-		return repository.countRoles(getCurrentRealm(), searchPattern, searchColumn);
+		return repository.countRoles(getCurrentRealm(), searchPattern, searchColumn, types);
 	}
 
 	@Override
-	public List<?> getRoles(String searchPattern, String searchColumn, int start, int length, ColumnSort[] sorting)
+	public List<?> getRoles(String searchPattern, String searchColumn, int start, int length, ColumnSort[] sorting, RoleType... types)
 			throws AccessDeniedException {
 		assertPermission(RolePermission.READ);
 
-		return repository.searchRoles(getCurrentRealm(), searchPattern, searchColumn, start, length, sorting);
+		return repository.searchRoles(getCurrentRealm(), searchPattern, searchColumn, start, length, sorting, types);
 	}
 
 	@Override

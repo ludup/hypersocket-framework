@@ -485,7 +485,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Override
 	@Transactional(readOnly = true)
 	public List<Role> searchRoles(final Realm realm, String searchPattern, String searchColumn,
-			int start, int length, ColumnSort[] sorting) {
+			int start, int length, ColumnSort[] sorting, RoleType... types) {
 		return search(Role.class, searchColumn, searchPattern, start, length,
 				sorting, new CriteriaConfiguration() {
 
@@ -498,14 +498,14 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 						criteria.add(Restrictions.eq("realm", realm));
 						criteria.add(Restrictions.or(Restrictions.isNull("type"),
-								Restrictions.in("type", Arrays.asList(RoleType.BUILTIN, RoleType.CUSTOM))));
+								Restrictions.in("type", types)));
 					}
 				});
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public Long countRoles(final Realm realm, String searchPattern, String searchColumn) {
+	public Long countRoles(final Realm realm, String searchPattern, String searchColumn, RoleType... types) {
 		return getCount(Role.class, searchColumn, searchPattern,
 				new CriteriaConfiguration() {
 
@@ -515,7 +515,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 						criteria.add(Restrictions.eq("hidden", false));
 						criteria.add(Restrictions.eq("realm", realm));
 						criteria.add(Restrictions.or(Restrictions.isNull("type"),
-								Restrictions.in("type", Arrays.asList(RoleType.BUILTIN, RoleType.CUSTOM))));
+								Restrictions.in("type", types)));
 						
 					}
 				});

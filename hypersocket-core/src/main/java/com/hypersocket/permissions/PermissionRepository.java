@@ -86,9 +86,9 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 	Set<Role> getRolesWithPermissions(Permission permission);
 
 	List<Role> searchRoles(Realm realm, String searchPattern, String searchColumn, int start,
-			int length, ColumnSort[] sorting);
+			int length, ColumnSort[] sorting, RoleType... types);
 
-	Long countRoles(Realm realm, String searchPattern, String searchColumn);
+	Long countRoles(Realm realm, String searchPattern, String searchColumn, RoleType... types);
 
 	Role getPersonalRole(Principal principal);
 
