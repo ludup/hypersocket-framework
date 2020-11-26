@@ -815,21 +815,19 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			for (Session session : sessions) {
 				String countryCode = session.getStateParameter(LOCATION_COUNTRY_CODE);
 				
-				String code = null;
+				
 				if (StringUtils.isNotBlank(countryCode)) {
-					code = countryCode;
-				} else {
-					code = "Global";
+					String code = countryCode;
+				
+					Long count = countMapByCountry.get(code);
+					if (count == null) {
+						count = 0l;
+					}
+					
+					count++;
+					
+					countMapByCountry.put(code, count);
 				}
-				
-				Long count = countMapByCountry.get(code);
-				if (count == null) {
-					count = 0l;
-				}
-				
-				count++;
-				
-				countMapByCountry.put(code, count);
 			}
 		}
 		
