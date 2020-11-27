@@ -868,30 +868,8 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return countMapByRegion;
 	}
 	
-	private void populateGeoInfoIfEnabled(String remoteAddress, Map<String, String> parameters, Realm realm) {
-		IStackLocation location = lookupGeoIP(realm, remoteAddress);
-		if (location != null) {
-			
-			if (StringUtils.isNotBlank(location.latitude)) {
-				parameters.put(LOCATION_LAT, location.latitude);
-			}
-			
-			if (StringUtils.isNotBlank(location.longitude)) {
-				parameters.put(LOCATION_LON, location.longitude);
-			}
-			
-			if (StringUtils.isNotBlank(location.country_code)) {
-				parameters.put(LOCATION_COUNTRY_CODE, location.country_code);
-			}
-			
-			if (StringUtils.isNotBlank(location.region_code)) {
-				parameters.put(LOCATION_REGION_CODE, location.region_code);
-			}
-			
-		}
-	}
-	
-	private IStackLocation lookupGeoIP(Realm realm, String ipAddress) {
+	@Override
+	public IStackLocation lookupGeoIP(Realm realm, String ipAddress) {
 		try {
 			
 			String accessKey = configurationService.getValue(realm, "ipstack.accesskey");
@@ -925,8 +903,36 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			log.error("Problem in fetching geo ip info.", e);
 		}
 		
-		return null;
+		return new IStackLocation();
 		
+	}
+	
+	@Override
+	public boolean isIpStackAPIKeySet(Realm realm) {
+		return StringUtils.isNotBlank(configurationService.getValue(realm, "ipstack.accesskey"));
+	}
+	
+	private void populateGeoInfoIfEnabled(String remoteAddress, Map<String, String> parameters, Realm realm) {
+		IStackLocation location = lookupGeoIP(realm, remoteAddress);
+		if (location != null) {
+			
+			if (StringUtils.isNotBlank(location.latitude)) {
+				parameters.put(LOCATION_LAT, location.latitude);
+			}
+			
+			if (StringUtils.isNotBlank(location.longitude)) {
+				parameters.put(LOCATION_LON, location.longitude);
+			}
+			
+			if (StringUtils.isNotBlank(location.country_code)) {
+				parameters.put(LOCATION_COUNTRY_CODE, location.country_code);
+			}
+			
+			if (StringUtils.isNotBlank(location.region_code)) {
+				parameters.put(LOCATION_REGION_CODE, location.region_code);
+			}
+			
+		}
 	}
 
 }

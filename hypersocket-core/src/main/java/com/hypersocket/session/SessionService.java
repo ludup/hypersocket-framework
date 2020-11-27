@@ -142,5 +142,9 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	Map<String, Long> getSessionGeoInfoByCountryCount() throws AccessDeniedException;
 	 
 	Map<String, Long> getSessionGeoInfoByRegionCount(String countryCode) throws AccessDeniedException;
+	
+	IStackLocation lookupGeoIP(Realm realm, String ipAddress);
+	
+	boolean isIpStackAPIKeySet(Realm realm); 
 }
 
