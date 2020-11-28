@@ -282,8 +282,7 @@ public class SessionUtils {
 			 * to configure CORS or disable it.
 			 */
 			origins.add("chrome-extension://nbdlpjacpjcngebcjapombjkmjbjnpbc");
-	//		TODO
-	//		origins.add("moz-extension://");
+			origins.add("moz-extension://93d8c2f2-e17c-7d4b-9177-a45d2650c23b");
 			
 			if(configurationService.getBooleanValue(currentRealm, "cors.enabled")) {
 				
