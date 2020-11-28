@@ -276,6 +276,10 @@ public class SessionUtils {
 		
 		if(!Objects.isNull(requestOrigin)) {
 			
+			if(log.isDebugEnabled()) {
+				log.debug("CORS request for origin {}", requestOrigin);
+			}
+			
 			Set<String> origins = new HashSet<>();
 			/**
 			 * We hard code our own extensions to avoid the user having 
@@ -284,17 +288,17 @@ public class SessionUtils {
 			origins.add("chrome-extension://nbdlpjacpjcngebcjapombjkmjbjnpbc");
 			origins.add("moz-extension://93d8c2f2-e17c-7d4b-9177-a45d2650c23b");
 			
+			if(requestOrigin.startsWith("moz-extension://")) {
+				return true;
+			}
+			
 			if(configurationService.getBooleanValue(currentRealm, "cors.enabled")) {
 				
 				origins.addAll(ResourceUtils.explodeCollectionValues(
 						configurationService.getValue(currentRealm, "cors.origins")));
 				
 			}
-			
-			if(log.isDebugEnabled()) {
-				log.debug("CORS request for origin {}", requestOrigin);
-			}
-			
+
 			if(origins.contains(requestOrigin)) {
 				return true;
 			}
