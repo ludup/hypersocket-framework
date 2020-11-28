@@ -192,33 +192,33 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 			
 	}
 
-	@SuppressWarnings("unchecked")
-	@Transactional(readOnly=true)
-	public T getPersonalResourceByName(String name, Principal principal, CriteriaConfiguration... configs) {
-		
-		/**
-		 * Not sure on the effectiveness of this method. Since assignment was removed it would not
-		 * guarantee to return a users private resource.
-		 */
-		Criteria criteria = createCriteria(getResourceClass());
-		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-		
-		criteria.add(Restrictions.eq("name", name));
-		
-		for (CriteriaConfiguration c : configs) {
-			c.configure(criteria);
-		}
-
-		criteria.add(Restrictions.eq("realm", principal.getRealm()));
-		criteria.add(Restrictions.eq("deleted", false));
-		criteria.add(Restrictions.eq("hidden", false));
-		
-//		criteria = criteria.createCriteria("roles");
-//		criteria.add(Restrictions.eq("personalRole", true));
-//		criteria.add(Restrictions.in("principals", Arrays.asList(principal.getId())));
-		
-		return (T) criteria.uniqueResult();
-	}
+//	@SuppressWarnings("unchecked")
+//	@Transactional(readOnly=true)
+//	public T getPersonalResourceByName(String name, Principal principal, CriteriaConfiguration... configs) {
+//		
+//		/**
+//		 * Not sure on the effectiveness of this method. Since assignment was removed it would not
+//		 * guarantee to return a users private resource.
+//		 */
+//		Criteria criteria = createCriteria(getResourceClass());
+//		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+//		
+//		criteria.add(Restrictions.eq("name", name));
+//		
+//		for (CriteriaConfiguration c : configs) {
+//			c.configure(criteria);
+//		}
+//
+//		criteria.add(Restrictions.eq("realm", principal.getRealm()));
+//		criteria.add(Restrictions.eq("deleted", false));
+//		criteria.add(Restrictions.eq("hidden", false));
+//		
+////		criteria = criteria.createCriteria("roles");
+////		criteria.add(Restrictions.eq("personalRole", true));
+////		criteria.add(Restrictions.in("principals", Arrays.asList(principal.getId())));
+//		
+//		return (T) criteria.uniqueResult();
+//	}
 
 	@SuppressWarnings("unchecked")
 	@Override

@@ -541,13 +541,15 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	@Override
 	public T getPersonalResourceByName(String name, Principal principal) throws ResourceNotFoundException, AccessDeniedException {
 		
-		T resource = getRepository().getPersonalResourceByName(name, principal);
-		if (resource == null) {
-			throw new ResourceNotFoundException(getResourceBundle(),
-					"error.invalidResourceName", name);
+		for(T resource : getPersonalResources()) {
+			if(resource.getName().equalsIgnoreCase(name)) {
+				return resource;
+			}
 		}
-		
-		return resource;
+
+		throw new ResourceNotFoundException(getResourceBundle(),
+					"error.invalidResourceName", name);
+
 	}
 
 	protected void assertPrincipalAssignment(T resource, PermissionType permission) throws AccessDeniedException {
