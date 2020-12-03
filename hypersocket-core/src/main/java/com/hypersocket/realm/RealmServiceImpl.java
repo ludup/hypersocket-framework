@@ -2200,13 +2200,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public Long getRealmCount(String searchPattern, String searchColumn) throws AccessDeniedException {
-
-		assertAnyPermission(RealmPermission.READ, SystemPermission.SWITCH_REALM);
+	public Long getRealmCount(String searchPattern, String searchColumn) {
 
 		return realmRepository.countRealms(searchPattern, searchColumn, getCurrentRealm(),
 				permissionService.hasSystemPermission(getCurrentPrincipal()) ? Collections.<Realm>emptyList()
 						: permissionService.getPrincipalPermissionRealms(getCurrentPrincipal()));
+	}
+	
+
+	@Override
+	public Long getRealmCount() {
+		return getRealmCount("name", "");
 	}
 
 	@Override

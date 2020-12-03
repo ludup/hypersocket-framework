@@ -343,5 +343,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Principal getPrincipalByUUID(String uuid);
 
+	Long getRealmCount();
+
 }
 

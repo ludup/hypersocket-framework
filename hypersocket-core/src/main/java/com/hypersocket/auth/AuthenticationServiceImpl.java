@@ -220,7 +220,12 @@ public class AuthenticationServiceImpl extends
 				AuthenticationScheme basicScheme = schemeRepository.getSchemeByResourceKey2(realm, AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
 				List<String> modules = new ArrayList<String>();
 				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
+				
 				try {
+					/**
+					 * This will only get configured if product is IDM and LBA is available.
+					 */
+					Class.forName("com.hypersocket.identity.portal.FrontEndServiceImpl");
 					Class.forName("com.logonbox.authenticator.LogonBoxAuthenticatorHtml");
 					modules.add("logonboxHtml");
 					properties.put("lb.enableRegistration", "true");
