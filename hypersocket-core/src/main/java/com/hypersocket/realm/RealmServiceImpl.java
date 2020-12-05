@@ -1212,7 +1212,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 								oldProvider.resetRealm(realm);
 								realmProvider.resetRealm(realm);
 
-								configurationService.setValue(realm, "realm.userEditableProperties",
+								configurationService.setValue(realm, "realm.userEditableProperties", "");
+								configurationService.setValue(realm, "realm.userVisibleProperties",
 										ResourceUtils.implodeValues(realmProvider.getDefaultUserPropertyNames()));
 
 								realm.setReadOnly(false);

@@ -7,7 +7,10 @@
  ******************************************************************************/
 package com.hypersocket.server.handlers.impl;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hypersocket.ApplicationContextServiceImpl;
+import com.hypersocket.json.utils.HypersocketUtils;
 import com.hypersocket.server.HypersocketServerImpl;
 import com.hypersocket.server.handlers.HttpResponseProcessor;
 import com.hypersocket.session.json.SessionUtils;
@@ -42,16 +46,19 @@ public class APIRequestHandler extends ServletRequestHandler {
 			response.addHeader("Access-Control-Allow-Credentials", "true");
 			response.addHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
 			
+			Set<String> methods = new HashSet<>();
+			methods.addAll(Arrays.asList("GET", "PUT", "POST", "DELETE", "OPTIONS"));
+			String requestMethod = request.getHeader("Access-Control-Request-Method");
+			if (StringUtils.isNotEmpty(requestMethod) && !methods.contains(requestMethod)) {
+				methods.add(requestMethod);
+			}
+			
+			response.addHeader("Access-Control-Allow-Methods", HypersocketUtils.csv(methods.toArray(new String[0])));
+			
 			String requestHeaders = request.getHeader("Access-Control-Request-Headers");
 			if (StringUtils.isNotEmpty(requestHeaders)) {
 				response.addHeader("Access-Control-Allow-Headers", requestHeaders);
 			}
-			
-			String requestMethod = request.getHeader("Access-Control-Request-Method");
-			if (StringUtils.isNotEmpty(requestMethod)) {
-				response.addHeader("Access-Control-Request-Method", requestMethod);
-			}
-			
 		}
 		
 		super.handleHttpRequest(request, response, responseProcessor);
