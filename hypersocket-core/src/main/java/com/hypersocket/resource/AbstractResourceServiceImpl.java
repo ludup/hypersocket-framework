@@ -135,6 +135,10 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public Set<String> getPropertyNames(String resourceKey, Realm realm) {
 		return getRepository().getPropertyNames(null);
 	}
+	
+	protected Long getResourceCount(Realm realm) {
+		return getRepository().getResourceCount(realm);
+	}
 
 	@Override
 	@SafeVarargs

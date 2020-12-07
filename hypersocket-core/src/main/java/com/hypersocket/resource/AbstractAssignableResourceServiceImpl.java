@@ -258,6 +258,10 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		return false;
 	}
 	
+	protected Long getResourceCount(Realm realm) {
+		return getRepository().getResourceCount(realm);
+	}
+	
 	@SafeVarargs
 	@Override
 	public final void updateResource(T resource, Set<Role> roles, Map<String,String> properties,  
