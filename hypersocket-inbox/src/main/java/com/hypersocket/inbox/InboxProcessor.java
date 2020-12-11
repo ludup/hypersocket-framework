@@ -179,19 +179,20 @@ public class InboxProcessor {
 					img.attr("src", String.format("data:%s;base64,%s", part.getContentType(), content));
 					htmlContent.setLength(0);
 					htmlContent.append(doc.toString());
-				} else {
-					File attachment = File.createTempFile("email", "attachment");
-					OutputStream out = new FileOutputStream(attachment);
-					InputStream in = part.getInputStream();
-					try {
-						IOUtils.copy(in, out);
-						attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
-					} finally {
-						IOUtils.closeQuietly(out);
-						IOUtils.closeQuietly(in);
-					}
+				} 
+				
+				File attachment = File.createTempFile("email", "attachment");
+				OutputStream out = new FileOutputStream(attachment);
+				InputStream in = part.getInputStream();
+				try {
+					IOUtils.copy(in, out);
 					attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
+				} finally {
+					IOUtils.closeQuietly(out);
+					IOUtils.closeQuietly(in);
 				}
+				attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
+				
 				
 				
 			} else if(Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
