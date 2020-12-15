@@ -19,6 +19,7 @@ import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.session.SessionService;
 import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
@@ -37,6 +38,9 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 	@Autowired
 	private FileUploadService uploadService;
 
+	@Autowired
+	private SessionService sessionService; 
+	
 	@Override
 	protected BatchProcessingItemRepository<EmailBatchItem> getRepository() {
 		return repository;
@@ -50,6 +54,8 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 	@Override
 	protected boolean process(EmailBatchItem item) {
 
+		sessionService.setupSystemContext(item.getRealm()); 
+		
 		try {
 
 			if (item.getSchedule() != null && item.getSchedule().after(new Date())) {
@@ -72,6 +78,8 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 				}
 			}
 
+			
+			
 			emailService.sendEmail(item.getRealm(), item.getSubject(), item.getText(), item.getHtml(),
 					item.getReplyToName(), 
 					item.getReplyToEmail(),
@@ -87,6 +95,8 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 					item.getToEmail(), 
 					item.getSubject(),
 					e);
+		} finally {
+			sessionService.clearPrincipalContext();
 		}
 
 		return true;
