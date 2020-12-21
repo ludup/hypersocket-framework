@@ -10,7 +10,7 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 	private Long column;
 	private Long position;
 	private boolean system;
-	
+	private boolean decorate = true;
 	public OverviewWidget() {
 
 	}
@@ -42,6 +42,20 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 	}
 	
 	public OverviewWidget(boolean visible, int weight, String resourceKey, String contentPath,
+			boolean large, boolean decorate) {
+
+		this.weight = weight;
+		this.resourceKey = resourceKey;
+		this.contentPath = contentPath;
+		this.large = large;
+		this.visible = visible;
+		this.column = new Long(1);
+		this.position = new Long(-1);
+		this.system = false;
+		this.decorate = decorate;
+	}
+	
+	public OverviewWidget(boolean visible, int weight, String resourceKey, String contentPath,
 			boolean large, Long column, Long position, boolean system) {
 
 		this.weight = weight;
@@ -56,6 +70,14 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 	
 	public int getWeight() {
 		return weight;
+	}
+	
+	public boolean getDecorate() {
+		return decorate;
+	}
+	
+	public void setDecorate(boolean decorate) {
+		this.decorate = decorate;
 	}
 
 	public void setWeight(int weight) {

@@ -23,6 +23,9 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationServiceAdapter;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.ChangePasswordTemplate;
+import com.hypersocket.dashboard.OverviewWidget;
+import com.hypersocket.dashboard.OverviewWidgetService;
+import com.hypersocket.dashboard.OverviewWidgetServiceImpl;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.input.DivField;
@@ -93,6 +96,9 @@ public class PasswordPolicyResourceServiceImpl extends AbstractAssignableResourc
 	@Autowired
 	private AuthenticationService authenticationService;
 
+	@Autowired
+	private OverviewWidgetService overviewService; 
+	
 	private Map<String, PolicyResolver> passwordPolicyResolvers = new HashMap<String, PolicyResolver>();
 
 	public PasswordPolicyResourceServiceImpl() {
@@ -175,6 +181,15 @@ public class PasswordPolicyResourceServiceImpl extends AbstractAssignableResourc
 				return repository.getPolicyByDN("LocalUserDefaultPolicy", realm) != null;
 			}
 
+		});
+		
+		overviewService.registerWidget(OverviewWidgetServiceImpl.USERDASH, 
+				new OverviewWidget(true, 9999, "myPassword.title", "passwordInformation", false, false) {
+			
+			@Override
+			public boolean hasContent() {
+				return true;
+			}
 		});
 	}
 
