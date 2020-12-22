@@ -105,7 +105,6 @@ public class ConfigurationController extends AuthenticatedController {
 		return getSystemCategories(request, group);
 	}
 
-	@AuthenticationRequired
 	@RequestMapping(value = "configuration/values/{resourceKeys}", method = RequestMethod.GET, produces = {
 			"application/json" })
 	@ResponseBody
