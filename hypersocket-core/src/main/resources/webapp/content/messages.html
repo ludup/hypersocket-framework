@@ -2,7 +2,7 @@
 	<input type="hidden" id="resourceId" name="resourceId" value="" />
 	<input type="hidden" id="resourceName" name="resourceName" value="" />
 </div>
-
+<div id="additionalActions"></div>
 <script type="text/javascript">
 	$(document).ready(function() {
 		
@@ -11,89 +11,114 @@
 				}
 				
 				$('#contentMessages').localize();
-				$('#contentMessages').ajaxResourcePage(
-						{
-							id : "Message",
-							tableUrl : "messages/table",
-							title: getResource("messages.label"),
-							icon: 'fa-envelope-o',
-							infoHtml: getResource('messages.infoHtml'),
-							resourceUrl : "messages/message",
-							deleteResourcesUrl : "messages/bulk",
-							fields : [ {
-								name : "name"
-							}, {
-								name: "enabled",
-								formatter: function(value, obj, idx) {
-									return value ? getResource('text.yes') : getResource('text.no');
-								}
-							}, {
-								name: 'info',
-								formatter: function(value, obj, idx) {
-									
-									return getResourceOrDefault('messageText.' + obj.messageId, '');
-								}
-							}],
-							resourceKey : "message",
-							canCreate: currentMenu.canCreate,
-							canCopy: false,
-							resourceView: 'samePage',
-							canUpdate: currentMenu.canUpdate,
-							canDelete: currentMenu.canDelete,
-							checkbox : true,
-							validate : function() {
-
-								if ($('#resourceName').val() == '') {
-									showError("error.nameRequired");
-									return false;
-								}
-
-								if(!$('#messageProperties').validateProperties()) {
-									showError("error.correctValidationErrors");
-									return false;
-								}
-								
-								return true;
-							},
-							clearDialog : function(create) {
-								
-								$('#resourceId').val('');
-								$('#resourceName').val('');
-
-							},
-							createResource : function() {
-								resource = new Object();
-								resource.id = $('#resourceId').val();
-								resource.name = $('#resourceName').val();
-								
-								$('#messageProperties').saveProperties(true,
-										function(items) {
-											resource.properties = items;
-								});
-								
-								return resource;
-							},
-							displayResource : function(resource, readOnly) {
-								
-								$('#resourceId').val(resource.id);
-								$('#resourceName').val(resource.name);
-							
-							},
-							propertyOptions: { 
-								propertySelector : '#messageProperties',
-								templateUrl : 'messages/template/', 
-								propertiesUrl: 'messages/properties/',
-								showButtons : false, 
-								showAdditionalTabButtons: false,
-								maintainButtonState: false,
-								i18nNamespace: 'message',
-								canUpdate : currentMenu.canUpdate,
-								useTemplates : true
-							},
-							complete : function() {
-								loadComplete();
-							}
+				
+				getJSON('menus/tableActions/messagesActions', null, function(data) {
+					var actions = new Array();
+					if (data.resources.length > 0) {
+						/* TODO This code is often repeated. It's time it was abstracted */
+						$.each(data.resources, function(idx, action) {
+							var div = action.resourceKey + 'Div';
+							$('#additionalActions').append('<div id="' + div + '"></div>');
+							$('#' + div).load(uiPath + '/content/' + action.url + '.html');
+							actions.push({
+								resourceKey : action.resourceKey,
+								iconClass : action.iconClass,
+								action : function(resource, callback) {
+									if ($('#' + action.resourceKey).data('action')) {
+										$('#' + action.resourceKey).data('action')(resource, callback);
+									}
+								},
+								enabled : true,
+								enableFunction : action.enableFunction,
+								displayFunction : action.displayFunction
+							});
 						});
-
+					}
+					
+					$('#contentMessages').ajaxResourcePage(
+							{
+								id : "Message",
+								tableUrl : "messages/table",
+								title: getResource("messages.label"),
+								icon: 'fa-envelope-o', 
+								additionalActions : actions,
+								infoHtml: getResource('messages.infoHtml'),
+								resourceUrl : "messages/message",
+								deleteResourcesUrl : "messages/bulk",
+								fields : [ {
+									name : "name"
+								}, {
+									name: "enabled",
+									formatter: function(value, obj, idx) {
+										return value ? getResource('text.yes') : getResource('text.no');
+									}
+								}, {
+									name: 'info',
+									formatter: function(value, obj, idx) {
+										
+										return getResourceOrDefault('messageText.' + obj.messageId, '');
+									}
+								}],
+								resourceKey : "message",
+								canCreate: currentMenu.canCreate,
+								canCopy: false,
+								resourceView: 'samePage',
+								canUpdate: currentMenu.canUpdate,
+								canDelete: currentMenu.canDelete,
+								checkbox : true,
+								validate : function() {
+	
+									if ($('#resourceName').val() == '') {
+										showError("error.nameRequired");
+										return false;
+									}
+	
+									if(!$('#messageProperties').validateProperties()) {
+										showError("error.correctValidationErrors");
+										return false;
+									}
+									
+									return true;
+								},
+								clearDialog : function(create) {
+									
+									$('#resourceId').val('');
+									$('#resourceName').val('');
+	
+								},
+								createResource : function() {
+									resource = new Object();
+									resource.id = $('#resourceId').val();
+									resource.name = $('#resourceName').val();
+									
+									$('#messageProperties').saveProperties(true,
+											function(items) {
+												resource.properties = items;
+									});
+									
+									return resource;
+								},
+								displayResource : function(resource, readOnly) {
+									
+									$('#resourceId').val(resource.id);
+									$('#resourceName').val(resource.name);
+								
+								},
+								propertyOptions: { 
+									propertySelector : '#messageProperties',
+									templateUrl : 'messages/template/', 
+									propertiesUrl: 'messages/properties/',
+									showButtons : false, 
+									showAdditionalTabButtons: false,
+									maintainButtonState: false,
+									i18nNamespace: 'message',
+									canUpdate : currentMenu.canUpdate,
+									useTemplates : true
+								},
+								complete : function() {
+									loadComplete();
+								}
+							});
+					});
 			});
 </script>

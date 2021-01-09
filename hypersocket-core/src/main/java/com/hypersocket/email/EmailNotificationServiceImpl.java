@@ -359,7 +359,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		
 		email.addRecipient(r.getName(), r.getEmail(), RecipientType.TO);
 		
-		email.setSubject(subject);
+		email.setSubject(subject.equals("") ? "<No Subject>" : subject);
 
 		if(StringUtils.isNotBlank(htmlText)) {
 			Document doc = Jsoup.parse(htmlText);

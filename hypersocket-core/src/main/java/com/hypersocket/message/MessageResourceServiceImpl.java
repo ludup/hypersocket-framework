@@ -49,6 +49,7 @@ import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalWithoutPasswordResolver;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
@@ -397,6 +398,15 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 		vars.addAll(Arrays.asList("trackingImage", "email", "firstName", "fullName", "principalId", "serverUrl",
 				"serverName", "serverHost"));
 		return vars;
+	}
+
+	@Override
+	public void test(MessageResource message, String email) {
+		UserPrincipal<?> user = (UserPrincipal<?>) getCurrentPrincipal();
+		Collection<String> recipients = StringUtils.isEmpty(email) ? null : Arrays.asList(email);
+		sendMessage(message, user.getRealm(), new PrincipalWithoutPasswordResolver(user), null,
+				(Iterator<Principal>)null, recipients, null,
+						null, (String)null);
 	}
 
 	@Override

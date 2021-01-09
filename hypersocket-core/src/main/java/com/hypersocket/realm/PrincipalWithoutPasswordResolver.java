@@ -3,6 +3,7 @@ package com.hypersocket.realm;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,11 +26,22 @@ public class PrincipalWithoutPasswordResolver extends StaticResolver {
 		addToken("mobile", principal.getMobile());
 		addToken("fullName", principal.getDescription());
 		addToken("realmName", principal.getRealm().getName());
+		addToken("groupNames",
+				String.join(",", principal.getGroups().stream().map(g -> g.getName()).collect(Collectors.toList())));
+		addToken("groupPrincipalNames", String.join(",",
+				principal.getGroups().stream().map(g -> g.getPrincipalName()).collect(Collectors.toList())));
+		addToken("groupIds", String.join(",",
+				principal.getGroups().stream().map(g -> String.valueOf(g.getId())).collect(Collectors.toList())));
+		addToken("groupUUIDs",
+				String.join(",", principal.getGroups().stream().map(g -> g.getUUID()).collect(Collectors.toList())));
+		addToken("groupDescriptions",
+				String.join(",", principal.getGroups().stream().map(g -> g.getUUID()).collect(Collectors.toList())));
 	}
 	
 	public static Set<String> getVariables() {
 		return new HashSet<String>(Arrays.asList("principalName", "principalId",
-				"principalDesc", "principalRealm", "firstName", "fullName", "email", "secondaryEmail", "mobile", "realmName"));
+				"principalDesc", "principalRealm", "firstName", "fullName", "email", "secondaryEmail", "mobile", "realmName",
+				"groupNames", "groupPrincipalNames", "groupIds", "groupUUIDs", "groupDescriptions"));
 	}
 	
 	public String getFirstName(String name) {

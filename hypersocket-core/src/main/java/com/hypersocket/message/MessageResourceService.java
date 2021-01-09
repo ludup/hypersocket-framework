@@ -94,4 +94,6 @@ public interface MessageResourceService extends
 	void sendMessageNow(String resourceKey, Realm currentRealm, ITokenResolver ticketResolver,
 			Iterator<Principal> principals, Collection<String> emails);
 
+	void test(MessageResource resourceById, String email);
+
 }
