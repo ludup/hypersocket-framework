@@ -30,7 +30,7 @@
 			<url>http://artifactory.javassh.com/opensource-releases</url>
 		</repository>
 		<snapshotRepository>
-			<id>opensource-releases</id>
+			<id>opensource-snapshots</id>
 			<url>http://artifactory.javassh.com/opensource-snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
@@ -150,16 +150,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
 						<goals>
 							<goal>jar</goal>
 						</goals>
-						<configuration>
-							<additionalparam>-Xdoclint:none</additionalparam>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -180,6 +176,7 @@
 	
 						<!-- https://bugs.openjdk.java.net/browse/JDK-8212233 -->
 						<source>8</source>
+						<additionalparam>-Xdoclint:none</additionalparam>
                 	</configuration>
 				</plugin>
 				<plugin>
@@ -240,7 +237,7 @@
 											google-translate-v2-java-maven-plugin
 										</artifactId>
 										<versionRange>
-											[0.0.3,)
+											[0.0.5,)
 										</versionRange>
 										<goals>
 											<goal>translate</goal>
@@ -297,6 +294,14 @@
 		<pluginRepository>
 			<id>sonatype-oss-shapshots-plugins</id>
 			<url>https://oss.sonatype.org/content/groups/public</url>
+			<snapshots/>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</pluginRepository>
+		<pluginRepository>
+			<id>opensource-snapshots</id>
+			<url>http://artifactory.javassh.com/opensource-snapshots</url>
 			<snapshots/>
 			<releases>
 				<enabled>false</enabled>
