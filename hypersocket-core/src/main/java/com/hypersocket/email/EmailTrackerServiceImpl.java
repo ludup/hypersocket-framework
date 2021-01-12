@@ -134,6 +134,7 @@ public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl im
 	public void finaliseReceipt(Long receiptId) {
 		
 		EmailReceipt receipt = repository.getReceiptById(receiptId);
+		
 		if(receipt!=null) {
 			if(receipt.getOpened()==null) {
 				receipt.setOpened(new Date());
