@@ -23,6 +23,17 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+	
+	<distributionManagement>
+		<repository>
+			<id>opensource-releases</id>
+			<url>http://artifactory.javassh.com/opensource-releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>opensource-releases</id>
+			<url>http://artifactory.javassh.com/opensource-snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<scm>
 		<url>http://github.com/ludup/hypersocket-framework</url>
@@ -35,6 +46,11 @@
 			<id>lee</id>
 			<name>Lee David Painter</name>
 			<email>lee@hypersocket.com</email>
+		</developer>
+		<developer>
+			<id>brett</id>
+			<name>Brett Smith</name>
+			<email>brett@logonbox.com</email>
 		</developer>
 	</developers>
 
@@ -150,6 +166,22 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
+				<plugin>
+				    <groupId>org.apache.maven.plugins</groupId>
+				    <artifactId>maven-javadoc-plugin</artifactId>
+				    <version>3.2.0</version>
+				    <configuration>
+				     	<!-- TODO: Why is this STILL broken! -->
+                    	<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+                    	
+						<!-- <skip>true</skip> -->
+						<encoding>UTF-8</encoding>
+						<excludePackageNames>**.impl.*</excludePackageNames>
+	
+						<!-- https://bugs.openjdk.java.net/browse/JDK-8212233 -->
+						<source>8</source>
+                	</configuration>
+				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
