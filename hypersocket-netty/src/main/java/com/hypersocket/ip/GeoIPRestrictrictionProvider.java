@@ -1,14 +1,9 @@
 package com.hypersocket.ip;
 
-import java.io.IOException;
 import java.net.InetAddress;
-import java.util.HashMap;
 import java.util.Objects;
 
 import javax.annotation.PostConstruct;
-import javax.cache.Cache;
-import javax.cache.expiry.CreatedExpiryPolicy;
-import javax.cache.expiry.Duration;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -16,11 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.SystemConfigurationService;
+import com.hypersocket.geo.IStackLocation;
+import com.hypersocket.geo.IStackService;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.utils.HttpUtils;
 
 @Component
 public class GeoIPRestrictrictionProvider implements IPRestrictionProvider {
@@ -31,13 +25,11 @@ public class GeoIPRestrictrictionProvider implements IPRestrictionProvider {
 	private SystemConfigurationService systemConfiguration;
 	
 	@Autowired
-	private HttpUtils httpUtils;
+	private IStackService istackService;
 
 	@Autowired
 	private IPRestrictionService ipRestrictionService;
 
-	@Autowired
-	private CacheService cacheService; 
 
 	public GeoIPRestrictrictionProvider() {
 	}
@@ -51,7 +43,7 @@ public class GeoIPRestrictrictionProvider implements IPRestrictionProvider {
 		
 		if(hasAPIKey()) {
 			try {
-				IStackLocation location = lookupGeoIP(addr.getHostAddress());
+				IStackLocation location = istackService.lookupGeoIP(addr.getHostAddress());
 				
 				if(Objects.nonNull(location.getCountry_code())) {
 					
@@ -92,32 +84,5 @@ public class GeoIPRestrictrictionProvider implements IPRestrictionProvider {
 
 	private boolean hasAPIKey() {
 		return StringUtils.isNotBlank(systemConfiguration.getValue("ipstack.accesskey"));
-	}
-	
-	private IStackLocation lookupGeoIP(String ipAddress) throws IOException {
-		
-		Cache<String,IStackLocation> cached = cacheService.getCacheOrCreate(
-				"geoIPs", String.class, IStackLocation.class,  
-				CreatedExpiryPolicy.factoryOf(Duration.ONE_DAY));
-		
-		IStackLocation loc = cached.get(ipAddress);
-		if(Objects.nonNull(loc)) {
-			return loc;
-		}
-		ObjectMapper o = new ObjectMapper();
-		String accessKey = systemConfiguration.getValue("ipstack.accesskey");
-		
-		//06c4553e8c8f2216596a7c26d9e281a9
-		
-		String locationJson = httpUtils.doHttpGetContent(
-				String.format("http://api.ipstack.com/%s?access_key=%s", 
-							ipAddress, accessKey),
-						false, 
-						new HashMap<String,String>());
-		
-		IStackLocation location =  o.readValue(locationJson, IStackLocation.class);
-		cached.put(ipAddress, location);
-		return location;
-		
 	}
 }
