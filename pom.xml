@@ -10,12 +10,6 @@
 	<name>Hypersocket Framework</name>
 	<description>A framework for building JSON web services based on Spring/Hibernate within a high performance HTTP server based on Netty.</description>
 
-	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>7</version>
-	</parent>
-
 	<licenses>
 		<license>
 			<name>GNU General Public License v3</name>
