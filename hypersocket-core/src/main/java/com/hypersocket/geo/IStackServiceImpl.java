@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.SystemConfigurationService;
-import com.hypersocket.realm.Principal;
+import com.hypersocket.session.IStackLocation;
 import com.hypersocket.utils.HttpUtils;
 
 @Component
