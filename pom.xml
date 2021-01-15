@@ -17,7 +17,7 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	
+
 	<distributionManagement>
 		<repository>
 			<id>opensource-releases</id>
@@ -94,11 +94,31 @@
 		<directory>target</directory>
 		<plugins>
 			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0-alpha-2</version>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<goals>
+							<goal>read-project-properties</goal>
+						</goals>
+						<configuration>
+							<quiet>true</quiet>
+							<files>
+								<file>${basedir}/hypersocket.build.properties</file>
+								<file>${user.home}/.hypersocket.build.properties</file>
+							</files>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>11</source>
+					<target>11</target>
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
@@ -157,17 +177,17 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
-				    <groupId>org.apache.maven.plugins</groupId>
-				    <artifactId>maven-javadoc-plugin</artifactId>
-				    <version>3.2.0</version>
-				    <configuration>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.2.0</version>
+					<configuration>
 						<encoding>UTF-8</encoding>
 						<excludePackageNames>**.impl.*</excludePackageNames>
-	
+						<detectJavaApiLink>false</detectJavaApiLink>
 						<!-- https://bugs.openjdk.java.net/browse/JDK-8212233 -->
 						<source>8</source>
 						<additionalparam>-Xdoclint:none</additionalparam>
-                	</configuration>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -290,7 +310,7 @@
 			</build>
 		</profile>
 	</profiles>
-	
+
 	<repositories>
 		<repository>
 			<id>sonatype-oss-snapshots</id>
@@ -306,7 +326,7 @@
 		<pluginRepository>
 			<id>sonatype-oss-shapshots-plugins</id>
 			<url>https://oss.sonatype.org/content/groups/public</url>
-			<snapshots/>
+			<snapshots />
 			<releases>
 				<enabled>false</enabled>
 			</releases>
@@ -314,7 +334,7 @@
 		<pluginRepository>
 			<id>opensource-snapshots</id>
 			<url>http://artifactory.javassh.com/opensource-snapshots</url>
-			<snapshots/>
+			<snapshots />
 			<releases>
 				<enabled>false</enabled>
 			</releases>
