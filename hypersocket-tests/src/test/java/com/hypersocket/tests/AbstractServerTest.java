@@ -506,7 +506,7 @@ public class AbstractServerTest {
 		x.setForceChange(forceChange);
 		x.setPassword(password);
 		PropertyItem propItem1 = new PropertyItem();
-		propItem1.setId("fullname");
+		propItem1.setId("description");
 		propItem1.setValue(username);
 
 		PropertyItem propItem2 = new PropertyItem();
