@@ -62,6 +62,5 @@
 		<propertyCategory resourceKey="category.authentication"
 		 resourceBundle="AuthenticationService" weight="0">
 		<property resourceKey="auth.chooseRealm" inputType="switch" defaultValue="false" weight="0" />
-		<property resourceKey="auth.validateHost" inputType="switch" defaultValue="false" weight="100" />
 	</propertyCategory>
 </propertyTemplates>
