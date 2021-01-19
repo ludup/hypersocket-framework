@@ -123,7 +123,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		realmRepository.flush();
 		
 		configurationRepository.setValue(realm, "realm.userEditableProperties",
-				ResourceUtils.implodeValues(Arrays.asList("email", "fullname", "mobile")));
+				ResourceUtils.implodeValues(Arrays.asList("email", "description", "mobile")));
 		
 		// Create a system user
 		LocalUser system = new LocalUser();

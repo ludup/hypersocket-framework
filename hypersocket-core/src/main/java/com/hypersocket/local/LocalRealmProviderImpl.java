@@ -40,7 +40,7 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	public final static String USER_RESOURCE_CATEGORY = "localUser";
 	public final static String GROUP_RESOURCE_CATEGORY = "localGroup";
 
-	public final static String FIELD_FULLNAME = "fullname";
+	public final static String FIELD_FULLNAME = "description";
 	public final static String FIELD_EMAIL = "email";
 	public final static String FIELD_MOBILE = "mobile";
 	public final static String FIELD_PASSWORD_ENCODING = "password.encoding";
@@ -67,6 +67,7 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 		i18nService.registerBundle(LocalRealmProviderImpl.RESOURCE_BUNDLE);
 
 		defaultProperties.add("fullname");
+		defaultProperties.add("description");
 		defaultProperties.add("email");
 		defaultProperties.add("mobile");
 		
