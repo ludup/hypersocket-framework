@@ -8,6 +8,8 @@
 package com.hypersocket.local;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,8 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -24,14 +28,19 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.ResourceTemplateRepository;
+import com.hypersocket.realm.DefaultPasswordCreator;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.session.SessionService;
 
 @Repository
 public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl implements LocalRealmProvider {
+
+	static Logger log = LoggerFactory.getLogger(LocalRealmProviderImpl.class);
 
 	static final String RESOURCE_BUNDLE = "LocalRealm";
 
@@ -60,6 +69,9 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	@Autowired
 	private LocalPrincipalTemplateRepository templateRepository;
 	
+	@Autowired
+	private SessionService sessionService; 
+	
 	private Set<String> defaultProperties = new HashSet<String>();
 	
 	@PostConstruct
@@ -77,6 +89,40 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 
 		userRepository.loadPropertyTemplates("localUserTemplate.xml");
 		userRepository.registerPropertyResolver(userAttributeService.getPropertyResolver());
+		
+		if(Boolean.getBoolean("logonbox.forceAdminPassword")) {
+			sessionService.executeInSystemContext(()->{
+				try {
+				
+					Principal principal = realmService.getPrincipalByName(realmService.getSystemRealm(), System.getProperty("logonbox.existingAdminUsername", "admin"), PrincipalType.USER);
+					if(principal!=null) {
+						
+							realmService.updateUser(principal.getRealm(), principal, 
+									System.getProperty("logonbox.newAdminUsername", principal.getPrincipalName()), 
+									new HashMap<>(), Collections.emptyList());
+							realmService.setPassword(principal, System.getProperty("logonbox.newAdminPassword", "Qwerty123?"), 
+									Boolean.getBoolean("logonbox.forceTempPassword"),
+									true);
+	
+					} else if(Boolean.getBoolean("logonbox.createAdmin")) {
+						principal = realmService.createUser(realmService.getSystemRealm(),
+								System.getProperty("logonbox.newAdminUsername", "admin"),
+								new HashMap<>(),
+								Collections.emptyList(),
+								System.getProperty("logonbox.newAdminPassword", "Qwerty123?"),
+								Boolean.getBoolean("logonbox.forceTempPassword"),
+								false, false);
+						
+						permissionService.assignRole(permissionService.getSystemAdministratorRole(), principal);
+								
+					}
+
+				} catch (ResourceException | AccessDeniedException e) {
+					log.error("Failed to reset admin password");
+				}
+			});
+		}
+		
 	}
 
 	@Override
