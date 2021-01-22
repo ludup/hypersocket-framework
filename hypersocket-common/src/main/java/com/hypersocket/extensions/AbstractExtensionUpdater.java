@@ -444,4 +444,9 @@ public abstract class AbstractExtensionUpdater {
 
 	}
 
+	public static String getExtensionStoreRoot() {
+		return System.getProperty("hypersocket.archivesURL",
+				"https://updates2.hypersocket.com/hypersocket/");
+	}
+
 }
