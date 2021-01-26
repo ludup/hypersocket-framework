@@ -102,7 +102,18 @@ public class Main {
 
 		System.setProperty("hypersocket.conf", conf.getPath());
 
-		PropertyConfigurator.configure(new File(conf, "log4j.properties").getAbsolutePath());
+		String logConfigPath = System.getProperty("hypersocket.logConfiguration", "");
+		if(logConfigPath.equals("")) {
+			/* Load default */
+			PropertyConfigurator.configure(Main.class.getResource("/default-log4j.properties"));
+		}
+		else {
+			File logConfigFile = new File(logConfigPath);
+			if(logConfigFile.exists())
+				PropertyConfigurator.configureAndWatch(logConfigPath);
+			else
+				PropertyConfigurator.configure(Main.class.getResource("/default-log4j.properties"));
+		}
 
 		classLoader = getClass().getClassLoader();
 		if (log.isInfoEnabled()) {
@@ -292,10 +303,10 @@ public class Main {
 		public void run() {
 
 			if (log.isInfoEnabled()) {
-				log.info("There is no restart mechanism available. Shutting down");
+				log.info("Shutting down with forker restart code.");
 			}
 
-			System.exit(0);
+			System.exit(90);
 		}
 
 	}

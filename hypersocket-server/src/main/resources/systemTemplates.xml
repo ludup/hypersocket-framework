@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates>
 	<propertyStore id="hypersocketServer"
-		type="com.hypersocket.properties.PropertiesFileConfigurationStore">
+		type="com.hypersocket.properties.PropertiesFileConfigurationStore"
+		create="true">
 		<filename>${hypersocket.conf}/hypersocket.properties</filename>
 	</propertyStore>
 	<propertyCategory resourceKey="category.server" resourceBundle="HypersocketServer" weight="0">

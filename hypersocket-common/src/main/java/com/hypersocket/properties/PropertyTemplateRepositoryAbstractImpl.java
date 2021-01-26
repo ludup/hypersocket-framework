@@ -344,7 +344,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 		if (!propertyStoresByResourceKey.containsKey(resourceKey)) {
 			throw new IllegalStateException(
-					"No store registerd for resource key " + resourceKey);
+					"No store registered for resource key " + resourceKey);
 		}
 
 		PropertyStore store = propertyStoresByResourceKey.get(resourceKey);

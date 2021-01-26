@@ -3,11 +3,11 @@ package com.hypersocket.http;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Objects;
 
 import javax.net.ssl.SSLSession;
-import javax.security.cert.X509Certificate;
 
 import org.bouncycastle.util.encoders.Base64;
 
@@ -27,7 +27,7 @@ public class X509KnownHost {
 	public X509KnownHost(String hostname, SSLSession session) {
 		try {
 			this.hostname = hostname;
-			X509Certificate cert = session.getPeerCertificateChain()[0];
+			X509Certificate cert = (X509Certificate)session.getPeerCertificates()[0];
 			sig = cert.getEncoded();
 			port = session.getPeerPort();
 			subject = cert.getSubjectDN().toString();

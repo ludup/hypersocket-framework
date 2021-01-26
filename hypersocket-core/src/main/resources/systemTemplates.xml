@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates>
 	<propertyStore id="databaseConfiguration"
-		type="com.hypersocket.properties.DatabasePropertiesFileConfigurationStore">
+		type="com.hypersocket.properties.DatabasePropertiesFileConfigurationStore"
+		create="true">
 		<filename>${hypersocket.conf}/database.properties</filename>
 	</propertyStore>
 	<propertyStore id="schedulerConfiguration"

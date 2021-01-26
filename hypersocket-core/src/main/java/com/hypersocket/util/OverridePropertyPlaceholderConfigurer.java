@@ -11,7 +11,7 @@ public class OverridePropertyPlaceholderConfigurer extends
 
 	static File override = null;
 	public OverridePropertyPlaceholderConfigurer() {
-
+		setIgnoreResourceNotFound(true);
 	}
 	
 	public static void setOverrideFile(File override) {

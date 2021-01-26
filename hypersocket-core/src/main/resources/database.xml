@@ -16,6 +16,7 @@
 		class="com.hypersocket.util.OverridePropertyPlaceholderConfigurer">
 		<property name="locations">
 			<list>
+				<value>classpath:default-database.properties</value>
 				<value>file:///${user.dir}/conf/database.properties</value>
 			</list>
 		</property>

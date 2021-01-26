@@ -175,7 +175,7 @@ public class ExtensionVersion extends JsonResource implements Comparable<Extensi
 
 	@Override
 	public int compareTo(ExtensionVersion o) {
-		return new Integer(weight).compareTo(o.getWeight());
+		return Integer.valueOf(weight).compareTo(o.getWeight());
 	}
 
 }

@@ -7,6 +7,9 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -88,6 +91,7 @@ public abstract class AbstractExtensionUpdater {
 		allExtensions = onResolveExtensions(getVersion());
 		updates = new HashSet<ExtensionVersion>();
 		
+		
 		for(ExtensionVersion v : allExtensions.values()) {
 			switch(v.getState()) {
 			case UPDATABLE:
@@ -106,8 +110,8 @@ public abstract class AbstractExtensionUpdater {
 			case NOT_INSTALLED:
 				
 				if(ArrayUtils.contains(getUpdateTargets(), ExtensionTarget.valueOf(v.getTarget()))) {
-					if(log.isInfoEnabled()) {
-						log.info(String.format("Checking install state for %s %s", v.getExtensionId(), v.getFeatureGroup()));
+					if(log.isDebugEnabled()) {
+						log.debug(String.format("Checking install state for %s %s", v.getExtensionId(), v.getFeatureGroup()));
 					}
 					if(getInstallMandatoryExtensions() && v.isMandatory() || getNewFeatures().contains(v.getFeatureGroup())) {
 						updates.add(v);
@@ -177,7 +181,7 @@ public abstract class AbstractExtensionUpdater {
 						log.info(String.format("Copying %s", file.getAbsolutePath()));
 					}
 				} else {
-					URL url = new URL(def.getUrl());
+					URL url = resolveExtensionURL(def);
 					if (log.isInfoEnabled()) {
 						log.info(String.format("Downloading %s", url));
 					}
@@ -197,12 +201,22 @@ public abstract class AbstractExtensionUpdater {
 						byte[] buf = new byte[32768];
 						int b;
 						long read = 0;
+						String delayStr = System.getProperty("hypersocket.development.fakeSlowUpdate");
+						long delay = 0;
+						if(delayStr != null) {
+							try {
+								delay = Long.parseLong(delayStr);
+							}
+							catch(NumberFormatException nfe) {
+								delay = 50;
+							}
+						}
 						while ((b = in.read(buf)) > -1) {
 							out.write(buf, 0, b);
 							onUpdateProgress((long) b, transfered += b, totalSize);
 							read += b;
-							if (System.getProperty("hypersocket.development.fakeSlowUpdate") != null) {
-								Thread.sleep(1000);
+							if (delay > 0) {
+								Thread.sleep(delay);
 							}
 						}
 
@@ -443,10 +457,27 @@ public abstract class AbstractExtensionUpdater {
 		onExtensionUpdateComplete(def);
 
 	}
+	
+	public static URL resolveExtensionURL(ExtensionVersion def) {
+		URL url;
+		try {
+			url = new URL(def.getUrl());
+		}
+		catch(MalformedURLException murle) {
+			/* Relative URL? */
+			try {
+				url = new URI(getExtensionStoreRoot()).resolve(def.getUrl()).toURL();
+			} catch (MalformedURLException |  URISyntaxException e) {
+				throw new IllegalArgumentException("Invalid extension URL " + def.getUrl(), e);
+			}
+		}
+		return url;
+	}
 
 	public static String getExtensionStoreRoot() {
-		return System.getProperty("hypersocket.archivesURL",
+		String url = System.getProperty("hypersocket.archivesURL",
 				"https://updates2.hypersocket.com/hypersocket/");
+		return url.endsWith("/") ? url : url + "/";
 	}
 
 }

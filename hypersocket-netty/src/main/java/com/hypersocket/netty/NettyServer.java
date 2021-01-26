@@ -178,7 +178,12 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 		
-		setupMode = !configurationService.getBooleanValue("setup.completed");
+		try {
+			setupMode = !configurationService.getBooleanValue("setup.completed");
+		}
+		catch(IllegalStateException ise) {
+			/* Non-commercial configuration */
+		}
 	}
 
 	public ClientBootstrap getClientBootstrap() {
