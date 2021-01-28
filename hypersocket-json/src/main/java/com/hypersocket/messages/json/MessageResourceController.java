@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -80,6 +82,28 @@ public class MessageResourceController extends ResourceController {
 		try {
 			return new ResourceList<String>(resourceService.getMessageVariables(
 					resourceService.getResourceById(id)));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "messages/test/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<MessageResource> test(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id, @RequestParam String email) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException, ResourceNotFoundException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			MessageResource resource = resourceService.getResourceById(id);
+			resourceService.test(resource, email);
+			return new ResourceStatus<MessageResource>(resource,
+					I18N.getResource(sessionUtils.getLocale(request),
+							MessageResourceServiceImpl.RESOURCE_BUNDLE,
+							"resource.messageSent.info", resource.getName(), StringUtils.isBlank(email) ? getCurrentPrincipal().getName(): email));
 		} finally {
 			clearAuthenticatedContext();
 		}
