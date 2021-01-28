@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -94,8 +95,13 @@ public class LogonController extends AuthenticatedController {
 		} catch (UnauthorizedException | SessionTimeoutException | AccessDeniedException e) {
 		}
 		
+		Boolean disableReset = (Boolean) request.getSession().getAttribute("disableReset");
 		
-		AuthenticationState.clearCurrentState(request);
+		if(Objects.isNull(disableReset) || !disableReset) {
+			AuthenticationState.clearCurrentState(request);
+		}
+		
+		request.getSession().removeAttribute("disableReset");
 		
 		AuthenticationResult result = logon(request, response, scheme);
 		if (Boolean.TRUE.equals(redirect)) {
