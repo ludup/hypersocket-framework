@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailBatchService;
@@ -401,6 +402,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	}
 
 	@Override
+	@Transactional
 	public void test(MessageResource message, String email) {
 		UserPrincipal<?> user = (UserPrincipal<?>) getCurrentPrincipal();
 		Collection<String> recipients = StringUtils.isEmpty(email) ? null : Arrays.asList(email);
