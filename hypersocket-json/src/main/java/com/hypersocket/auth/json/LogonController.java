@@ -96,8 +96,13 @@ public class LogonController extends AuthenticatedController {
 		} catch (UnauthorizedException | SessionTimeoutException | AccessDeniedException e) {
 		}
 		
+		Boolean disableReset = (Boolean) request.getSession().getAttribute("disableReset");
 		
-		AuthenticationState.clearCurrentState(request);
+		if(Objects.isNull(disableReset) || !disableReset) {
+			AuthenticationState.clearCurrentState(request);
+		}
+		
+		request.getSession().removeAttribute("disableReset");
 		
 		AuthenticationResult result = logon(request, response, scheme);
 		if (Boolean.TRUE.equals(redirect)) {
