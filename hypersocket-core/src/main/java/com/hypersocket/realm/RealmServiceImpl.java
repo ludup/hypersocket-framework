@@ -695,15 +695,22 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					forceChange, selfCreated));
 
 			if (sendNotifications) {
-				if (StringUtils.isNotBlank(principal.getEmail())) {
-					if (selfCreated) {
-						sendNewUserSelfCreatedNofification(principal, passwordCreator.getPassword());
-					} else if (forceChange) {
-						sendNewUserTemporaryPasswordNofification(principal, passwordCreator.getPassword());
-					} else {
-						sendNewUserFixedPasswordNotification(principal, passwordCreator.getPassword());
+				transactionService.doInTransaction((t) -> {
+					try {
+						if (StringUtils.isNotBlank(principal.getEmail())) {
+							if (selfCreated) {
+								sendNewUserSelfCreatedNofification(principal, passwordCreator.getPassword());
+							} else if (forceChange) {
+								sendNewUserTemporaryPasswordNofification(principal, passwordCreator.getPassword());
+							} else {
+								sendNewUserFixedPasswordNotification(principal, passwordCreator.getPassword());
+							}
+						}
+					} catch (ResourceException | AccessDeniedException e) {
+						throw new IllegalStateException("Failed send notifications.", e);
 					}
-				}
+					return null;
+				});
 			}
 
 			return principal;
@@ -977,6 +984,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), 
 							getCurrentRealm(), provider, newPassword, principal));
 
+					messageService.sendMessageNow(MESSAGE_PASSWORD_CHANGED, principal.getRealm(),
+							new PrincipalWithoutPasswordResolver((UserPrincipal<?>) principal), Arrays.asList(principal));
+					
 					return principal;
 				} catch (Throwable t) {
 					throw new IllegalStateException(t.getMessage(), t);
@@ -990,9 +1000,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						provider, newPassword, principal));
 			}
 		});
-
-		messageService.sendMessageNow(MESSAGE_PASSWORD_CHANGED, principal.getRealm(),
-				new PrincipalWithoutPasswordResolver((UserPrincipal<?>) principal), Arrays.asList(principal));
 	}
 
 	@Override
@@ -1037,7 +1044,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						principal, password));
 
 				messageService.sendMessageNow(MESSAGE_PASSWORD_RESET, principal.getRealm(),
-						new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password, forceChangeAtNextLogon),
+						transactionService.doInTransaction((status) -> 
+							new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password, forceChangeAtNextLogon)
+								),
 						Arrays.asList(principal));
 			} else {
 
