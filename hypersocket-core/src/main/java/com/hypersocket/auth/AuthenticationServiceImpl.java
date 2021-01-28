@@ -847,7 +847,9 @@ public class AuthenticationServiceImpl extends
 	public FormTemplate nextAuthenticationTemplate(AuthenticationState state,
 			Map params) {
 		
-		return modifyTemplate(state, nextAuthenticator(state).createTemplate(state, params), false);
+		Authenticator nextAuthenticator = nextAuthenticator(state);
+		FormTemplate template = nextAuthenticator.createTemplate(state, params);
+		return modifyTemplate(state, template, false);
 	}
 
 	private boolean checkSuspensions(AuthenticationState state, Authenticator authenticator) {
