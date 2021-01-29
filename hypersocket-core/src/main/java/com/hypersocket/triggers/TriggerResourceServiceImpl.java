@@ -397,14 +397,16 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 
 		super.deleteResource(resource, new TransactionAdapter<TriggerResource>() {
 
+			@SuppressWarnings("unchecked")
 			public void beforeOperation(TriggerResource resource, Map<String, String> properties) {
 
 				try {
 					for (TriggerResource child : resource.getChildTriggers()) {
-						deleteResource(child);
+						getRepository().deletePropertiesForResource(child);
+						getRepository().deleteResource(child);
 					}
-					resource.setParentTrigger(null);
 					getRepository().deletePropertiesForResource(resource);
+					getRepository().deleteResource(resource);;
 				} catch (Throwable e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				}
