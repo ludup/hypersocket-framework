@@ -26,8 +26,6 @@ import com.hypersocket.tests.AbstractServerTest;
 import com.hypersocket.tests.json.utils.MultipartObject;
 import com.hypersocket.tests.json.utils.PropertyObject;
 
-import junit.framework.Assert;
-
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class AbstractPermissionsTest extends AbstractServerTest {
 	static long resourceID = 0;

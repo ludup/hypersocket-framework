@@ -1,7 +1,6 @@
 package com.hypersocket.auth;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -19,7 +18,6 @@ import com.hypersocket.input.FormTemplate;
 import com.hypersocket.input.ParagraphField;
 import com.hypersocket.input.TextInputField;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserPrincipal;
 import com.hypersocket.resource.ResourceException;
