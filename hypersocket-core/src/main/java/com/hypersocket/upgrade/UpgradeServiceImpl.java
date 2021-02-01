@@ -131,7 +131,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 
 		try (Connection connection = ds.getConnection()) {
 
-			try(ResultSet rs = connection.getMetaData().getTables(null, null, "upgrade", null)) {
+			try(ResultSet rs = connection.getMetaData().getTables(ds.getConnection().getCatalog(), null, "upgrade", null)) {
 				if(rs.next()) {
 					try (Statement st = connection.createStatement()) {
 						try (ResultSet rs2 = st.executeQuery("select * from upgrade")) {
@@ -486,7 +486,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 				}				
 			}
 			else {
-				try (ResultSet rs = c.getMetaData().getTables(null, null, null, new String[] { "TABLE" })) {
+				try (ResultSet rs = c.getMetaData().getTables(c.getCatalog(), null, null, new String[] { "TABLE" })) {
 					while (rs.next()) {
 						String tn = rs.getString("TABLE_NAME");
 						if (!tn.toLowerCase().startsWith("qrtz_") && !tn.toLowerCase().equals("c3p0_test_table")
