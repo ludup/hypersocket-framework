@@ -391,10 +391,18 @@ public class AuthenticationState {
 		return createAuthenticationState(logonScheme,
 					request, realm, mergeState, locale);
 	}
+	public static AuthenticationState createAuthenticationState(String logonScheme, 
+			HttpServletRequest request, 
+			Realm realm, 
+			AuthenticationState mergeState,
+			Locale locale) throws AccessDeniedException {
+		return createAuthenticationState(logonScheme, request, realm, null, mergeState, locale);
+	}
 	
 	public static AuthenticationState createAuthenticationState(String logonScheme, 
 			HttpServletRequest request, 
 			Realm realm, 
+			Principal principal,
 			AuthenticationState mergeState,
 			Locale locale) throws AccessDeniedException {
 		
@@ -435,6 +443,10 @@ public class AuthenticationState {
 				state.setLastErrorMsg("revertedFallback.adminOnly");
 				return state;
 			}
+		}
+		
+		if(Objects.nonNull(principal)) {
+			state.setPrincipal(principal);
 		}
 		
 		if(mergeState!=null) {

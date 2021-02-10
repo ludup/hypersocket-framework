@@ -40,6 +40,8 @@ import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.servlet.request.Request;
 import com.hypersocket.session.Session;
@@ -226,8 +228,19 @@ public class LogonController extends AuthenticatedController {
 			if (state == null
 					|| (!StringUtils.isEmpty(scheme) && !state.getInitialSchemeResourceKey().equals(scheme))) {
 				// We have not got login state so create
-				state = AuthenticationState.createAuthenticationState(scheme, request,
+				String username = request.getParameter("username");
+				if(Objects.nonNull(username)) {
+					Principal principal = realmService.getPrincipalByName(getCurrentRealm(), username, PrincipalType.USER);
+					if(Objects.nonNull(principal)) {
+						state = AuthenticationState.createAuthenticationState(scheme, request,
+								principal.getRealm(), principal, state, sessionUtils.getLocale(request));
+					}
+				}
+				
+				if(state==null) {
+					state = AuthenticationState.createAuthenticationState(scheme, request,
 						null, state, sessionUtils.getLocale(request));
+				}
 			}
 
 			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
