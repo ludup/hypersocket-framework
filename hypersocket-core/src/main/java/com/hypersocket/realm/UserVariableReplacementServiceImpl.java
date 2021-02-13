@@ -167,19 +167,24 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 				if(source instanceof UserPrincipal) {
 					UserPrincipal<?> userPrincipal = ((UserPrincipal<?>)source);
 					if(name.equals("groupNames")) {
-						return String.join(",", userPrincipal.getGroups().stream().map(g -> g.getName()).collect(Collectors.toList()));
+						Set<Principal> groups = new HashSet<>(realmService.getAssociatedPrincipals(userPrincipal, PrincipalType.GROUP));
+						return String.join(",", groups.stream().map(g -> g.getName()).collect(Collectors.toList()));
 					}
 					else if(name.equals("groupPrincipalNames")) {
-						return String.join(",", userPrincipal.getGroups().stream().map(g -> g.getPrincipalName()).collect(Collectors.toList()));					
+						Set<Principal> groups = new HashSet<>(realmService.getAssociatedPrincipals(userPrincipal, PrincipalType.GROUP));
+						return String.join(",", groups.stream().map(g -> g.getPrincipalName()).collect(Collectors.toList()));					
 					}
 					else if(name.equals("groupIds")) {
-						return String.join(",", userPrincipal.getGroups().stream().map(g -> String.valueOf(g.getId())).collect(Collectors.toList()));					
+						Set<Principal> groups = new HashSet<>(realmService.getAssociatedPrincipals(userPrincipal, PrincipalType.GROUP));
+						return String.join(",", groups.stream().map(g -> String.valueOf(g.getId())).collect(Collectors.toList()));					
 					}
 					else if(name.equals("groupUUIDs")) {
-						return String.join(",", userPrincipal.getGroups().stream().map(g -> g.getUUID()).collect(Collectors.toList()));					
+						Set<Principal> groups = new HashSet<>(realmService.getAssociatedPrincipals(userPrincipal, PrincipalType.GROUP));
+						return String.join(",", groups.stream().map(g -> g.getUUID()).collect(Collectors.toList()));					
 					}
 					else if(name.equals("groupDescriptions")) {
-						return String.join(",", userPrincipal.getGroups().stream().map(g -> g.getUUID()).collect(Collectors.toList()));					
+						Set<Principal> groups = new HashSet<>(realmService.getAssociatedPrincipals(userPrincipal, PrincipalType.GROUP));
+						return String.join(",", groups.stream().map(g -> g.getUUID()).collect(Collectors.toList()));					
 					}
 				}
 				else
