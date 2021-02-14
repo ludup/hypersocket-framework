@@ -178,6 +178,7 @@ public class FileStoreController extends ResourceController {
 				throw new ResourceException(FileUploadServiceImpl.RESOURCE_BUNDLE, "error.notImage");
 			}
 			bin.reset();
+			
 			fileUpload = resourceService.createFile(bin, file.getOriginalFilename(), getCurrentRealm(), publicFile!=null && publicFile);
 
 			return new ResourceStatus<FileUpload>(fileUpload, I18N.getResource(
