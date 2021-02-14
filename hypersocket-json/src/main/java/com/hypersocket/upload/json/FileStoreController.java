@@ -148,7 +148,21 @@ public class FileStoreController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<FileUpload> createImage(HttpServletRequest request,
 			HttpServletResponse response,
-			@RequestPart(value = "file") MultipartFile file)
+			@RequestPart(value = "file") MultipartFile file,
+			@PathVariable Boolean publicFile)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		return createImage(request, response, file, false);
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "files/image/{publicFile}", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<FileUpload> createImageWithPublicOption(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestPart(value = "file") MultipartFile file,
+			@PathVariable Boolean publicFile)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		
@@ -165,7 +179,7 @@ public class FileStoreController extends ResourceController {
 				throw new ResourceException(FileUploadServiceImpl.RESOURCE_BUNDLE, "error.notImage");
 			}
 			bin.reset();
-			fileUpload = resourceService.createFile(bin, file.getOriginalFilename(), getCurrentRealm(), true);
+			fileUpload = resourceService.createFile(bin, file.getOriginalFilename(), getCurrentRealm(), publicFile!=null && publicFile);
 
 			return new ResourceStatus<FileUpload>(fileUpload, I18N.getResource(
 					sessionUtils.getLocale(request),
