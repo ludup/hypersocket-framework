@@ -1,9 +1,13 @@
 package com.hypersocket.upload.json;
 
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -139,6 +143,51 @@ public class FileStoreController extends ResourceController {
 	}
 	
 	@AuthenticationRequired
+	@RequestMapping(value = "files/image", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<FileUpload> createImage(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestPart(value = "file") MultipartFile file)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+
+			FileUpload fileUpload;
+
+			BufferedInputStream bin = new BufferedInputStream(file.getInputStream());
+			bin.mark((int) file.getSize());
+			BufferedImage image = ImageIO.read(bin);
+			if(Objects.isNull(image)) {
+				throw new ResourceException(FileUploadServiceImpl.RESOURCE_BUNDLE, "error.notImage");
+			}
+			bin.reset();
+			fileUpload = resourceService.createFile(bin, file.getOriginalFilename(), getCurrentRealm(), true);
+
+			return new ResourceStatus<FileUpload>(fileUpload, I18N.getResource(
+					sessionUtils.getLocale(request),
+					FileUploadServiceImpl.RESOURCE_BUNDLE,
+					"fileUpload.uploaded.info", file.getOriginalFilename()));
+
+		} catch (ResourceCreationException e) {
+			log.error("File upload failed", e);
+			return new ResourceStatus<FileUpload>(false, e.getMessage());
+		} catch (Throwable e) {
+			log.error("File upload failed", e);
+			return new ResourceStatus<FileUpload>(false, I18N.getResource(
+					sessionUtils.getLocale(request),
+					FileUploadServiceImpl.RESOURCE_BUNDLE, "fileUpload.error" ,
+					e.getMessage()));
+
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
 	@RequestMapping(value = "files/public", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
@@ -172,7 +221,7 @@ public class FileStoreController extends ResourceController {
 			return new ResourceStatus<FileUpload>(fileUpload, I18N.getResource(
 					sessionUtils.getLocale(request),
 					FileUploadServiceImpl.RESOURCE_BUNDLE,
-					"fileUpload.uploaded.info", fileUpload.getName()));
+					"fileUpload.uploaded.info", file.getOriginalFilename()));
 
 		} catch (ResourceCreationException e) {
 			log.error("File upload failed", e);
