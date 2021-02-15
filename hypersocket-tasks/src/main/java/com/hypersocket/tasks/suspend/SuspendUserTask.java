@@ -91,18 +91,20 @@ public class SuspendUserTask extends AbstractTaskProvider {
 			throws ValidationException {
 		String name = processTokenReplacements(repository.getValue(task, "suspendUser.name"), event);
 		Long duration = repository.getLongValue(task, "suspendUser.duration");
-		Date startDate = ((AutomationResource) task).getStartDate();
-		String startTime = ((AutomationResource) task).getStartTime();
-		if (startDate != null) {
+		Date startDate = new Date();
+		
+		if (task instanceof AutomationResource) {
+			
+			startDate = ((AutomationResource) task).getStartDate();
+			String startTime = ((AutomationResource) task).getStartTime();
+			
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(startDate);
 			cal.set(Calendar.HOUR_OF_DAY,
 					Integer.valueOf(startTime.split(":")[0]));
 			cal.set(Calendar.MINUTE, Integer.valueOf(startTime.split(":")[1]));
 			startDate = cal.getTime();
-		} else {
-			startDate = new Date();
-		}
+		} 
 
 		try {
 
