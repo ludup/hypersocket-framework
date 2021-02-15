@@ -24,6 +24,7 @@ public class InputField {
 	private List<Option> options = new ArrayList<Option>();
 	private String infoKey;
 	private String onChange;
+	private boolean readOnly;
 	
 	public InputField() {
 
@@ -111,6 +112,14 @@ public class InputField {
 
 	public void setOnChange(String onclick) {
 		this.onChange = onclick;
+	}
+
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
 	}
 	
 	
