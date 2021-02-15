@@ -47,6 +47,16 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 					.getResource(state.getLocale(),
 							AuthenticationServiceImpl.RESOURCE_BUNDLE,
 							"username.label"));
+
+			fields.add(username);
+		} else {
+			TextInputField username = new TextInputField(USERNAME_FIELD, 
+					state.getPrincipal().getPrincipalName(), true, I18N
+					.getResource(state.getLocale(),
+							AuthenticationServiceImpl.RESOURCE_BUNDLE,
+							"username.label"));
+
+			username.setReadOnly(true);
 			fields.add(username);
 		}
 		
