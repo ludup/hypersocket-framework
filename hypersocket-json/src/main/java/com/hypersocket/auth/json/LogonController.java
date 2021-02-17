@@ -229,7 +229,7 @@ public class LogonController extends AuthenticatedController {
 					|| (!StringUtils.isEmpty(scheme) && !state.getInitialSchemeResourceKey().equals(scheme))) {
 				// We have not got login state so create
 				String username = request.getParameter("username");
-				if(Objects.nonNull(username)) {
+				if(StringUtils.isNotBlank(username)) {
 					Principal principal = realmService.getPrincipalByName(getCurrentRealm(), username, PrincipalType.USER);
 					if(Objects.nonNull(principal)) {
 						state = AuthenticationState.createAuthenticationState(scheme, request,
