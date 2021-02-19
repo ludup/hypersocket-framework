@@ -1088,7 +1088,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Principal getSystemPrincipal() {
 		if (systemPrincipal == null) {
-			systemPrincipal = getPrincipalByName(realmRepository.getSystemRealm(), SYSTEM_PRINCIPAL,
+			systemPrincipal = getPrincipalByName(realmRepository.getSystemRealm(), 
+					SYSTEM_PRINCIPAL,
 					PrincipalType.SYSTEM);
 		}
 		return systemPrincipal;
@@ -2157,10 +2158,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Principal getUniquePrincipalForRealm(String username, Realm realm, PrincipalType... type)
 			throws ResourceNotFoundException {
-//		Collection<Principal> found = principalRepository.getPrincpalsByName(username, realm, type);
-//		if (!found.isEmpty()) {
-//			return selectPrincipal(found, username);
-//		}
+		Collection<Principal> found = principalRepository.getPrincpalsByName(username, realm, type);
+		if (!found.isEmpty()) {
+			return selectPrincipal(found, username);
+		}
 		return getProviderForRealm(realm).getPrincipalByName(username, realm, type);
 	}
 
