@@ -14,15 +14,19 @@ public class SetPasswordEvent extends UserEvent implements ChargeableEvent {
 
 	public static final String EVENT_RESOURCE_KEY = "event.setPassword";
 	
+	String password;
+	
 	public SetPasswordEvent(Object source, Session session, Realm realm,
 			RealmProvider provider, Principal principal, String password) {
 		super(source, EVENT_RESOURCE_KEY, session, realm, provider, principal);
+		this.password = password;
 	}
 
 	public SetPasswordEvent(Object source, Throwable t, Session session,
 			Realm realm, RealmProvider provider, String principal, String password) {
 		super(source, EVENT_RESOURCE_KEY, t, session, realm, provider,
 				principal);
+		this.password = password;
 	}
 
 	public String[] getResourceKeys() {
@@ -32,5 +36,9 @@ public class SetPasswordEvent extends UserEvent implements ChargeableEvent {
 	@Override
 	public Double getCharge() {
 		return 5D;
+	}
+	
+	public String getPassword() {
+		return password;
 	}
 }
