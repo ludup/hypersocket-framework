@@ -14,14 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserVariableReplacementService;
-import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.conditions.TriggerAttributeHelper;
 import com.hypersocket.util.TextProcessor;
@@ -105,12 +103,10 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 						String realAttribute = m.group(2);
 						if(index>= 0 && index < events.size()) {
 							SystemEvent event = events.get(index);
-							if(event.hasAttribute(UserEvent.ATTR_USER_NAME)) {
-								String principalName = event.getAttribute(UserEvent.ATTR_USER_NAME);
+							if(event.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
 								Principal principal = realmService.getPrincipalByName(event.getCurrentRealm(), 
-										principalName, PrincipalType.USER);
+										event.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME), PrincipalType.USER);
 								
-								try {
 								switch(realAttribute) {
 								case "media.phone":
 									return realmService.getPrincipalAddress(principal, MediaType.PHONE);
@@ -119,9 +115,6 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 								default:
 									return userVariableReplacementService.getVariableValue(principal, realAttribute);
 								}
-								} catch(MediaNotFoundException e) {
-									return null;
-								}
 							}
 						}
 					}
@@ -129,10 +122,10 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 				catch(IllegalStateException ise) {
 					// No such variable
 					if(log.isDebugEnabled())
-						log.debug("Failed to get variable value for {}",  variable, ise);
+						log.debug(String.format("Failed to variable value for %s and user %s",  variable, principal.getName()), ise);
+					return null;
+					
 				}
-				
-				return null;
 
 			}
 		});
