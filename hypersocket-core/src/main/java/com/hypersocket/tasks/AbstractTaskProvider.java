@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
@@ -107,6 +108,7 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 								Principal principal = realmService.getPrincipalByName(event.getCurrentRealm(), 
 										event.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME), PrincipalType.USER);
 								
+								try {
 								switch(realAttribute) {
 								case "media.phone":
 									return realmService.getPrincipalAddress(principal, MediaType.PHONE);
@@ -115,6 +117,9 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 								default:
 									return userVariableReplacementService.getVariableValue(principal, realAttribute);
 								}
+								} catch(MediaNotFoundException e) {
+									return null;
+								}
 							}
 						}
 					}
@@ -122,10 +127,10 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 				catch(IllegalStateException ise) {
 					// No such variable
 					if(log.isDebugEnabled())
-						log.debug(String.format("Failed to variable value for %s and user %s",  variable, principal.getName()), ise);
-					return null;
-					
+						log.debug("Failed to get variable value for {}",  variable, ise);
 				}
+				
+				return null;
 
 			}
 		});
