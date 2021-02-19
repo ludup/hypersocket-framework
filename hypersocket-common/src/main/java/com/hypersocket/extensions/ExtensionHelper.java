@@ -224,8 +224,8 @@ public class ExtensionHelper {
 			params.put("customer", customer);
 			String output = HttpUtilsHolder.getInstance().doHttpPost(updateUrl, params, true);
 
-			if (log.isInfoEnabled()) {
-				log.info(HypersocketUtils.prettyPrintJson(output));
+			if (log.isDebugEnabled()) {
+				log.debug(HypersocketUtils.prettyPrintJson(output));
 			}
 
 			ObjectMapper mapper = new ObjectMapper();

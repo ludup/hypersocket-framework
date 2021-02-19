@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +32,7 @@ public class AuthenticationState {
 
 	private static final String PREVIOUS_AUTHENTICATION_SCHEME = "previousAuthenticationScheme";
 	private static final String AUTHENTICATION_STATE = "authenticationState";
+	private static final String COOKIES = "cookies";
 	
 	private Stack<AuthenticationScheme> previousSchemes = new Stack<>();
 	private Stack<Integer> previousIndex = new Stack<>();
@@ -64,6 +66,11 @@ public class AuthenticationState {
 		this.remoteAddress = remoteAddress;
 		this.environment = environment;
 		this.locale = locale;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Map<String, Cookie> getCookies() {
+		return (Map<String, Cookie>) environment.get(AuthenticationState.COOKIES);
 	}
 
 	public Locale getLocale() {
@@ -421,6 +428,11 @@ public class AuthenticationState {
 						request.getHeader(env.toString()));
 			}
 		}
+		Map<String, Cookie> cookies = new HashMap<>();
+		for(Cookie cookie : request.getCookies()) {
+			cookies.put(cookie.getName(), cookie);
+		}
+		environment.put(COOKIES, cookies);
 		
 		String originalUri = (String)request.getAttribute("browserRequestUri");
 		if(originalUri!=null) {
