@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -26,6 +29,12 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 
 	static Logger log = LoggerFactory.getLogger(AbstractTaskProvider.class);
 
+	static Pattern eventPattern;
+	
+	static {
+		eventPattern = Pattern.compile("principal(\\d+):(.*)");
+	}
+	
 	@Autowired
 	private TriggerResourceService triggerService;
 	
@@ -59,22 +68,6 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 	}
 	
 	protected String processTokenReplacements(String value, final List<SystemEvent> events, boolean evaluateScripts, boolean replaceUnkown) {
-		Principal p = null;
-		/**
-		 * LDP - I'm not sure this is correct. We are firstly supposed to support replacements from all events, not just the last, so if
-		 * the flow contains a user but further back this will not work. Also, is it correct to use ATTR_PRINCIPAL_NAME, is this referring to 
-		 * the current user, or a user being worked on? There needs to be some clarify here. 
-		 */
-		if(!events.isEmpty()) {
-			SystemEvent last = events.get(events.size() - 1);
-			if(last.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
-				p = realmService.getPrincipalByName(last.getCurrentRealm(), last.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME), PrincipalType.USER);
-			}
-		}
-		return processTokenReplacements(value, events, evaluateScripts, replaceUnkown, p);
-	}
-	
-	protected String processTokenReplacements(String value, final List<SystemEvent> events, boolean evaluateScripts, boolean replaceUnkown, Principal principal) {
 
 		if (value == null) {
 			return null;
@@ -98,24 +91,45 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 			tp.addBindings("value", value);
 			tp.addBindings("events", events);
 		}
-		if(principal != null) {
-			tp.addResolver(new Resolver() {
-	
-				@Override
-				public String evaluate(String variable, TextProcessor processor) {
-					try {
-						return userVariableReplacementService.getVariableValue(principal, variable);
-					}
-					catch(IllegalStateException ise) {
-						// No such variable
-						if(log.isDebugEnabled())
-							log.debug(String.format("Failed to variable value for %s and user %s",  variable, principal.getName()), ise);
-						return null;
-						
+
+		tp.addResolver(new Resolver() {
+
+			@Override
+			public String evaluate(String variable, TextProcessor processor) {
+				try {			
+					Matcher m = eventPattern.matcher(variable);
+					if(m.matches()) {
+						int index = Integer.parseInt(m.group(1));
+						String realAttribute = m.group(2);
+						if(index>= 0 && index < events.size()) {
+							SystemEvent event = events.get(index);
+							if(event.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
+								Principal principal = realmService.getPrincipalByName(event.getCurrentRealm(), 
+										event.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME), PrincipalType.USER);
+								
+								switch(realAttribute) {
+								case "media.phone":
+									return realmService.getPrincipalAddress(principal, MediaType.PHONE);
+								case "media.email":
+									return realmService.getPrincipalAddress(principal, MediaType.EMAIL);
+								default:
+									return userVariableReplacementService.getVariableValue(principal, realAttribute);
+								}
+							}
+						}
 					}
 				}
-			});
-		}
+				catch(IllegalStateException ise) {
+					// No such variable
+					if(log.isDebugEnabled())
+						log.debug(String.format("Failed to variable value for %s and user %s",  variable, principal.getName()), ise);
+					return null;
+					
+				}
+
+			}
+		});
+		
 		tp.addResolver(new Resolver() {
 			@Override
 			public String evaluate(String variable, TextProcessor processor) {
