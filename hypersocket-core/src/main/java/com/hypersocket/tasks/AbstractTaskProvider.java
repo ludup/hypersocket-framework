@@ -21,6 +21,7 @@ import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserVariableReplacementService;
+import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.triggers.TriggerResourceService;
 import com.hypersocket.triggers.conditions.TriggerAttributeHelper;
 import com.hypersocket.util.TextProcessor;
@@ -104,9 +105,10 @@ public abstract class AbstractTaskProvider implements TaskProvider {
 						String realAttribute = m.group(2);
 						if(index>= 0 && index < events.size()) {
 							SystemEvent event = events.get(index);
-							if(event.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
+							if(event.hasAttribute(UserEvent.ATTR_USER_NAME)) {
+								String principalName = event.getAttribute(UserEvent.ATTR_USER_NAME);
 								Principal principal = realmService.getPrincipalByName(event.getCurrentRealm(), 
-										event.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME), PrincipalType.USER);
+										principalName, PrincipalType.USER);
 								
 								try {
 								switch(realAttribute) {

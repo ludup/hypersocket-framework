@@ -1037,8 +1037,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			for (PrincipalProcessor proc : principalProcessors) {
 				proc.afterSetPassword(principal, password);
 			}
-
-			principal.setProperties(provider.getUserPropertyValues(principal));
 			
 			if (administrative) {
 
@@ -2159,10 +2157,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Principal getUniquePrincipalForRealm(String username, Realm realm, PrincipalType... type)
 			throws ResourceNotFoundException {
-		Collection<Principal> found = principalRepository.getPrincpalsByName(username, realm, type);
-		if (!found.isEmpty()) {
-			return selectPrincipal(found, username);
-		}
+//		Collection<Principal> found = principalRepository.getPrincpalsByName(username, realm, type);
+//		if (!found.isEmpty()) {
+//			return selectPrincipal(found, username);
+//		}
 		return getProviderForRealm(realm).getPrincipalByName(username, realm, type);
 	}
 
