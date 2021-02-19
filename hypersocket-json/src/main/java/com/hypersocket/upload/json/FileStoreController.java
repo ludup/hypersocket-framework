@@ -148,11 +148,10 @@ public class FileStoreController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<FileUpload> createImage(HttpServletRequest request,
 			HttpServletResponse response,
-			@RequestPart(value = "file") MultipartFile file,
-			@PathVariable Boolean publicFile)
+			@RequestPart(value = "file") MultipartFile file)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		return createImage(request, response, file, false);
+		return createImageWithPublicOption(request, response, file, false);
 	}
 	
 	@AuthenticationRequired
@@ -252,6 +251,17 @@ public class FileStoreController extends ResourceController {
 		}
 	}
 
+	@AuthenticationRequired
+	@RequestMapping(value = "files/image/{uuid}", method = RequestMethod.DELETE, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<FileUpload> deleteImage(
+			final HttpServletRequest request, HttpServletResponse response,
+			@PathVariable String uuid) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+		return deleteFile(request, response, uuid);
+	}
+	
 	@AuthenticationRequired
 	@RequestMapping(value = "files/file/{uuid}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
