@@ -1035,6 +1035,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				proc.afterSetPassword(principal, password);
 			}
 
+			principal.setProperties(provider.getUserPropertyValues(principal));
+			
 			if (administrative) {
 
 				eventService.publishEvent(new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider,
