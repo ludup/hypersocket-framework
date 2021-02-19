@@ -26,8 +26,8 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 		defaultReplacements = new HashSet<String>();
 //		defaultReplacements.add("password"); Don't advertise
 		defaultReplacements.add("principalName");
-		defaultReplacements.add("currentUser.email");
-		defaultReplacements.add("currentUser.phone");
+		defaultReplacements.add("default.currentUser.email");
+		defaultReplacements.add("default.currentUser.phone");
 		defaultReplacements.add("groupNames");
 		defaultReplacements.add("groupPrincipalNames");
 		defaultReplacements.add("groupIds");
@@ -150,13 +150,13 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 
 			if(name.equals("principalName")) {
 				return source.getPrincipalName();
-			} else if(name.equals("currentUser.email")) {
+			} else if(name.equals("default.currentUser.email")) {
 				try {
 				return realmService.getPrincipalAddress(source, MediaType.EMAIL);
 				} catch(MediaNotFoundException e) {
 					return  "";
 				}
-			} else if(name.equals("currentUser.phone")) {
+			} else if(name.equals("default.currentUser.phone")) {
 				try {
 					return realmService.getPrincipalAddress(source, MediaType.PHONE);
 				} catch (MediaNotFoundException e) {
