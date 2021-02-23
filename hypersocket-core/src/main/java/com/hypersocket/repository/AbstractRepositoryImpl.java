@@ -406,6 +406,25 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		}
 		return 0L;
 	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Long getDistinctCount(Class<?> clz, String distinctColumn, CriteriaConfiguration... configs) {
+
+		Criteria criteria = createCriteria(clz);
+
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.setProjection(Projections.countDistinct(distinctColumn));
+
+		Object result = criteria.uniqueResult();
+		if(result!=null) {
+			return (Long) result;
+		}
+		return 0L;
+	}
 
 	@Override
 	public List<?> getCounts(Class<?> clz, String groupBy, CriteriaConfiguration... configs) {

@@ -44,5 +44,7 @@ public interface AbstractRepository<K> {
 	<I> Iterator<I> iterate(Class<I> clazz, ColumnSort[] sorting, CriteriaConfiguration... configs);
 
 	List<?> total(Class<?> clz, String column, Sort order, CriteriaConfiguration... configs);
+
+	Long getDistinctCount(Class<?> clz, String groupBy, CriteriaConfiguration... configs);
 	
 }
