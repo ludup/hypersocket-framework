@@ -1,5 +1,6 @@
 package com.hypersocket.replace;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,6 +13,13 @@ import com.hypersocket.utils.ITokenResolver;
 public class ReplacementUtils {
 
 	static Logger log = LoggerFactory.getLogger(ReplacementUtils.class);
+	
+	public static String processTokenReplacements(String value, Collection<ITokenResolver> tokenResolvers) {
+		for(ITokenResolver resolver : tokenResolvers) {
+			value = processTokenReplacements(value, resolver);
+		}
+		return value;
+	}
 	
 	public static String processTokenReplacements(String value, ITokenResolver tokenResolver) {
 		
