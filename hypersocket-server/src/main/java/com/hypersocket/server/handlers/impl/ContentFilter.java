@@ -1,8 +1,11 @@
 package com.hypersocket.server.handlers.impl;
 
 import java.io.InputStream;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+
+import com.hypersocket.utils.ITokenResolver;
 
 public interface ContentFilter {
 
@@ -11,5 +14,7 @@ public interface ContentFilter {
 	boolean filtersPath(String path);
 	
 	Integer getWeight();
+
+	List<ITokenResolver> getResolvers(HttpServletRequest request);
 
 }
