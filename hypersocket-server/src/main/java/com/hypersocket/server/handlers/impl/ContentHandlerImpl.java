@@ -287,7 +287,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 		});
 	}
 	
-	private String sanitizeUri(String uri) {
+	protected String sanitizeUri(String uri) {
         // Decode the path.
         try {
             uri = URLDecoder.decode(uri, "UTF-8");
@@ -310,7 +310,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
      * @param ctx
      *            Context
      */
-    private void sendNotModified(HttpServletResponse response) {
+	protected void sendNotModified(HttpServletResponse response) {
         response.setStatus(HttpStatus.SC_NOT_MODIFIED);
         setDateHeader(response);
     }
@@ -321,7 +321,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
      * @param response
      *            HTTP response
      */
-    private void setDateHeader(HttpServletResponse response) {
+	protected void setDateHeader(HttpServletResponse response) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
 
@@ -337,7 +337,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
      * @param fileToCache
      *            file to extract content type
      */
-    private void setDateAndCacheHeaders(HttpServletResponse response, String path) {
+    protected void setDateAndCacheHeaders(HttpServletResponse response, String path) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
 
@@ -374,7 +374,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
      * @param file
      *            file to extract content type
      */
-    private void setContentTypeHeader(HttpServletResponse response, String path) {
+    protected void setContentTypeHeader(HttpServletResponse response, String path) {
         response.setHeader(HttpHeaders.CONTENT_TYPE, getContentType(path));
     }
 
