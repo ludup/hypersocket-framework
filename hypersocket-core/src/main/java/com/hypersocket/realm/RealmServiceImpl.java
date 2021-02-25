@@ -41,6 +41,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import com.hypersocket.attributes.AttributeType;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
+import com.hypersocket.auth.FakePrincipal;
 import com.hypersocket.auth.MissingEmailAddressPostAuthenticationStep;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.cache.CacheService;
@@ -394,7 +395,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	protected RealmProvider getProviderForPrincipal(Principal principal) {
-		if (principal instanceof LocalUser) {
+		if (principal instanceof LocalUser || principal instanceof FakePrincipal) {
 			return getLocalProvider();
 		}
 		return getProviderForRealm(principal.getRealm());
