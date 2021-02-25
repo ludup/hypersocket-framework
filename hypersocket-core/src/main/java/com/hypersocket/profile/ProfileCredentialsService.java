@@ -36,4 +36,6 @@ public interface ProfileCredentialsService {
 
 	Profile getProfileForUser(Principal target) throws AccessDeniedException;
 
+	void calculateCompleteness(Profile profile);
+
 }

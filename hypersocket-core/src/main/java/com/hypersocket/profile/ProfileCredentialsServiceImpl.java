@@ -112,7 +112,8 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		return states;
 	}
 	
-	protected void calculateCompleteness(Profile profile) {
+	@Override
+	public void calculateCompleteness(Profile profile) {
 		
 		int complete = 0;
 		int partial = 0;
