@@ -82,8 +82,8 @@ public class MiniHttpServer extends Thread implements Closeable {
 	public enum Status {
 
 		BAD_REQUEST(400, "Bad Request"), FORBIDDEN(403, "Forbidden"), FOUND(302, "Found"),
-		INTERNAL_SERVER_ERROR(500, "Not Found"), MOVED_PERMANENTLY(301, "Moved Permanently"), NOT_FOUND(404, "Not Found"),
-		NOT_IMPLEMENTED(501, "Not Implement"), OK(200, "OK");
+		INTERNAL_SERVER_ERROR(500, "Not Found"), MOVED_PERMANENTLY(301, "Moved Permanently"),
+		NOT_FOUND(404, "Not Found"), NOT_IMPLEMENTED(501, "Not Implement"), OK(200, "OK");
 
 		private int code;
 		private String text;
@@ -127,6 +127,7 @@ public class MiniHttpServer extends Thread implements Closeable {
 			http.run();
 		}
 	}
+
 	private boolean caching = true;
 	private List<DynamicContentFactory> contentFactories = new ArrayList<>();
 	private boolean open = true;
@@ -149,10 +150,10 @@ public class MiniHttpServer extends Thread implements Closeable {
 
 		if (https > 0) {
 			LOG.info(String.format("Open temporary HTTPS server on port %d", https));
-			
+
 			SSLContext sc = null;
 			try {
-				if("true".equals(System.getProperty("hypersocket.bc", "true")))
+				if ("true".equals(System.getProperty("hypersocket.bc", "true")))
 					Security.addProvider(new BouncyCastleProvider());
 				KeyStore ks = null;
 				KeyManagerFactory kmf = null;
@@ -163,8 +164,7 @@ public class MiniHttpServer extends Thread implements Closeable {
 						ks = X509CertificateUtils.loadKeyStoreFromJKS(fin, KEYSTORE_PASSWORD.toCharArray());
 						kmf = KeyManagerFactory.getInstance("SunX509");
 						kmf.init(ks, KEYSTORE_PASSWORD.toCharArray());
-					}
-					catch(Exception e) {
+					} catch (Exception e) {
 						LOG.error("Failed to load temporary keystore, reverting to default.", e);
 						ks = null;
 					}
@@ -277,7 +277,7 @@ public class MiniHttpServer extends Thread implements Closeable {
 						socket.getOutputStream().flush();
 					}
 				} catch (Exception e) {
-					LOG.info("Failed handling connection.", e);
+					LOG.debug("Failed handling connection.", e);
 				}
 			}
 		} finally {
@@ -401,9 +401,17 @@ public class MiniHttpServer extends Thread implements Closeable {
 			LOG.debug("Waiting for connection");
 			try {
 				Socket connectionsocket = so.accept();
-				pool.execute(() -> connection(connectionsocket));
+				pool.execute(() -> {
+					try {
+						connection(connectionsocket);
+					} catch (Exception e) {
+						if (LOG.isDebugEnabled())
+							LOG.debug("Failed processing connection.", e);
+					}
+				});
 			} catch (Exception e) {
-				LOG.info("Failed waiting for connection.", e);
+				if (LOG.isDebugEnabled())
+					LOG.debug("Failed waiting for connection.", e);
 			}
 		}
 	}
