@@ -16,7 +16,7 @@ public interface ProfileCredentialsService {
 
 	void onUserDeleted(UserDeletedEvent event);
 
-	void createProfile(Principal target) throws AccessDeniedException;
+	Profile createProfile(Principal target) throws AccessDeniedException;
 
 	void updateProfile(Principal target) throws AccessDeniedException;
 
@@ -36,6 +36,6 @@ public interface ProfileCredentialsService {
 
 	Profile getProfileForUser(Principal target) throws AccessDeniedException;
 
-	void calculateCompleteness(Profile profile);
+	boolean calculateCompleteness(Profile profile);
 
 }
