@@ -111,13 +111,15 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		}
 		return states;
 	}
-	
+
 	@Override
-	public void calculateCompleteness(Profile profile) {
+	public boolean calculateCompleteness(Profile profile) {
 		
 		int complete = 0;
 		int partial = 0;
 		int incomplete = 0;
+		
+		ProfileCredentialsState previousState = profile.getState();
 		
 		for(ProfileCredentials s : profile.getCredentials()) {
 			switch(s.getState()) {
@@ -145,10 +147,12 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		} else {
 			profile.setState(ProfileCredentialsState.COMPLETE);
 		}
+		
+		return profile.getState()!=previousState;
 	}
 	
 	@Override
-	public void createProfile(Principal target) throws AccessDeniedException {
+	public Profile createProfile(Principal target) throws AccessDeniedException {
 		
 		if(log.isInfoEnabled()) {
 			log.info(String.format("Creating profile for user %s", target.getPrincipalName()));
@@ -161,6 +165,7 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		}
 		
 		profileRepository.saveEntity(profile);
+		return profile;
 	}
 	
 	@Override
