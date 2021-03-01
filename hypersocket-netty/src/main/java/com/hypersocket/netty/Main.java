@@ -10,9 +10,12 @@ package com.hypersocket.netty;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.LogManager;
 import java.util.prefs.Preferences;
 
 import javax.servlet.ServletException;
@@ -102,6 +105,7 @@ public class Main {
 
 		System.setProperty("hypersocket.conf", conf.getPath());
 
+		/* Log4J Configuration */
 		String logConfigPath = System.getProperty("hypersocket.logConfiguration", "");
 		if(logConfigPath.equals("")) {
 			/* Load default */
@@ -114,6 +118,27 @@ public class Main {
 			else
 				PropertyConfigurator.configure(Main.class.getResource("/default-log4j.properties"));
 		}
+		
+		/* JULI Configuration */
+		String juliConfigPath = System.getProperty("hypersocket.juliConfiguration", "");
+		if(juliConfigPath.equals("")) {
+			/* Load default */
+			try(InputStream in = Main.class.getResourceAsStream("/default-juli.properties")) {
+				LogManager.getLogManager().readConfiguration(in);
+			}
+			catch(Exception e) {
+				log.error("Failed to configure JULI.", e);
+			}
+		}
+		else {
+			try(InputStream in = new FileInputStream(new File(juliConfigPath))) {
+				LogManager.getLogManager().readConfiguration(in);
+			}
+			catch(Exception e) {
+				log.error("Failed to configure JULI.", e);
+			}
+		}
+		//juli.properties
 
 		classLoader = getClass().getClassLoader();
 		if (log.isInfoEnabled()) {
