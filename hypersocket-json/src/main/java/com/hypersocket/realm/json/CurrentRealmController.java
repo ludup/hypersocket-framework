@@ -539,6 +539,32 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/user/byEmail/{name}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Principal> getUserByEmail(
+			HttpServletRequest request, @PathVariable String name)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			Principal principal = realmService.getPrincipalByEmail(
+					sessionUtils.getCurrentRealm(request), name);
+			if(principal == null)
+				return new ResourceStatus<Principal>(false, "Not found.");
+			else
+				return new ResourceStatus<Principal>(principal);
+		} catch (ResourceNotFoundException e) {
+			return new ResourceStatus<Principal>(false, e.getMessage());
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/user/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
