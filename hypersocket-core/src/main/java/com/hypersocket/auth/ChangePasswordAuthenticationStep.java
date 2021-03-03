@@ -69,7 +69,12 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 		
 		try {
 			doPasswordChange(state, password);
-			
+			/**
+			 * LDP - This is important for reset flow so it can pass
+			 * password value back to windows to perform a cached
+			 * credentials update.
+			 */
+			state.addParameter("password", password);
 			return AuthenticatorResult.AUTHENTICATION_SUCCESS;
 			
 		} catch (ResourceException e) {
