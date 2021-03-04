@@ -38,7 +38,7 @@
 	</aop:config>
 
 
-	<context:component-scan base-package="com.hypersocket">
+	<context:component-scan base-package="com.hypersocket, com.logonbox">
 		<context:include-filter type="regex"
 			expression="com.hypersocket.*ServiceImpl" />
 		<context:include-filter type="regex"
