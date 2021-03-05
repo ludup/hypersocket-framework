@@ -1025,10 +1025,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		try {
 
-			if (provider.isReadOnly(principal.getRealm())) {
-				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
-			}
-
 			for (PrincipalProcessor proc : principalProcessors) {
 				proc.beforeSetPassword(principal, password);
 			}

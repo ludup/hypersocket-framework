@@ -25,6 +25,7 @@ public class InputField {
 	private String infoKey;
 	private String onChange;
 	private boolean readOnly;
+	private String classes;
 	
 	public InputField() {
 
@@ -120,6 +121,14 @@ public class InputField {
 
 	public void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
+	}
+
+	public String getClasses() {
+		return classes;
+	}
+
+	public void setClasses(String classes) {
+		this.classes = classes;
 	}
 	
 	
