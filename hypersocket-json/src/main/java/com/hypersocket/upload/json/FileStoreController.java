@@ -172,7 +172,7 @@ public class FileStoreController extends ResourceController {
 			FileUpload fileUpload;
 
 			BufferedInputStream bin = new BufferedInputStream(file.getInputStream());
-			bin.mark((int) file.getSize());
+			bin.mark((int) file.getSize()+1);
 			BufferedImage image = ImageIO.read(bin);
 			if(Objects.isNull(image)) {
 				throw new ResourceException(FileUploadServiceImpl.RESOURCE_BUNDLE, "error.notImage");
