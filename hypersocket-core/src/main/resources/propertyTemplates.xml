@@ -44,7 +44,7 @@
 		<property resourceKey="user.locales" inputType="switch"
 			defaultValue="true" weight="0" />
 		<property resourceKey="current.locale" inputType="select"
-			url="i18n/locales" defaultValue="en" weight="100" nameIsResourceKey="true"/>
+			url="i18n/locales" defaultValue="en" weight="100" nameIsResourceKey="false"/>
 		<property resourceKey="realm.defaultTimezone" inputType="select" url="server/timezones" 
 					emptySelectionAllowed="true" emptySelectionTextDefaultValue="" weight="400"/>
 	</propertyCategory>
