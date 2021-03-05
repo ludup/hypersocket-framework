@@ -849,6 +849,7 @@ public class AuthenticationServiceImpl extends
 		
 		Authenticator nextAuthenticator = nextAuthenticator(state);
 		FormTemplate template = nextAuthenticator.createTemplate(state, params);
+
 		return modifyTemplate(state, template, false);
 	}
 
