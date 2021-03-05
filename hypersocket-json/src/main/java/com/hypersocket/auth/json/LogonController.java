@@ -34,6 +34,8 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.FallbackAuthenticationRequired;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.input.FormTemplate;
+import com.hypersocket.input.ParagraphField;
 import com.hypersocket.json.AuthenticationRedirectResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.ResourceStatus;
@@ -310,16 +312,18 @@ public class LogonController extends AuthenticatedController {
 				
 				checkRedirect(request, response);
 				
+				FormTemplate template = (!state.isAuthenticationComplete() ? 
+						authenticationService.nextAuthenticationTemplate(state, request.getParameterMap())
+						: authenticationService.nextPostAuthenticationStep(state));
+				
+				request.getSession().setAttribute("lastFormTemplate", template);
+				
 				return new AuthenticationRequiredResult(
 						configurationService.getValue(state.getRealm(),
 								"logon.banner"),
 						flash!=null ? flash : state.getLastErrorMsg(),
 						state.getLastErrorIsResourceKey(),
-						!state.isAuthenticationComplete() ? authenticationService
-								.nextAuthenticationTemplate(state,
-										request.getParameterMap())
-								: authenticationService
-										.nextPostAuthenticationStep(state),
+						template,
 						false,
 //						configurationService.hasUserLocales(), 
 						state.isNew(),
@@ -349,7 +353,7 @@ public class LogonController extends AuthenticatedController {
 			if(log.isErrorEnabled()) {
 				log.error("Error in authentication flow", t);
 			}
-
+					
 			state.setLastErrorMsg(t.getMessage());
 			state.setLastErrorIsResourceKey(false);
 			
@@ -358,11 +362,7 @@ public class LogonController extends AuthenticatedController {
 							"logon.banner"),
 					state.getLastErrorMsg(),
 					state.getLastErrorIsResourceKey(),
-					!state.isAuthenticationComplete() ? authenticationService
-							.nextAuthenticationTemplate(state,
-									request.getParameterMap())
-							: authenticationService
-									.nextPostAuthenticationStep(state),
+					getErrorTemplate(state, t.getMessage()),
 					false,
 //					configurationService.hasUserLocales(), 
 					state.isNew(),
@@ -374,6 +374,13 @@ public class LogonController extends AuthenticatedController {
 		} finally {
 			clearAuthenticatedContext();
 		}
+	}
+
+	private FormTemplate getErrorTemplate(AuthenticationState state, String message) {
+		FormTemplate template = new FormTemplate(state.getInitialSchemeResourceKey());
+		template.setShowLogonButton(false);
+		template.getInputFields().add(new ParagraphField("<i class=\"fa fa-exclamation\"></i> " + message, false, true, "danger"));
+		return template;
 	}
 
 	protected void checkRedirect(HttpServletRequest request, HttpServletResponse response) throws RedirectException, IOException {
