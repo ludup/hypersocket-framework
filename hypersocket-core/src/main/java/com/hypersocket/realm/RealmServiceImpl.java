@@ -1088,6 +1088,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			systemPrincipal = getPrincipalByName(realmRepository.getSystemRealm(), 
 					SYSTEM_PRINCIPAL,
 					PrincipalType.SYSTEM);
+			if(systemPrincipal == null) {
+				throw new IllegalStateException("Could not get system principal. This may happen on "
+						+ "fresh installs, if getSystemPrincipal() is called before the system user is "
+						+ "created in the upgrade scripts. Make sure no service (e.g. in a @PostConstruct) is "
+						+ "attempting to obtain the system principal.");
+			}
 		}
 		return systemPrincipal;
 	}
