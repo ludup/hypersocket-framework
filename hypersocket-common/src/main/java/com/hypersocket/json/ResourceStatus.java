@@ -7,10 +7,13 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
+@SuppressWarnings("serial")
 @XmlRootElement(name="resourceStatus")
-public class ResourceStatus<T> {
+public class ResourceStatus<T> implements Serializable {
 
 	private boolean success = true;
 	private String message = "";
