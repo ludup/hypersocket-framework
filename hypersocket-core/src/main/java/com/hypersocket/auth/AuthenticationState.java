@@ -46,6 +46,7 @@ public class AuthenticationState {
 	private List<PostAuthenticationStep> nonSessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
 	private String lastErrorMsg;
 	private boolean lastErrorIsResourceKey;
+	private String lastErrorType = "error";
 	private String lastPrincipalName;
 	private String lastRealmName;
 	private Realm realm;
@@ -182,6 +183,14 @@ public class AuthenticationState {
 
 	public void setLastErrorMsg(String lastErrorMsg) {
 		this.lastErrorMsg = lastErrorMsg;
+	}
+
+	public String getLastErrorType() {
+		return lastErrorType;
+	}
+
+	public void setLastErrorType(String lastErrorType) {
+		this.lastErrorType = lastErrorType;
 	}
 
 	public Principal getPrincipal() {

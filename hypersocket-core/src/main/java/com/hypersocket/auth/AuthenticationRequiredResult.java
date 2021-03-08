@@ -27,12 +27,12 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 
 	}
 
-	public AuthenticationRequiredResult(String bannerMsg, String errorMsg,
+	public AuthenticationRequiredResult(String bannerMsg, String errorMsg, String errorStyle,
 			boolean lastErrorIsResourceKey, FormTemplate formTemplate,
 			boolean showLocales, boolean isNew, boolean isFirst, boolean isLast,
 			boolean lastResultSuccessful, boolean inPostAuthentication,
 			String lastButtonResourceKey, Realm realm) {
-		super(bannerMsg, errorMsg, showLocales);
+		super(bannerMsg, errorMsg, errorStyle, showLocales);
 		this.formTemplate = formTemplate;
 		this.lastErrorIsResourceKey = lastErrorIsResourceKey;
 		this.isNew = isNew;
