@@ -185,6 +185,7 @@ public class LogonController extends AuthenticatedController {
 		AuthenticationState state = AuthenticationState.getCurrentState(request);
 
 		String flash = (String) request.getSession().getAttribute("flash");
+		String flashStyle = (String) request.getSession().getAttribute("flashStyle");
 		
 		Session session;
 		
@@ -302,6 +303,7 @@ public class LogonController extends AuthenticatedController {
 					else if(state.getInitialScheme() != null) {
 						AuthenticationState.clearCurrentState(request);
 						request.getSession().setAttribute("flash", i18nService.getResource("error.genericLogonError", state.getLocale()));
+						request.getSession().setAttribute("flashStyle", "danger");
 						throw new RedirectException(System.getProperty(
 								"hypersocket.appPath", "/hypersocket") + "/" + state.getInitialSchemeResourceKey());
 					}
@@ -322,6 +324,7 @@ public class LogonController extends AuthenticatedController {
 						configurationService.getValue(state.getRealm(),
 								"logon.banner"),
 						flash!=null ? flash : state.getLastErrorMsg(),
+						flashStyle!=null ? flashStyle : state.getLastErrorType(),
 						state.getLastErrorIsResourceKey(),
 						template,
 						false,
@@ -347,6 +350,7 @@ public class LogonController extends AuthenticatedController {
 					configurationService.getValue(state.getRealm(),
 							"logon.banner"),
 					flash!=null ? flash : state.getLastErrorMsg(),
+					flashStyle!=null ? flashStyle : state.getLastErrorType(),
 					configurationService.hasUserLocales(), e.getMessage());
 		} catch(Throwable t) {
 			
@@ -361,6 +365,7 @@ public class LogonController extends AuthenticatedController {
 					configurationService.getValue(state.getRealm(),
 							"logon.banner"),
 					state.getLastErrorMsg(),
+					state.getLastErrorType(),
 					state.getLastErrorIsResourceKey(),
 					getErrorTemplate(state, t.getMessage()),
 					false,
