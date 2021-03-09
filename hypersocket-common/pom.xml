@@ -19,9 +19,9 @@
 
 	<dependencies>
 		<dependency>
-			<artifactId>hypersocket-json-client</artifactId>
 			<groupId>com.sshtools</groupId>
-			<version>1.0.14-SNAPSHOT</version>
+			<artifactId>hypersocket-json-client</artifactId>
+			<version>1.1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<artifactId>jackson-databind</artifactId>
