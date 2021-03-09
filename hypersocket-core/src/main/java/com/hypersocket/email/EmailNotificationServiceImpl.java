@@ -371,17 +371,28 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 						src = src.substring(idx + 1);
 						idx = src.indexOf(';');
 						String mime = src.substring(0, idx);
-						src = src.substring(idx + 1);
-						idx = src.indexOf(',');
-						String enc = src.substring(0, idx);
-						String data = src.substring(idx + 1);
-						if(!"base64".equals(enc)) {
-							throw new UnsupportedOperationException(String.format("%s is not supported for embedded images.", enc));
+						src = src.substring(idx + 1).trim();
+						for(String arg : src.split(";")) {
+							arg = arg.trim();
+							if(arg.startsWith("name=")) {
+								// Ignore
+							}
+							else if(arg.startsWith("base64")) {
+								idx = arg.indexOf(',');
+								String enc = arg.substring(0, idx);
+								String data = arg.substring(idx + 1);
+								if(!"base64".equals(enc)) {
+									throw new UnsupportedOperationException(String.format("%s is not supported for embedded images.", enc));
+								}
+								byte[] bytes = Base64.decodeBase64(data);
+								UUID cid = UUID.randomUUID();
+								el.attr("src", "cid:" + OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid);
+								email.addEmbeddedImage(OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid.toString(), bytes, mime);
+							}
+							else {
+								log.warn(String.format("Unexpected attribute in embedded image data URI. %s", arg));
+							}
 						}
-						byte[] bytes = Base64.decodeBase64(data);
-						UUID cid = UUID.randomUUID();
-						el.attr("src", "cid:" + OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid);
-						email.addEmbeddedImage(OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid.toString(), bytes, mime);
 					}
 				}
 			}
