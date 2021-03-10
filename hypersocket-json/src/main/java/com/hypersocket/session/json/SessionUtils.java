@@ -339,7 +339,12 @@ public class SessionUtils {
 					return new Locale(c.getValue());
 				}
 			}
-			return configurationService.getDefaultLocale();
+			configurationService.setupSystemContext();
+			try {
+				return configurationService.getDefaultLocale();
+			} finally {
+				configurationService.clearPrincipalContext();
+			}
 		} else {
 			return new Locale((String) request.getSession().getAttribute(
 					USER_LOCALE));
