@@ -215,21 +215,9 @@ public class AuthenticationServiceImpl extends
 							+ realm.getName());
 				}
 				
-				Map<String,String> properties = new HashMap<>();
-				
 				AuthenticationScheme basicScheme = schemeRepository.getSchemeByResourceKey2(realm, AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
 				List<String> modules = new ArrayList<String>();
 				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
-				
-				try {
-					/**
-					 * This will only get configured if product is IDM and LBA is available.
-					 */
-					Class.forName("com.hypersocket.identity.portal.FrontEndServiceImpl");
-					Class.forName("com.logonbox.authenticator.LogonBoxAuthenticatorHtml");
-					modules.add("logonboxHtml");
-					properties.put("lb.enableRegistration", "true");
-				} catch(ClassNotFoundException e) { }
 				
 				if (log.isInfoEnabled()) {
 					log.info("Creating " + AUTHENTICATION_SCHEME_NAME
@@ -248,7 +236,7 @@ public class AuthenticationServiceImpl extends
 				userLoginScheme.setSupportsHomeRedirect(true);
 			
 				try {
-					schemeRepository.saveResource(userLoginScheme, properties);
+					schemeRepository.saveResource(userLoginScheme);
 				} catch (ResourceException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				}
@@ -270,6 +258,7 @@ public class AuthenticationServiceImpl extends
 				try {
 					schemeRepository.saveResource(basicScheme);
 				} catch (ResourceException e) {
+					log.error("Failed to save authentication scheme", e);
 					throw new IllegalStateException(e.getMessage(), e);
 				}
 			}
