@@ -220,11 +220,11 @@ public class AuthenticationServiceImpl extends
 				AuthenticationScheme basicScheme = schemeRepository.getSchemeByResourceKey2(realm, AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY);
 				List<String> modules = new ArrayList<String>();
 				modules.add(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
-				try {
-					Class.forName("com.logonbox.authenticator.LogonBoxAuthenticatorHtml");
-					modules.add("logonboxHtml");
-					properties.put("lb.enableRegistration", "true");
-				} catch(ClassNotFoundException e) { }
+//				try {
+//					Class.forName("com.logonbox.authenticator.LogonBoxAuthenticatorHtml");
+//					modules.add("logonboxHtml");
+//					properties.put("lb.enableRegistration", "true");
+//				} catch(ClassNotFoundException e) { }
 				
 				if (log.isInfoEnabled()) {
 					log.info("Creating " + AUTHENTICATION_SCHEME_NAME
