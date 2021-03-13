@@ -181,7 +181,7 @@ public class MissingPhoneNumberPostAuthenticationStep implements PostAuthenticat
 
 	@Override
 	public boolean requiresSession(AuthenticationState state) {
-		return true;
+		return false;
 	}
 	
 	private boolean validatePhoneNumber(String val) {
