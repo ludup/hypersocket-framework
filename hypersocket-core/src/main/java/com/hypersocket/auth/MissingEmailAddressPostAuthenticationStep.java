@@ -89,6 +89,8 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 
 	@Override
 	public AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException {
+		
+		
 		String required = configurationService.getValue(state.getRealm(), "missingEmail.required");
 		
 		final UserPrincipal<?> principal = (UserPrincipal<?>)state.getPrincipal();
@@ -185,7 +187,7 @@ public class MissingEmailAddressPostAuthenticationStep implements PostAuthentica
 
 	@Override
 	public boolean requiresSession(AuthenticationState state) {
-		return true;
+		return false;
 	}
 	
 	private boolean validateEmailAddress(String val) {
