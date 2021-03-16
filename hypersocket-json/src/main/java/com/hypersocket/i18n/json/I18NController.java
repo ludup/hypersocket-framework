@@ -62,9 +62,16 @@ public class I18NController extends AuthenticatedController {
 				request.getHeader(HttpHeaders.USER_AGENT),
 				request.getParameterMap());
 		try {
-			if(webRequest.checkNotModified(i18nService.getLastUpdate())) {
+			Boolean rebuildI18N = (Boolean)request.getSession().getAttribute(SessionUtils.HYPERSOCKET_REBUILD_I18N);
+			/* If the locale has just been changed, never return SC_NOT_MODIFIED, we
+			 * need to send the map for the new locale */
+			if(!Boolean.TRUE.equals(rebuildI18N) && webRequest.checkNotModified(i18nService.getLastUpdate())) {
 				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
 				return null;
+			}
+			else if(Boolean.TRUE.equals(rebuildI18N)) {
+				/* Don't rebuild next time, client will have new map */
+				request.getSession().removeAttribute(SessionUtils.HYPERSOCKET_REBUILD_I18N);
 			}
 			Cache<String,String> results = i18nService.getResourceMap(sessionUtils.getLocale(request));
 			results.put("LANG", sessionUtils.getLocale(request).getLanguage());
