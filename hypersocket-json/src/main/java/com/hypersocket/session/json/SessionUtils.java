@@ -48,6 +48,7 @@ public class SessionUtils {
 	public static final String HYPERSOCKET_API_KEY = "apikey";
 	public static final String USER_LOCALE = "userLocale";
 	public static final String HYPERSOCKET_LOCALE = "HYPERSOCKET_LOCALE";
+	public static final String HYPERSOCKET_REBUILD_I18N = "rebuildI18N";
 
 	@Autowired
 	private SessionService sessionService;
@@ -351,6 +352,7 @@ public class SessionUtils {
 			HttpServletResponse response, String locale) {
 
 		request.getSession().setAttribute(USER_LOCALE, locale);
+		request.getSession().setAttribute(HYPERSOCKET_REBUILD_I18N, true);
 
 		Cookie cookie = new Cookie(HYPERSOCKET_LOCALE, locale);
 		cookie.setMaxAge(Integer.MAX_VALUE);
@@ -359,8 +361,8 @@ public class SessionUtils {
 			cookie.setSecure(true);
 		} else {
 			cookie.setSecure(false);
-			cookie.setHttpOnly(true);
 		}
+		cookie.setHttpOnly(true);
 		cookie.setDomain(request.getServerName());
 		response.addCookie(cookie);
 
