@@ -8,12 +8,15 @@
 package com.hypersocket.auth;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Stack;
 
 import javax.servlet.http.Cookie;
@@ -34,6 +37,7 @@ public class AuthenticationState {
 	private static final String AUTHENTICATION_STATE = "authenticationState";
 	private static final String COOKIES = "cookies";
 	
+	private Set<String> completedModules = new HashSet<>();
 	private Stack<AuthenticationScheme> previousSchemes = new Stack<>();
 	private Stack<Integer> previousIndex = new Stack<>();
 	private Stack<List<AuthenticationModule>> previousModules = new Stack<>();
@@ -157,7 +161,12 @@ public class AuthenticationState {
 		return currentIndex >= modules.size();
 	}
 
+	public Set<String> getCompletedModules() {
+		return Collections.unmodifiableSet(completedModules);
+	}
+	
 	public void nextModule() {
+		completedModules.add(getCurrentModule().getTemplate());
 		this.currentIndex++;
 	}
 	
