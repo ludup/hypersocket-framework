@@ -96,4 +96,7 @@ public interface MessageResourceService extends
 
 	void test(MessageResource resourceById, String email);
 
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
+			Collection<Principal> principals);
+
 }
