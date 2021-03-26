@@ -516,6 +516,23 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	}
 
 	@Override
+	public void sendMessage(String resourceKey, Realm realm, 
+			ITokenResolver tokenResolver, RecipientHolder replyTo,
+			Collection<Principal> principals) {
+		
+		MessageResource message = repository.getMessageById(resourceKey, realm);
+
+		if (message == null) {
+			log.error(String.format("Invalid message id %s", resourceKey));
+			return;
+		}
+		
+		sendMessage(message, realm, tokenResolver, replyTo, 
+				principals.iterator(), Collections.<String>emptyList(), null, 
+				Collections.<EmailAttachment>emptyList(), null);
+	}
+	
+	@Override
 	public void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Iterator<Principal> principals, Collection<String> emails, Date schedule,
 			List<EmailAttachment> attachments, String context) {
