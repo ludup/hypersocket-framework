@@ -331,7 +331,7 @@ public class Main {
 				log.info("Shutting down with forker restart code.");
 			}
 
-			System.exit(90);
+			System.exit(99);
 		}
 
 	}
