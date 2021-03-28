@@ -112,12 +112,14 @@ public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl im
 				throw new AccessDeniedException("External hostname cannot be resolved for tracking image");
 			}
 			if(externalHostname.startsWith("http")) {
-				return String.format("%s/%s/api/emails/receipt/%d/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
+				return String.format("%s/%s/api/emails/receipt/%d/%s", 
+						FileUtils.checkEndsWithNoSlash(externalHostname),
 					systemConfigurationService.getValue("application.path"),
 					receipt.getId(),
 					upload.getFileName());
 			} else {
-				return String.format("https://%s/%s/api/emails/receipt/%d/%s", FileUtils.checkEndsWithNoSlash(externalHostname),
+				return String.format("https://%s/%s/api/emails/receipt/%d/%s", 
+						FileUtils.checkEndsWithNoSlash(externalHostname),
 						systemConfigurationService.getValue("application.path"),
 						receipt.getId(),
 						upload.getFileName());
