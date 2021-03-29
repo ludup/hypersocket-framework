@@ -313,7 +313,7 @@ public class CurrentRealmController extends ResourceController {
 							return realmService.searchPrincipals(
 									currentRealm,
 									PrincipalType.GROUP,
-									StringUtils.isEmpty(searchColumn) ? currentRealm.getResourceCategory() : searchColumn,
+									StringUtils.isEmpty(searchColumn) ? "name" : searchColumn,
 									searchPattern, start,
 									length, sorting);
 						}
@@ -325,7 +325,7 @@ public class CurrentRealmController extends ResourceController {
 							return realmService.getSearchPrincipalsCount(
 									currentRealm,
 									PrincipalType.GROUP, 
-									StringUtils.isEmpty(searchColumn) ? currentRealm.getResourceCategory() : searchColumn,
+									StringUtils.isEmpty(searchColumn) ? "name" : searchColumn,
 									searchPattern);
 						}
 					});
