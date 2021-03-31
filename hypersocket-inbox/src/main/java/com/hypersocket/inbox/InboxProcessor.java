@@ -142,6 +142,23 @@ public class InboxProcessor {
 				htmlContent.append(msg.getContent().toString());
 			} else if (contentType.contains("multipart")) {
 				processMultipart((Multipart) msg.getContent(), textContent, htmlContent, attachments);
+			} else if(contentType.contains("application/pdf")) {
+				try {
+				File attachment = File.createTempFile("email", "attachment");
+				OutputStream out = new FileOutputStream(attachment);
+				InputStream in = msg.getInputStream();
+				try {
+					IOUtils.copy(in, out);
+					attachments.add(new EmailAttachment(msg.getFileName(), msg.getContentType(), attachment));
+				} finally {
+					IOUtils.closeQuietly(out);
+					IOUtils.closeQuietly(in);
+				}
+				} catch(Throwable t) {
+					log.error("Tried to parse application/pdf email content but failed", t);
+				}
+			} else {
+				log.error("Missing handler in InboxProcessor parseMessage for content type {}");
 			}
 
 			processor.processEmail(msg.getFrom(), msg.getReplyTo(), msg.getRecipients(RecipientType.TO),
@@ -214,7 +231,7 @@ public class InboxProcessor {
 			} else if (contentType.startsWith("multipart")) {
 				processMultipart((Multipart) part.getContent(), textContent, htmlContent, attachments);
 			} else {
-				
+				log.error("Missing handler in InboxProcessor processMultipart for content type {}");
 			}
 		}
 	}
