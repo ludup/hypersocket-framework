@@ -24,6 +24,8 @@ import com.hypersocket.realm.Realm;
 @XmlRootElement(name = "form")
 public class UsernameAndPasswordTemplate extends FormTemplate {
 
+	public static final String CANNOT_CHANGE_USERNAME = "cannotChangeUsername";
+	
 	public static final String USERNAME_FIELD = "username";
 	public static final String PASSWORD_FIELD = "password";
 
@@ -56,7 +58,11 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 							AuthenticationServiceImpl.RESOURCE_BUNDLE,
 							"username.label"));
 
-			username.setReadOnly(true);
+			if(state.hasEnvironmentVariable(CANNOT_CHANGE_USERNAME) && 
+					Boolean.TRUE.equals(state.getEnvironmentVariable(CANNOT_CHANGE_USERNAME))) {
+				username.setReadOnly(true);
+			}
+			
 			fields.add(username);
 		}
 		
