@@ -95,7 +95,7 @@ public class AuthenticationServiceImpl extends
 
 	@Autowired
 	private UserVariableReplacementService variableReplacement;
-
+	
 	private Map<String, Authenticator> authenticators = new HashMap<String, Authenticator>();
 	private List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
 	private List<AuthenticationServiceListener> listeners = new ArrayList<AuthenticationServiceListener>();
@@ -662,8 +662,10 @@ public class AuthenticationServiceImpl extends
 									}
 									
 									if(!found) {
+										state.clean();
 										state.setLastErrorMsg(StringUtils.isNotBlank(state.getScheme().getDeniedRoleError()) ? state.getScheme().getDeniedRoleError() : "error.roleNotAllowed");
 										state.setLastErrorIsResourceKey(true);
+										
 										success = false;
 										break;
 									}
@@ -679,8 +681,10 @@ public class AuthenticationServiceImpl extends
 									}
 									
 									if(found) {
+										state.clean();
 										state.setLastErrorMsg(StringUtils.isNotBlank(state.getScheme().getDeniedRoleError()) ? state.getScheme().getDeniedRoleError() : "error.roleDenied");
 										state.setLastErrorIsResourceKey(true);
+										
 										success = false;
 										break;
 									}

@@ -113,6 +113,7 @@ public class AuthenticationState {
 		lastRealmName = null;
 		lastErrorMsg = null;
 		lastErrorIsResourceKey = false;
+		principal = null;
 		parameters.clear();
 	}
 	
