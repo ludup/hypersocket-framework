@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
@@ -26,6 +28,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.UserPermission;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.resource.ResourceException;
@@ -34,7 +37,7 @@ import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.session.events.SessionOpenEvent;
 
 @Service
-public class ProfileCredentialsServiceImpl implements ProfileCredentialsService {
+public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceImpl implements ProfileCredentialsService {
 
 	static Logger log = LoggerFactory.getLogger(ProfileCredentialsServiceImpl.class);
 	
@@ -49,7 +52,7 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 	
 	@Autowired
 	private RealmService realmService; 
-	
+
 	private Map<String,ProfileCredentialsProvider> providers = new HashMap<String,ProfileCredentialsProvider>();
 	
 	@PostConstruct
@@ -63,7 +66,7 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 		
 		});
 		
-//		registerProvider(new EmailProfileProvider());
+	
 	}
 	
 	@Override
@@ -319,6 +322,23 @@ public class ProfileCredentialsServiceImpl implements ProfileCredentialsService 
 			schedulerService.scheduleNow(ProfileBatchUpdateJob.class, UUID.randomUUID().toString(), data);
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule profile batch update job", e);
+		}
+		
+	}
+	
+	@Override
+	public void resetProfile(Principal principal) throws AccessDeniedException, ResourceException {
+		
+		
+		assertAnyPermission(UserPermission.DELETE, UserPermission.UPDATE);
+		
+		Profile profile = getProfileForUser(principal);
+		if(Objects.nonNull(profile)) {
+			profileRepository.deleteEntity(profile);
+		}
+		
+		for(ProfileCredentialsProvider provider : providers.values()) {
+			provider.deleteCredentials(principal);
 		}
 		
 	}
