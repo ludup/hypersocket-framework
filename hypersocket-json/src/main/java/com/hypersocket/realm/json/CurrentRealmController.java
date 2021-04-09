@@ -43,6 +43,7 @@ import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.profile.ProfileCredentialsService;
 import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
@@ -86,6 +87,9 @@ public class CurrentRealmController extends ResourceController {
 	
 	@Autowired
 	private I18NService i18nService;
+	
+	@Autowired
+	private ProfileCredentialsService credentialsService; 
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })
@@ -1569,6 +1573,30 @@ public class CurrentRealmController extends ResourceController {
 				throw new IllegalStateException("No system administrator role.");
 			return new ResourceList<Principal>(role.getPrincipals());
 		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/resetProfile/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus resetProfile(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			ResourceNotFoundException, SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Principal principal = realmService.getPrincipalById(id);
+			if(principal ==null)
+				throw new IllegalStateException("Invalid principal");
+			
+			credentialsService.resetProfile(principal);
+			
+			return new RequestStatus(true);
+		} catch(Throwable t) { 
+			return new RequestStatus(false, t.getMessage());
+		}finally {
 			clearAuthenticatedContext();
 		}
 	}
