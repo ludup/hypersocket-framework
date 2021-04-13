@@ -14,7 +14,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 
 public interface PostAuthenticationStep {
 
-	boolean requiresProcessing(AuthenticationState state);
+	boolean requiresProcessing(AuthenticationState state) throws AccessDeniedException;
 	
 	int getOrderPriority();
 	
@@ -24,7 +24,7 @@ public interface PostAuthenticationStep {
 	
 	FormTemplate createTemplate(AuthenticationState state);
 
-	boolean requiresUserInput(AuthenticationState state);
+	boolean requiresUserInput(AuthenticationState state) throws AccessDeniedException;
 
-	boolean requiresSession(AuthenticationState state);
+	boolean requiresSession(AuthenticationState state) throws AccessDeniedException;
 }
