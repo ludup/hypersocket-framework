@@ -228,7 +228,7 @@ public class AuthenticationState {
 		this.session = session;
 	}
 
-	public void addPostAuthenticationStep(PostAuthenticationStep proc) {
+	public void addPostAuthenticationStep(PostAuthenticationStep proc) throws AccessDeniedException {
 		if(proc.requiresSession(this)) {
 			sessionPostAuthenticationSteps.add(proc);
 		} else {
