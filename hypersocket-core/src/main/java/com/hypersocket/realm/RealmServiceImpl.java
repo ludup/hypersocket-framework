@@ -2039,7 +2039,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public List<Principal> getAssociatedPrincipals(Principal principal, PrincipalType type) {
 		List<Principal> result = getProviderForPrincipal(principal).getAssociatedPrincipals(principal, type);
-		if (!result.contains(principal)) {
+		if (!result.contains(principal) && principal.getType()==type) {
 			result.add(principal);
 		}
 		return result;
