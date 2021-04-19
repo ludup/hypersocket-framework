@@ -22,7 +22,7 @@ public interface PostAuthenticationStep {
 	
 	AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException;
 	
-	FormTemplate createTemplate(AuthenticationState state);
+	FormTemplate createTemplate(AuthenticationState state) throws AccessDeniedException;
 
 	boolean requiresUserInput(AuthenticationState state) throws AccessDeniedException;
 

@@ -78,6 +78,12 @@ public class AuthenticationScheme extends RealmResource {
 	@Column
 	private Boolean supportsHomeRedirect;
 
+	@Column(name="scheme_2fa")
+	private Boolean scheme2fa;
+	
+	@Column(name="authenticator_2fa")
+	private String authenticator2fa;
+	
 	@ManyToOne
 	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "auth_schemes_cascade_1"))
 	@OnDelete(action = OnDeleteAction.CASCADE)
@@ -179,5 +185,23 @@ public class AuthenticationScheme extends RealmResource {
 	public void setSupportsHomeRedirect(boolean supportsHomeRedirect) {
 		this.supportsHomeRedirect = supportsHomeRedirect;
 	}
+
+	public Boolean getScheme2fa() {
+		return scheme2fa == null ? Boolean.FALSE : scheme2fa;
+	}
+
+	public void setScheme2fa(Boolean scheme2fa) {
+		this.scheme2fa = scheme2fa;
+	}
+
+	public String getAuthenticator2fa() {
+		return authenticator2fa;
+	}
+
+	public void setAuthenticator2fa(String authenticator2fa) {
+		this.authenticator2fa = authenticator2fa;
+	}
+	
+	
 
 }

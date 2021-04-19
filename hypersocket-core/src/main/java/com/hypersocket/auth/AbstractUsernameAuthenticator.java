@@ -114,5 +114,10 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 	public boolean isHidden() {
 		return false;
 	}
+	
+	@Override
+	public boolean canAuthenticate(Principal principal) throws AccessDeniedException {
+		return true;
+	}
 
 }
