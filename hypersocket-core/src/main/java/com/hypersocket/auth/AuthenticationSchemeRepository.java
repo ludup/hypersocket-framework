@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.hypersocket.realm.Realm;
@@ -42,6 +43,10 @@ public interface AuthenticationSchemeRepository extends AbstractResourceReposito
 	void registerAuthenticationScheme(String scheme);
 
 	boolean isEnabled(String template);
+
+	Collection<AuthenticationScheme> get2faSchemes(Realm realm);
+
+	AuthenticationScheme get2faScheme(Realm realm, String authenticator);
 
 	
 }

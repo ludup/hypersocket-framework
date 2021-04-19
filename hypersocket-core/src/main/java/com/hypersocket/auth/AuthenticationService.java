@@ -43,7 +43,7 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	Session completeLogon(AuthenticationState state)
 			throws AccessDeniedException;
 
-	FormTemplate nextPostAuthenticationStep(AuthenticationState state);
+	FormTemplate nextPostAuthenticationStep(AuthenticationState state) throws AccessDeniedException;
 
 	void registerPostAuthenticationStep(
 			PostAuthenticationStep postAuthenticationStep);
