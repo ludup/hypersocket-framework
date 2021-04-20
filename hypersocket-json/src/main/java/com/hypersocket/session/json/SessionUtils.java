@@ -82,7 +82,7 @@ public class SessionUtils {
 				return session;
 			}
 		}
-		if (request.getSession().getAttribute(AUTHENTICATED_SESSION) != null) {
+		if (Objects.nonNull(request.getSession()) && request.getSession().getAttribute(AUTHENTICATED_SESSION) != null) {
 			session = (Session) request.getSession().getAttribute(
 					AUTHENTICATED_SESSION);
 			if(sessionService.isLoggedOn(session, true)) {
@@ -313,12 +313,9 @@ public class SessionUtils {
 
 		Cookie cookie = new Cookie(HYPERSOCKET_API_SESSION, session.getId());
 		cookie.setMaxAge((session.getTimeout() > 0 ? 60 * session.getTimeout() : Integer.MAX_VALUE));
-		if(request.getProtocol().equalsIgnoreCase("https")) {
-			cookie.setSecure(true);
-		} else {
-			cookie.setSecure(false);
-			cookie.setHttpOnly(true);
-		}
+		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
+		cookie.setHttpOnly(true);
+		cookie.setDomain(request.getServerName());
 		cookie.setPath("/");
 		response.addCookie(cookie);
 		
@@ -326,6 +323,8 @@ public class SessionUtils {
 		cookie.setMaxAge((session.getTimeout() > 0 ? 60 * session.getTimeout() : Integer.MAX_VALUE));
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
 		cookie.setPath("/");
+		cookie.setHttpOnly(true);
+		cookie.setDomain(request.getServerName());
 		response.addCookie(cookie);
 	
 	}
@@ -362,11 +361,8 @@ public class SessionUtils {
 		Cookie cookie = new Cookie(HYPERSOCKET_LOCALE, locale);
 		cookie.setMaxAge(Integer.MAX_VALUE);
 		cookie.setPath("/");
-		if(request.getProtocol().equalsIgnoreCase("https")) {
-			cookie.setSecure(true);
-		} else {
-			cookie.setSecure(false);
-		}
+
+		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
 		cookie.setHttpOnly(true);
 		cookie.setDomain(request.getServerName());
 		response.addCookie(cookie);
