@@ -135,7 +135,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	protected String lookupPropertyValue(AbstractPropertyTemplate template,
 			SimpleResource entity) {
 		
-		if(entity==null) {
+		if(entity==null || "true".equalsIgnoreCase(template.getAttributes().get("transient"))) {
 			return template.getDefaultValue();
 		}
 		
