@@ -154,11 +154,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 							HttpResponseStatus.OK),
 					ctx.getChannel(), nettyRequest);
 	
-			session = server.setupHttpSession(
-					nettyRequest.getHeaders("Cookie"), 
-					interfaceResource.getProtocol()==HTTPProtocol.HTTPS,
-					nettyResponse);
-	
 			InetSocketAddress remoteAddress = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
 			if(nettyRequest.containsHeader("X-Forwarded-For")) {
 				String[] ips = nettyRequest.getHeader("X-Forwarded-For").split(",");
@@ -181,11 +176,19 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				}
 			}
 			
+			session = server.setupHttpSession(
+					nettyRequest.getHeaders("Cookie"), 
+					interfaceResource.getProtocol()==HTTPProtocol.HTTPS,
+					StringUtils.substringBefore(nettyRequest.getHeader("Host"), ":"),
+					nettyResponse);
+			
 			servletRequest = new HttpRequestServletWrapper(
 					nettyRequest, (InetSocketAddress) ctx.getChannel()
 							.getLocalAddress(), remoteAddress, 
 							interfaceResource.getProtocol()==HTTPProtocol.HTTPS, 
 							server.getServletContext(), session);
+			
+
 			
 			if(nettyRequest.isChunked()) {
 				ctx.getChannel().setAttachment(servletRequest);

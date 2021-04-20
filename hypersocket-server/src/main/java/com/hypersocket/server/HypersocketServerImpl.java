@@ -472,6 +472,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	public HypersocketSession setupHttpSession(List<String> cookies,
 			boolean secure,
+			String domain,
 			HttpServletResponse servletResponse) {
 
 		HypersocketSession session = null;
@@ -507,12 +508,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		Cookie cookie = new Cookie(sessionCookieName, session.getId());
 		cookie.setMaxAge(60 * 15);
 		cookie.setPath("/");
-		if(secure) {
-			cookie.setSecure(true);
-		} else {
-			cookie.setSecure(false);
-			cookie.setHttpOnly(true);
-		}
+		cookie.setSecure(secure);
+		cookie.setHttpOnly(true);
+		cookie.setDomain(domain);
 		servletResponse.addCookie(cookie);
 
 		return session;
