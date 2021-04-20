@@ -345,5 +345,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	Long getRealmCount();
 
+	boolean isChangingPassword(Principal principal);
+
 }
 

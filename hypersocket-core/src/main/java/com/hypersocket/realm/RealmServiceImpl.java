@@ -74,6 +74,7 @@ import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.events.AccountDisabledEvent;
 import com.hypersocket.realm.events.AccountEnabledEvent;
 import com.hypersocket.realm.events.ChangePasswordEvent;
+import com.hypersocket.realm.events.ExternalPasswordEvent;
 import com.hypersocket.realm.events.GroupCreatedEvent;
 import com.hypersocket.realm.events.GroupDeletedEvent;
 import com.hypersocket.realm.events.GroupEvent;
@@ -215,6 +216,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	Map<String, TableFilter> principalFilters = new HashMap<String, TableFilter>();
 	Map<String, TableFilter> builtInPrincipalFilters = new HashMap<String, TableFilter>();
 
+	private Collection<Principal> passwordOperations = Collections.synchronizedCollection(new HashSet<>());
+	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -269,6 +272,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		eventService.registerEvent(ProfileUpdatedEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(ChangePasswordEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(ExternalPasswordEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SetPasswordEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(ResetPasswordEvent.class, RESOURCE_BUNDLE);
 
@@ -966,6 +970,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			public Principal doInTransaction(TransactionStatus status) {
 
 				try {
+					
+					passwordOperations.add(principal);
+					
 					for (PrincipalProcessor proc : principalProcessors) {
 						proc.beforeChangePassword(principal, newPassword, oldPassword);
 					}
@@ -991,6 +998,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					return principal;
 				} catch (Throwable t) {
 					throw new IllegalStateException(t.getMessage(), t);
+				} finally {
+					passwordOperations.remove(principal);
 				}
 			}
 
@@ -1025,6 +1034,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		try {
 
+			passwordOperations.add(principal);
+			
 			for (PrincipalProcessor proc : principalProcessors) {
 				proc.beforeSetPassword(principal, password);
 			}
@@ -1063,10 +1074,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						provider, principal.getPrincipalName(), password));
 			}
 			throw ex;
+		} finally {
+			passwordOperations.remove(principal);
 		}
 
 	}
 
+	@Override
+	public boolean isChangingPassword(Principal principal) {
+		return passwordOperations.contains(principal);
+	}
+	
 	@Override
 	public boolean isReadOnly(Realm realm) {
 
