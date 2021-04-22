@@ -191,8 +191,8 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public void registerEventDefinition(EventDefinition def) {
 
-		if (log.isInfoEnabled()) {
-			log.info("Registering event definition " + def.getResourceKey());
+		if (log.isDebugEnabled()) {
+			log.debug("Registering event definition " + def.getResourceKey());
 		}
 
 		eventDefinitions.put(def.getResourceKey(), def);
@@ -237,8 +237,8 @@ public class EventServiceImpl implements EventService {
 	public void registerEvent(Class<? extends SystemEvent> eventClass, String resourceBundle,
 			EventPropertyCollector propertyCollector) {
 
-		if (log.isInfoEnabled()) {
-			log.info("Registering event class " + eventClass.getName());
+		if (log.isDebugEnabled()) {
+			log.debug("Registering event class " + eventClass.getName());
 		}
 
 		try {
@@ -251,8 +251,8 @@ public class EventServiceImpl implements EventService {
 			} catch (NoSuchFieldException e) {
 			}
 
-			if (log.isInfoEnabled()) {
-				log.info("Process event with resource key " + resourceKey);
+			if (log.isDebugEnabled()) {
+				log.debug("Process event with resource key " + resourceKey);
 			}
 
 			eventDefinitions.put(resourceKey,

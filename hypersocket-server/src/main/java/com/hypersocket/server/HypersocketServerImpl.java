@@ -439,7 +439,15 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 		stopping = true;
 		
-		eventService.publishEvent(new ServerStoppingEvent(this, realmService.getSystemRealm()));
+		try {
+			eventService.publishEvent(new ServerStoppingEvent(this, realmService.getSystemRealm()));
+		}
+		catch(Exception e) {
+			if(log.isDebugEnabled())
+				log.warn("Failed to send stopping event.", e);
+			else
+				log.warn("Failed to send stopping event.");
+		}
 		
 		if (log.isInfoEnabled())
 			log.info("Stopping server");
@@ -449,7 +457,15 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		if (log.isInfoEnabled())
 			log.info("Server stopped");
 		
-		eventService.publishEvent(new ServerStoppedEvent(this, realmService.getSystemRealm()));
+		try {
+			eventService.publishEvent(new ServerStoppedEvent(this, realmService.getSystemRealm()));
+		}
+		catch(Exception e) {
+			if(log.isDebugEnabled())
+				log.warn("Failed to send stopped event.", e);
+			else
+				log.warn("Failed to send stopped event.");
+		}
 		
 	}
 	

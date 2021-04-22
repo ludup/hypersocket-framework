@@ -389,10 +389,6 @@ public abstract class AbstractExtensionUpdater {
 			onUpdateComplete(totalSize, totalUpdates);
 
 		} catch (Exception e) {
-			if (log.isErrorEnabled()) {
-				log.error("Updating extensions failed", e);
-			}
-
 			onUpdateFailure(e);
 
 			throw new IOException(e.getMessage(), e);
