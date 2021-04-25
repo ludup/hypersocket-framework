@@ -931,7 +931,7 @@ public class AuthenticationServiceImpl extends
 	}
 
 	@Override
-	public FormTemplate nextPostAuthenticationStep(AuthenticationState state) {
+	public FormTemplate nextPostAuthenticationStep(AuthenticationState state) throws AccessDeniedException {
 
 		if (!state.hasPostAuthenticationStep()) {
 			throw new IllegalStateException(

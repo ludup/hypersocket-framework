@@ -13,6 +13,8 @@ public class Option {
 	private String value;
 	private boolean selected;
 	private boolean isNameResourceKey;
+	private String description;
+	private boolean isDescriptionResourceKey;
 	
 	public Option() {
 		
@@ -56,5 +58,23 @@ public class Option {
 	public boolean getIsNameResourceKey() {
 		return isNameResourceKey;
 	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public boolean isDescriptionResourceKey() {
+		return isDescriptionResourceKey;
+	}
+
+	public void setDescriptionResourceKey(boolean isDescriptionResourceKey) {
+		this.isDescriptionResourceKey = isDescriptionResourceKey;
+	}
+	
+	
 	
 }

@@ -31,6 +31,7 @@ import com.hypersocket.repository.DistinctRootEntity;
 import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.repository.SystemRestriction;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
+import com.hypersocket.resource.RealmCriteria;
 
 @Repository
 public class AuthenticationSchemeRepositoryImpl extends AbstractResourceRepositoryImpl<AuthenticationScheme>
@@ -277,5 +278,17 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 			}
 		}
 		return false;
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public Collection<AuthenticationScheme> get2faSchemes(Realm realm) {
+		return list("scheme2fa", Boolean.TRUE, AuthenticationScheme.class, new RealmCriteria(realm));
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public AuthenticationScheme get2faScheme(Realm realm, String authenticator) {
+		return get("authenticator2fa", authenticator, AuthenticationScheme.class, new RealmCriteria(realm));
 	}
 }
