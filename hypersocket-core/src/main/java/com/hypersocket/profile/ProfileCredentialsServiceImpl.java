@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.profile.jobs.ProfileBatchUpdateJob;
 import com.hypersocket.profile.jobs.ProfileCreationJob;
 import com.hypersocket.profile.jobs.ProfileUpdateJob;
+import com.hypersocket.properties.ResourceNameCallback;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
@@ -215,13 +218,22 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		}
 		List<ProfileCredentials> currentCreds = collectAuthenticatorStates(profile, target, creds);
 		profile.getCredentials().clear();
+		StringBuffer names = new StringBuffer();
+		for(ProfileCredentials c : currentCreds) {
+			if(names.length() > 0) {
+				names.append(",");
+			}
+			names.append(c.getResourceKey());
+		}
 		if(!currentCreds.isEmpty()) {
 			profile.getCredentials().addAll(currentCreds);
 		}
+		
 		calculateCompleteness(profile);
 		
 		if(log.isInfoEnabled()) {
-			log.info(String.format("Saving profile as %s for user %s", profile.getState(), target.getPrincipalName()));
+			log.info(String.format("Saving profile as %s for user %s with credentials %s", 
+					profile.getState(), target.getPrincipalName(), names.toString()));
 		}
 		
 		profileRepository.saveEntity(profile);

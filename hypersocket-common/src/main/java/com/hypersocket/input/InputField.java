@@ -26,6 +26,7 @@ public class InputField {
 	private String onChange;
 	private boolean readOnly;
 	private String classes;
+	private String help;
 	
 	public InputField() {
 
@@ -50,8 +51,9 @@ public class InputField {
 		return label;
 	}
 
-	public void setLabel(String label) {
+	public InputField setLabel(String label) {
 		this.label = label;
+		return this;
 	}
 
 	@XmlElement(name = "option")
@@ -59,77 +61,98 @@ public class InputField {
 		return options;
 	}
 
-	public void addOption(Option option) {
+	public InputField addOption(Option option) {
 		options.add(option);
+		return this;
 	}
 
-	public void setOptions(List<Option> options) {
+	public InputField setOptions(List<Option> options) {
 		this.options = options;
+		return this;
 	}
 
 	public InputFieldType getType() {
 		return type;
 	}
 
-	public void setType(InputFieldType type) {
+	public InputField setType(InputFieldType type) {
 		this.type = type;
+		return this;
 	}
 
 	public String getResourceKey() {
 		return resourceKey;
 	}
 
-	public void setResourceKey(String resourceKey) {
+	public InputField setResourceKey(String resourceKey) {
 		this.resourceKey = resourceKey;
+		return this;
 	}
 
 	public String getDefaultValue() {
 		return defaultValue;
 	}
 
-	public void setDefaultValue(String defaultValue) {
+	public InputField setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
+		return this;
 	}
 
 	public boolean isRequired() {
 		return required;
 	}
 
-	public void setRequired(boolean required) {
+	public InputField setRequired(boolean required) {
 		this.required = required;
+		return this;
 	}
 
 	public String getInfoKey() {
 		return infoKey;
 	}
 
-	public void setInfoKey(String infoKey) {
+	public InputField setInfoKey(String infoKey) {
 		this.infoKey = infoKey;
+		return this;
 	}
 
 	public String getOnChange() {
 		return onChange;
 	}
 
-	public void setOnChange(String onclick) {
+	public InputField setOnChange(String onclick) {
 		this.onChange = onclick;
+		return this;
 	}
 
 	public boolean isReadOnly() {
 		return readOnly;
 	}
 
-	public void setReadOnly(boolean readOnly) {
+	public InputField setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
+		return this;
 	}
 
 	public String getClasses() {
 		return classes;
 	}
 
-	public void setClasses(String classes) {
+	public InputField setClasses(String classes) {
 		this.classes = classes;
+		return this;
 	}
+
+	public String getHelp() {
+		return help;
+	}
+
+	public InputField setHelp(String help) {
+		this.help = help;
+		return this;
+	}
+	
+	
 	
 	
 }

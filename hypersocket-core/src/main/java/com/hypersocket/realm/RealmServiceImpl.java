@@ -42,7 +42,6 @@ import com.hypersocket.attributes.AttributeType;
 import com.hypersocket.attributes.user.UserAttribute;
 import com.hypersocket.attributes.user.UserAttributeService;
 import com.hypersocket.auth.FakePrincipal;
-import com.hypersocket.auth.MissingEmailAddressPostAuthenticationStep;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
@@ -63,9 +62,7 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionRepository;
 import com.hypersocket.permissions.PermissionScope;
 import com.hypersocket.permissions.SystemPermission;
-import com.hypersocket.profile.ProfileCredentialsProvider;
 import com.hypersocket.profile.ProfileCredentialsService;
-import com.hypersocket.profile.ProfileCredentialsState;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
@@ -301,31 +298,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		registerBuiltInPrincipalFilter(new LocalAccountFilter());
 		registerBuiltInPrincipalFilter(new RemoteAccountFilter());
 
-		profileService.registerProvider(new ProfileCredentialsProvider() {
-
-			@Override
-			public ProfileCredentialsState hasCredentials(Principal principal) throws AccessDeniedException {
-				return verifyPrincipalEmailCredentials((UserPrincipal<?>) principal);
-			}
-
-			@Override
-			public String getResourceKey() {
-				return "missingEmail.label";
-			}
-		});
-
-		profileService.registerProvider(new ProfileCredentialsProvider() {
-
-			@Override
-			public ProfileCredentialsState hasCredentials(Principal principal) throws AccessDeniedException {
-				return verifyPrincipalMobileCredentials((UserPrincipal<?>) principal);
-			}
-
-			@Override
-			public String getResourceKey() {
-				return "missingPhone.label";
-			}
-		});
 	}
 
 	@Override
@@ -2831,48 +2803,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public Map<String, String> getRealmProperties(Realm realm) {
 		RealmProvider provider = getProviderForRealm(realm);
 		return provider.getProperties(realm);
-	}
-
-	private ProfileCredentialsState verifyPrincipalEmailCredentials(UserPrincipal<?> principal) {
-
-		String required = configurationService.getValue(principal.getRealm(), "missingEmail.required");
-
-		if (required.equals(MissingEmailAddressPostAuthenticationStep.REQUIRE_NONE)) {
-			return ProfileCredentialsState.NOT_REQUIRED;
-		}
-
-		boolean primariExists = StringUtils.isNotBlank(principal.getEmail());
-		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryEmail());
-		if (((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required)
-				|| MissingEmailAddressPostAuthenticationStep.REQUIRE_PRIMARY.equals(required)) && !primariExists)
-				|| ((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required)
-						|| MissingEmailAddressPostAuthenticationStep.REQUIRE_SECONDARY.equals(required))
-						&& !secondaryExists)) {
-			return ProfileCredentialsState.INCOMPLETE;
-		}
-
-		return ProfileCredentialsState.COMPLETE;
-	}
-
-	private ProfileCredentialsState verifyPrincipalMobileCredentials(UserPrincipal<?> principal) {
-
-		String required = configurationService.getValue(principal.getRealm(), "missingPhone.required");
-
-		if (required.equals(MissingEmailAddressPostAuthenticationStep.REQUIRE_NONE)) {
-			return ProfileCredentialsState.NOT_REQUIRED;
-		}
-
-		boolean primariExists = StringUtils.isNotBlank(principal.getMobile());
-		boolean secondaryExists = StringUtils.isNotBlank(principal.getSecondaryMobile());
-		if (((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required)
-				|| MissingEmailAddressPostAuthenticationStep.REQUIRE_PRIMARY.equals(required)) && !primariExists)
-				|| ((MissingEmailAddressPostAuthenticationStep.REQUIRE_ALL.equals(required)
-						|| MissingEmailAddressPostAuthenticationStep.REQUIRE_SECONDARY.equals(required))
-						&& !secondaryExists)) {
-			return ProfileCredentialsState.INCOMPLETE;
-		}
-
-		return ProfileCredentialsState.COMPLETE;
 	}
 
 	@Override
