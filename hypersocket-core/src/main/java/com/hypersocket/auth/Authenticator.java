@@ -38,6 +38,7 @@ public interface Authenticator {
 
 	boolean isHidden();
 	
+	@JsonIgnore
 	boolean isEnabled();
 	
 	@JsonIgnore
