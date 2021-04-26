@@ -197,7 +197,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		} catch (CacheUnavailableException e) {
 		}
 
-		if(template.isEncrypted() && !ResourceUtils.isEncrypted(value) && Objects.nonNull(resource)) {
+		if(value != null && template.isEncrypted() && !ResourceUtils.isEncrypted(value) && Objects.nonNull(resource)) {
 			value = encryptValue(resource.getUUID(), value, resolveRealm(resource));
 			doSetProperty(template, resource, value);
 		} else {

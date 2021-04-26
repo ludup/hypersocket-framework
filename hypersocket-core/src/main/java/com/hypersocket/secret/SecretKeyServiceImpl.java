@@ -111,7 +111,7 @@ public class SecretKeyServiceImpl extends
 				key.setKeydata(encryptionProvider.encrypt(Hex.encodeHexString(rawkey)));
 			} catch (Exception e) {
 				log.error("Could not encrypt secret key", e);
-				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.encryptError", e.getMessage());
+				throw new ResourceCreationException(e, RESOURCE_BUNDLE, "error.encryptError", e.getMessage());
 			}
 			
 			byte[] iv = new byte[16];
@@ -121,14 +121,14 @@ public class SecretKeyServiceImpl extends
 				key.setIv(encryptionProvider.encrypt(Hex.encodeHexString(iv)));
 			} catch (Exception e) {
 				log.error("Could not encrypt iv", e);
-				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.encryptError", e.getMessage());
+				throw new ResourceCreationException(e, RESOURCE_BUNDLE, "error.encryptError", e.getMessage());
 			}
 			
 			repository.saveResource(key, new HashMap<String,String>());
 			
 			return key;
 		} catch (NoSuchAlgorithmException e) {
-			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.aesNotSupported");
+			throw new ResourceCreationException(e, RESOURCE_BUNDLE, "error.aesNotSupported");
 		}
 		
 	}
