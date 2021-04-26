@@ -279,10 +279,18 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	protected void doSetProperty(AbstractPropertyTemplate template,
 			SimpleResource entity, String value) {
 		
-		if(value==null) {
-			// We don't support setting null values. Caller may have set values on object directly
-			return;
-		}
+//		if(value==null) {
+//			// We don't support setting null values. Caller may have set values on object directly
+//			return;
+//		}
+
+		/* BPS - https://tickets.logonbox.com/app/ui/ticket/M167
+		 * 
+		 *  We do need to support setting of null values. In the case of I4J
+		 *  providers, we must be able to set properties by their key. All of 
+		 *  the code below already MOSTLY supported setting null, a couple of 
+		 *  tweaks were needed (encrypted strings for example)
+		 */
 		
 		Object resource = resolveTargetEntity(entity, template);
 		
@@ -493,6 +501,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	
 	class StringValue {
 		public String parseValue(String value, Object resource, AbstractPropertyTemplate template, String uuid) {
+			if(value == null)
+				return null;
 			Realm realm = ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm();
 			if(resource instanceof RealmResource) {
 				realm = ((RealmResource)resource).getRealm();
