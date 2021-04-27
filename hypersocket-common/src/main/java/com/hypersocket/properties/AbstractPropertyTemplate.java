@@ -203,5 +203,14 @@ public abstract class AbstractPropertyTemplate {
 		}
 		return false;
 	}
+
+	@Override
+	public String toString() {
+		return "AbstractPropertyTemplate [resourceKey=" + resourceKey + ", defaultValue=" + defaultValue + ", weight="
+				+ weight + ", hidden=" + hidden + ", displayMode=" + displayMode + ", readOnly=" + readOnly
+				+ ", encrypted=" + encrypted + ", category=" + category + ", name=" + name + "]";
+	}
+	
+	
 	
 }

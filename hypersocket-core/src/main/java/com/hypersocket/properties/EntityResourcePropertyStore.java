@@ -283,7 +283,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 //			// We don't support setting null values. Caller may have set values on object directly
 //			return;
 //		}
-
+		
 		/* BPS - https://tickets.logonbox.com/app/ui/ticket/M167
 		 * 
 		 *  We do need to support setting of null values. In the case of I4J
