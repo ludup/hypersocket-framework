@@ -178,7 +178,17 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		}
 
 		resource.setResourceCategory(resourceCategory);
-		getRepository().populateEntityFields(resource, properties);
+		
+		/* Note that a copy of 'properties' is supplied here, as populateEntityFields
+		 * REMOVES properties from this map. So the 2nd time this is run, values
+		 * will be set to null. This is because all property templates are iterated
+		 * over and the value retrieve from this map. 
+		 * 
+		 * Before #M167, setting null on an entity was not possible. It now is, but that exposed this slightly odd behaviour (which
+		 * although didn't have any ill effects, it was running a lot of code pointlessly).  
+		 * 
+		 */
+		getRepository().populateEntityFields(resource, new HashMap<>(properties));
 
 		if(!checkUnique(resource, true)) {
 			ResourceCreationException ex = new ResourceCreationException(
