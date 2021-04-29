@@ -159,7 +159,7 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 	public void populateEntityFields(T resource, Map<String, String> properties) {
 		if (properties != null) {
 			for (PropertyTemplate template : getPropertyTemplates(resource)) {
-				if (template.getPropertyStore() instanceof EntityResourcePropertyStore) {
+				if (template.getPropertyStore() instanceof EntityResourcePropertyStore && properties.containsKey(template.getResourceKey())) {
 					setValue(resource, template.getResourceKey(), properties.get(template.getResourceKey()));
 					properties.remove(template.getResourceKey());
 				}
