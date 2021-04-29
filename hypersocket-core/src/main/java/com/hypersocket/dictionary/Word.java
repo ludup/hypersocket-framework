@@ -34,15 +34,15 @@ public class Word extends SimpleResource {
 		setLocale(locale);
 	}
 
-	public long getWordIndex() {
+	public final long getWordIndex() {
 		return wordIndex;
 	}
 
-	public void setWordIndex(long wordIndex) {
+	public final void setWordIndex(long wordIndex) {
 		this.wordIndex = wordIndex;
 	}
 
-	public Locale getLocale() {
+	public final Locale getLocale() {
 		try {
 			return locale == null || locale.equals("*") ? null : Locale.forLanguageTag(locale);
 		}
@@ -51,15 +51,15 @@ public class Word extends SimpleResource {
 		}
 	}
 
-	public void setLocale(Locale locale) {
+	public final void setLocale(Locale locale) {
 		this.locale = locale == null ? "*" : locale.toLanguageTag();
 	}
 
-	public String getText() {
+	public final String getText() {
 		return text;
 	}
 
-	public void setText(String text) {
+	public final void setText(String text) {
 		this.text = text;
 	}
 	

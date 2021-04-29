@@ -30,19 +30,19 @@ public class Upgrade {
         this.pk = new UpgradePk(module, language);
     }
 
-    public String getVersion() {
+    public final String getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public final void setVersion(String version) {
         this.version = version;
     }
 
-    public UpgradePk  getPk() {
+    public final UpgradePk  getPk() {
         return pk;
     }
 
-    public void setPk(UpgradePk pk) {
+    public final void setPk(UpgradePk pk) {
         this.pk = pk;
     }
 
