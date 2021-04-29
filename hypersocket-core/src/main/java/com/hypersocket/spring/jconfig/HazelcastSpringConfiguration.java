@@ -12,6 +12,7 @@ import javax.cache.spi.CachingProvider;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.hibernate.cache.ehcache.internal.EhcacheRegionFactory;
 import org.hibernate.cache.spi.RegionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +124,9 @@ public class HazelcastSpringConfiguration {
 
 	@Bean(destroyMethod = "stop")
 	RegionFactory regionFactory(HazelcastInstance instance) {
-		HazelcastCacheRegionFactory cacheRegionFactory = new HazelcastCacheRegionFactory(instance);
+		// TODO lost instance?
+		//HazelcastCacheRegionFactory cacheRegionFactory = new HazelcastCacheRegionFactory(instance);
+		EhcacheRegionFactory cacheRegionFactory = new EhcacheRegionFactory();
 		return cacheRegionFactory;
 	}
 

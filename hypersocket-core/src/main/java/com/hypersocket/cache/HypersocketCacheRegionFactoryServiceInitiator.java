@@ -86,25 +86,4 @@ public class HypersocketCacheRegionFactoryServiceInitiator implements StandardSe
 		return regionFactory;
 	}
 
-	/**
-	 * Map legacy names unto the new corollary.
-	 *
-	 * TODO: temporary hack for org.hibernate.cfg.SettingsFactory.createRegionFactory()
-	 *
-	 * @param name The (possibly legacy) factory name
-	 *
-	 * @return The factory name to use.
-	 */
-	public static String mapLegacyNames(final String name) {
-		if ( "org.hibernate.cache.EhCacheRegionFactory".equals( name ) ) {
-			return "org.hibernate.cache.ehcache.EhCacheRegionFactory";
-		}
-
-		if ( "org.hibernate.cache.SingletonEhCacheRegionFactory".equals( name ) ) {
-			return "org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory";
-		}
-
-		return name;
-	}
-
 }

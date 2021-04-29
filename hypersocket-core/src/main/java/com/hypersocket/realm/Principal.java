@@ -135,7 +135,7 @@ public abstract class Principal extends RealmResource {
 	@Transient
 	public abstract PrincipalType getType();
 
-	public final PrincipalType getPrincipalType() {
+	public PrincipalType getPrincipalType() {
 		return principalType;
 	}
 
