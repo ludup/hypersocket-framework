@@ -154,7 +154,11 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 
 			@Override
 			public String getReplacementValue(String variable) {
-				return getCurrentPrincipal().getEmail();
+				try {
+					return realmService.getPrincipalAddress(getCurrentPrincipal(), MediaType.EMAIL);
+				} catch (MediaNotFoundException e) {
+					return "";
+				}
 			}
 
 		};
