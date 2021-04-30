@@ -142,28 +142,28 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 		if(ResourceUtils.isReplacementVariable(name)) {
 			name = ResourceUtils.getReplacementVariableName(name);
 		}
+		
 		if (name.equals("password")) {
 			return realmService.getCurrentPassword();
+		} else if(name.equals("default.currentUser.email") || name.equals("currentUser.email")) {
+			try {
+			return realmService.getPrincipalAddress(source, MediaType.EMAIL);
+			} catch(MediaNotFoundException e) {
+				return  "";
+			}
+		} else if(name.equals("default.currentUser.phone") || name.equals("currentUser.phone")) {
+			try {
+				return realmService.getPrincipalAddress(source, MediaType.PHONE);
+			} catch (MediaNotFoundException e) {
+				return "";
+			}
 		} 
 		
 		if (defaultReplacements.contains(name)) {
 
 			if(name.equals("principalName")) {
 				return source.getPrincipalName();
-			} else if(name.equals("default.currentUser.email")) {
-				try {
-				return realmService.getPrincipalAddress(source, MediaType.EMAIL);
-				} catch(MediaNotFoundException e) {
-					return  "";
-				}
-			} else if(name.equals("default.currentUser.phone")) {
-				try {
-					return realmService.getPrincipalAddress(source, MediaType.PHONE);
-				} catch (MediaNotFoundException e) {
-					return "";
-				}
-			} 
-			else {
+			} else {
 				if(source instanceof UserPrincipal) {
 					UserPrincipal<?> userPrincipal = ((UserPrincipal<?>)source);
 					if(name.equals("groupNames")) {
@@ -185,6 +185,7 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 				else
 					return "";
 			}
+			
 			throw new IllegalStateException(
 					"We should not be able to reach here. Did you add default replacement without implementing it?");
 		}
