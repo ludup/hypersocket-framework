@@ -18,6 +18,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -68,6 +70,7 @@ import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import com.hypersocket.transactions.TransactionService;
 import com.hypersocket.triggers.TriggerResourceColumns;
 
 @Controller
@@ -90,6 +93,9 @@ public class CurrentRealmController extends ResourceController {
 	
 	@Autowired
 	private ProfileCredentialsService credentialsService; 
+	
+	@Autowired
+	private TransactionService transactionService; 
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })
@@ -235,11 +241,25 @@ public class CurrentRealmController extends ResourceController {
 											   int length, ColumnSort[] sorting)
 								throws UnauthorizedException,
 								AccessDeniedException {
-							
-								List<?> r = filter(searchColumn, searchPattern);
-								results.set(r);
-								return results.get().subList(start, Math.min(start+length, r.size()));
+								try {
+									return transactionService.doInTransaction(new TransactionCallback<List<?>>() {
 
+										@Override
+										public List<?> doInTransaction(TransactionStatus status) {
+											try {
+												List<?> r = filter(searchColumn, searchPattern);
+												results.set(r);
+												return results.get().subList(start, Math.min(start+length, r.size()));
+											} catch (AccessDeniedException e) {
+												throw new IllegalStateException("Failed to filter.", e);
+											}
+										}
+										
+										
+									});
+								} catch (ResourceException | AccessDeniedException e) {
+									throw new IllegalStateException("Failed to filter.", e);
+								}
 						}
 
 						@Override
