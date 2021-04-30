@@ -136,6 +136,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		/* The context is the whole 'webapp'. It's path is the base path, i.e. /product-name */
 		controllerPackages.add("com.hypersocket.json.**");
 		controllerPackages.add("com.hypersocket.**.json");
+		
+		controllerPackages.add("com.logonbox.json.**");
+		controllerPackages.add("com.logonbox.**.json");
 	}
 	
 	@PostConstruct
