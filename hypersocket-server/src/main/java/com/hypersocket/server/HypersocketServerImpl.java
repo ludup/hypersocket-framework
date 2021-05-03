@@ -619,50 +619,51 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	
 	private void rebuildEnabledCipherSuites() {
 		
-		try {
-			enabledProtocols = configurationService.getValues("ssl.protocols");
-		} catch(IllegalStateException ex) {
-		}
+		List<String> includeProtocols = Arrays.asList(configurationService.getValues("ssl.includeProtocols"));
+		List<String> excludeProtocols = Arrays.asList(configurationService.getValues("ssl.excludeProtocols"));
+		List<String> includeCiphers = Arrays.asList(configurationService.getValues("ssl.includeCiphers"));
+		List<String> excludeCiphers = Arrays.asList(configurationService.getValues("ssl.excludeCiphers"));
+		
+		List<String> thisEnabledProtocols = new ArrayList<>();
+		List<String> thisEnabledCiphers = new ArrayList<>();
 		
 		try {
-			String[] ciphers = configurationService.getValues("ssl.ciphers");
 			SSLEngine engine = SSLContext.getDefault().createSSLEngine();
-			
-			if (ciphers!=null && ciphers.length > 0) {
-	
-				List<String> enabledCSList = new ArrayList<String>(Arrays.asList(engine.getEnabledCipherSuites()));
-				List<String> includedCSList = new ArrayList<String>();
-				
-				boolean hasValid = false;
-				for ( String cipherName : ciphers )
-				{
-					if ( enabledCSList.contains(cipherName) ) {
-						includedCSList.add(cipherName);
-						hasValid = true;
-					}
-					else {
-						if(log.isInfoEnabled()) {
-							log.warn("Disabled cipher: "+ cipherName);
-						}
+			for(String supported : engine.getSupportedProtocols()) {
+				if( ( includeProtocols.isEmpty() || includeProtocols.contains(supported)) &&
+					!excludeProtocols.contains(supported)) {
+					thisEnabledProtocols.add(supported);
+					if(log.isInfoEnabled()) {
+						log.info("Enabled protocol: " + supported);
 					}
 				}
-				enabledCipherSuites = (String[]) includedCSList.toArray(new String[includedCSList.size()]);
-				
-				if(!hasValid) {
-					if(log.isWarnEnabled()) {
-						log.warn("SSL cipher list did not contain any valid ciphers. Reverting to defaults.");
-					}
-					enabledCipherSuites = engine.getEnabledCipherSuites();
-				} else {
-					for(String cipher : enabledCipherSuites) {
-						if(log.isInfoEnabled()) {
-							log.info("Enabled cipher: " + cipher);
-						}
+				if(excludeProtocols.contains(supported)) {
+					if(log.isInfoEnabled()) {
+						log.warn("Disabled protocol: "+ supported);
 					}
 				}
 			}
-		} catch(Throwable ex) {
+			for(String supported : engine.getSupportedCipherSuites()) {
+				if( ( includeCiphers.isEmpty() || includeCiphers.contains(supported)) &&
+					!excludeCiphers.contains(supported)) {
+					thisEnabledCiphers.add(supported);
+					if(log.isInfoEnabled()) {
+						log.info("Enabled cipher: " + supported);
+					}
+				}
+				if(excludeCiphers.contains(supported)) {
+					if(log.isInfoEnabled()) {
+						log.warn("Disabled cipher: "+ supported);
+					}
+				}
+			}
+			
+			enabledProtocols = thisEnabledProtocols.toArray(new String[0]);
+			enabledCipherSuites = thisEnabledCiphers.toArray(new String[0]);
+		} catch(Exception ex) {
+			throw new IllegalStateException("Failed to adjust SSL configuration.", ex);
 		}
+		
 	}
 
 	public SSLEngine createSSLEngine(
@@ -681,6 +682,27 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		if(enabledProtocols!=null && enabledProtocols.length > 0) {
 			engine.setEnabledProtocols(enabledProtocols);
 		}
+		
+//		log.info("Final SSL configuration");
+//		log.info("    Protocols");
+//		for(String supported : engine.getSupportedProtocols()) {
+//			if(Arrays.asList(engine.getEnabledProtocols()).contains(supported))
+//				log.info(String.format("        %s - Supported", supported));
+//		}
+//		for(String supported : engine.getSupportedProtocols()) {
+//			if(!Arrays.asList(engine.getEnabledProtocols()).contains(supported))
+//				log.info(String.format("        %s - NOT Supported", supported));
+//		}
+//		log.info("    Ciphers");
+//		for(String supported : engine.getSupportedCipherSuites()) {
+//			if(Arrays.asList(engine.getEnabledCipherSuites()).contains(supported))
+//				log.info(String.format("        %s - Supported", supported));
+//		}
+//		for(String supported : engine.getSupportedCipherSuites()) {
+//			if(!Arrays.asList(engine.getEnabledCipherSuites()).contains(supported))
+//				log.info(String.format("        %s - NOT Supported", supported));
+//		}
+		
 		return engine;
 		
 	}
@@ -695,8 +717,10 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		if(event instanceof ConfigurationValueChangedEvent) {
 			ConfigurationValueChangedEvent configEvent = (ConfigurationValueChangedEvent) event;
 			if(configEvent.hasAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY)){
-				if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.ciphers") 
-						|| configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.protocols")) {
+				if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.includeCiphers") 
+						|| configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.excludeCiphers")
+						|| configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.includeProtocols")
+						|| configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.excludeProtocols")) {
 					rebuildEnabledCipherSuites();
 				}
 				if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("application.path")) {
