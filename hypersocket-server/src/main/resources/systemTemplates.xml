@@ -29,12 +29,18 @@
 	<propertyCategory resourceKey="category.ssl" resourceBundle="HypersocketServer" weight="200">
 		<property resourceKey="ssl.strict" inputType="switch"
 			restart="false" defaultValue="false" weight="500" store="hypersocketServer" />
-	    <property resourceKey="ssl.protocols" inputType="multipleSelect"
-			restart="false" url="server/sslProtocols" selectAllIfEmpty="true"
-			weight="100" defaultValue="SSLv2Hello]|[TLSv1]|[TLSv1.1]|[TLSv1.2"/>
-	    <property resourceKey="ssl.ciphers" inputType="multipleSelect"
-			restart="false" url="server/sslCiphers" selectAllIfEmpty="true"
-			weight="200" defaultValue="TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384]|[TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384]|[TLS_DHE_DSS_WITH_AES_256_CBC_SHA256]|[TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA]|[TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]|[TLS_DHE_DSS_WITH_AES_256_CBC_SHA]|[TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256]|[TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256]|[TLS_DHE_DSS_WITH_AES_128_CBC_SHA256]|[TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA]|[TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA]|[TLS_DHE_DSS_WITH_AES_128_CBC_SHA]|[TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA]|[TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA]|[TLS_EMPTY_RENEGOTIATION_INFO_SCSV"/>
+	    <property resourceKey="ssl.includeProtocols" inputType="multipleSelect"
+			restart="false" url="server/sslProtocols"
+			weight="100" defaultValue=""/>
+	    <property resourceKey="ssl.excludeProtocols" inputType="multipleSelect"
+			restart="false" url="server/sslProtocols"
+			weight="200" defaultValue=""/>
+	    <property resourceKey="ssl.includeCiphers" inputType="multipleSelect"
+			restart="false" url="server/sslCiphers"
+			weight="300" defaultValue=""/>
+	    <property resourceKey="ssl.excludeCiphers" inputType="multipleSelect"
+			restart="false" url="server/sslCiphers"
+			weight="400" defaultValue=""/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.proxy" resourceBundle="HypersocketServer" weight="300">
 			<property resourceKey="proxy.enabled" inputType="switch" restart="false" defaultValue="false" weight="100" store="hypersocketServer" />
