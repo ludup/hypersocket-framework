@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -188,7 +189,7 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 		 * although didn't have any ill effects, it was running a lot of code pointlessly).  
 		 * 
 		 */
-		getRepository().populateEntityFields(resource, new HashMap<>(properties));
+		getRepository().populateEntityFields(resource, properties == null ? Collections.emptyMap() : new HashMap<>(properties));
 
 		if(!checkUnique(resource, true)) {
 			ResourceCreationException ex = new ResourceCreationException(

@@ -58,6 +58,7 @@ public abstract class Principal extends RealmResource {
 
 	@Fetch(FetchMode.SELECT)
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "principal")
+	@JsonIgnore
 	private Set<PrincipalSuspension> suspensions;
 
 	@Fetch(FetchMode.SELECT)
