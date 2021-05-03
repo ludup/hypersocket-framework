@@ -24,7 +24,7 @@ public class PrincipalWithoutPasswordResolver extends StaticResolver {
 		addToken("email", principal.getEmail());
 		addToken("secondaryEmail", ResourceUtils.createDelimitedString(ResourceUtils.explodeCollectionValues(principal.getSecondaryEmail()), "\r\n"));
 		addToken("mobile", principal.getMobile());
-		addToken("secondaryMobile", principal.getSecondaryMobile());
+		addToken("secondaryMobile", ResourceUtils.createDelimitedString(ResourceUtils.explodeCollectionValues(principal.getSecondaryMobile()), "\r\n"));
 		addToken("fullName", principal.getDescription());
 		addToken("realmName", principal.getRealm().getName());
 	}
