@@ -26,21 +26,34 @@
 			weight="600" store="hypersocketServer" />
 			
 	</propertyCategory>
+	
+	
+						excludedLabelResourceKey: 'text.excluded',
+						includedLabelResourceKey: 'text.included'
+	
 	<propertyCategory resourceKey="category.ssl" resourceBundle="HypersocketServer" weight="200">
 		<property resourceKey="ssl.strict" inputType="switch"
 			restart="false" defaultValue="false" weight="500" store="hypersocketServer" />
 	    <property resourceKey="ssl.includeProtocols" inputType="multipleSelect"
 			restart="false" url="server/sslProtocols"
-			weight="100" defaultValue=""/>
+			weight="100" defaultValue=""  
+			includedLabelResourceKey="ssl.enabled"
+			excludedLabelResourceKey="ssl.available"/>
 	    <property resourceKey="ssl.excludeProtocols" inputType="multipleSelect"
 			restart="false" url="server/sslProtocols"
-			weight="200" defaultValue=""/>
+			weight="200" defaultValue="TLSv1]|[TLSv1.1"
+			includedLabelResourceKey="ssl.disabled" 
+			excludedLabelResourceKey="ssl.available"/>
 	    <property resourceKey="ssl.includeCiphers" inputType="multipleSelect"
 			restart="false" url="server/sslCiphers"
-			weight="300" defaultValue=""/>
+			weight="300" defaultValue=""  
+			includedLabelResourceKey="ssl.enabled"
+			excludedLabelResourceKey="ssl.available"/>
 	    <property resourceKey="ssl.excludeCiphers" inputType="multipleSelect"
 			restart="false" url="server/sslCiphers"
-			weight="400" defaultValue=""/>
+			weight="400" defaultValue="SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA]|[SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA]|[SSL_DHE_DSS_WITH_DES_CBC_SHA]|[SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA]|[SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA]|[SSL_DHE_RSA_WITH_DES_CBC_SHA]|[SSL_DH_anon_EXPORT_WITH_DES40_CBC_SHA]|[SSL_DH_anon_WITH_3DES_EDE_CBC_SHA]|[SSL_DH_anon_WITH_DES_CBC_SHA]|[SSL_RSA_EXPORT_WITH_DES40_CBC_SHA]|[SSL_RSA_WITH_3DES_EDE_CBC_SHA]|[SSL_RSA_WITH_DES_CBC_SHA]|[SSL_RSA_WITH_NULL_MD5]|[SSL_RSA_WITH_NULL_SHA]|[TLS_DHE_DSS_WITH_AES_128_CBC_SHA]|[TLS_DHE_DSS_WITH_AES_128_CBC_SHA256]|[TLS_DHE_DSS_WITH_AES_128_GCM_SHA256]|[TLS_DHE_DSS_WITH_AES_256_CBC_SHA]|[TLS_DHE_DSS_WITH_AES_256_CBC_SHA256]|[TLS_DHE_DSS_WITH_AES_256_GCM_SHA384]|[TLS_DHE_RSA_WITH_AES_128_CBC_SHA]|[TLS_DHE_RSA_WITH_AES_128_CBC_SHA256]|[TLS_DHE_RSA_WITH_AES_128_GCM_SHA256]|[TLS_DHE_RSA_WITH_AES_256_CBC_SHA]|[TLS_DHE_RSA_WITH_AES_256_CBC_SHA256]|[TLS_DHE_RSA_WITH_AES_256_GCM_SHA384]|[TLS_DH_anon_WITH_AES_128_CBC_SHA]|[TLS_DH_anon_WITH_AES_128_CBC_SHA256]|[TLS_DH_anon_WITH_AES_128_GCM_SHA256]|[TLS_DH_anon_WITH_AES_256_CBC_SHA]|[TLS_DH_anon_WITH_AES_256_CBC_SHA256]|[TLS_DH_anon_WITH_AES_256_GCM_SHA384]|[TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA]|[TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA]|[TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256]|[TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256]|[TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA]|[TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384]|[TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384]|[TLS_ECDHE_ECDSA_WITH_NULL_SHA]|[TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA]|[TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA]|[TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256]|[TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA]|[TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384]|[TLS_ECDHE_RSA_WITH_NULL_SHA]|[TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA]|[TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA]|[TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256]|[TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256]|[TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA]|[TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384]|[TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384]|[TLS_ECDH_ECDSA_WITH_NULL_SHA]|[TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA]|[TLS_ECDH_RSA_WITH_AES_128_CBC_SHA]|[TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256]|[TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256]|[TLS_ECDH_RSA_WITH_AES_256_CBC_SHA]|[TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384]|[TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384]|[TLS_ECDH_RSA_WITH_NULL_SHA]|[TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA]|[TLS_ECDH_anon_WITH_AES_128_CBC_SHA]|[TLS_ECDH_anon_WITH_AES_256_CBC_SHA]|[TLS_ECDH_anon_WITH_NULL_SHA]|[TLS_EMPTY_RENEGOTIATION_INFO_SCSV]|[TLS_RSA_WITH_AES_128_CBC_SHA]|[TLS_RSA_WITH_AES_128_CBC_SHA256]|[TLS_RSA_WITH_AES_128_GCM_SHA256]|[TLS_RSA_WITH_AES_256_CBC_SHA]|[TLS_RSA_WITH_AES_256_CBC_SHA256]|[TLS_RSA_WITH_AES_256_GCM_SHA384]|[TLS_RSA_WITH_NULL_SHA256"
+			includedLabelResourceKey="ssl.disabled" 
+			excludedLabelResourceKey="ssl.available"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.proxy" resourceBundle="HypersocketServer" weight="300">
 			<property resourceKey="proxy.enabled" inputType="switch" restart="false" defaultValue="false" weight="100" store="hypersocketServer" />
