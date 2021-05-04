@@ -115,7 +115,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	    properties.put("mail.smtp.starttls.enable", TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)]==TransportStrategy.SMTP_PLAIN ? "false" : "true");
 	    properties.put("mail.smtp.host", getSMTPValue(realm, SMTP_HOST));
 	    properties.put("mail.smtp.port", getSMTPIntValue(realm, SMTP_PORT));
-
+	    properties.put("mail.smtp.ssl.checkserveridentity", "false");
+	    properties.put("mail.smtp.ssl.trust", "*");
 	    return Session.getInstance(properties);
 	}
 	
