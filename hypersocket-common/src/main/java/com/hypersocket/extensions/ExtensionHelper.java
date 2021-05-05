@@ -58,6 +58,9 @@ public class ExtensionHelper {
 
 			List<URL> urlsList = extensionsPlace.getUrls();
 			log.info(String.format("Extension place %s has %d urls", extensionsPlace.getApp(), urlsList.size()));
+			for(Map.Entry<String, File> en : extensionsPlace.getBootstrapArchives().entrySet()) {
+				log.info(String.format("   %s (%s)", en.getKey(), en.getValue()));
+			}
 			Iterator<URL> urls = urlsList.iterator();
 
 			while (urls.hasNext()) {
@@ -67,12 +70,12 @@ public class ExtensionHelper {
 					props.load(url.openStream());
 					String extensionId = props.getProperty("extension.id");
 					if (log.isInfoEnabled()) {
-						log.info("Processing extension definition " + extensionId);
+						log.info("Processing extension definition " + extensionId + " : " + url);
 					}
 
 					File currentArchive = extensionsPlace.getBootstrapArchives().get(extensionId);
 					if (currentArchive == null) {
-						log.warn("No bootstrap archive detected for " + extensionId);
+						log.warn("No bootstrap archive detected for " + extensionId + " in " + extensionsPlace.getApp());
 
 						if (extsByName.containsKey(extensionId)) {
 							ExtensionVersion remote = extsByName.get(extensionId);
