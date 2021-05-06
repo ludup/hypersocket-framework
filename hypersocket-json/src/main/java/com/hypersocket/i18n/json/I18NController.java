@@ -38,6 +38,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.i18n.I18NGroup;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.SelectOption;
@@ -57,6 +58,13 @@ public class I18NController extends AuthenticatedController {
 	@ResponseBody
 	public Map<String,String> getResources(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, AccessDeniedException {
 		
+		return getResourcesWithGroup(webRequest, request, response, I18NGroup.DEFAULT_GROUP.getTitle());
+	}
+	
+	@RequestMapping(value="i18n/group/{group}", method = RequestMethod.GET, produces = {"application/json"})
+	@ResponseBody
+	public Map<String,String> getResourcesWithGroup(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response, @PathVariable String group) throws IOException, AccessDeniedException {
+		
 		setupAnonymousContext(request.getRemoteAddr(), 
 				request.getServerName(), 
 				request.getHeader(HttpHeaders.USER_AGENT),
@@ -73,7 +81,7 @@ public class I18NController extends AuthenticatedController {
 				/* Don't rebuild next time, client will have new map */
 				request.getSession().removeAttribute(SessionUtils.HYPERSOCKET_REBUILD_I18N);
 			}
-			Cache<String,String> results = i18nService.getResourceMap(sessionUtils.getLocale(request));
+			Cache<String,String> results = i18nService.getResourceMap(sessionUtils.getLocale(request), I18NGroup.fromTitle(group));
 			results.put("LANG", sessionUtils.getLocale(request).getLanguage());
 			return serializeCache(results);
 		} finally {
@@ -86,6 +94,15 @@ public class I18NController extends AuthenticatedController {
 	@ResponseStatus(value=HttpStatus.OK)
 	public Map<String,String> getResources(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response, @PathVariable String locale) throws IOException, AccessDeniedException {
 		
+		return getResourcesWithGroupAndLocale(webRequest, request, response, locale, I18NGroup.DEFAULT_GROUP.getTitle());
+	}
+	
+	@RequestMapping(value="i18n/locale/{locale}/group/{group}", method = RequestMethod.GET, produces = {"application/json"})
+	@ResponseBody
+	@ResponseStatus(value=HttpStatus.OK)
+	public Map<String,String> getResourcesWithGroupAndLocale(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response,
+			@PathVariable("locale") String locale, @PathVariable("group") String group) throws IOException, AccessDeniedException {
+		
 		setupAnonymousContext(request.getRemoteAddr(), 
 				request.getServerName(), 
 				request.getHeader(HttpHeaders.USER_AGENT),
@@ -95,13 +112,13 @@ public class I18NController extends AuthenticatedController {
 				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
 				return null;
 			}
-			Cache<String,String> results = i18nService.getResourceMap(i18nService.getLocale(locale));
+			Cache<String,String> results = i18nService.getResourceMap(i18nService.getLocale(locale), I18NGroup.fromTitle(group));
 			results.put("LANG", locale);
 			return serializeCache(results);
 		} finally {
 			clearAuthenticatedContext();
 		}
-	}	
+	}
 	
 	@RequestMapping(value = "i18n/allLanguageTags", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
