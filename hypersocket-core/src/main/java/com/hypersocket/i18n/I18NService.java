@@ -17,22 +17,36 @@ import javax.cache.Cache;
 public interface I18NService {
 
 	void registerBundle(String bundle);
+	
+	void registerBundle(String bundle, I18NGroup group);
 
-	Cache<String, String> getResourceMap(Locale locale);
+	Cache<String,String> getResourceMap(Locale locale);
+	
+	Cache<String, String> getResourceMap(Locale locale,  I18NGroup group);
 
 	Locale getLocale(String locale);
 
 	List<Locale> getSupportedLocales();
 
 	Map<String, Map<String, Message>> getTranslatableMessages();
+	
+	Map<String,Map<String,Message>> getTranslatableMessages(I18NGroup group);
 
 	Set<String> getBundles();
+	
+	Set<String> getBundles(I18NGroup group);
 
 	String getResource(String resourceKey, Locale locale);
 
 	String getResource(String resourceKey);
+	
+	String getResource(String resourceKey, Locale locale, I18NGroup group);
+
+	String getResource(String resourceKey, I18NGroup group);
 
 	void clearCache(Locale locale);
+	
+	void clearCache(Locale locale, I18NGroup group);
 	
 	long getLastUpdate();
 

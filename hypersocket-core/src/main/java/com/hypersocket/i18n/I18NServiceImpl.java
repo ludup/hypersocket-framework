@@ -44,10 +44,9 @@ public class I18NServiceImpl implements I18NService {
 	@Autowired
 	private CacheService cacheService;
 	
-	private Set<String> bundles = new HashSet<String>();
+	private Map<String, Set<String>> bundleMap = new HashMap<>();
 	private long lastUpdate = System.currentTimeMillis(); 
-	private HashMap<Locale,Map<String,String>> resources = new HashMap<Locale,Map<String,String>>();
-	private List<Locale> supportedLocales = new ArrayList<Locale>();
+	private List<Locale> supportedLocales = new ArrayList<>();
 	
 	public static String convertFromTag(String tag, Locale locale, Object... arguments) {
 		if(tag.startsWith("i18n/")) {
@@ -64,13 +63,23 @@ public class I18NServiceImpl implements I18NService {
 	
 	@Override
 	public void clearCache(Locale locale) {
+		clearCache(locale, I18NGroup.DEFAULT_GROUP);
+	}
+	
+	@Override
+	public void clearCache(Locale locale, I18NGroup group) {
 		lastUpdate = System.currentTimeMillis();
-		cacheService.getCacheManager().destroyCache(getCacheKey(locale));
+		cacheService.getCacheManager().destroyCache(getCacheKey(locale, group));
 	}
 	
 	@Override
 	public Set<String> getBundles() {
-		return bundles;
+		return getBundles(I18NGroup.DEFAULT_GROUP);
+	}
+	
+	@Override
+	public Set<String> getBundles(I18NGroup group) {
+		return bundleMap.get(group.getTitle());
 	}
 
 	@Override
@@ -94,19 +103,34 @@ public class I18NServiceImpl implements I18NService {
 	}
 	
 	@Override
+	public String getResource(String resourceKey, I18NGroup group) {
+		return getResource(resourceKey, Locale.getDefault(), group);
+	}
+	
+	@Override
 	public String getResource(String resourceKey, Locale locale) {
-		return getResourceMap(locale).get(resourceKey);
+		return getResourceMap(locale, I18NGroup.DEFAULT_GROUP).get(resourceKey);
+	}
+	
+	@Override
+	public String getResource(String resourceKey, Locale locale, I18NGroup group) {
+		return getResourceMap(locale, group).get(resourceKey);
 	}
 
 	@Override
-	public synchronized Cache<String,String> getResourceMap(Locale locale) {
+	public Cache<String,String> getResourceMap(Locale locale) {
+		return getResourceMap(locale, I18NGroup.DEFAULT_GROUP);
+	}
+	
+	@Override
+	public synchronized Cache<String,String> getResourceMap(Locale locale, I18NGroup group) {
 		
-		String cacheKey = getCacheKey(locale);
+		String cacheKey = getCacheKey(locale, group);
 		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey,String.class, String.class);
 
 		if(cache==null) {
 			cache = cacheService.getCacheOrCreate(cacheKey, String.class, String.class);
-			buildCache(cache, locale);
+			buildCache(cache, locale, group);
 		}
 		return cache;
 	}
@@ -119,7 +143,22 @@ public class I18NServiceImpl implements I18NService {
 	@Override
 	public Map<String,Map<String,Message>> getTranslatableMessages() {
 		
+		return getTranslatableMessages(I18NGroup.DEFAULT_GROUP);
+	}
+	
+	@Override
+	public Map<String,Map<String,Message>> getTranslatableMessages(I18NGroup group) {
+		
 		Map<String,Map<String,Message>> messages = new HashMap<String,Map<String,Message>>();
+		
+		Set<String> bundles = getBundles(group);
+		
+		if (bundles == null) {
+			if (log.isWarnEnabled()) {
+				log.warn(String.format("No bundle found for group %s", group));
+			}
+			return messages;
+		}
 		
 		for(String bundle : bundles) {
 			messages.put(bundle, new HashMap<String,Message>());
@@ -135,8 +174,20 @@ public class I18NServiceImpl implements I18NService {
 	
 	@Override
 	public synchronized void registerBundle(String bundle) {
-		bundles.add(bundle);
-		resources.clear();
+		registerBundle(bundle, I18NGroup.DEFAULT_GROUP);
+	}
+	
+	@Override
+	public synchronized void registerBundle(String bundle, I18NGroup group) {
+		Set<String> bundleSet = bundleMap.get(group.getTitle());
+		
+		if (bundleSet == null) {
+			bundleSet = new HashSet<>();
+		}
+		
+		bundleSet.add(bundle);
+		
+		bundleMap.put(group.getTitle(), bundleSet);
 	}
 
 	private void buildBundleMap(String bundle, Locale locale, Cache<String,String> resources) {
@@ -145,10 +196,20 @@ public class I18NServiceImpl implements I18NService {
 		}
 	}
 
-	private void buildCache(Cache<String,String> cache, Locale locale) {
+	private void buildCache(Cache<String,String> cache, Locale locale, I18NGroup group) {
 		if(log.isInfoEnabled()) {
 			log.info(String.format("Building i18n resources cache for %s", locale.getLanguage()));
 		}
+		
+		Set<String> bundles = getBundles(group);
+		
+		if (bundles == null) {
+			if (log.isWarnEnabled()) {
+				log.warn(String.format("No bundle found for group %s", group));
+			}
+			return;
+		}
+		
 		for(String bundle : bundles) {
 			buildBundleMap(bundle, locale, cache);
 		}
@@ -158,8 +219,8 @@ public class I18NServiceImpl implements I18NService {
 	}
 
 
-	private String getCacheKey(Locale locale) {
-		return String.format("i18n-%s", locale.getLanguage());
+	private String getCacheKey(Locale locale, I18NGroup group) {
+		return String.format("i18n-%s-%s", locale.getLanguage(), group.getTitle());
 	}
 
 	@PostConstruct
