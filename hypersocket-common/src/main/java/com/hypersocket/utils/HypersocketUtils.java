@@ -57,6 +57,8 @@ public class HypersocketUtils {
 
 	private static SecureRandom random = new SecureRandom();
 	
+	private static String ALLOWED_CHARACTERS = " ,.-_";
+	
 	public static String normaliseName(String name) {
 		
 		String lower = name.toLowerCase();
@@ -65,7 +67,7 @@ public class HypersocketUtils {
 		StringBuffer buf = new StringBuffer();
 		for(int i=0;i<upper.length();i++) {
 			
-			if(lower.charAt(i) == upper.charAt(i) && lower.charAt(i) != 0x20) {
+			if(lower.charAt(i) == upper.charAt(i) && (ALLOWED_CHARACTERS.indexOf(lower.charAt(i)) == -1)) {
 				continue;
 			}
 			buf.append(name.charAt(i));
