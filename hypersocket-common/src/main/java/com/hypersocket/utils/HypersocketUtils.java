@@ -57,6 +57,23 @@ public class HypersocketUtils {
 
 	private static SecureRandom random = new SecureRandom();
 	
+	public static String normaliseName(String name) {
+		
+		String lower = name.toLowerCase();
+		String upper = name.toUpperCase();
+		
+		StringBuffer buf = new StringBuffer();
+		for(int i=0;i<upper.length();i++) {
+			
+			if(lower.charAt(i) == upper.charAt(i) && lower.charAt(i) != 0x20) {
+				continue;
+			}
+			buf.append(name.charAt(i));
+		}
+		
+		return buf.toString().trim();
+	}
+
 	public static Date calculateDateTime(String timezone, Date from, String time) {
 
 		Calendar c = Calendar.getInstance();
