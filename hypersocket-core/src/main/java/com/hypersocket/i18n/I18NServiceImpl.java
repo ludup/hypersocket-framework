@@ -8,6 +8,7 @@
 package com.hypersocket.i18n;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -79,7 +80,12 @@ public class I18NServiceImpl implements I18NService {
 	
 	@Override
 	public Set<String> getBundles(I18NGroup group) {
-		return bundleMap.get(group.getTitle());
+		Set<String> bundle = bundleMap.get(group.getTitle());
+		if (bundle == null) {
+			return Collections.emptySet();
+		}
+		
+		return bundle;
 	}
 
 	@Override
