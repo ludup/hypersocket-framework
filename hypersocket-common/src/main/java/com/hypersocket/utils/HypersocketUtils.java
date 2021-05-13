@@ -17,6 +17,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -60,6 +61,10 @@ public class HypersocketUtils {
 	private static String ALLOWED_CHARACTERS = " ,.-_";
 	
 	public static String normaliseName(String name) {
+		
+		if(Objects.isNull(name)) {
+			return null;
+		}
 		
 		String lower = name.toLowerCase();
 		String upper = name.toUpperCase();
