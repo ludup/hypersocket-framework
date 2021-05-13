@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -293,11 +294,13 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			user.setName(username);
 			user.setRealm(realm);
 
-			user.getGroups().clear();
-
-			for (Principal p : principals) {
-				if (p instanceof LocalGroup) {
-					user.getGroups().add((LocalGroup) p);
+			if(Objects.nonNull(principals)) {
+				user.getGroups().clear();
+	
+				for (Principal p : principals) {
+					if (p instanceof LocalGroup) {
+						user.getGroups().add((LocalGroup) p);
+					}
 				}
 			}
 			
