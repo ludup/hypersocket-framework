@@ -34,7 +34,10 @@ public class Request {
 		StringBuffer b = new StringBuffer();
 		b.append(request.getProtocol());
 		b.append("://");
-		b.append(request.getHeader("Host"));
+		String host = request.getHeader("X-Forwarded-Host");
+		if(host == null || host.length() == 0)
+			host = request.getHeader("Host");
+		b.append(host);
 		return b.toString();
 	}
 }
