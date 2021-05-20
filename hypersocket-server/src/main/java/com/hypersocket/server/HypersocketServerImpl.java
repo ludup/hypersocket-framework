@@ -51,6 +51,8 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
 import com.hypersocket.certificates.CertificateResourceService;
+import com.hypersocket.certificates.events.CertificateResourceCreatedEvent;
+import com.hypersocket.certificates.events.CertificateResourceUpdatedEvent;
 import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
@@ -68,6 +70,8 @@ import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.server.handlers.WebsocketHandler;
 import com.hypersocket.server.handlers.impl.APIRequestHandler;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceCreatedEvent;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceUpdatedEvent;
 import com.hypersocket.servlet.HypersocketServletConfig;
 import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
@@ -736,6 +740,17 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 				}
 			}
 			
+		} else if(event instanceof CertificateResourceUpdatedEvent || event instanceof CertificateResourceCreatedEvent
+				|| event instanceof HTTPInterfaceResourceUpdatedEvent || event instanceof HTTPInterfaceResourceCreatedEvent) {
+			
+			synchronized(this) {
+				
+				if(log.isInfoEnabled()) {
+					log.info("Detected change in certificates or HTTP intefaces so removing SSL certificate/context cache");
+				}
+				sslCertificates.clear();
+				sslContexts.clear();
+			}
 		}
 		
 		processApplicationEvent(event);
