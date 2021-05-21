@@ -66,21 +66,17 @@ public class HypersocketUtils {
 			return null;
 		}
 		
-		String lower = name.toLowerCase();
-		String upper = name.toUpperCase();
-		
 		StringBuffer buf = new StringBuffer();
-		for(int i=0;i<upper.length();i++) {
-			
-			if(lower.charAt(i) == upper.charAt(i) && (ALLOWED_CHARACTERS.indexOf(lower.charAt(i)) == -1)) {
+		for(char c : name.toCharArray()) {
+			if(!Character.isAlphabetic(c) && ALLOWED_CHARACTERS.indexOf(c) == -1) {
 				continue;
 			}
-			buf.append(name.charAt(i));
+			buf.append(c);
 		}
 		
 		return buf.toString().trim();
 	}
-
+	
 	public static Date calculateDateTime(String timezone, Date from, String time) {
 
 		Calendar c = Calendar.getInstance();
