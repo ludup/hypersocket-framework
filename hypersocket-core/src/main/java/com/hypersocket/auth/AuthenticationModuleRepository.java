@@ -35,7 +35,7 @@ public interface AuthenticationModuleRepository extends AbstractEntityRepository
 
 	void deleteModule(AuthenticationModule authenticationModule);
 
-	boolean isAuthenticatorInUse(Realm realm, String resourceKey);
+	boolean isAuthenticatorInUse(Realm realm, String resourceKey, String... schemes);
 
 	Collection<AuthenticationScheme> getSchemesForModule(Realm currentRealm, String... resourceKeys);
 
