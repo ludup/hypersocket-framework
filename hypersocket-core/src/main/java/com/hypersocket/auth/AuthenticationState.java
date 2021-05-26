@@ -8,6 +8,7 @@
 package com.hypersocket.auth;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -508,6 +509,17 @@ public class AuthenticationState {
 		
 		request.getSession().setAttribute(AUTHENTICATION_STATE, null);
 		
+	}
+
+	public boolean containsModule(String... resourceKeys) {
+		
+		Set<String> tmp = new HashSet<>(Arrays.asList(resourceKeys));
+		for(AuthenticationModule module : modules) {
+			if(tmp.contains(module.getTemplate())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 

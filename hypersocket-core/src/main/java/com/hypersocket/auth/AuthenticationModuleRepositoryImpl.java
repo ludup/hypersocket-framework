@@ -71,13 +71,16 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 
 	@Transactional(readOnly=true)
 	@Override
-	public boolean isAuthenticatorInUse(final Realm realm, String resourceKey) {
+	public boolean isAuthenticatorInUse(final Realm realm, String resourceKey, String... schemes) {
 		return getCount(AuthenticationModule.class, "template", resourceKey, new DeletedCriteria(false), new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.createAlias("scheme", "s");
 				criteria.add(Restrictions.eq("s.realm", realm));
+				if(schemes.length > 0) {
+					criteria.add(Restrictions.in("s.resourceKey", schemes));
+				}
 			}
 			
 		}) > 0;
