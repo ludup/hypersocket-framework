@@ -22,11 +22,11 @@ public abstract class AbstractCertificateProvider implements CertificateProvider
 
 		switch (cert.getCertType()) {
 		case RSA_1024:
-			return "SHA1WithRSAEncryption";
+			return "SHA256WithRSAEncryption";
 		case RSA_2048:
-			return "SHA1WithRSAEncryption";
+			return "SHA256WithRSAEncryption";
 		case DSA_1024:
-			return "SHA1WithDSA";
+			return "SHA256WithDSA";
 		default:
 			throw new ResourceCreationException(CertificateResourceServiceImpl.RESOURCE_BUNDLE,
 					"error.unsupportedType");
