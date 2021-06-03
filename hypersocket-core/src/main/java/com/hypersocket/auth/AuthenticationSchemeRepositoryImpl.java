@@ -288,6 +288,12 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	
 	@Override
 	@Transactional(readOnly=true)
+	public List<AuthenticationScheme> getSystemSchemes(Realm realm) {
+		return list("system", Boolean.TRUE, AuthenticationScheme.class, new RealmCriteria(realm));
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
 	public AuthenticationScheme get2faScheme(Realm realm, String authenticator) {
 		return get("authenticator2fa", authenticator, AuthenticationScheme.class, new RealmCriteria(realm));
 	}
