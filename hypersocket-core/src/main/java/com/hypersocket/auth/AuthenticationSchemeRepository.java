@@ -48,5 +48,7 @@ public interface AuthenticationSchemeRepository extends AbstractResourceReposito
 
 	AuthenticationScheme get2faScheme(Realm realm, String authenticator);
 
+	List<AuthenticationScheme> getSystemSchemes(Realm currentRealm);
+
 	
 }
