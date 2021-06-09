@@ -81,7 +81,24 @@ public class ExtensionHelper {
 							ExtensionVersion remote = extsByName.get(extensionId);
 							remote.setState(ExtensionState.INSTALLED);
 							extsByName.put(extensionId, remote);
+							
+							if("true".equals(System.getProperty("hypersocket.development", "false"))) {
+								String fakeVersion = remote.getVersion();
+								Version v = new Version(fakeVersion);
+								int[] fakeVersionElements = v.getVersionElements();
+								if(fakeVersionElements.length == 4) {
+									remote.setVersion(fakeVersionElements[0] + "." + fakeVersionElements[1] + "." + fakeVersionElements[2] + "-" + (fakeVersionElements[3] - 1));
+									log.warn("Faking existence of extension for purposes of update testing of " + extensionId + " in " + extensionsPlace.getApp() + ". Using version " + remote.getVersion());
+									remote.setState(ExtensionState.UPDATABLE);
+								}
+								else {
+									log.error("Can't fake version. Can't create a smaller version than " + fakeVersion);
+								}
+							}
+							else
+								log.warn("Using installed version of " + remote.getVersion() + " for " + extensionId);
 						} else {
+
 							ExtensionVersion local = new ExtensionVersion();
 							loadLocalExtension(local, props, currentArchive);
 							local.setState(ExtensionState.INSTALLED);
