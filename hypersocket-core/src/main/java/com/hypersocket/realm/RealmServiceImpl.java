@@ -46,6 +46,7 @@ import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
+import com.hypersocket.delegation.UserDelegationResourceService;
 import com.hypersocket.events.EventPropertyCollector;
 import com.hypersocket.events.EventService;
 import com.hypersocket.export.AbstractPagingExportDataProvider;
@@ -62,7 +63,6 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionRepository;
 import com.hypersocket.permissions.PermissionScope;
 import com.hypersocket.permissions.SystemPermission;
-import com.hypersocket.profile.ProfileCredentialsService;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
@@ -186,9 +186,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	private OrganizationalUnitRepository ouRepository;
 
 	@Autowired
-	private ProfileCredentialsService profileService;
-
-	@Autowired
 	private PasswordPolicyResourceService passwordPolicyService;
 
 	@Autowired
@@ -196,6 +193,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	private I18NService i18nService;
+	
+	@Autowired
+	private UserDelegationResourceService delegationService;
 
 	private List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
 	private Principal systemPrincipal;
@@ -740,6 +740,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			assertAnyPermission(ProfilePermission.UPDATE, UserPermission.UPDATE, RealmPermission.UPDATE);
 
+			try {
+				delegationService.assertDelegation(user);
+			} catch (AccessDeniedException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+			}
+			
 			for (PrincipalProcessor processor : principalProcessors) {
 				processor.beforeUpdate(user, properties);
 			}
@@ -761,7 +767,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			eventService.publishEvent(new UserUpdatedEvent(this, e, getCurrentSession(), user.getRealm(), provider,
 					user.getPrincipalName(), filterSecretProperties(user, provider, properties), associated));
 			throw e;
-		} catch (ResourceChangeException e) {
+		} catch (ResourceException e) {
 			eventService.publishEvent(new UserUpdatedEvent(this, e, getCurrentSession(), user.getRealm(), provider,
 					user.getPrincipalName(), filterSecretProperties(user, provider, properties), associated));
 			throw e;
@@ -785,6 +791,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
+			try {
+				delegationService.assertDelegation(user);
+			} catch (AccessDeniedException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+			}
+			
 			for (PrincipalProcessor processor : principalProcessors) {
 				processor.beforeUpdate(user, properties);
 			}
@@ -805,11 +817,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			eventService.publishEvent(new UserUpdatedEvent(this, e, getCurrentSession(), realm, provider, username,
 					filterSecretProperties(user, provider, properties), principals));
 			throw e;
-		} catch (ResourceChangeException e) {
+		} catch (ResourceException e) {
 			eventService.publishEvent(new UserUpdatedEvent(this, e, getCurrentSession(), realm, provider, username,
 					filterSecretProperties(user, provider, properties), principals));
 			throw e;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			eventService.publishEvent(new UserUpdatedEvent(this, e, getCurrentSession(), realm, provider, username,
 					filterSecretProperties(user, provider, properties), principals));
 			throw new ResourceChangeException(e, RESOURCE_BUNDLE, "updateUser.unexpectedError", e.getMessage());
@@ -999,6 +1011,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				assertAnyPermission(UserPermission.CREATE, UserPermission.UPDATE, PasswordPermission.RESET);
 			} catch (AccessDeniedException e) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noUserChangePermission");
+			}
+			
+			try {
+				delegationService.assertDelegation(principal);
+			} catch (AccessDeniedException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
 			}
 		}
 
@@ -1654,6 +1672,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		if (provider.isReadOnly(realm)) {
 			throw new ResourceChangeException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 		}
+		
+		try {
+			delegationService.assertDelegation(group);
+			delegationService.assertDelegation(principals);
+		} catch (AccessDeniedException e) {
+			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+		}
 
 		Principal tmpGroup = getPrincipalByName(realm, name, PrincipalType.GROUP);
 
@@ -1736,6 +1761,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			if (provider.isReadOnly(realm)) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
+			
+			try {
+				delegationService.assertDelegation(group);
+			} catch (AccessDeniedException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+			}
 
 			permissionService.revokePermissions(group, new TransactionAdapter<Principal>() {
 				@Override
@@ -1775,7 +1806,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		try {
 			assertAnyPermission(UserPermission.DELETE, RealmPermission.DELETE);
-
+			
+			try {
+				delegationService.assertDelegation(user);
+			} catch (AccessDeniedException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+			}
+			
 			if (provider.isReadOnly(realm)) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
@@ -2254,6 +2291,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		try {
 			assertAnyPermission(ProfilePermission.UPDATE, RealmPermission.UPDATE, UserPermission.UPDATE);
 
+			try {
+				delegationService.assertDelegation(principal);
+			} catch (AccessDeniedException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+			}
+			
 			principal = provider.updateUserProperties(principal, changedProperties);
 
 			eventService.publishEvent(new ProfileUpdatedEvent(this, getCurrentSession(), realm, provider, principal,
@@ -2262,7 +2305,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			eventService.publishEvent(new ProfileUpdatedEvent(this, e, getCurrentSession(), realm, provider,
 					principal.getPrincipalName(), filterSecretProperties(principal, provider, changedProperties)));
 			throw e;
-		} catch (ResourceChangeException e) {
+		} catch (ResourceException e) {
 			eventService.publishEvent(new ProfileUpdatedEvent(this, e, getCurrentSession(), realm, provider,
 					principal.getPrincipalName(), filterSecretProperties(principal, provider, changedProperties)));
 			throw e;
@@ -2305,6 +2348,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			if (provider.isReadOnly(principal.getRealm())) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
+			
+			try {
+				delegationService.assertDelegation(principal);
+			} catch (AccessDeniedException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+			}
+			
 			principal = provider.disableAccount(principal);
 			eventService.publishEvent(
 					new AccountDisabledEvent(this, getCurrentSession(), provider, getCurrentPrincipal(), principal));
@@ -2330,6 +2380,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 
 		try {
+			
+			try {
+				delegationService.assertDelegation(principal);
+			} catch (AccessDeniedException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+			}
+			
 			if (provider.isReadOnly(principal.getRealm())) {
 				throw new ResourceChangeException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
@@ -2350,6 +2407,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		assertAnyPermission(UserPermission.UPDATE, RealmPermission.UPDATE);
 
+		try {
+			delegationService.assertDelegation(principal);
+		} catch (AccessDeniedException e) {
+			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+		}
+		
 		RealmProvider provider = getProviderForRealm(principal.getRealm());
 
 		if (provider.isReadOnly(principal.getRealm())) {
@@ -2587,6 +2650,15 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void assignUserToGroup(Principal user, Principal group) throws ResourceException, AccessDeniedException {
 
+		assertPermission(GroupPermission.UPDATE);
+		
+		try {
+			delegationService.assertDelegation(user);
+			delegationService.assertDelegation(group);
+		} catch (AccessDeniedException e) {
+			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+		}
+		
 		List<Principal> groups = new ArrayList<Principal>(getUserGroups(user));
 		groups.add(group);
 
@@ -2596,6 +2668,15 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void unassignUserFromGroup(Principal user, Principal group) throws ResourceException, AccessDeniedException {
 
+		assertPermission(GroupPermission.UPDATE);
+		
+		try {
+			delegationService.assertDelegation(user);
+			delegationService.assertDelegation(group);
+		} catch (AccessDeniedException e) {
+			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+		}
+		
 		List<Principal> groups = new ArrayList<Principal>(getUserGroups(user));
 		groups.remove(group);
 
@@ -2924,6 +3005,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
 
+			try {
+				delegationService.assertDelegation(user);
+			} catch (AccessDeniedException e) {
+				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+			}
+			
 			principalRepository.undelete(realm, user);
 
 			eventService.publishEvent(new UserUndeletedEvent(this, getCurrentSession(), realm, provider, user));
@@ -2933,6 +3020,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					new UserUndeletedEvent(this, e, getCurrentSession(), realm, provider, user.getPrincipalName()));
 			throw e;
 		} catch (ResourceChangeException e) {
+			eventService.publishEvent(
+					new UserUndeletedEvent(this, e, getCurrentSession(), realm, provider, user.getPrincipalName()));
+			throw e;
+		} catch (ResourceException e) {
 			eventService.publishEvent(
 					new UserUndeletedEvent(this, e, getCurrentSession(), realm, provider, user.getPrincipalName()));
 			throw e;

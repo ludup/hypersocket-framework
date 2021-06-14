@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<propertyTemplates context="userDelegationResource">
+    <propertyCategory resourceKey="category.details"
+		resourceBundle="UserDelegationResourceService" weight="0">
+		<property resourceKey="name" inputType="text"  weight="0" defaultValue="" />
+	</propertyCategory>
+	<propertyCategory resourceKey="category.delegates"
+		resourceBundle="UserDelegationResourceService" weight="100">
+		<property resourceKey="roleDelegates" inputType="multipleSearchInput" 
+		    	url="roles/table" 
+		    	defaultValue="" 
+		    	nameAttr="name"
+		    	nameIsResourceKey="false"
+		    	valueAttr="id"
+		    	remoteSearch="true"
+				weight="100" />
+			<property resourceKey="userDelegates" inputType="multipleSearchInput" 
+		    	url="currentRealm/users/table" 
+		    	defaultValue="" 
+		    	nameAttr="name"
+		    	nameIsResourceKey="false"
+		    	valueAttr="id"
+		    	remoteSearch="true"
+				weight="200" />
+		<property resourceKey="groupDelegates" inputType="multipleSearchInput" 
+		    	url="currentRealm/groups/table" 
+		    	defaultValue="" 
+		    	nameAttr="name"
+		    	nameIsResourceKey="false"
+		    	valueAttr="id"
+		    	remoteSearch="true"
+				weight="100" />
+	</propertyCategory>
+</propertyTemplates>
