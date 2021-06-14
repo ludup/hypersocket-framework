@@ -1,0 +1,112 @@
+<div id="contentUserDelegations">
+
+</div>
+<script type="text/javascript">
+	$(document).ready(function() {
+		
+				if($('#addDeletegeForm').length == 0) {
+					/* Form gets detached and stored so ensure its only added once */
+					$('#contentUserDelegations').append('<div id="addDeletegeForm" tabindex="-1" dialog-for="contentUserDelegations">' +
+								'<div id="userDelegationProperties"></div>' +
+								'<div id="tabRoles" class="col-xs-12"></div>' +
+								'<input type="hidden" id="resourceId" name="resourceId" value="" />' +
+								'<input type="hidden" id="resourceRealm" name="resourceRealm" value="" />' +
+							'</div>');
+					$('#contentPrincipalTemplates').localize();
+					
+					$('#tabRoles').roles();
+				}
+				$('#contentUserDelegations').localize();
+				
+				$('#tabRoles').roles();
+				
+				$('#contentUserDelegations').ajaxResourcePage(
+						{
+							id : "UserDelegation",
+							tableUrl : "userDelegations/table",
+							title: getResource("userDelegations.label"),
+							infoHtml: getResource('userDelegations.infoHtml'),
+							icon: 'fa-globe',
+							resourceUrl : "userDelegations/userDelegation",
+							fields : [ {
+								name : "name"
+							}],
+							resourceKey : "userDelegation",
+							resourceView: 'samePage',
+							canCreate: currentMenu.canCreate,
+							canUpdate: currentMenu.canUpdate,
+							canDelete: currentMenu.canDelete,
+							propertyOptions: { 
+								propertySelector : '#userDelegationProperties',
+								templateUrl : 'userDelegations/template/', 
+								propertiesUrl: 'userDelegations/properties/',
+								i18nNamespace: 'userDelegations',
+								showButtons : false,
+								useTemplates : true,
+								canUpdate : currentMenu.canUpdate,
+								propertyTabsLast: false,
+								additionalTabs : [{
+									id : "tabRoles",
+									name : getResource("label.roles")
+								}],
+							},
+							validate : function() {
+
+								if ($('#resourceName').val() == '') {
+									showError("error.nameRequired");
+									return false;
+								}
+
+								if(!$('#userDelegationProperties').validateProperties()) {
+									showError("error.correctValidationErrors");
+									return false;
+								}
+								
+								return true;
+							},
+							clearDialog : function(create) {
+								
+								$('#resourceId').val('');
+								$('#resourceName').val('');
+								
+								$('#tabRoles').widget().clear();
+								if((create && currentMenu.canCreate) || (!create && currentMenu.canUpdate)) {
+									$('#tabRoles').widget().enable();
+								} else {
+									$('#tabRoles').widget().disable();
+								}
+								
+								$('.tabPropertiesTab').first().trigger('click');
+							},
+							createResource : function() {
+								resource = new Object();
+								resource.id = $('#resourceId').val();
+								resource.name = $('#resourceName').val();
+								
+								$('#userDelegationProperties').saveProperties(true,
+										function(items) {
+											resource.properties = items;
+								});
+								
+								resource.roles = $('#tabRoles').widget().getValue();
+								
+								return resource;
+							},
+							displayResource : function(resource, readOnly) {
+								
+								$('#resourceId').val(resource.id);
+								$('#resourceName').val(resource.name);
+								
+								$('#tabRoles').widget().setValue(resource.roles);
+								
+								if(readOnly) {
+									$('#tabRoles').widget().disable();
+								} 
+							},
+							complete : function() {
+								loadComplete();
+							}
+						});
+
+			});
+</script>
