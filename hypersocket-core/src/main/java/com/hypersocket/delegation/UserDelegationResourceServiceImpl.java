@@ -1,5 +1,6 @@
 package com.hypersocket.delegation;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,9 +27,11 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
+import com.hypersocket.resource.RealmCriteria;
 import com.hypersocket.resource.ResourceException;
 
 @Service
@@ -75,6 +78,28 @@ public class UserDelegationResourceServiceImpl extends
 		eventService.registerEvent(UserDelegationResourceDeletedEvent.class, RESOURCE_BUNDLE);
 
 		EntityResourcePropertyStore.registerResourceService(UserDelegationResource.class, repository);
+		
+		realmService.registerRealmListener(new RealmAdapter() {
+
+			@Override
+			public void onCreateRealm(Realm realm) throws ResourceException, AccessDeniedException {
+				
+				UserDelegationResource resource = new UserDelegationResource();
+				resource.setName("Default Delegation");
+				resource.setRoleDelegates(new HashSet<>(Arrays.asList(permissionService.getRole(PermissionService.ROLE_EVERYONE, realm))));
+				resource.setRoles(new HashSet<>(Arrays.asList(permissionService.getRole(PermissionService.ROLE_EVERYONE, realm))));
+				resource.setRealm(realm);
+				resource.setSystem(true);
+				
+				createResource(resource, null);
+			}
+
+			@Override
+			public boolean hasCreatedDefaultResources(Realm realm) {
+				return repository.getCount(UserDelegationResource.class, new RealmCriteria(realm)) > 0;
+			}
+			
+		});
 
 	}
 
@@ -188,6 +213,11 @@ public class UserDelegationResourceServiceImpl extends
 		if(getCurrentPrincipal().equals(principal)) {
 			return;
 		}
+		
+		if(permissionService.hasAdministrativePermission(principal)) {
+			return;
+		}
+		
 		Set<Role> roles = new HashSet<>();
 		Set<Principal> users = new HashSet<>();
 		Set<Principal> groups = new HashSet<>();

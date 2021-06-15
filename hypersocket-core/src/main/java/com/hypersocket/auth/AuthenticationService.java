@@ -22,6 +22,7 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 
 	public static final String RESOURCE_BUNDLE = "AuthenticationService";
 	public static final String AUTHENTICATION_SCHEME = "authenticationScheme";
+	public String LOGONBOX_ENCRYPTED_PASSWORD = "logonbox.encryptedPassword";
 
 	void registerAuthenticator(Authenticator authenticator);
 

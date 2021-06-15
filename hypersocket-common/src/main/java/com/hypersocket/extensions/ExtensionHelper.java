@@ -232,6 +232,13 @@ public class ExtensionHelper {
 				}
 				repos = ArrayUtils.addAll(repos, additionalRepos.split(","));
 			}
+			additionalRepos = System.getProperty("hypersocket.additionalRepos");
+			if (additionalRepos != null) {
+				if (log.isInfoEnabled()) {
+					log.info(String.format("Adding additional repos %s", additionalRepos));
+				}
+				repos = ArrayUtils.addAll(repos, additionalRepos.split(","));
+			}
 			String updateUrl = String.format("%s/%s/%s/%s/%s", url, version, HypersocketUtils.csv(repos),
 					serial, HypersocketUtils.csv(targets));
 
