@@ -171,6 +171,7 @@ public abstract class Principal extends RealmResource {
 		builder.append(getName(), r.getName());
 	}
 
+	@JsonIgnore
 	public boolean isSuspended() {
 		if (suspensions != null) {
 			for (PrincipalSuspension s : suspensions) {

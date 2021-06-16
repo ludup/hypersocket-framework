@@ -34,6 +34,15 @@ public abstract class AbstractEntityRepositoryImpl<T extends AbstractEntity<K>,K
 	public T getEntityById(Long id) {
 		return get("id", id, getEntityClass(), new DeletedCriteria(false));
 	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public T getEntityById(Long id, boolean includeDeleted) {
+		if(includeDeleted)
+			return get("id", id, getEntityClass());
+		else
+			return get("id", id, getEntityClass(), new DeletedCriteria(false));
+	}
 
 	@Override
 	@Transactional

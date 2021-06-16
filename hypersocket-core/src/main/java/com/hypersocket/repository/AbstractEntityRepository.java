@@ -10,6 +10,8 @@ public interface AbstractEntityRepository<T,K> extends AbstractRepository<K> {
 
 	T getEntityById(Long id);
 
+	T getEntityById(Long id, boolean includeDeleted);
+
 	void deleteEntity(T entity);
 
 }
