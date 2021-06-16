@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +24,13 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.profile.jobs.ProfileBatchUpdateJob;
 import com.hypersocket.profile.jobs.ProfileCreationJob;
 import com.hypersocket.profile.jobs.ProfileUpdateJob;
-import com.hypersocket.properties.ResourceNameCallback;
-import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserPermission;
 import com.hypersocket.realm.events.UserDeletedEvent;
+import com.hypersocket.realm.events.UserUndeletedEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
@@ -245,7 +243,18 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		
 		Profile profile = profileRepository.getEntityById(target.getId());
 		if(profile!=null) {
-			profileRepository.deleteEntity(profile);
+			profile.setDeleted(true);
+			profileRepository.saveEntity(profile);
+		}
+	}
+	
+	@Override
+	public void undeleteProfile(Principal target) {
+		
+		Profile profile = profileRepository.getEntityById(target.getId(), true);
+		if(profile!=null) {
+			profile.setDeleted(false);
+			profileRepository.saveEntity(profile);
 		}
 	}
 	
@@ -307,6 +316,14 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	public void onUserDeleted(UserDeletedEvent event) {
 		if(event.isSuccess()) {
 			deleteProfile(event.getTargetPrincipal());
+		}
+	}
+	
+	@EventListener
+	@Override
+	public void onUserUndeleted(UserUndeletedEvent event) {
+		if(event.isSuccess()) {
+			undeleteProfile(event.getTargetPrincipal());
 		}
 	}
 
