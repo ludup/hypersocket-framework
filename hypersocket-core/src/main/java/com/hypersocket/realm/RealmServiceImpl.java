@@ -94,6 +94,7 @@ import com.hypersocket.realm.ou.OrganizationalUnitRepository;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AbstractSimpleResourceRepository;
 import com.hypersocket.resource.FindableResourceRepository;
+import com.hypersocket.resource.PropertyChange;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
@@ -1275,6 +1276,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		try {
 
 			assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.UPDATE);
+			
+			String propertyChangesCSV = computePropertyChanges(realm, properties);
 
 			if (!realm.getName().equalsIgnoreCase(name)) {
 				if (realmRepository.getRealmByName(name) != null) {
@@ -1359,7 +1362,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					});
 
 			eventService.publishEvent(new RealmUpdatedEvent(this, getCurrentSession(), oldName,
-					realmRepository.getRealmById(realm.getId())));
+					realmRepository.getRealmById(realm.getId()), propertyChangesCSV));
 
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new RealmUpdatedEvent(this, e, getCurrentSession(), realm));
@@ -3058,5 +3061,46 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public Principal getPrincipalByUUID(String uuid) {
 		Principal principal = principalRepository.getResourceByUUID(uuid);
 		return principal;
+	}
+	
+	private String computePropertyChanges(Realm realm, Map<String, String> properties) throws AccessDeniedException {
+		List<PropertyChange> changes = calculateChanges(realm, properties);
+		
+		String propertyChangesCSV = "";
+		if (!changes.isEmpty()) {
+			String template = i18nService.getResource("realm.update.propertyChangeRecordTemplate", getCurrentLocale());
+			List<String> records = new ArrayList<>();
+			
+			for (PropertyChange propertyChange : changes) {
+				String record = String.format(template, 
+						propertyChange.getId(), 
+						propertyChange.getOldValue(), 
+						propertyChange.getNewValue());
+				
+				records.add(record);
+				
+				
+				
+			}
+			
+			propertyChangesCSV = StringUtils.join(records, ", ");
+		}
+		return propertyChangesCSV;
+	}
+	
+	private List<PropertyChange> calculateChanges(Realm resource, Map<String,String> properties) throws AccessDeniedException {
+		List<PropertyChange> changedProperties = new ArrayList<>();
+		if(properties != null) {
+			for(PropertyCategory category: getRealmPropertyTemplates(resource)) {
+				List<AbstractPropertyTemplate> propertyTemplates = category.getTemplates();
+				
+				List<PropertyChange> changes = realmRepository.calculateChanges(resource, propertyTemplates, properties);
+				
+				changedProperties.addAll(changes);
+			}
+			
+			
+		}
+		return changedProperties;
 	}
 }

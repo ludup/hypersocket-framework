@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.transaction.support.TransactionCallback;
 
+import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Realm;
@@ -46,6 +47,8 @@ public interface AbstractSimpleResourceRepository<T extends SimpleResource> exte
 	void populateEntityFields(T resource, Map<String, String> properties);
 
 	List<PropertyChange> calculateChanges(T resource, Map<String, String> properties);
+	
+	List<PropertyChange> calculateChanges(T resource, Collection<AbstractPropertyTemplate> propertyTemplates, Map<String, String> properties);
 
 	EntityResourcePropertyStore getEntityStore();
 

@@ -24,6 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.encrypt.EncryptionService;
+import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
@@ -134,10 +135,20 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 		}
 	}
 	
+	@Override
 	public List<PropertyChange> calculateChanges(T resource, Map<String,String> properties) {
+		List<AbstractPropertyTemplate> propertyTemplates = new ArrayList<AbstractPropertyTemplate>();
+		propertyTemplates.addAll(getPropertyTemplates(resource));
+		return calculateChanges(resource, propertyTemplates, properties);
+	}
+	
+	@Override
+	public List<PropertyChange> calculateChanges(T resource, 
+			Collection<AbstractPropertyTemplate> propertyTemplates,
+			Map<String, String> properties) {
 		List<PropertyChange> changedProperties = new ArrayList<>();
 		if(properties!=null) {
-			for(PropertyTemplate template : getPropertyTemplates(resource)) {
+			for(AbstractPropertyTemplate template : propertyTemplates) {
 				if(properties.containsKey(template.getResourceKey())) {
 					String val = getValue(resource, template.getResourceKey());
 					String newVal =  properties.get(template.getResourceKey());
