@@ -55,6 +55,7 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.realm.UserPermission;
+import com.hypersocket.realm.events.UserImpersonatedEvent;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
@@ -405,6 +406,13 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setCurrentRealm(principal.getRealm());
 		setCurrentRole(permissionService.getPersonalRole(principal));
 		repository.updateSession(session);
+		
+		eventService.publishEvent(new UserImpersonatedEvent(this, session, 
+				getCurrentRealm(), 
+				realmService.getProviderForRealm(getCurrentRealm()), 
+				principal, 
+				principal.getName())
+		);
 	}
 
 	@Override
