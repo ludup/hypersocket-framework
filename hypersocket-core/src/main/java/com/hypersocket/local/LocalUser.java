@@ -115,7 +115,7 @@ public class LocalUser extends UserPrincipal<LocalGroup> implements Serializable
 	@Override
 	public PrincipalStatus getPrincipalStatus() {
 		if(getExpires()!=null) {
-			if(new Date().before(getExpires())) {
+			if(new Date().after(getExpires())) {
 				return PrincipalStatus.EXPIRED;
 			}
 		}
