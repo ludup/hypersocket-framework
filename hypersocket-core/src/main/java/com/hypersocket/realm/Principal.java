@@ -81,6 +81,8 @@ public abstract class Principal extends RealmResource {
 
 	@Column(name = "ou", length = 1024)
 	private String organizationalUnit;
+	
+	private Boolean suspended;
 
 	public Long getId() {
 		return super.getId();
@@ -171,17 +173,6 @@ public abstract class Principal extends RealmResource {
 		builder.append(getName(), r.getName());
 	}
 
-	public boolean isSuspended() {
-		if (suspensions != null) {
-			for (PrincipalSuspension s : suspensions) {
-				if (s.isActive()) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 	@JsonIgnore
 	public Set<Principal> getLinkedPrincipals() {
 		return linkedPrincipals;
@@ -211,6 +202,14 @@ public abstract class Principal extends RealmResource {
 
 	public void setLocallyDeleted(boolean locallyDeleted) {
 		throw new UnsupportedOperationException();
+	}
+
+	public Boolean isSuspended() {
+		return suspended;
+	}
+
+	public void setSuspended(Boolean suspended) {
+		this.suspended = suspended;
 	}
 
 }

@@ -32,6 +32,12 @@ public interface PrincipalRepository extends AbstractResourceRepository<Principa
 
 	Long getDeletedCount(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn, String searchPattern,
 			boolean local, CriteriaConfiguration... criteriaConfiguration);
+	
+	List<?> searchSuspendedState(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+			ColumnSort[] sorting, int start, int length, boolean suspended, CriteriaConfiguration... criteriaConfiguration);
+	
+	Long getSuspendedStateCount(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn, String searchPattern,
+			boolean suspended, CriteriaConfiguration... criteriaConfiguration);
 
 	void undelete(Realm realm, Principal user) throws ResourceChangeException;
 
