@@ -3108,4 +3108,20 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		return changedProperties;
 	}
+
+	@Override
+	public void assertChangeCredentials(Principal principal) throws AccessDeniedException, ResourceException {
+		
+		if(getCurrentPrincipal().equals(principal)) {
+			return;
+		}
+		
+		assertAnyPermission(UserPermission.UPDATE, UserPermission.RESET_CREDENTIALS);
+		
+		try {
+			delegationService.assertDelegation(principal);
+		} catch (AccessDeniedException e) {
+			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
+		}
+	}
 }

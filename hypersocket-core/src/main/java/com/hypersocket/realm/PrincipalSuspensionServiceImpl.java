@@ -10,13 +10,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
+import com.hypersocket.delegation.UserDelegationResourceService;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 
 @Service
-public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionService {
+public class PrincipalSuspensionServiceImpl extends AbstractAuthenticatedServiceImpl implements PrincipalSuspensionService {
 
 	static Logger log = LoggerFactory.getLogger(PrincipalSuspensionServiceImpl.class);
 	
@@ -26,10 +29,18 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	@Autowired
 	private PrincipalSuspensionRepository repository;
 	
+	@Autowired
+	private UserDelegationResourceService delegationService; 
+	
 	@Override
 	public PrincipalSuspension createPrincipalSuspension(Principal principal, String name, Realm realm,
-			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceException {
+			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceException, AccessDeniedException {
 
+		
+		assertAnyPermission(UserPermission.UPDATE, UserPermission.LOCK);
+		
+		delegationService.assertDelegation(principal);
+		
 		Collection<PrincipalSuspension> principalSuspensions = repository.getSuspensions(name, realm, type);
 		
 		PrincipalSuspension principalSuspension = null;
@@ -111,7 +122,12 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	}
 
 	@Override
-	public PrincipalSuspension deletePrincipalSuspension(Principal principal, PrincipalSuspensionType type) {
+	public PrincipalSuspension deletePrincipalSuspension(Principal principal, PrincipalSuspensionType type) throws AccessDeniedException {
+		
+		assertAnyPermission(UserPermission.UPDATE, UserPermission.UNLOCK);
+		
+		delegationService.assertDelegation(principal);
+		
 		Collection<PrincipalSuspension> suspensions = repository
 				.getSuspensions(principal.getPrincipalName(), principal.getRealm(), type);
 		if(suspensions.isEmpty()) {

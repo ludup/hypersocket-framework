@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.auth.PasswordEncryptionService;
 import com.hypersocket.auth.PasswordEncryptionType;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyFilter;
@@ -263,7 +264,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	}
 
-	protected void checkExpiry(LocalUser user) throws ResourceNotFoundException, ResourceException {
+	protected void checkExpiry(LocalUser user) throws ResourceNotFoundException, ResourceException, AccessDeniedException {
 
 		PrincipalSuspension suspension = suspensionService.getSuspension(user.getPrincipalName(), user.getRealm(), PrincipalSuspensionType.EXPIRY);
 

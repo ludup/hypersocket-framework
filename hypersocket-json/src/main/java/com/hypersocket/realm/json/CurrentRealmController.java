@@ -33,6 +33,7 @@ import com.hypersocket.auth.PrincipalNotFoundException;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.delegation.UserDelegationResourceService;
 import com.hypersocket.export.AttributeView;
 import com.hypersocket.export.CommonEndOfLineEnum;
 import com.hypersocket.i18n.I18N;
@@ -96,6 +97,9 @@ public class CurrentRealmController extends ResourceController {
 	
 	@Autowired
 	private TransactionService transactionService; 
+	
+	@Autowired
+	private UserDelegationResourceService delegationService; 
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })

@@ -16,6 +16,7 @@ import com.hypersocket.automation.AutomationResource;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalSuspensionService;
@@ -122,7 +123,7 @@ public class SuspendUserTask extends AbstractTaskProvider {
 
 			return new SuspendUserResult(this, currentRealm, task,
 					name, startDate, duration);
-		} catch (ResourceException e) {
+		} catch (ResourceException | AccessDeniedException e) {
 			log.error("Failed to fully process suspend request for " + name, e);
 			return new SuspendUserResult(this, e, currentRealm,
 					task, name, startDate, duration);
