@@ -330,6 +330,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		sessionService.executeInSystemContext(new Runnable() {
 			public void run() {
+				sortRealmListeners();
 				for (Realm realm : realmRepository.allRealms()) {
 					for (RealmListener listener : realmListeners) {
 						if (!listener.hasCreatedDefaultResources(realm)) {
@@ -1395,13 +1396,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	private void fireRealmCreate(Realm realm) throws ResourceException {
 
-		Collections.<RealmListener>sort(realmListeners, new Comparator<RealmListener>() {
-
-			@Override
-			public int compare(RealmListener o1, RealmListener o2) {
-				return o1.getWeight().compareTo(o2.getWeight());
-			}
-		});
+		sortRealmListeners();
 
 		for (RealmListener l : realmListeners) {
 			try {
@@ -1412,6 +1407,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				log.error("Caught error in RealmListener", t);
 			}
 		}
+	}
+
+	protected void sortRealmListeners() {
+		Collections.<RealmListener>sort(realmListeners, new Comparator<RealmListener>() {
+
+			@Override
+			public int compare(RealmListener o1, RealmListener o2) {
+				return o1.getWeight().compareTo(o2.getWeight());
+			}
+		});
 	}
 
 	private void fireRealmDelete(Realm realm) throws ResourceException {
