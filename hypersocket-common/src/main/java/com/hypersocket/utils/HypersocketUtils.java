@@ -560,6 +560,9 @@ public class HypersocketUtils {
 	}
 
 	public static boolean isEmailAddress(String email) {
+		if(Objects.isNull(email)) {
+			return false;
+		}
 		return Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE).matcher(email).matches();
 	}
 
