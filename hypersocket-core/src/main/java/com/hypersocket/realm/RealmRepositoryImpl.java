@@ -131,7 +131,8 @@ public class RealmRepositoryImpl extends
 						if(!currentRealm.isSystem()) {
 							criteria.add(Restrictions.eq("parent", currentRealm));
 						} else {
-							criteria.add(Restrictions.isNull("parent"));
+							criteria.add(Restrictions.or(Restrictions.isNull("parent"), 
+									Restrictions.eq("parent", currentRealm)));
 						}
 						if(!filter.isEmpty()) {
 							criteria.add(Restrictions.in("id", ResourceUtils.createResourceIdArray(filter)));
