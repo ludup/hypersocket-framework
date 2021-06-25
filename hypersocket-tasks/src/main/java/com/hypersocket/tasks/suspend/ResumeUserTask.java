@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalSuspensionService;
@@ -93,7 +94,7 @@ public class ResumeUserTask extends AbstractTaskProvider {
 
 			return new ResumeUserResult(this, currentRealm, task,
 					name);
-		} catch (ResourceNotFoundException e) {
+		} catch (ResourceNotFoundException | AccessDeniedException e) {
 			log.error(
 					"Failed to fully process resume user request for " + name,
 					e);

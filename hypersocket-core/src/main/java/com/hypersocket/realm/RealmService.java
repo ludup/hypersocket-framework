@@ -347,5 +347,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	boolean isChangingPassword(Principal principal);
 
+	void assertChangeCredentials(Principal principal) throws AccessDeniedException, ResourceException;
+
 }
 

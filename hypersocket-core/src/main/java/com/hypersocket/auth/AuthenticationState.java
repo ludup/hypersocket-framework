@@ -67,7 +67,6 @@ public class AuthenticationState {
 	private Map<String, String> parameters = new HashMap<String, String>();
 	private Map<String, Object> environment = new HashMap<String, Object>();
 	
-	
 	AuthenticationState(String remoteAddress, Map<String,Object> environment, Locale locale) {
 		this.remoteAddress = remoteAddress;
 		this.environment = environment;
@@ -521,7 +520,4 @@ public class AuthenticationState {
 		}
 		return false;
 	}
-
-
-	
 }

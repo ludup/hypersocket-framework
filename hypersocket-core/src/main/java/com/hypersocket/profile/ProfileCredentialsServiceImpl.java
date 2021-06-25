@@ -359,7 +359,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	public void resetProfile(Principal principal) throws AccessDeniedException, ResourceException {
 		
 		
-		assertAnyPermission(UserPermission.DELETE, UserPermission.UPDATE);
+		realmService.assertChangeCredentials(principal);
 		
 		Profile profile = getProfileForUser(principal);
 		if(Objects.nonNull(profile)) {

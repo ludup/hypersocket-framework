@@ -17,7 +17,8 @@ public enum UserPermission implements PermissionType {
 	DELETE("user.delete", READ),
 	IMPERSONATE("user.impersonate", READ),
 	LOCK("user.lock", READ),
-	UNLOCK("user.unlock", READ);
+	UNLOCK("user.unlock", READ),
+	RESET_CREDENTIALS("user.reset", READ);
 	
 	private final String val;
 	

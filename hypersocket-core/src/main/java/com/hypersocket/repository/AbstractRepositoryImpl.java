@@ -17,8 +17,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
@@ -549,6 +551,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly = true)
+	@Override
 	public <T> List<T> search(Class<T> clz, String searchColumn, String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting, CriteriaConfiguration... configs) {
 		
@@ -587,6 +590,36 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 
 		return ((List<T>) criteria.list());
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public <T> long searchCount(Class<T> clz, String searchColumn, String searchPattern,
+			CriteriaConfiguration... configs) {
+		
+		Criteria criteria = createCriteria(clz);
+		
+		Map<String,Criteria> assosications = new HashMap<String,Criteria>();
+		
+		for (String property : resolveCollectionProperties(clz)) {
+			 criteria.setFetchMode(property, org.hibernate.FetchMode.SELECT);
+		}
+		
+		if(StringUtils.isNotBlank(searchPattern) && HibernateUtils.isNotWildcard(searchPattern)) {
+			HibernateUtils.configureSearch(searchColumn, searchPattern, criteria, clz, assosications);
+		}
+
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.setProjection(Projections.rowCount());
+
+		Object result = criteria.uniqueResult();
+		if(result!=null) {
+			return (Long) result;
+		}
+		return 0L;
 	}
 	
 	protected List<String> resolveCollectionProperties(Class<?> type) {
