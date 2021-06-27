@@ -15,6 +15,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
@@ -232,12 +233,14 @@ public class ExtensionHelper {
 				}
 				repos = ArrayUtils.addAll(repos, additionalRepos.split(","));
 			}
-			additionalRepos = System.getProperty("hypersocket.additionalRepos");
-			if (additionalRepos != null) {
-				if (log.isInfoEnabled()) {
-					log.info(String.format("Adding additional repos %s", additionalRepos));
+			if(StringUtils.isBlank(additionalRepos)) {
+				additionalRepos = System.getProperty("hypersocket.additionalRepos");
+				if (additionalRepos != null) {
+					if (log.isInfoEnabled()) {
+						log.info(String.format("Adding additional repos %s", additionalRepos));
+					}
+					repos = ArrayUtils.addAll(repos, additionalRepos.split(","));
 				}
-				repos = ArrayUtils.addAll(repos, additionalRepos.split(","));
 			}
 			String updateUrl = String.format("%s/%s/%s/%s/%s", url, version, HypersocketUtils.csv(repos),
 					serial, HypersocketUtils.csv(targets));
