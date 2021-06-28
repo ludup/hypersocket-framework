@@ -13,6 +13,9 @@ import java.security.SecureRandom;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -208,6 +211,16 @@ public class HypersocketUtils {
 		*/
 		
 		return new SimpleDateFormat(format).parse(date);
+	}
+	
+	public static LocalDate fromDateToLocalDate(Date date) {
+		log.info("The zone id is {}", ZoneId.systemDefault());
+		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	}
+	
+	public static LocalDateTime fromDateToLocalDateTime(Date date) {
+		log.info("The zone id is {}", ZoneId.systemDefault());
+		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 	}
 	
 	public static Date today() {
