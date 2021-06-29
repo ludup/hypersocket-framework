@@ -17,6 +17,7 @@ public abstract class AbstractPropertyTemplate {
 	private boolean hidden;
 	private String displayMode;
 	private boolean readOnly;
+	private boolean required;
 	private boolean encrypted;
 	private PropertyCategory category;
 	private String mapping;
@@ -203,13 +204,23 @@ public abstract class AbstractPropertyTemplate {
 		}
 		return false;
 	}
+	
+	public boolean isRequired() {
+		return required;
+	}
+
+	public void setRequired(boolean required) {
+		this.required = required;
+	}
 
 	@Override
 	public String toString() {
 		return "AbstractPropertyTemplate [resourceKey=" + resourceKey + ", defaultValue=" + defaultValue + ", weight="
-				+ weight + ", hidden=" + hidden + ", displayMode=" + displayMode + ", readOnly=" + readOnly
+				+ weight + ", hidden=" + hidden + ", displayMode=" + displayMode + ", readOnly=" + readOnly + ", required=" + required
 				+ ", encrypted=" + encrypted + ", category=" + category + ", name=" + name + "]";
 	}
+
+	
 	
 	
 	

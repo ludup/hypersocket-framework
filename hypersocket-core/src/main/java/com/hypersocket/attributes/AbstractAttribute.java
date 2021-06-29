@@ -52,6 +52,9 @@ public abstract class AbstractAttribute<C extends RealmAttributeCategory<?>> ext
 	@Column(name="linked_resource_id")
 	private Long linkedResourceId;
 	
+	@Column(name="required")
+	private Boolean required = false;
+	
 	public abstract C getCategory();
 
 	public abstract void setCategory(C category);
@@ -149,6 +152,14 @@ public abstract class AbstractAttribute<C extends RealmAttributeCategory<?>> ext
 			return;
 		}
 		this.options = ResourceUtils.implodeNamePairs(options);
+	}
+
+	public Boolean getRequired() {
+		return required == null ? Boolean.FALSE : required;
+	}
+
+	public void setRequired(Boolean required) {
+		this.required = required;
 	}
 
 	

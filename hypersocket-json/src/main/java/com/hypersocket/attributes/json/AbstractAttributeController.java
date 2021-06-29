@@ -103,12 +103,12 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 			if (attribute.getId() != null) {
 				newAttribute = service.updateAttribute(service.getResourceById(attribute.getId()), attribute.getName(),
 						attribute.getCategory(), attribute.getDescription(), attribute.getDefaultValue(),
-						attribute.getWeight(), attribute.getType(), attribute.getDisplayMode(), attribute.getReadOnly(),
-						attribute.getEncrypted(), attribute.getVariableName(), roles, attribute.getOptions());
+						attribute.getWeight(), attribute.getType(), attribute.getDisplayMode(), attribute.getReadOnly(), 
+						attribute.getRequired(), attribute.getEncrypted(), attribute.getVariableName(), roles, attribute.getOptions());
 			} else {
 				newAttribute = service.createAttribute(attribute.getName(), attribute.getCategory(),
 						attribute.getDescription(), attribute.getDefaultValue(), attribute.getWeight(),
-						attribute.getType(), attribute.getDisplayMode(), attribute.getReadOnly(),
+						attribute.getType(), attribute.getDisplayMode(), attribute.getReadOnly(), attribute.getRequired(),
 						attribute.getEncrypted(), attribute.getVariableName(), roles, attribute.getOptions());
 			}
 			return new ResourceStatus<A>(newAttribute,
