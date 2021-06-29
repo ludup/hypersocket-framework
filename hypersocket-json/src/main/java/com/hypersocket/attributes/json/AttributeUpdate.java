@@ -16,6 +16,7 @@ public class AttributeUpdate {
 	private String type;
 	private String displayMode;
 	private Boolean readOnly;
+	private Boolean required;
 	private Boolean encrypted;
 	private String variableName;
 	private List<NameValuePair> options;
@@ -139,6 +140,14 @@ public class AttributeUpdate {
 
 	public Collection<NameValuePair> getOptions() {
 		return options;
+	}
+
+	public Boolean getRequired() {
+		return required == null ? Boolean.FALSE : required;
+	}
+
+	public void setRequired(Boolean required) {
+		this.required = required;
 	}
 	
 }

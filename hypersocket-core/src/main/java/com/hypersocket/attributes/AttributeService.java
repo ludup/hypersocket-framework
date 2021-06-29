@@ -14,12 +14,12 @@ public interface AttributeService<A extends AbstractAttribute<?>, C extends Real
 
 	A updateAttribute(A attribute, String name,
 			Long category, String description, String defaultValue, int weight,
-			String type, String displayMode, Boolean readOnly, Boolean encrypted,
+			String type, String displayMode, Boolean readOnly, Boolean required, Boolean encrypted,
 			String variableName, Set<Role> roles, Collection<NameValuePair> options) throws AccessDeniedException, ResourceException;
 
 	A createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,
-			String displayMode, Boolean readOnly, Boolean encrypted, String variableName, Set<Role> roles, Collection<NameValuePair> options)
+			String displayMode, Boolean readOnly, Boolean required, Boolean encrypted, String variableName, Set<Role> roles, Collection<NameValuePair> options)
 			throws AccessDeniedException, ResourceException;
 
 	void deleteAttribute(A attribute)

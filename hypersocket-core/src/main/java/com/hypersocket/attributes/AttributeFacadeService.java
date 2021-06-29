@@ -24,7 +24,7 @@ public interface AttributeFacadeService extends AuthenticatedService {
 
 	UserAttribute createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,
-			Boolean readOnly, Boolean encrypted, String variableName)
+			Boolean readOnly, Boolean required, Boolean encrypted, String variableName)
 			throws AccessDeniedException, ResourceException;
 
 }

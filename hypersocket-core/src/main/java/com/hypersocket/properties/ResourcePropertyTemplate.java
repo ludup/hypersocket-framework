@@ -22,6 +22,7 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 		setHidden(t.isHidden());
 		setDisplayMode(t.getDisplayMode());
 		setReadOnly(t.isReadOnly());
+		setRequired(t.isRequired());
 		setResource(resource);
 		setPropertyStore(t.getPropertyStore());
 		setDefaultsToProperty(t.getDefaultsToProperty());

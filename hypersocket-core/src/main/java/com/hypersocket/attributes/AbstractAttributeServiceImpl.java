@@ -101,7 +101,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	@Override
 	public A updateAttribute(A attribute, String name,
 			Long category, String description, String defaultValue, int weight,
-			String type, String displayMode, Boolean readOnly, Boolean encrypted,
+			String type, String displayMode, Boolean readOnly, Boolean required, Boolean encrypted,
 			String variableName, Set<Role> roles, Collection<NameValuePair> options) throws AccessDeniedException, ResourceException {
 
 		assertPermission(updatePermission);
@@ -125,6 +125,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		attribute.setType(AttributeType.valueOf(type));
 		attribute.setDisplayMode(displayMode);
 		attribute.setReadOnly(readOnly);
+		attribute.setRequired(required);
 		attribute.setEncrypted(encrypted);
 		attribute.setVariableName(variableName);
 		attribute.setOptions(options);
@@ -138,7 +139,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 	@Override
 	public A createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,
-			String displayMode, Boolean readOnly, Boolean encrypted, String variableName, Set<Role> roles, Collection<NameValuePair> options)
+			String displayMode, Boolean readOnly, Boolean required, Boolean encrypted, String variableName, Set<Role> roles, Collection<NameValuePair> options)
 			throws ResourceException, AccessDeniedException {
 		
 		A attribute = createNewAttributeInstance();
@@ -167,6 +168,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		
 		attribute.setDisplayMode(displayMode);
 		attribute.setReadOnly(readOnly);
+		attribute.setRequired(required);
 		attribute.setEncrypted(encrypted);
 		attribute.setVariableName(variableName);
 		attribute.setOptions(options);
@@ -276,6 +278,7 @@ public abstract class AbstractAttributeServiceImpl<A extends AbstractAttribute<C
 		template.setHidden(attr.getHidden());
 		template.setDisplayMode(attr.getDisplayMode().equalsIgnoreCase("admin") ? "admin" : "");
 		template.setReadOnly(attr.getReadOnly());
+		template.setRequired(attr.getRequired());
 		template.setMapping("");
 		template.setCategory(cat);
 		if(!attr.getOptions().isEmpty()) {

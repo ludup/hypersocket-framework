@@ -72,11 +72,11 @@ public class AttributeFacadeServiceImpl extends AbstractAuthenticatedServiceImpl
 	@Override
 	public UserAttribute createAttribute(String name, Long category,
 			String description, String defaultValue, int weight, String type,
-			Boolean readOnly, Boolean encrypted, String variableName)
+			Boolean readOnly, Boolean required, Boolean encrypted, String variableName)
 			throws ResourceException, AccessDeniedException {
 
 		return attributeService.createAttribute(name, category, description,
-				defaultValue, weight, type, readOnly ? "admin" : "", false, encrypted, variableName,
+				defaultValue, weight, type, readOnly ? "admin" : "", false, required, encrypted, variableName,
 				new HashSet<Role>(), new ArrayList<NameValuePair>());
 	}
 }
