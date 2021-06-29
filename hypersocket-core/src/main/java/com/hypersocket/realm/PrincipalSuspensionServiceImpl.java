@@ -87,73 +87,21 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 					principalSuspension.setDuration(duration);
 					principalSuspension.setSuspensionType(type);
 				
-					String scheduleId = name + "/" + realm.getId();
-					
-					try {
-						if (schedulerService.jobExists(scheduleId)) {
-							if (log.isInfoEnabled()) {
-								log.info(String.format("%s with scheduleId %s is already suspended. Rescheduling to new parameters",scheduleId,name));
-							}
-				
-							if (log.isInfoEnabled()) {
-								log.info(String.format("Cancelling existing schedule for %s with scheduleId %s",name,scheduleId));
-							}
-							
-							schedulerService.cancelNow(scheduleId);
-				
-						}
-					} catch (Exception e) {
-						log.error("Failed to cancel suspend schedule for " + name, e);
-					}
+					clearExistingJob(name, realm);
 
 					repository.saveSuspension(principalSuspension);
 					
-					updateSuspension(principal, true);
-
-					if (duration > 0) {
-
-						if (log.isInfoEnabled()) {
-							log.info("Scheduling resume account for account " + name
-									+ " in " + duration + " minutes");
-						}
-
-						scheduleResume(name, realm, startDate, duration);
-						
+					Date now = new Date();
+					
+					if (startDate.after(now)) {
+						actOnSuspensionInFuture(name, realm, startDate, duration);
+					} else {
+						actOnSuspensionNow(principal, name, realm, startDate, duration);
 					}
 
 					return principalSuspension;
 				}
-				
-				private void scheduleResume(String username, Realm realm, Date startDate, long duration) {
-					
-					try {
-						Calendar c = Calendar.getInstance();
-						c.setTime(startDate);
-						c.add(Calendar.MINUTE, (int) duration); 
-						
-						if(new Date().after(c.getTime())) {
-							if(log.isInfoEnabled()) {
-								log.info("Not scheduling resume because the suspension has already expired");
-							}
-							return;
-						}
-						PermissionsAwareJobData data = new PermissionsAwareJobData(
-								realm, "resumeUserJob");
-						data.put("name", username);
-
-						String scheduleId = username + "/" + realm.getId();
-						
-						try {
-							schedulerService.scheduleAt(ResumeUserJob.class, scheduleId, data, c.getTime());
-						} catch (SchedulerException e) {
-							throw new ResourceCreationException(RealmService.RESOURCE_BUNDLE,
-									"error.suspendUser.schedule", e.getMessage());
-						}
-					} catch (ResourceCreationException e) {
-						throw new IllegalStateException(e.getMessage(), e);
-					}
-
-				}
+			
 			});
 		} catch (AccessDeniedException e) {
 			throw new IllegalStateException(e.getMessage(), e);
@@ -225,6 +173,113 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 		}
 	}
 	
+	private void scheduleResume(String username, Realm realm, Date startDate, long duration) {
+		
+		try {
+			Calendar c = Calendar.getInstance();
+			c.setTime(startDate);
+			c.add(Calendar.MINUTE, (int) duration); 
+			
+			if(new Date().after(c.getTime())) {
+				if(log.isInfoEnabled()) {
+					log.info("Not scheduling resume because the suspension has already expired");
+				}
+				return;
+			}
+			PermissionsAwareJobData data = new PermissionsAwareJobData(
+					realm, "resumeUserJob");
+			data.put("name", username);
+
+			String scheduleId = username + "/" + realm.getId();
+			
+			try {
+				schedulerService.scheduleAt(ResumeUserJob.class, scheduleId, data, c.getTime());
+			} catch (SchedulerException e) {
+				throw new ResourceCreationException(RealmService.RESOURCE_BUNDLE,
+						"error.suspendUser.schedule", e.getMessage());
+			}
+		} catch (ResourceCreationException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+
+	}
+	
+	private void scheduleSuspend(String username, Realm realm, Date startDate, long duration) {
+		
+		try {
+			Calendar c = Calendar.getInstance();
+			c.setTime(startDate);
+			
+			if(new Date().after(c.getTime())) {
+				if(log.isInfoEnabled()) {
+					log.info("Not scheduling suspension because the suspension has already expired");
+				}
+				return;
+			}
+			PermissionsAwareJobData data = new PermissionsAwareJobData(
+					realm, "resumeUserJob");
+			data.put("name", username);
+			data.put("duration", duration);
+
+			String scheduleId = username + "/" + realm.getId();
+			
+			try {
+				schedulerService.scheduleAt(SuspendUserJob.class, scheduleId, data, c.getTime());
+			} catch (SchedulerException e) {
+				throw new ResourceCreationException(RealmService.RESOURCE_BUNDLE,
+						"error.suspendUser.schedule", e.getMessage());
+			}
+		} catch (ResourceCreationException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+
+	}
+	
+	void actOnSuspensionNow(Principal principal, String name, Realm realm, Date startDate, Long duration) {
+		updateSuspension(principal, true);
+
+		if (duration > 0) {
+
+			if (log.isInfoEnabled()) {
+				log.info("Scheduling resume account for account " + name
+						+ " in " + duration + " minutes");
+			}
+
+			scheduleResume(name, realm, startDate, duration);
+			
+		}
+	}
+
+	void actOnSuspensionInFuture(String name, Realm realm, Date startDate, Long duration) {
+		if (log.isInfoEnabled()) {
+			log.info("Scheduling suspend account for account " + name
+					+ " at " + startDate);
+		}
+		
+		scheduleSuspend(name, realm, startDate, duration);
+	}
+
+	void clearExistingJob(String name, Realm realm) {
+		String scheduleId = name + "/" + realm.getId();
+		
+		try {
+			if (schedulerService.jobExists(scheduleId)) {
+				if (log.isInfoEnabled()) {
+					log.info(String.format("%s with scheduleId %s is already suspended. Rescheduling to new parameters",scheduleId,name));
+				}
+
+				if (log.isInfoEnabled()) {
+					log.info(String.format("Cancelling existing schedule for %s with scheduleId %s",name,scheduleId));
+				}
+				
+				schedulerService.cancelNow(scheduleId);
+
+			}
+		} catch (Exception e) {
+			log.error("Failed to cancel suspend schedule for " + name, e);
+		}
+	}
+
 	class PrincipalSuspendedFilter extends DefaultTableFilter {
 
 		@Override
