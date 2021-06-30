@@ -29,6 +29,27 @@ public class I18N {
 	
 	private I18N() {
 	}
+	
+	public static boolean bundleExists(String resourceBundle) {
+
+		if (resourceBundle == null) {
+			throw new IllegalArgumentException(
+					"You must specify a resource bundle");
+		}
+		
+		String bundle = resourceBundle;
+		if (!bundle.startsWith("i18n/")) {
+			bundle = "i18n/" + resourceBundle;
+		}
+
+		try {
+			ResourceBundle rb = ResourceBundle.getBundle(bundle, Locale.getDefault(),
+					I18N.class.getClassLoader());
+			return true;
+		} catch (MissingResourceException e) {
+		}
+		return false;
+	}
 
 	public static Set<String> getResourceKeys(Locale locale,
 			String resourceBundle) {
@@ -48,7 +69,6 @@ public class I18N {
 					I18N.class.getClassLoader());
 			keys.addAll(rb.keySet());
 		} catch (MissingResourceException e) {
-				
 		}
 		
 		I18nOverrideRepository repository = ApplicationContextServiceImpl.getInstance().getBean(I18nOverrideRepository.class);

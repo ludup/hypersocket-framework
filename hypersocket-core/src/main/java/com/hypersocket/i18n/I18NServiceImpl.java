@@ -135,8 +135,19 @@ public class I18NServiceImpl implements I18NService {
 	
 	@Override
 	public synchronized void registerBundle(String bundle) {
-		bundles.add(bundle);
-		resources.clear();
+		if(bundles.contains(bundle)) {
+			/* TODO: These should actually be fatal so they can be caught earlier */
+			log.warn(String.format("Attempt to register bundle that has already been registered with name %s", bundle));
+		}
+		else {
+			/* TODO: These should actually be fatal so they can be caught earlier */
+			if(!I18N.bundleExists(bundle))
+				log.warn(String.format("Attempt to register bundle with name %s that does not exist anywhere on the classpath (in 'i18n' resource folder).", bundle));
+			else {
+				bundles.add(bundle);
+				resources.clear();
+			}
+		}
 	}
 
 	private void buildBundleMap(String bundle, Locale locale, Cache<String,String> resources) {
