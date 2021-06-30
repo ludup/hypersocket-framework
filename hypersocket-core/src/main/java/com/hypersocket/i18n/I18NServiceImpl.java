@@ -179,21 +179,26 @@ public class I18NServiceImpl implements I18NService {
 	}
 	
 	@Override
-	public synchronized void registerBundle(String bundle) {
-		registerBundle(bundle, I18NGroup.DEFAULT_GROUP);
-	}
-	
-	@Override
 	public synchronized void registerBundle(String bundle, I18NGroup group) {
 		Set<String> bundleSet = bundleMap.get(group.getTitle());
 		
 		if (bundleSet == null) {
 			bundleSet = new HashSet<>();
 		}
-		
-		bundleSet.add(bundle);
-		
-		bundleMap.put(group.getTitle(), bundleSet);
+
+		if(bundleSet.contains(bundle)) {
+			/* TODO: These should actually be fatal so they can be caught earlier */
+			log.warn(String.format("Attempt to register bundle that has already been registered with name %s", bundle));
+		}
+		else {
+			/* TODO: These should actually be fatal so they can be caught earlier */
+			if(!I18N.bundleExists(bundle))
+				log.warn(String.format("Attempt to register bundle with name %s that does not exist anywhere on the classpath (in 'i18n' resource folder).", bundle));
+			else {
+				bundleSet.add(bundle);
+				bundleMap.put(group.getTitle(), bundleSet);
+			}
+		}
 	}
 
 	private void buildBundleMap(String bundle, Locale locale, Cache<String,String> resources) {
