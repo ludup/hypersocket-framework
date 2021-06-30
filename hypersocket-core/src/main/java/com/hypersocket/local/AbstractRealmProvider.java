@@ -7,9 +7,11 @@
  ******************************************************************************/
 package com.hypersocket.local;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,9 @@ public abstract class AbstractRealmProvider extends ResourceTemplateRepositoryIm
 		throw new UnsupportedOperationException();
 	}
 	
+	@JsonIgnore
+	public abstract ResourceTemplateRepository getUserRepository();
+	
 	@Override
 	public Collection<PropertyCategory> getPrincipalTemplate(Resource resource) {
 		if(supportsTemplates()) {
@@ -49,7 +54,18 @@ public abstract class AbstractRealmProvider extends ResourceTemplateRepositoryIm
 	@Override
 	public Collection<PropertyCategory> getPrincipalTemplate() {
 		if(supportsTemplates()) {
-			return getTemplateRepository().getPropertyCategories(null);
+			List<PropertyCategory> allCats = new ArrayList<>();
+			try {
+				allCats.addAll(getTemplateRepository().getPropertyCategories(null));
+			}
+			catch(UnsupportedOperationException uoe) {
+			}
+			try {
+				allCats.addAll(getUserRepository().getPropertyCategories(null));
+			}
+			catch(UnsupportedOperationException uoe) {
+			}
+			return allCats;
 		} else {
 			return Collections.<PropertyCategory>emptyList();
 		}
