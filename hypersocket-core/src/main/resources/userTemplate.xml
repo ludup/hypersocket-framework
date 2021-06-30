@@ -2,12 +2,12 @@
 <propertyTemplates context="user">
 	<propertyCategory resourceKey="category.system" store="db"
 		resourceBundle="UserInterface" weight="9999999" displayMode="admin">
-		<property resourceKey="user.bannedEmail" inputType="switch" 
+		<property resourceKey="user.bannedEmail" inputType="switch" ldapIgnore="true"
 		       weight="0" defaultValue="false"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.timezone" store="db"
 		resourceBundle="UserInterface" weight="999999">
-		<property resourceKey="user.timezone" inputType="dropdown" 
+		<property resourceKey="user.timezone" inputType="dropdown" ldapAttributeName="userTimezone"
 		       url="server/timezones" weight="0" defaultValue=""/>
 	</propertyCategory>
 </propertyTemplates>

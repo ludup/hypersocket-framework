@@ -258,5 +258,13 @@ public class LocalUser extends UserPrincipal<LocalGroup> implements Serializable
 		this.secondaryMobile = secondaryMobile;
 	}
 	
+	public String getGuid() {
+		return getUUID().toUpperCase();
+	}
+
+	public String getUuid() {
+		return getUUID();
+	}
+	
 	
 }
