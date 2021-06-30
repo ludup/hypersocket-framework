@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -42,6 +43,17 @@ public class LocalGroup extends GroupPrincipal<LocalUser, LocalGroup> {
 	@JoinTable(name = "local_group_groups", joinColumns={@JoinColumn(name="gguid")}, inverseJoinColumns={@JoinColumn(name="guid")})
 	private Set<LocalGroup> parents = new HashSet<LocalGroup>();
 	
+	@Column(name="posix_id")
+	private int posixId;
+	
+	public int getPosixId() {
+		return posixId;
+	}
+
+	public void setPosixId(Integer posixId) {
+		this.posixId = posixId;
+	}
+
 	@Override
 	public PrincipalStatus getPrincipalStatus() {
 		return PrincipalStatus.ENABLED;
