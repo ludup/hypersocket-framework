@@ -179,6 +179,11 @@ public class I18NServiceImpl implements I18NService {
 	}
 	
 	@Override
+	public synchronized void registerBundle(String bundle) {
+		registerBundle(bundle, I18NGroup.DEFAULT_GROUP);
+	}
+	
+	@Override
 	public synchronized void registerBundle(String bundle, I18NGroup group) {
 		Set<String> bundleSet = bundleMap.get(group.getTitle());
 		
