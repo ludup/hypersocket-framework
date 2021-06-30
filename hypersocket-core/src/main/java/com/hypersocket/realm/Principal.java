@@ -205,7 +205,7 @@ public abstract class Principal extends RealmResource {
 	}
 
 	public Boolean isSuspended() {
-		return suspended;
+		return suspended == null ? Boolean.FALSE : suspended;
 	}
 
 	public void setSuspended(Boolean suspended) {
