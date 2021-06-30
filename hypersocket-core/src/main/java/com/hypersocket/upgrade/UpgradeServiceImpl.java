@@ -144,14 +144,13 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			}
 			
 
-			if (log.isInfoEnabled()) {
-				if (fresh) {
-					log.info("Database is fresh, not doing any pre-upgrading");
-					return;
-				} else {
-					log.info("Pre-upgrading existing database");
-				}
+			if (fresh) {
+				log.info("Database is fresh, not doing any pre-upgrading");
+				return;
+			} else {
+				log.info("Pre-upgrading existing database");
 			}
+			
 			List<UpgradeOp> ops = buildUpgradeOps();
 			Map<String, Object> beans = new HashMap<String, Object>();
 
