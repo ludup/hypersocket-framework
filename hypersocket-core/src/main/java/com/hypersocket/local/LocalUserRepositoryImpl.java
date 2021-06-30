@@ -19,6 +19,10 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -49,6 +53,8 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	private EncryptionService encryptionService;
 
 	private EntityResourcePropertyStore entityPropertyStore;
+
+	private Object idLock = new Object();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -77,6 +83,8 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
 		}
 	};
+
+	private static final int MIN_UID = 1000;
 	
 	@Override
 	@Transactional
@@ -87,6 +95,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		user.setResourceCategory(LocalRealmProviderImpl.USER_RESOURCE_CATEGORY);
 		user.setRealm(realm);
 		user.setPrincipalType(PrincipalType.USER);
+		user.setPosixId(getNextPosixId(realm, LocalUser.class));
 		save(user);
 		
 		return user;
@@ -104,6 +113,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		group.setName(name);
 		group.setRealm(realm);
 		group.setPrincipalType(PrincipalType.GROUP);
+		group.setPosixId(getNextPosixId(realm, LocalGroup.class));
 		save(group);
 		return group;
 	}
@@ -450,5 +460,53 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Override
 	public Collection<LocalUserCredentials> allCredentials() {
 		return list(LocalUserCredentials.class);
+	}
+
+	@Override
+	public int getNextPosixId(Realm realm, Class<? extends Principal> principalClass) {
+		synchronized(idLock) {
+			/* NOTE: I really don't like this. It will be hard to optimise should it 
+			 * be required. We can't use standard Identity columns because of the 
+			 * requirement to make the ID unique within a realm (at least i can't find
+			 * how to do this in hibernate - any ideas?).
+			 * 
+			 *   Reference: https://stackoverflow.com/questions/3900105/get-record-with-max-id-using-hibernate-criteria
+			 *   
+			 *  NOTE: Can't seem to use DetachedCriteria method for this. Any ideas?
+			 */
+			
+			Criteria c = getCurrentSession().createCriteria(principalClass);
+			c.addOrder(Order.desc("posixId"));
+			c.setMaxResults(1);
+			c.add(Restrictions.eq("deleted", false));
+			c.add(Restrictions.eq("realm", realm));
+			c.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+			@SuppressWarnings("unchecked")
+			List<Object> items = c.list();
+			if(items.isEmpty()) {
+				return MIN_UID;
+			}
+			else {
+				int posixId;
+				if(principalClass.equals(LocalUser.class)) {
+					posixId = ((LocalUser)items.get(0)).getPosixId();
+				}
+				else if(principalClass.equals(LocalGroup.class)) {
+					posixId = ((LocalGroup)items.get(0)).getPosixId();
+				}
+				else
+					throw new IllegalArgumentException(String.format("Unexpected type %s", principalClass));
+			
+				posixId++;
+				if(posixId >= Integer.MAX_VALUE) {
+					/* BUG: What now? */
+					throw new IllegalArgumentException("Exhausted Posix ID."); 
+				}
+				if(posixId < MIN_UID) {
+					posixId = MIN_UID;
+				}
+				return (int)posixId;
+			}
+		}
 	}
 }

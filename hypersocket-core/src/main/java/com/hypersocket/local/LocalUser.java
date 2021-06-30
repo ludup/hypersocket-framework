@@ -84,6 +84,17 @@ public class LocalUser extends UserPrincipal<LocalGroup> implements Serializable
 	@Column(name="description")
 	private String description;
 	
+	@Column(name="posix_id")
+	private Integer posixId;
+	
+	public int getPosixId() {
+		return posixId == null ? 0 : posixId;
+	}
+
+	public void setPosixId(int posixId) {
+		this.posixId = posixId;
+	}
+
 	public String getIcon() {
 		return "fa-database";
 	}

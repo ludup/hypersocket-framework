@@ -88,4 +88,6 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 	void deleteRealm(Realm realm);
 
 	Collection<LocalUserCredentials> allCredentials();
+	
+	int getNextPosixId(Realm realm, Class<? extends Principal> principalClass);
 }
