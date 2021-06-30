@@ -74,6 +74,9 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	private LocalUserRepository userRepository;
 
 	@Autowired
+	private LocalGroupRepository groupRepository;
+
+	@Autowired
 	private RealmService realmService;
 
 	@Autowired
@@ -100,6 +103,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 		userRepository.loadPropertyTemplates("localUserTemplate.xml");
 		userRepository.registerPropertyResolver(userAttributeService.getPropertyResolver());
+		groupRepository.loadPropertyTemplates("localGroupTemplate.xml");
 	}
 
 
@@ -116,7 +120,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 				compoundIterator.addIterator(userRepository.iterateUsers(realm, new ColumnSort[0]));
 				break;
 			case GROUP:
-				compoundIterator.addIterator(userRepository.iterateGroups(realm, new ColumnSort[0]));
+				compoundIterator.addIterator(groupRepository.iterateGroups(realm, new ColumnSort[0]));
 				break;
 			case SERVICE:
 			case SYSTEM:
@@ -139,7 +143,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 				principal = userRepository.getUserByName(principalName, realm);
 				break;
 			case GROUP:
-				principal = userRepository.getGroupByName(principalName, realm);
+				principal = groupRepository.getGroupByName(principalName, realm);
 				break;
 			case SERVICE:
 			case SYSTEM:
@@ -421,7 +425,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 				principal = userRepository.getUserById(id, realm, false);
 				break;
 			case GROUP:
-				principal = userRepository.getGroupById(id, realm, false);
+				principal = groupRepository.getGroupById(id, realm, false);
 				break;
 			case SERVICE:
 			case SYSTEM:
@@ -448,7 +452,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 				principal = userRepository.getUserById(id, realm, true);
 				break;
 			case GROUP:
-				principal = userRepository.getGroupById(id, realm, true);
+				principal = groupRepository.getGroupById(id, realm, true);
 				break;
 			case SERVICE:
 			case SYSTEM:
@@ -508,7 +512,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			}
 		}
 		
-		userRepository.saveGroup(group);
+		groupRepository.saveGroup(group);
 		
 		return group;
 	}
@@ -523,7 +527,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		}
 		LocalGroup grp = (LocalGroup) group;
 		grp.getUsers().clear();
-		userRepository.deleteGroup(grp);
+		groupRepository.deleteGroup(grp);
 
 	}
 
@@ -560,7 +564,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			grp.getGroups().add((LocalGroup) principal);
 		}
 
-		userRepository.saveGroup(grp);
+		groupRepository.saveGroup(grp);
 
 		return grp;
 	}
@@ -710,7 +714,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		case USER:
 			return userRepository.countUsers(realm, searchColumn, searchPattern);
 		case GROUP:
-			return userRepository.countGroups(realm, searchColumn, searchPattern);
+			return groupRepository.countGroups(realm, searchColumn, searchPattern);
 		default:
 			return 0L;
 		}
@@ -726,7 +730,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			return userRepository.getUsers(realm, searchColumn, searchPattern, start, length,
 					sorting);
 		case GROUP:
-			return userRepository.getGroups(realm, searchColumn, searchPattern, start,
+			return groupRepository.getGroups(realm, searchColumn, searchPattern, start,
 					length, sorting);
 		default:
 			throw new IllegalArgumentException(
@@ -744,9 +748,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional(readOnly=true)
 	public Collection<PropertyCategory> getGroupProperties(Principal principal) {
-		// TODO we need a way to get these from the repository - currently
-		// restricted to only one resource type per repository
-		return new ArrayList<PropertyCategory>();
+		return groupRepository.getPropertyCategories(principal);
 	}
 
 	@Override
@@ -840,7 +842,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 
 	@Override
 	public Set<String> getGroupPropertyNames(Principal principal) {
-		return new HashSet<String>();
+		return groupRepository.getPropertyNames(principal);
 	}
 
 	@Override

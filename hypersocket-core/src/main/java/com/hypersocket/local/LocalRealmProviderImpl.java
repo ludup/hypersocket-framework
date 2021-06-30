@@ -58,6 +58,9 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	private LocalUserRepository userRepository;
 
 	@Autowired
+	private LocalGroupRepository groupRepository;
+
+	@Autowired
 	private RealmService realmService;
 
 	@Autowired
@@ -89,6 +92,7 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 
 		userRepository.loadPropertyTemplates("localUserTemplate.xml");
 		userRepository.registerPropertyResolver(userAttributeService.getPropertyResolver());
+		groupRepository.loadPropertyTemplates("localGroupTemplate.xml");
 		
 		if(Boolean.getBoolean("logonbox.forceAdminPassword")) {
 			sessionService.executeInSystemContext(()->{
@@ -137,7 +141,6 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 
 	@Override
 	public void assertCreateRealm(Map<String, String> properties) throws ResourceException {
-		
 	}
 
 	@Override
@@ -175,12 +178,13 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 		}
 		
 		userRepository.resetRealm(permissionService.iteratePrincipalsByRole(realm, roles));
-		
+		groupRepository.resetRealm(permissionService.iteratePrincipalsByRole(realm, roles));
 	}
 	
 	@Override
 	public void deleteRealm(Realm realm) {
 		userRepository.deleteRealm(realm);
+		groupRepository.deleteRealm(realm);
 	}
 
 	@Override

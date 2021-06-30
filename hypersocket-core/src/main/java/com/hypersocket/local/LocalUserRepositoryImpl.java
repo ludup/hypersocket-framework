@@ -19,10 +19,7 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -95,7 +92,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		user.setResourceCategory(LocalRealmProviderImpl.USER_RESOURCE_CATEGORY);
 		user.setRealm(realm);
 		user.setPrincipalType(PrincipalType.USER);
-		user.setPosixId(getNextPosixId(realm, LocalUser.class));
+		user.setPosixId(getNextPosixId(realm));
 		save(user);
 		
 		return user;
@@ -106,18 +103,6 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		save(creds, creds.getId()==null);
 	}
 	
-	@Transactional
-	public LocalGroup createGroup(String name, Realm realm) {
-		
-		LocalGroup group = new LocalGroup();
-		group.setName(name);
-		group.setRealm(realm);
-		group.setPrincipalType(PrincipalType.GROUP);
-		group.setPosixId(getNextPosixId(realm, LocalGroup.class));
-		save(group);
-		return group;
-	}
-	
 	protected LocalUser getUser(String column, Object value, Realm realm, PrincipalType type, boolean deleted) {
 		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new DeletedCriteria(deleted), new PrincipalTypeRestriction(type));
 	}
@@ -125,15 +110,6 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Transactional(readOnly=true)
 	public LocalUser getUserByName(String username, Realm realm) {
 		return getUser("name", username, realm, PrincipalType.USER, false);
-	}
-	
-	protected LocalGroup getGroup(String column, Object value, Realm realm, boolean deleted) {
-		return get(column, value, LocalGroup.class, JOIN_USERS, new DeletedCriteria(deleted), new RealmRestriction(realm));
-	}
-	
-	@Transactional(readOnly=true)
-	public LocalGroup getGroupByName(String name, Realm realm) {
-		return getGroup("name", name, realm, false);
 	}
 
 	@Override
@@ -179,52 +155,17 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			}
 		};
 	}
-	
-	@Override
-	@Transactional(readOnly = true)
-	public Iterator<LocalGroup> iterateGroups(Realm realm, ColumnSort[] sorting) {
-		return new PrincipalIterator<LocalGroup>(sorting, realm) { 
-			@Override
-			protected void remove(LocalGroup principal) {
-				deleteGroup(principal);
-			}
-
-			@SuppressWarnings("unchecked")
-			@Override
-			protected List<LocalGroup> listUsers(Realm realm, int start, int iteratorPageSize, ColumnSort[] sorting) {
-				return (List<LocalGroup>) getGroups(realm, "", "", start, iteratorPageSize, sorting);
-			}
-		};
-	}
 
 	@Override
 	@Transactional(readOnly=true)
 	public List<LocalUser> allUsers(Realm realm) {
 		return allEntities(LocalUser.class, JOIN_GROUPS, new DistinctRootEntity(), new RealmRestriction(realm), new HiddenCriteria(false));
 	}
-
-	@Override
-	@Transactional(readOnly=true)
-	public List<LocalGroup> allGroups(Realm realm) {
-		return allEntities(LocalGroup.class, new DistinctRootEntity(), new RealmRestriction(realm), new HiddenCriteria(false));
-	}
 	
 	@Override
 	@Transactional(readOnly=true)
 	public LocalUserCredentials getCredentials(LocalUser user) {
 		return get("user", user, LocalUserCredentials.class, new DistinctRootEntity());
-	}
-	
-	@Override
-	@Transactional
-	public void saveGroup(LocalGroup group) {
-		
-		if(group.getRealm()==null) {
-			throw new IllegalArgumentException("No realm set for new group " + group.getName());
-		}
-
-		save(group);
-		
 	}
 
 	@Override
@@ -291,23 +232,9 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 
 	@Override
 	@Transactional(readOnly=true)
-	public Principal getGroupById(Long id, Realm realm, boolean deleted) {
-		return getGroup("id", id, realm, deleted);
-	}
-
-	@Override
-	@Transactional(readOnly=true)
 	public Principal getUserByIdAndType(Long id, Realm realm,
 			PrincipalType type) {
 		return getUser("id", id, realm, type, false);
-	}
-
-	@Override
-	@Transactional
-	public void deleteGroup(LocalGroup group) {
-		group.getUsers().clear();
-		group.setDeleted(true);
-		save(group);
 	}
 
 	@Override
@@ -333,20 +260,6 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 
 	@Override
 	@Transactional(readOnly=true)
-	public Long countGroups(final Realm realm, final String searchColumn, final String searchPattern) {
-		return getCount(LocalGroup.class, searchColumn, searchPattern, new CriteriaConfiguration() {
-			@Override
-			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.eq("realm", realm));
-				criteria.add(Restrictions.eq("deleted", false));
-				criteria.add(Restrictions.eq("hidden", false));
-			}
-		});
-	};
-	
-
-	@Override
-	@Transactional(readOnly=true)
 	public List<?> getUsers(final Realm realm, String searchColumn, final String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting) {
 		return search(LocalUser.class, searchColumn, searchPattern, start, length, sorting, new CriteriaConfiguration() {
@@ -365,55 +278,9 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<?> getGroups(final Realm realm, String searchColumn, final String searchPattern, final int start,
-			final int length, final ColumnSort[] sorting) {
-		
-		return search(LocalGroup.class, searchColumn, searchPattern, start, length, sorting, new CriteriaConfiguration() {
-
-			@Override
-			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.eq("realm", realm));
-				criteria.add(Restrictions.eq("deleted", false));
-				criteria.add(Restrictions.eq("hidden", false));
-				criteria.setFetchMode("users", FetchMode.SELECT);
-				criteria.setFetchMode("roles", FetchMode.SELECT);
-				criteria.setFetchMode("properties", FetchMode.SELECT);
-			}
-		});
-	}
-	
-
-	@Override
-	@Transactional(readOnly=true)
-	public Collection<? extends Principal> getGroupsByUser(final LocalUser principal) {
-		return list(LocalGroup.class, false, new CriteriaConfiguration() {
-			
-			@Override
-			public void configure(Criteria criteria) {
-				criteria = criteria.createCriteria("users");
-				criteria.add(Restrictions.eq("id", principal.getId()));
-			}
-		});
-	}
-
-	@Override
-	@Transactional(readOnly=true)
 	public Collection<? extends Principal> getUsersByGroup(final LocalGroup principal) {
 		return list(LocalUser.class, false, new CriteriaConfiguration() {
 			
-			@Override
-			public void configure(Criteria criteria) {
-				criteria = criteria.createCriteria("groups");
-				criteria.add(Restrictions.eq("id", principal.getId()));
-			}
-		});
-	}
-
-	@Override
-	@Transactional(readOnly=true)
-	public Collection<? extends Principal> getGroupsByGroup(final LocalGroup principal) {
-		return list(LocalGroup.class, false, new CriteriaConfiguration() {
-		
 			@Override
 			public void configure(Criteria criteria) {
 				criteria = criteria.createCriteria("groups");
@@ -446,10 +313,6 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		q3.setParameter("r", realm);
 		q3.executeUpdate();
 		
-		Query q2 = createQuery("delete from LocalGroup where realm = :r", true);
-		q2.setParameter("r", realm);
-		q2.executeUpdate();
-		
 		Query q = createQuery("delete from LocalUser where realm = :r", true);
 		q.setParameter("r", realm);
 		q.executeUpdate();
@@ -463,7 +326,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
-	public int getNextPosixId(Realm realm, Class<? extends Principal> principalClass) {
+	public int getNextPosixId(Realm realm) {
 		synchronized(idLock) {
 			/* NOTE: I really don't like this. It will be hard to optimise should it 
 			 * be required. We can't use standard Identity columns because of the 
@@ -475,27 +338,19 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			 *  NOTE: Can't seem to use DetachedCriteria method for this. Any ideas?
 			 */
 			
-			Criteria c = getCurrentSession().createCriteria(principalClass);
+			Criteria c = getCurrentSession().createCriteria(LocalUser.class);
 			c.addOrder(Order.desc("posixId"));
 			c.setMaxResults(1);
 			c.add(Restrictions.eq("deleted", false));
 			c.add(Restrictions.eq("realm", realm));
 			c.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 			@SuppressWarnings("unchecked")
-			List<Object> items = c.list();
+			List<LocalUser> items = c.list();
 			if(items.isEmpty()) {
 				return MIN_UID;
 			}
 			else {
-				int posixId;
-				if(principalClass.equals(LocalUser.class)) {
-					posixId = ((LocalUser)items.get(0)).getPosixId();
-				}
-				else if(principalClass.equals(LocalGroup.class)) {
-					posixId = ((LocalGroup)items.get(0)).getPosixId();
-				}
-				else
-					throw new IllegalArgumentException(String.format("Unexpected type %s", principalClass));
+				int posixId = ((LocalUser)items.get(0)).getPosixId();
 			
 				posixId++;
 				if(posixId >= Integer.MAX_VALUE) {

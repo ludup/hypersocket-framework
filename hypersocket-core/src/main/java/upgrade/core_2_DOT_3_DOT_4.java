@@ -16,12 +16,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.local.LocalGroup;
+import com.hypersocket.local.LocalGroupRepository;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.local.LocalUserRepository;
-import com.hypersocket.permissions.PermissionRepository;
-import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.tables.ColumnSort;
@@ -33,6 +31,9 @@ public class core_2_DOT_3_DOT_4 implements Runnable {
 
 	@Autowired
 	private LocalUserRepository localUserRepository;
+
+	@Autowired
+	private LocalGroupRepository localGroupRepository;
 	
 	@Autowired
 	private SessionService sessionService; 
@@ -58,7 +59,7 @@ public class core_2_DOT_3_DOT_4 implements Runnable {
 				Iterator<LocalUser> it = localUserRepository.iterateUsers(realm, new ColumnSort[0]);
 				while(it.hasNext()) {
 					LocalUser uit = it.next();
-					int nid = localUserRepository.getNextPosixId(realm, LocalUser.class);
+					int nid = localUserRepository.getNextPosixId(realm);
 					log.info(String.format("    %s = %s", uit.getPrincipalName(), nid));
 					uit.setPosixId(nid);
 					localUserRepository.saveUser(uit, new HashMap<>());
@@ -66,13 +67,13 @@ public class core_2_DOT_3_DOT_4 implements Runnable {
 				
 
 				log.info(String.format("Giving Posix Id to all groups in realm %s", realm.getName()));
-				Iterator<LocalGroup> git = localUserRepository.iterateGroups(realm, new ColumnSort[0]);
+				Iterator<LocalGroup> git = localGroupRepository.iterateGroups(realm, new ColumnSort[0]);
 				while(git.hasNext()) {
 					LocalGroup guit = git.next();
-					int nid = localUserRepository.getNextPosixId(realm, LocalGroup.class);
+					int nid = localGroupRepository.getNextPosixId(realm);
 					guit.setPosixId(nid);
 					log.info(String.format("    %s = %s", guit.getPrincipalName(), nid));
-					localUserRepository.saveGroup(guit);
+					localGroupRepository.saveGroup(guit);
 				}
 			}
 		}
