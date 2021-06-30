@@ -25,27 +25,17 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 
 	LocalUser createUser(String username, Realm realm);
 	
-	LocalGroup createGroup(String name, Realm realm);
-	
 	LocalUser getUserByName(String name, Realm realm);
-	
-	LocalGroup getGroupByName(String name, Realm realm);
 	
 	void assign(LocalUser user, LocalGroup group);
 	
 	void unassign(LocalUser user, LocalGroup group);
 
 	Collection<? extends Principal> allUsers(Realm realm);
-
-	Collection<? extends Principal> allGroups(Realm realm);
 	
 	Iterator<LocalUser> iterateUsers(Realm realm, ColumnSort[] sorting);
-	
-	Iterator<LocalGroup> iterateGroups(Realm realm, ColumnSort[] sorting);
 
 	LocalUserCredentials getCredentials(LocalUser user);
-	
-	void saveGroup(LocalGroup group);
 	
 	void saveUser(LocalUser user, Map<String,String> properties);
 
@@ -56,28 +46,16 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 
 	Principal getUserById(Long id, Realm realm, boolean deleted);
 
-	Principal getGroupById(Long id, Realm realm, boolean deleted);
-
 	Principal getUserByIdAndType(Long id, Realm realm,
 			PrincipalType system);
-
-	void deleteGroup(LocalGroup group);
 
 	void deleteUser(LocalUser usr);
 
 	Long countUsers(Realm realm, String searchColumn, String searchPattern);
 
-	Long countGroups(Realm realm, String searchColumn, String searchPattern);
-
-	List<?> getGroups(Realm realm, String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting);
-
 	List<?> getUsers(Realm realm, String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting);
 
-	Collection<? extends Principal> getGroupsByUser(LocalUser principal);
-
 	Collection<? extends Principal> getUsersByGroup(LocalGroup principal);
-
-	Collection<? extends Principal> getGroupsByGroup(LocalGroup principal);
 
 	Principal getUserByEmail(String email, Realm realm);
 
@@ -89,5 +67,5 @@ public interface LocalUserRepository extends ResourceTemplateRepository, Abstrac
 
 	Collection<LocalUserCredentials> allCredentials();
 	
-	int getNextPosixId(Realm realm, Class<? extends Principal> principalClass);
+	int getNextPosixId(Realm realm);
 }
