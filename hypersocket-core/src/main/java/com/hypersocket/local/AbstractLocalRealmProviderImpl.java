@@ -36,6 +36,7 @@ import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.PropertyFilter;
 import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.PasswordCreator;
@@ -86,6 +87,12 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	private ConfigurationService configurationService;
 
 	private Set<String> defaultProperties = new HashSet<String>();
+
+	
+	@Override
+	public ResourceTemplateRepository getUserRepository() {
+		return userRepository;
+	}
 	
 	@PostConstruct
 	private void registerProvider() throws Exception {
