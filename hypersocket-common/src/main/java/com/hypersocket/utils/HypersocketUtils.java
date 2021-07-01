@@ -563,4 +563,29 @@ public class HypersocketUtils {
 		return Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE).matcher(email).matches();
 	}
 
+	/**
+	 * Checks a given a numeric value as String it has consecutive numbers or same repeating numbers.
+	 * 
+	 * @param pin as String that is checked
+	 * @param consecutiveLength The length of consecutive sequence should be checked, 3 it will check for 3 consecutive 
+	 * sequence 645 or 123 or 222 as per order defined.
+	 * @param order In which order to check for, 1 for increasing, -1 for decreasing order, 0 for same repeating numbers
+	 * @return
+	 */
+	public static boolean isConsecutive(String pin, int consecutiveLength, int order) {
+		boolean consecutive = false;
+		char[] parts = pin.toCharArray();
+		int localConsecutiveLength = consecutiveLength;
+		for (int i = 1; i < parts.length; ++i) {
+			if ((parts[i - 1] + order) == parts[i]) {
+				--localConsecutiveLength;
+			} else {
+				localConsecutiveLength = consecutiveLength;
+			}
+			if (localConsecutiveLength <= 1) {
+				consecutive = true;
+			}
+		}
+		return consecutive;
+	}
 }
