@@ -44,10 +44,10 @@ public class LocalGroup extends GroupPrincipal<LocalUser, LocalGroup> {
 	private Set<LocalGroup> parents = new HashSet<LocalGroup>();
 	
 	@Column(name="posix_id")
-	private int posixId;
+	private Integer posixId;
 	
 	public int getPosixId() {
-		return posixId;
+		return posixId == null ? 0 : posixId;
 	}
 
 	public void setPosixId(Integer posixId) {
