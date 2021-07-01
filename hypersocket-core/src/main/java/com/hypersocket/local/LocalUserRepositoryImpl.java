@@ -326,6 +326,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	}
 
 	@Override
+	@Transactional
 	public int getNextPosixId(Realm realm) {
 		synchronized(idLock) {
 			/* NOTE: I really don't like this. It will be hard to optimise should it 

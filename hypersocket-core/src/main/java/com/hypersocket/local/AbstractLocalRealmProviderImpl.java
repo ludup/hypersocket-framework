@@ -240,6 +240,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			user.setResourceCategory(USER_RESOURCE_CATEGORY);
 			user.setRealm(realm);
 			user.setPrincipalType(PrincipalType.USER);
+			user.setPosixId(userRepository.getNextPosixId(realm));
 
 			if (principals != null) {
 				for (Principal p : principals) {
@@ -490,6 +491,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		group.setName(name);
 		group.setRealm(realm);
 		group.setPrincipalType(PrincipalType.GROUP);
+		group.setPosixId(groupRepository.getNextPosixId(realm));
 		
 
 		if (principals != null) {
