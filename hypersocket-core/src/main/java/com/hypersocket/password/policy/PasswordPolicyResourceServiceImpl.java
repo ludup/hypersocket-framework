@@ -502,8 +502,10 @@ public class PasswordPolicyResourceServiceImpl extends AbstractAssignableResourc
 			rules.add(new PolicyNonAlphaNumericCharacterRule(minNonAlpha, policy.getValidSymbols()));
 		}
 		
+		int totalOfMinConditions = minDigis + minLowercase + minNonAlpha + minUppcase;
+		
 		if(length == 0) {
-			length = minDigis + minLowercase + minNonAlpha + minUppcase;
+			length = totalOfMinConditions;
 		}
 		
 		if(length == 0) {
@@ -525,6 +527,10 @@ public class PasswordPolicyResourceServiceImpl extends AbstractAssignableResourc
 		if(length < 4) {
 			/* Absolute minimum for generation */
 			length = 4;
+		}
+		
+		if (length < totalOfMinConditions) {
+			length = totalOfMinConditions;
 		}
 		
 		return generator.generatePassword(length, rules);
