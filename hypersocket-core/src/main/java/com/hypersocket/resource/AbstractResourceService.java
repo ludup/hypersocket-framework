@@ -95,4 +95,6 @@ public interface AbstractResourceService<T extends RealmResource> extends Authen
 
 	void checkImportName(T resource, Realm realm) throws ResourceException, AccessDeniedException;
 
+	String getResourceDecryptedValue(T resource, String resourceKey);
+
 }

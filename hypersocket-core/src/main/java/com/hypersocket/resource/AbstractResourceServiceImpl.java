@@ -529,6 +529,11 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 	public Long getResourceLongProperty(T resource, String resourceKey) {
 		return getRepository().getLongValue(resource, resourceKey);
 	}
+	
+	@Override
+	public String getResourceDecryptedValue(T resource, String resourceKey) {
+		return getRepository().getDecryptedValue(resource, resourceKey);
+	}
 
 	@Override
 	public String exportResources(@SuppressWarnings("unchecked") T... resources) throws ResourceExportException, AccessDeniedException {
