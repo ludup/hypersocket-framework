@@ -25,6 +25,10 @@
 	    <property resourceKey="security.strictTransportSecurity" inputType="switch" defaultValue="true" weight="200"/>
 	    <property resourceKey="security.xFrameOptionsValue" inputType="select" defaultValue="SAMEORIGIN" options="DENY,SAMEORIGIN" weight="300"/>
 	    <property resourceKey="security.sessionMaxAge" inputType="integer" defaultValue="365" weight="400"/>
+		<property resourceKey="security.minGeneratedUid" inputType="text" minValue="0" maxValue="2147483647"
+			allowEmpty="false" weight="500" defaultValue="2000" />
+		<property resourceKey="security.minGeneratedGid" inputType="text" minValue="0" maxValue="2147483647"
+			allowEmpty="false" weight="600" defaultValue="1000" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.databaseSettings"
 		resourceBundle="DatabaseService" weight="200">

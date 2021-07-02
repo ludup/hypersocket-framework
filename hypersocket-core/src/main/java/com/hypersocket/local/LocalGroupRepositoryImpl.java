@@ -19,10 +19,13 @@ import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.ResourcePropertyStore;
@@ -40,9 +43,14 @@ import com.hypersocket.util.PrincipalIterator;
 
 @Repository
 public class LocalGroupRepositoryImpl extends ResourceTemplateRepositoryImpl implements LocalGroupRepository {
+
+	private static Logger LOG = LoggerFactory
+			.getLogger(LocalGroupRepositoryImpl.class);
 	
 	@Autowired
-	private EncryptionService encryptionService;
+	private EncryptionService encryptionService;	
+	@Autowired
+	private SystemConfigurationService systemConfigurationService;
 
 	private EntityResourcePropertyStore entityPropertyStore;
 
@@ -76,8 +84,6 @@ public class LocalGroupRepositoryImpl extends ResourceTemplateRepositoryImpl imp
 		}
 	};
 
-	private static final int MIN_UID = 1000;
-	
 	@Transactional
 	public LocalGroup createGroup(String name, Realm realm) {
 		
@@ -229,18 +235,21 @@ public class LocalGroupRepositoryImpl extends ResourceTemplateRepositoryImpl imp
 			c.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 			@SuppressWarnings("unchecked")
 			List<LocalGroup> items = c.list();
+			int minGid = systemConfigurationService.getIntValue("security.minGeneratedGid");
 			if(items.isEmpty()) {
-				return MIN_UID;
+				return minGid;
 			}
 			else {
 				int posixId = ((LocalGroup)items.get(0)).getPosixId();
 				posixId++;
 				if(posixId >= Integer.MAX_VALUE) {
-					/* BUG: What now? */
-					throw new IllegalArgumentException("Exhausted Posix ID."); 
+					/* BUG: What now? We should probably look for the next 
+					 * free Posix ID */
+					LOG.warn("Exhausted all Posix IDs for group creation.");
+					posixId = Integer.MAX_VALUE - 1;
 				}
-				if(posixId < MIN_UID) {
-					posixId = MIN_UID;
+				if(posixId < minGid) {
+					posixId = minGid;
 				}
 				return (int)posixId;
 			}

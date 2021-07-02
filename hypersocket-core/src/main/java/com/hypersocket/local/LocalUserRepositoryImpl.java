@@ -21,10 +21,13 @@ import org.hibernate.Query;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
@@ -45,9 +48,14 @@ import com.hypersocket.util.PrincipalIterator;
 
 @Repository
 public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl implements LocalUserRepository {
+
+	private static Logger LOG = LoggerFactory
+			.getLogger(LocalUserRepositoryImpl.class);
 	
 	@Autowired
 	private EncryptionService encryptionService;
+	@Autowired
+	private SystemConfigurationService systemConfigurationService;
 
 	private EntityResourcePropertyStore entityPropertyStore;
 
@@ -80,8 +88,6 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);		
 		}
 	};
-
-	private static final int MIN_UID = 1000;
 	
 	@Override
 	@Transactional
@@ -347,19 +353,22 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			c.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 			@SuppressWarnings("unchecked")
 			List<LocalUser> items = c.list();
+			int minUid = systemConfigurationService.getIntValue("security.minGeneratedUid");
 			if(items.isEmpty()) {
-				return MIN_UID;
+				return minUid;
 			}
 			else {
 				int posixId = ((LocalUser)items.get(0)).getPosixId();
 			
 				posixId++;
 				if(posixId >= Integer.MAX_VALUE) {
-					/* BUG: What now? */
-					throw new IllegalArgumentException("Exhausted Posix ID."); 
+					/* BUG: What now? We should probably look for the next 
+					 * free Posix ID */
+					LOG.warn("Exhausted all Posix IDs for user creation.");
+					posixId = Integer.MAX_VALUE - 1; 
 				}
-				if(posixId < MIN_UID) {
-					posixId = MIN_UID;
+				if(posixId < minUid) {
+					posixId = minUid;
 				}
 				return (int)posixId;
 			}
