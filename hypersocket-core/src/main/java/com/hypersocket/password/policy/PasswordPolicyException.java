@@ -17,6 +17,12 @@ public class PasswordPolicyException extends Exception {
         this.strength = strength;
     }
     
+    public PasswordPolicyException(Type type, float strength, String message) {
+        super(message);
+        this.type = type;
+        this.strength = strength;
+    }
+    
     public Type getType() {
         return type;
     }

@@ -2,16 +2,20 @@ package com.hypersocket.password.policy;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.dictionary.DictionaryResourceService;
+import com.hypersocket.i18n.I18NService;
+import com.hypersocket.password.policy.PasswordPolicyException.Type;
 
 @Service
 public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Serializable {
@@ -23,6 +27,9 @@ public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Ser
 	
 	@Autowired
 	private SystemConfigurationService systemConfigurationService;
+	
+	@Autowired
+	private I18NService i18nService;
 
 	final String DEFAULT_SYMBOLS;
 	
@@ -96,16 +103,19 @@ public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Ser
 
 		// First check the password is within the size range
 		if (characteristics.getMinimumLength() != -1 && password.length < characteristics.getMinimumLength()) {
-			throw new PasswordPolicyException(PasswordPolicyException.Type.tooShort, strength);
+			throw new PasswordPolicyException(PasswordPolicyException.Type.tooShort, 
+					strength, i18nService.getResource("password.policy.too.short", locale));
 		}
 		if (characteristics.getMaximumLength() != -1 && password.length > characteristics.getMaximumLength()) {
-			throw new PasswordPolicyException(PasswordPolicyException.Type.tooLong, strength);
+			throw new PasswordPolicyException(PasswordPolicyException.Type.tooLong, 
+					strength, i18nService.getResource("password.policy.too.long", locale));
 		}
 
 		// Check the password doesn't contain the username
 		if (username != null && !characteristics.getContainUsername()) {
 			if (new String(password).toLowerCase().contains(username.toLowerCase())) {
-				throw new PasswordPolicyException(PasswordPolicyException.Type.containsUsername, strength);
+				throw new PasswordPolicyException(PasswordPolicyException.Type.containsUsername, 
+						strength, i18nService.getResource("password.policy.contains.username", locale));
 			}
 		}
 
@@ -145,7 +155,8 @@ public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Ser
 				// Minimum of 4 letter words
 				if (word.length() >= minWordLength) {
 					if (dictionaryService.containsWord(locale, word)) {
-						throw new PasswordPolicyException(PasswordPolicyException.Type.containsDictionaryWords, strength);
+						throw new PasswordPolicyException(PasswordPolicyException.Type.containsDictionaryWords, 
+								strength, i18nService.getResource("password.policy.contains.dictionary.word", locale));
 					}
 				}
 			}
@@ -153,26 +164,47 @@ public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Ser
 
 		// Check against policy
 		if (characteristics.getMinimumCriteriaMatches() == 4) {
-			check(PasswordPolicyException.Type.notEnoughDigits, digit, characteristics.getMinimumDigits(), strength);
-			check(PasswordPolicyException.Type.notEnoughLowerCase, lowerCase, characteristics.getMinimumLower(), strength);
-			check(PasswordPolicyException.Type.notEnoughUpperCase, upperCase, characteristics.getMinimumUpper(), strength);
-			check(PasswordPolicyException.Type.notEnoughSymbols, other, characteristics.getMinimumSymbol(), strength);
+			check(PasswordPolicyException.Type.notEnoughDigits, digit, characteristics.getMinimumDigits(), strength, locale);
+			check(PasswordPolicyException.Type.notEnoughLowerCase, lowerCase, characteristics.getMinimumLower(), strength, locale);
+			check(PasswordPolicyException.Type.notEnoughUpperCase, upperCase, characteristics.getMinimumUpper(), strength, locale);
+			check(PasswordPolicyException.Type.notEnoughSymbols, other, characteristics.getMinimumSymbol(), strength, locale);
 		} else {
 			int matches = 0;
+			List<Type> messageForCharacteristicsTypes = new ArrayList<>();
+			
 			if (matches(PasswordPolicyException.Type.notEnoughDigits, digit, characteristics.getMinimumDigits(), strength)) {
 				matches++;
+			} else {
+				messageForCharacteristicsTypes.add(PasswordPolicyException.Type.notEnoughDigits);
 			}
+			
 			if (matches(PasswordPolicyException.Type.notEnoughLowerCase, lowerCase, characteristics.getMinimumLower(), strength)) {
 				matches++;
+			} else {
+				messageForCharacteristicsTypes.add(PasswordPolicyException.Type.notEnoughLowerCase);
 			}
+			
 			if (matches(PasswordPolicyException.Type.notEnoughUpperCase, upperCase, characteristics.getMinimumUpper(), strength)) {
 				matches++;
+			} else {
+				messageForCharacteristicsTypes.add(PasswordPolicyException.Type.notEnoughUpperCase);
 			}
+			
 			if (matches(PasswordPolicyException.Type.notEnoughSymbols, other, characteristics.getMinimumSymbol(), strength)) {
 				matches++;
+			} else {
+				messageForCharacteristicsTypes.add(PasswordPolicyException.Type.notEnoughSymbols);
 			}
+			
 			if (matches < characteristics.getMinimumCriteriaMatches()) {
-				throw new PasswordPolicyException(PasswordPolicyException.Type.doesNotMatchComplexity, strength);
+				
+				List<String> messageForCharacteristics = collectCharacteristics(locale, messageForCharacteristicsTypes.toArray(new Type[0]));
+				
+				throw new PasswordPolicyException(PasswordPolicyException.Type.doesNotMatchComplexity, 
+						strength, MessageFormat.format(
+								i18nService.getResource("password.policy.contains.characteristics.no.match", locale), 
+								StringUtils.join(messageForCharacteristics, ","))
+						);
 			}
 		}
 
@@ -180,10 +212,38 @@ public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Ser
 
 	}
 
-	private void check(PasswordPolicyException.Type type, int val, int req, float strength) throws PasswordPolicyException {
+	private void check(PasswordPolicyException.Type type, int val, int req, float strength, Locale locale) throws PasswordPolicyException {
 		if (!matches(type, val, req, strength)) {
-			throw new PasswordPolicyException(type, strength);
+			
+			List<String> messageForCharacteristics = collectCharacteristics(locale, type);
+			
+			if (messageForCharacteristics.isEmpty()) {
+				throw new PasswordPolicyException(type, strength);
+			} else {
+				throw new PasswordPolicyException(type, strength, MessageFormat.format(
+							i18nService.getResource("password.policy.contains.characteristics.no.match", locale), 
+							StringUtils.join(messageForCharacteristics, ","))
+						);
+			}
 		}
+	}
+	
+	private List<String> collectCharacteristics(Locale locale, PasswordPolicyException.Type...types) {
+		List<String> messageForCharacteristics = new ArrayList<String>();
+		
+		for (PasswordPolicyException.Type type : types) {
+			if (PasswordPolicyException.Type.notEnoughDigits.equals(type)) {
+				messageForCharacteristics.add(i18nService.getResource("password.policy.contains.characteristics.digits", locale));
+			} else if (PasswordPolicyException.Type.notEnoughLowerCase.equals(type)) {
+				messageForCharacteristics.add(i18nService.getResource("password.policy.contains.characteristics.lowercase", locale));
+			} else if (PasswordPolicyException.Type.notEnoughUpperCase.equals(type)) {
+				messageForCharacteristics.add(i18nService.getResource("password.policy.contains.characteristics.uppercase", locale));
+			} else if (PasswordPolicyException.Type.notEnoughSymbols.equals(type)) {
+				messageForCharacteristics.add(i18nService.getResource("password.policy.contains.characteristics.symbols", locale));
+			}
+		}
+		
+		return messageForCharacteristics;
 	}
 
 	private boolean matches(PasswordPolicyException.Type type, int val, int req, float strength) throws PasswordPolicyException {
