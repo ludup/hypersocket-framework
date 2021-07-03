@@ -1,5 +1,7 @@
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="description" content="Starting Up .....">
 <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 <body>
@@ -37,6 +39,7 @@
 	<script type="text/javascript">
 		var since;
 		var online = true;
+		var offlineCycles = 0;
 		
 		function revealConsole() {
 			document.getElementById('reveal-console').style.display = 'none';
@@ -51,9 +54,12 @@
 		}
 
 		function loadProgress() {
+            console.log('Load progress.');  
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4) {
+		            console.log('Response received. ' + this.status);  
+		            
 					if(this.status == 404) {
 						/* Getting a 404 on the progress call is an indication the server is now up! */
 						window.setTimeout(function() {
@@ -118,6 +124,14 @@
 							online = false;
 							document.getElementById('online').style.display = 'none';
 							document.getElementById('offline').style.display = 'block';
+						}
+						else {
+							if(offlineCycles > 3) {
+								offlineCycles = 0;
+			                    window.location.reload(false);  
+							}
+							else
+							    offlineCycles++;
 						}
 					}
 					else {

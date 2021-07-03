@@ -180,9 +180,9 @@ public class Main {
 				miniserverStarted = System.currentTimeMillis();
 				File bootKeystore = new File(conf, "boothttp.keystore");
 				if (username.equals("root") || username.equals("Administrator"))
-					miniServer = new MiniHttpServer(80, 443, bootKeystore);
+					miniServer = new MiniHttpServer(Integer.parseInt(System.getProperty("hypersocket.http.port", "80")), Integer.parseInt(System.getProperty("hypersocket.https.port", "443")), bootKeystore);
 				else
-					miniServer = new MiniHttpServer(8080, 8443, bootKeystore);
+					miniServer = new MiniHttpServer(Integer.parseInt(System.getProperty("hypersocket.http.port", "8080")), Integer.parseInt(System.getProperty("hypersocket.https.port", "8443")), bootKeystore);
 				miniServer.addContent(new DynamicContentFactory() {
 					@Override
 					public DynamicContent get(String path) throws IOException {
