@@ -248,7 +248,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 						}
 					} catch (Throwable e) {
 						log.error("Failed to upgrade", e);
-						throw new IllegalStateException("Errors upgrading database");
+						throw new IllegalStateException("Errors upgrading database", e);
 					}
 					return null;
 				}

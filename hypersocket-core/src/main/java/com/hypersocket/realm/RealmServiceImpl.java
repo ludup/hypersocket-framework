@@ -1099,10 +1099,15 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					SYSTEM_PRINCIPAL,
 					PrincipalType.SYSTEM);
 			if(systemPrincipal == null) {
-				throw new IllegalStateException("Could not get system principal. This may happen on "
-						+ "fresh installs, if getSystemPrincipal() is called before the system user is "
-						+ "created in the upgrade scripts. Make sure no service (e.g. in a @PostConstruct) is "
-						+ "attempting to obtain the system principal.");
+				/* If the system realm has been changed to another type, the system user
+				 * will still exist in the local user database, so try from there instead.
+				 */
+				systemPrincipal = getLocalProvider().getPrincipalByName(SYSTEM_PRINCIPAL, realmRepository.getSystemRealm(), PrincipalType.SYSTEM);
+				if(systemPrincipal == null)
+					throw new IllegalStateException("Could not get system principal. This may happen on "
+							+ "fresh installs, if getSystemPrincipal() is called before the system user is "
+							+ "created in the upgrade scripts. Make sure no service (e.g. in a @PostConstruct) is "
+							+ "attempting to obtain the system principal.");
 			}
 		}
 		return systemPrincipal;
