@@ -150,7 +150,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 
 		// Create the default admin user
 		Principal admin = localRealmProvider.createUser(realm, "admin",
-				null, groups, new DefaultPasswordCreator("admin"), true);
+				null, groups, new DefaultPasswordCreator("admin"), true, PrincipalType.USER);
 
 		// Create the System Administrator role
 		Role rAdmin = permissionRepository.createRole(
