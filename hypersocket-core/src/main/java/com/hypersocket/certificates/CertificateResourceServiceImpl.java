@@ -695,6 +695,14 @@ public class CertificateResourceServiceImpl extends
 		resource.setPrivateKey(new String(privateKeyFile.toByteArray(), "UTF-8"));
 		resource.setCertificate(new String(certStream.toByteArray(), "UTF-8"));
 		
+		if (cert.getNotBefore() != null) {
+			resource.setIssueDate(cert.getNotBefore());
+		}
+		if (cert.getNotAfter() != null) {
+			resource.setExpiryDate(cert.getNotAfter());
+		}
+
+		
 
 	}
 
@@ -838,6 +846,13 @@ public class CertificateResourceServiceImpl extends
 					resource.setOrganization("");
 					resource.setOrganizationalUnit("");
 					resource.setState("");
+					
+					if (cert.getNotBefore() != null) {
+						resource.setIssueDate(cert.getNotBefore());
+					}
+					if (cert.getNotAfter() != null) {
+						resource.setExpiryDate(cert.getNotAfter());
+					}
 
 				}
 			}
