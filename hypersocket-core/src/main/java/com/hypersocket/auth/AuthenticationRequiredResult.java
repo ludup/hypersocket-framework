@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.Map;
+
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.realm.Realm;
@@ -22,6 +24,7 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 	private boolean inPostAuthentication;
 	private String lastButtonResourceKey;
 	private Realm realm;
+	private Map<String, String[]> requestParameters;
 	
 	public AuthenticationRequiredResult() {
 
@@ -32,6 +35,14 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 			boolean showLocales, boolean isNew, boolean isFirst, boolean isLast,
 			boolean lastResultSuccessful, boolean inPostAuthentication,
 			String lastButtonResourceKey, Realm realm) {
+		this(bannerMsg, errorMsg, errorStyle, lastErrorIsResourceKey, formTemplate, showLocales, isNew, isFirst, isLast, lastResultSuccessful, inPostAuthentication, lastButtonResourceKey, realm, null);
+	}
+
+	public AuthenticationRequiredResult(String bannerMsg, String errorMsg, String errorStyle,
+			boolean lastErrorIsResourceKey, FormTemplate formTemplate,
+			boolean showLocales, boolean isNew, boolean isFirst, boolean isLast,
+			boolean lastResultSuccessful, boolean inPostAuthentication,
+			String lastButtonResourceKey, Realm realm, Map<String, String[]> requestParameters) {
 		super(bannerMsg, errorMsg, errorStyle, showLocales);
 		this.formTemplate = formTemplate;
 		this.lastErrorIsResourceKey = lastErrorIsResourceKey;
@@ -42,6 +53,11 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 		this.inPostAuthentication = inPostAuthentication;
 		this.lastButtonResourceKey = lastButtonResourceKey;
 		this.realm = realm;
+		this.requestParameters = requestParameters;
+	}
+
+	public Map<String, String[]> getRequestParameters() {
+		return requestParameters;
 	}
 
 	public FormTemplate getFormTemplate() {
