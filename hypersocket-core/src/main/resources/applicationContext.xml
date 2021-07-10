@@ -49,8 +49,10 @@
 			expression="com.hypersocket.server.*" />
 		<context:exclude-filter type="regex"
 			expression="com.hypersocket.annotation.*" />
-			<context:exclude-filter type="regex"
+		<context:exclude-filter type="regex"
 			expression="com.logonbox.*" />
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
 	</context:component-scan>
 
 	<import resource="database.xml" />
