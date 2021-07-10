@@ -337,7 +337,8 @@ public class LogonController extends AuthenticatedController {
 						!state.hasNextStep(), success || state.isNew(),
 						state.isAuthenticationComplete(),
 						state.getScheme().getLastButtonResourceKey(),
-						state.getRealm());
+						state.getRealm(),
+						state.getRequestParameters());
 				
 			}
 		} catch(FallbackAuthenticationRequired e) {
