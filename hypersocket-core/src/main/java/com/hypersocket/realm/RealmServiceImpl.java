@@ -597,12 +597,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Principal createLocalUser(Realm realm, String username, Map<String, String> properties,
 			List<Principal> principals, PasswordCreator passwordCreator, boolean forceChange, boolean selfCreated,
-			boolean sendNotifications) throws ResourceException, AccessDeniedException {
+			boolean sendNotifications, PrincipalType type) throws ResourceException, AccessDeniedException {
 
 		RealmProvider provider = getLocalProvider();
 
 		return createUser(realm, username, properties, principals, passwordCreator, forceChange, selfCreated, null,
-				provider, sendNotifications);
+				provider, sendNotifications, type);
 	}
 
 	private RealmProvider getLocalProvider() {
@@ -636,7 +636,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Principal createUser(Realm realm, String username, Map<String, String> properties,
 			List<Principal> principals, PasswordCreator passwordCreator, boolean forceChange, boolean selfCreated,
-			Principal parent, RealmProvider provider, boolean sendNotifications)
+			Principal parent, RealmProvider provider, boolean sendNotifications, PrincipalType type)
 			throws ResourceException, AccessDeniedException {
 
 		try {
@@ -651,7 +651,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.realmIsReadOnly");
 			}
 
-			Principal existing = getPrincipalByName(realm, username, PrincipalType.USER);
+			Principal existing = getPrincipalByName(realm, username, PrincipalType.USER, PrincipalType.SYSTEM, PrincipalType.USER);
 			if (existing != null) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.principalAlreadyExists", username);
 			}
@@ -661,7 +661,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
  
 			Principal principal = provider.createUser(realm, username, properties, principals, passwordCreator,
-					forceChange);
+					forceChange, type);
 
 			for (PrincipalProcessor processor : principalProcessors) {
 				processor.afterCreate(principal, passwordCreator.getPassword(), properties);

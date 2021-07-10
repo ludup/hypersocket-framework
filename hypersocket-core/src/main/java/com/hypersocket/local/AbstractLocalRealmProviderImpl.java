@@ -223,7 +223,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Transactional
 	public Principal createUser(Realm realm, String username,
 			Map<String, String> properties, List<Principal> principals,
-			PasswordCreator passwordCreator, boolean forceChange)
+			PasswordCreator passwordCreator, boolean forceChange, PrincipalType type)
 			throws ResourceException {
 		
 		try {
@@ -240,8 +240,9 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			user.setName(username);
 			user.setResourceCategory(USER_RESOURCE_CATEGORY);
 			user.setRealm(realm);
-			user.setPrincipalType(PrincipalType.USER);
+			user.setPrincipalType(type);
 			user.setPosixId(userRepository.getNextPosixId(realm));
+			user.setType(type);
 
 			if (principals != null) {
 				for (Principal p : principals) {

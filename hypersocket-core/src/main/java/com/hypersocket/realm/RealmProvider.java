@@ -42,7 +42,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	boolean supportsAccountUnlock(Realm realm) throws ResourceException;
 	
 	Principal createUser(Realm realm, String username, Map<String, String> properties, List<Principal> principals,
-			PasswordCreator passwordCreator, boolean forceChange) throws ResourceException;
+			PasswordCreator passwordCreator, boolean forceChange, PrincipalType type) throws ResourceException;
 
 	Principal updateUser(Realm realm, Principal user, String username, Map<String, String> properties,
 			List<Principal> principals) throws ResourceException;
