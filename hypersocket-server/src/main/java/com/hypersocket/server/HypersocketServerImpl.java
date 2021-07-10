@@ -20,9 +20,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -105,7 +107,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	private AnnotationConfigWebApplicationContext webappContext;
 	private DispatcherServlet dispatcherServlet;
 	
-	private List<String> controllerPackages = new ArrayList<String>();
+	private Set<String> controllerPackages = new LinkedHashSet<String>();
 	
 	private Map<HTTPInterfaceResource,SSLContext> sslContexts = new HashMap<HTTPInterfaceResource,SSLContext>();
 	private Map<HTTPInterfaceResource,KeyStore> sslCertificates = new HashMap<HTTPInterfaceResource,KeyStore>();
