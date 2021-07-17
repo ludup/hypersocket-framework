@@ -73,10 +73,12 @@ public class HypersocketVersion {
 		    	try(InputStream in = url.openStream()) {
 			    	Manifest mf = new Manifest(in);	
 			    	String extensionVersion = mf.getMainAttributes().getValue("X-Extension-Version");
-			    	String priorityStr = mf.getMainAttributes().getValue("X-Extension-Priority");
-			    	int priority = StringUtils.isBlank(priorityStr) ? 0 : Integer.parseInt(priorityStr);
-			    	if(priority > highestPriority) {
-			    		highestPriorityVersion = extensionVersion;
+			    	if(StringUtils.isNotBlank(extensionVersion)) {
+				    	String priorityStr = mf.getMainAttributes().getValue("X-Extension-Priority");
+				    	int priority = StringUtils.isBlank(priorityStr) ? 0 : Integer.parseInt(priorityStr);
+				    	if(priority > highestPriority) {
+				    		highestPriorityVersion = extensionVersion;
+				    	}
 			    	}
 		    	}
 		    }
