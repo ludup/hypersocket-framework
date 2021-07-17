@@ -180,6 +180,10 @@
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 						</manifest>
+                        <manifestEntries>
+                          <X-Extension-Version>${project.version}</X-Extension-Version>
+                          <X-Extension-Priority>0</X-Extension-Priority>
+                        </manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
