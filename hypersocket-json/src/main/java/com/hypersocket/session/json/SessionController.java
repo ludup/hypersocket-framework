@@ -69,11 +69,10 @@ public class SessionController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public AuthenticationResult peek(HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-
+		Session session = sessionUtils.getSession(request);
+		setupAuthenticatedContext(session, sessionUtils.getLocale(request));
 		try {
-			return getSuccessfulResult(sessionUtils.getSession(request));
+			return getSuccessfulResult(session);
 		} finally {
 			clearAuthenticatedContext();
 		}

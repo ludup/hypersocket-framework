@@ -297,7 +297,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					c.add(Calendar.MINUTE, session.getTimeout());
 				}
 				if (log.isDebugEnabled()) {
-					log.debug("Checking session timeout currentTime=" + currentTime.getTime() + " lastUpdated="
+					log.debug("Checking session timeout for " + session.getId() + " currentTime=" + currentTime.getTime() + " lastUpdated="
 							+ session.getLastUpdated() + " timeoutThreshold=" + c.getTime());
 				}
 
