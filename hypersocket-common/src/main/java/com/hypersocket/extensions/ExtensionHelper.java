@@ -100,10 +100,21 @@ public class ExtensionHelper {
 								log.warn("Using installed version of " + remote.getVersion() + " for " + extensionId);
 						} else {
 
-							ExtensionVersion local = new ExtensionVersion();
-							loadLocalExtension(local, props, currentArchive);
-							local.setState(ExtensionState.INSTALLED);
-							extsByName.put(extensionId, local);
+							if("true".equals(System.getProperty("hypersocket.development", "false"))) {
+								ExtensionVersion local = new ExtensionVersion();
+								loadLocalExtension(local, props, currentArchive);
+								local.setDescription("You are running in development mode. "
+										+ "The extension is not available from the remote repository, but it "
+										+ "is already available on your classpath.");
+								local.setState(ExtensionState.INSTALLED);
+								extsByName.put(extensionId, local);
+							}
+							else {
+								ExtensionVersion local = new ExtensionVersion();
+								loadLocalExtension(local, props, currentArchive);
+								local.setState(ExtensionState.INSTALLED);
+								extsByName.put(extensionId, local);
+							}
 						}
 						continue;
 					} else {
