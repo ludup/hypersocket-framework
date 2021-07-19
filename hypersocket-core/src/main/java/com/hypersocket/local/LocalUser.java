@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Principal;
@@ -65,13 +66,15 @@ public class LocalUser extends UserPrincipal<LocalGroup> implements Serializable
 	@Column(name="email")
 	private String email;
 
-	@Column(name="secondary_email", length=8000)
+	@Column(name="secondary_email")
+	@Type(type = "text")
 	private String secondaryEmail;
 	
 	@Column(name="mobile")
 	private String mobile;
 	
-	@Column(name="secondary_mobile", length=8000)
+	@Column(name="secondary_mobile")
+	@Type(type = "text")
 	private String secondaryMobile;
 	
 	@Column(name="realm_category")

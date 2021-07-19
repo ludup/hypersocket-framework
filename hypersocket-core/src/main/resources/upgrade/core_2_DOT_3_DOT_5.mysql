@@ -1,0 +1,4 @@
+ALTER TABLE `abstract_attributes` CHANGE COLUMN `default_value` `default_value` TEXT NULL DEFAULT NULL ;
+ALTER TABLE `abstract_attributes` CHANGE COLUMN `options` `options` TEXT NULL DEFAULT NULL ;
+ALTER TABLE `local_users` CHANGE COLUMN `secondary_email` `secondary_email` TEXT NULL DEFAULT NULL ;
+ALTER TABLE `local_users` CHANGE COLUMN `secondary_mobile` `secondary_mobile` TEXT NULL DEFAULT NULL ;
