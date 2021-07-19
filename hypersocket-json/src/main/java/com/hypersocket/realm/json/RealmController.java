@@ -40,7 +40,6 @@ import com.hypersocket.json.PropertyItem;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
-import com.hypersocket.json.ResourceStatusConfirmation;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.PrincipalColumns;
@@ -51,7 +50,6 @@ import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RealmServiceImpl;
 import com.hypersocket.realm.UserVariableReplacementService;
-import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.BootstrapTableResult;
@@ -233,7 +231,7 @@ public class RealmController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<Realm> createOrUpdateRealm(HttpServletRequest request, HttpServletResponse response,
 													 @RequestBody RealmUpdate realm)
-			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, ResourceException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
@@ -255,10 +253,6 @@ public class RealmController extends ResourceController {
 					I18N.getResource(sessionUtils.getLocale(request), RealmService.RESOURCE_BUNDLE,
 							realm.getId() != null ? "info.realm.updated" : "info.realm.created", realm.getName()));
 
-		} catch (ResourceConfirmationException e) {
-			return new ResourceStatusConfirmation<Realm>(e.getMessage(), e.getOptions(), e.getArgs());
-		} catch (ResourceException e) {
-			return new ResourceStatus<Realm>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

@@ -22,7 +22,6 @@ import com.hypersocket.export.CommonEndOfLine;
 import com.hypersocket.export.CommonEndOfLineEnum;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
-import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
@@ -40,10 +39,10 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	void registerRealmProvider(RealmProvider provider);
 
 	Realm createPrimaryRealm(String name, String module, Map<String, String> properties)
-			throws AccessDeniedException, ResourceException, ResourceConfirmationException;
+			throws AccessDeniedException, ResourceException;
 	
 	Realm createRealm(String name, String module, Realm parent, Long owner, Map<String, String> properties)
-			throws AccessDeniedException, ResourceException, ResourceConfirmationException;
+			throws AccessDeniedException, ResourceException;
 
 	void deleteRealm(String name) throws ResourceException, ResourceNotFoundException, AccessDeniedException;
 
@@ -95,7 +94,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Collection<PropertyCategory> getRealmPropertyTemplates(Realm realm) throws AccessDeniedException;
 
 	Realm updateRealm(Realm realm, String name, String module, Map<String, String> properties)
-			throws AccessDeniedException, ResourceException, ResourceConfirmationException;
+			throws AccessDeniedException, ResourceException;
 
 	Principal getPrincipalById(Realm realm, Long id, PrincipalType... type) throws AccessDeniedException;
 

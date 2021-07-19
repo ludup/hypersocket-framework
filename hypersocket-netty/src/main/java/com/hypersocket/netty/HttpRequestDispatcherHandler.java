@@ -132,6 +132,12 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			new RequestWorker(ctx, nettyRequest).run();
 		}
 	}
+	
+	private static ThreadLocal<HttpServletRequest> requestLocal = new ThreadLocal<>();
+	
+	public static HttpServletRequest getRequest() {
+		return requestLocal.get();
+	}
 
 	class RequestWorker implements Runnable {
 
@@ -196,8 +202,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		}
 		
 		public void run() {
-		
+
 			try {
+				requestLocal.set(servletRequest);
 
 				String contentType = nettyRequest.getHeader(HttpHeaders.CONTENT_TYPE);
 				
@@ -395,11 +402,14 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					log.debug("Attempted to perform operation on closed channel", e);
 				}
 			} catch(IOException ex) { 
-				log.error(String.format("I/O error HTTP request worker: %s", ex.getMessage()));
+				log.error(String.format("I/O error HTTP request worker: %s", ex.getMessage()), ex);
 				ctx.getChannel().close();
 			} catch(Throwable t) {
 				log.error("Exception in HTTP request worker", t);
 				ctx.getChannel().close();
+			}
+			finally {
+				requestLocal.remove();
 			}
 		}
 	}

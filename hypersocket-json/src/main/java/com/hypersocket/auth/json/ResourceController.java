@@ -12,13 +12,20 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.hypersocket.json.ResourceStatus;
+import com.hypersocket.json.ResourceStatusConfirmation;
+import com.hypersocket.json.ResourceStatusRedirect;
 import com.hypersocket.resource.Resource;
+import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceRedirectException;
 import com.hypersocket.tables.json.BootstrapTableController;
 
 @Controller
@@ -26,12 +33,34 @@ public class ResourceController extends BootstrapTableController<Resource> {
 
 	static Logger log = LoggerFactory.getLogger(ResourceController.class);
 	
-	@ExceptionHandler(ResourceException.class)
-	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
-	public void resourceChangeError(HttpServletRequest request,
-			HttpServletResponse response, ResourceException e) {
-		log.error("Resource error", e);
+	@ExceptionHandler(ResourceConfirmationException.class)
+	@Order(0)
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public <T>  ResourceStatusConfirmation<T> resourceConfirmation(HttpServletRequest request,
+			HttpServletResponse response, ResourceStatusConfirmation<?> e) {
+		log.debug("Resource confirmation.", e);
+		return new ResourceStatusConfirmation<T>(e.getMessage(), e.getOptions(), e.getArgs());
 	}
 
-	
+	@Order(1)
+	@ResponseBody
+	@ExceptionHandler(ResourceRedirectException.class)
+	@ResponseStatus(value = HttpStatus.OK)
+	public <T> ResourceStatusRedirect<T> resourceRedirect(HttpServletRequest request,
+			HttpServletResponse response, ResourceRedirectException e) {
+		log.debug("Resource redirect.", e);
+		return new ResourceStatusRedirect<T>(e.getMessage());
+	}
+
+	@Order(9999)
+	@ResponseBody
+	@ExceptionHandler(ResourceException.class)
+	@ResponseStatus(value = HttpStatus.OK)
+	public <T> ResourceStatus<T> resourceChangeError(HttpServletRequest request,
+			HttpServletResponse response, ResourceException e) {
+		log.error("Resource error", e);
+		return new ResourceStatus<T>(false, e.getMessage());
+	}
+
 }

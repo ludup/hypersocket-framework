@@ -30,8 +30,7 @@ public class APIRequestHandler extends ServletRequestHandler {
 	
 	@Override
 	public void handleHttpRequest(HttpServletRequest request, HttpServletResponse response,
-			HttpResponseProcessor responseProcessor) {
-	
+		HttpResponseProcessor responseProcessor) {
 		if(Objects.isNull(sessionUtils)) {
 			sessionUtils = ApplicationContextServiceImpl.getInstance().getBean(SessionUtils.class);
 		}
@@ -60,8 +59,8 @@ public class APIRequestHandler extends ServletRequestHandler {
 				response.addHeader("Access-Control-Allow-Headers", requestHeaders);
 			}
 		}
-		
 		super.handleHttpRequest(request, response, responseProcessor);
+		
 	}
 
 	public APIRequestHandler(Servlet servlet,

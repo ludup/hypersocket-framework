@@ -54,14 +54,13 @@ import com.hypersocket.json.PropertyItem;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
-import com.hypersocket.json.ResourceStatusConfirmation;
 import com.hypersocket.json.ResourceUpdate;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.ResourcePassthroughException;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
@@ -235,7 +234,7 @@ public class CertificateResourceController extends ResourceController {
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResourceStatus<CertificateResource> createOrUpdateCertificate(HttpServletRequest request,
 			HttpServletResponse response, @RequestBody ResourceUpdate resource)
-			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, ResourceException {
 
 		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
@@ -260,13 +259,6 @@ public class CertificateResourceController extends ResourceController {
 							resource.getId() != null ? "resource.updated.info" : "resource.created.info",
 							resource.getName()));
 
-		} catch(ResourceConfirmationException e) { 
-			return new ResourceStatusConfirmation<CertificateResource>(
-					e.getMessage(),
-					e.getOptions(),
-					e.getArgs());
-		} catch (ResourceException e) {
-			return new ResourceStatus<CertificateResource>(false, e.getMessage());
 		} finally {
 			clearAuthenticatedContext();
 		}

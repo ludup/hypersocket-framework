@@ -1,6 +1,6 @@
 package com.hypersocket.resource;
 
-public class ResourceConfirmationException extends ResourceException {
+public class ResourceConfirmationException extends ResourcePassthroughException {
 
 	private static final long serialVersionUID = -5649629186555726606L;
 

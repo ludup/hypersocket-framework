@@ -36,7 +36,8 @@ public abstract class ServletRequestHandler extends HttpRequestHandler {
 		try {
 			servlet.service(request, response);	
 			responseProcessor.sendResponse(request, response, false);
-		} catch (Throwable e) {
+		}
+		catch (Throwable e) {
 			log.error("Servlet error", e);
 			try {
 				responseProcessor.send500(request, response);

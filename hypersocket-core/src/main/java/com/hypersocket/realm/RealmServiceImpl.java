@@ -96,10 +96,10 @@ import com.hypersocket.resource.AbstractSimpleResourceRepository;
 import com.hypersocket.resource.FindableResourceRepository;
 import com.hypersocket.resource.PropertyChange;
 import com.hypersocket.resource.ResourceChangeException;
-import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.ResourcePassthroughException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
@@ -1110,7 +1110,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Realm createPrimaryRealm(String name, String module, Map<String, String> properties)
-			throws AccessDeniedException, ResourceException, ResourceConfirmationException {
+			throws AccessDeniedException, ResourceException {
 		return createRealm(name, module, 
 				getCurrentRealm().isSystem() ? null : getCurrentRealm(),  
 					null, properties);
@@ -1118,9 +1118,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Realm createRealm(String name, String module, Realm parent, Long owner, Map<String, String> properties)
-			throws AccessDeniedException, ResourceException, ResourceConfirmationException {
+			throws AccessDeniedException, ResourceException {
 
 		try {
+			Principal originalPrincipal = getCurrentPrincipal();
 			assertPermission(RealmPermission.CREATE);
 
 			if (realmRepository.getRealmByName(name) != null) {
@@ -1136,7 +1137,22 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			Map<String, String> allDefaultProperties = realmProvider.getProperties(null);
 			allDefaultProperties.putAll(properties);
-			realmProvider.testConnection(allDefaultProperties);
+			realmProvider.testConnection(allDefaultProperties, (updatedProperties) -> {
+				/* This is called if testing is interrupted to
+				 * an oauth authorization endpoint. When we eventually
+				 * get authorization, we want to update the realm with
+				 * the new authorized details (this is currently being used
+				 * to create service accounts for LogonBox directory connector).
+				 */
+				setupSystemContext(originalPrincipal);
+				allDefaultProperties.putAll(updatedProperties);
+				try {
+					createRealm(name, module, parent, owner, allDefaultProperties);
+				}
+				finally {
+					clearPrincipalContext();
+				}
+			});
 
 			@SuppressWarnings("unchecked")
 			Realm realm = realmRepository.createRealm(name, UUID.randomUUID().toString(), module, allDefaultProperties,
@@ -1176,7 +1192,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (ResourceCreationException e) {
 			eventService.publishEvent(new RealmCreatedEvent(this, e, getCurrentSession(), name, module));
 			throw e;
-		} catch (ResourceConfirmationException e) {
+		} catch (ResourcePassthroughException e) {
 			throw e;
 		} catch (Throwable t) {
 			eventService.publishEvent(new RealmCreatedEvent(this, t, getCurrentSession(), name, module));
@@ -1259,7 +1275,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (ResourceChangeException e) {
 			eventService.publishEvent(new RealmUpdatedEvent(this, e, getCurrentSession(), realm));
 			throw e;
-		} catch (ResourceConfirmationException e) {
+		} catch (ResourcePassthroughException e) {
 			throw e;
 		} catch (Throwable t) {
 			log.error("Unexpected error", t);
@@ -1271,11 +1287,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Realm updateRealm(Realm realm, String name, String type, Map<String, String> properties)
-			throws AccessDeniedException, ResourceException, ResourceConfirmationException {
+	public Realm updateRealm(final Realm realm, String name, String type, Map<String, String> properties)
+			throws AccessDeniedException, ResourceException {
 
 		try {
 
+			Principal originalPrincipal = getCurrentPrincipal();
 			assertAnyPermissionOrRealmAdministrator(PermissionScope.INCLUDE_CHILD_REALMS, RealmPermission.UPDATE);
 			
 			String propertyChangesCSV = computePropertyChanges(realm, properties);
@@ -1316,7 +1333,23 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					}
 				}
 				existingProperties.putAll(properties);
-				realmProvider.testConnection(existingProperties, realm);
+				realmProvider.testConnection(existingProperties, realm, (updatedProperties) -> {
+					
+					/* This is called if testing is interrupted to
+					 * an oauth authorization endpoint. When we eventually
+					 * get authorization, we want to update the realm with
+					 * the new authorized details (this is currently being used
+					 * to create service accounts for LogonBox directory connector).
+					 */
+					setupSystemContext(originalPrincipal);
+					existingProperties.putAll(updatedProperties);
+					try {
+						updateRealm(realm, name, type, existingProperties);
+					}
+					finally {
+						clearPrincipalContext();
+					}
+				});
 
 				if (reconfigured) {
 					log.info("A realm property that was tagged with 'reconfigure' has been changed, the next sync. will rebuild the cache and retrieve all filtered objects.");
@@ -1327,14 +1360,13 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				clearPrincipalContext();
 			}
 
-
 			String oldName = realm.getName();
 
 			clearCache(realm);
 
 			realm.setName(name);
 
-			realm = realmRepository.saveRealm(realm, properties, getProviderForRealm(realm),
+			Realm newRealm = realmRepository.saveRealm(realm, properties, getProviderForRealm(realm),
 					new TransactionAdapter<Realm>() {
 
 						@Override
@@ -1365,20 +1397,22 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			eventService.publishEvent(new RealmUpdatedEvent(this, getCurrentSession(), oldName,
 					realmRepository.getRealmById(realm.getId()), propertyChangesCSV));
 
+			return newRealm;
+
 		} catch (AccessDeniedException e) {
 			eventService.publishEvent(new RealmUpdatedEvent(this, e, getCurrentSession(), realm));
 			throw e;
 		} catch (ResourceChangeException e) {
 			eventService.publishEvent(new RealmUpdatedEvent(this, e, getCurrentSession(), realm));
 			throw e;
-		} catch (ResourceConfirmationException e) {
+		} catch (ResourcePassthroughException e) {
+			/* Let these bubble up with no events, nothing has changed */
 			throw e;
 		} catch (Throwable t) {
 			log.error("Unexpected error", t);
 			eventService.publishEvent(new RealmUpdatedEvent(this, t, getCurrentSession(), realm));
 			throw new ResourceChangeException(t, RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
 		}
-		return realm;
 	}
 
 	private void fireRealmUpdate(Realm realm) throws ResourceException {

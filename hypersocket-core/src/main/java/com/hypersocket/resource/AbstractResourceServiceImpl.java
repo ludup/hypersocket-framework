@@ -207,16 +207,8 @@ public abstract class AbstractResourceServiceImpl<T extends RealmResource>
 			fireResourceCreationEvent(resource);
 		} catch (Throwable t) {
 			log.error("Failed to create resource", t);
-			/**
-			 * LDP - we don't want to fire an event for a confirmation
-			 */
-			if(t instanceof ResourceConfirmationException) {
-				throw (ResourceConfirmationException) t;
-			}
+			ResourcePassthroughException.maybeRethrow(t);
 			fireResourceCreationEvent(resource, t);
-			/**
-			 * LDP - Rethrow any type of ResourceException
-			 */
 			if (t instanceof ResourceException) {
 				throw (ResourceException) t;
 			} else {

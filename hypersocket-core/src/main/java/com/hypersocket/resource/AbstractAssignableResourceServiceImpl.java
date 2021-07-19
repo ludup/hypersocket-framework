@@ -203,12 +203,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 
 			fireResourceCreationEvent(resource);
 		} catch (Throwable t) {
-			if(t instanceof ResourceConfirmationException)  {
-				throw t;
-			}
-			if(t.getCause() instanceof ResourceConfirmationException) {
-				throw (ResourceConfirmationException)t.getCause();
-			}
+			ResourcePassthroughException.maybeRethrow(t);
 			log.error("Failed to create resource", t);
 			fireResourceCreationEvent(resource, t);
 			if (t instanceof ResourceException) {
@@ -332,12 +327,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			}
 
 		} catch (Throwable t) {
-			if(t instanceof ResourceConfirmationException)  {
-				throw t;
-			}
-			if(t.getCause() instanceof ResourceConfirmationException) {
-				throw (ResourceConfirmationException)t.getCause();
-			}
+			ResourcePassthroughException.maybeRethrow(t);
 			fireResourceUpdateEvent(resource, t);
 			if (t instanceof ResourceException) {
 				throw (ResourceException) t;
