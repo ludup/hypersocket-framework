@@ -126,6 +126,11 @@ public class HypersocketVersion {
 			} 
 	        
 	    }
+	    
+	    /* Treat snapshot versions as build zero */
+	    if(version.endsWith("-SNAPSHOT")) {
+	    	version = version.substring(0, version.length() - 9) + "-0";
+	    }
 
 	    return version;
 	}
