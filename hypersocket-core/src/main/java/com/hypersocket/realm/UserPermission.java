@@ -17,7 +17,12 @@ public enum UserPermission implements PermissionType {
 	DELETE("user.delete", READ),
 	IMPERSONATE("user.impersonate", READ),
 	LOCK("user.lock", READ),
-	UNLOCK("user.unlock", READ);
+	UNLOCK("user.unlock", READ),
+	/* NOTE: @ludup, this is temporary. I did not merge all 
+	 * of the ticket that introduced this due to conflicts apparently
+	 * related to delegation, this is just to get a build.
+	 */
+	RESET_CREDENTIALS("user.reset", READ);
 	
 	private final String val;
 	
