@@ -63,10 +63,10 @@ import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
-import com.hypersocket.resource.ResourceConfirmationException;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.resource.ResourcePassthroughException;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.transactions.TransactionService;
 import com.hypersocket.upgrade.UpgradeService;
@@ -172,9 +172,7 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 			fireResourceUpdateEvent(resource);
 		} catch (Throwable t) {
 			log.error("Failed to update resource", t);
-			if (t instanceof ResourceConfirmationException) {
-				throw (ResourceConfirmationException) t;
-			}
+			ResourcePassthroughException.maybeRethrow(t);
 			fireResourceUpdateEvent(resource, t);
 			if (t instanceof ResourceException) {
 				throw (ResourceException) t;
@@ -200,9 +198,7 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 			fireResourceCreationEvent(resource);
 		} catch (Throwable t) {
 			log.error("Failed to create resource", t);
-			if (t instanceof ResourceConfirmationException) {
-				throw (ResourceConfirmationException) t;
-			}
+			ResourcePassthroughException.maybeRethrow(t);
 			fireResourceCreationEvent(resource, t);
 			if (t instanceof ResourceException) {
 				throw (ResourceException) t;

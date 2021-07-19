@@ -849,13 +849,13 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	}
 
 	@Override
-	public void testConnection(Map<String, String> properties)
+	public void testConnection(Map<String, String> properties, TestConnectionRetry retry)
 			throws IOException {
 		
 	}
 
 	@Override
-	public void testConnection(Map<String, String> properties, Realm realm) {
+	public void testConnection(Map<String, String> properties, Realm realm, TestConnectionRetry retry) {
 		
 	}
 	

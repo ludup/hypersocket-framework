@@ -24,10 +24,14 @@ import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface RealmProvider extends ResourceTemplateRepository {
+	
+	public interface TestConnectionRetry {
+		void retry(Map<String, String> updatedProperties) throws Exception;
+	}
 
-	void testConnection(Map<String, String> properties) throws IOException, ResourceException;
+	void testConnection(Map<String, String> properties, TestConnectionRetry retry) throws IOException, ResourceException;
 
-	void testConnection(Map<String, String> properties, Realm realm) throws ResourceException;
+	void testConnection(Map<String, String> properties, Realm realm, TestConnectionRetry retry) throws ResourceException;
 
 	void assertCreateRealm(Map<String, String> properties) throws ResourceException;
 	
