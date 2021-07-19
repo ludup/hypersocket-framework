@@ -20,7 +20,15 @@ public abstract class PagedIterator<T> implements Iterator<T> {
 	private boolean removed;
 
 	public PagedIterator() {
-		this(Integer.parseInt(System.getProperty("hypersocket.defaultPagedIteratorSize", "100")));
+		this(getDefaultPageSize());
+	}
+
+	protected static int getDefaultPageSize() {
+		return Integer.parseInt(System.getProperty("hypersocket.defaultPagedIteratorSize", "100"));
+	}
+	
+	public PagedIterator(ColumnSort[] sorting) {
+		this(sorting, getDefaultPageSize());
 	}
 
 	public PagedIterator(int pageSize) {
@@ -43,7 +51,7 @@ public abstract class PagedIterator<T> implements Iterator<T> {
 	}
 
 	@Override
-	public void remove() {
+	public final void remove() {
 		if (current == null)
 			throw new IllegalStateException("No current element.");
 		if (removed)

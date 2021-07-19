@@ -84,14 +84,15 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	@Override
 	@Transactional(readOnly = true)
 	public <I> Iterator<I> iterate(Class<I> clazz, ColumnSort[] sorting, CriteriaConfiguration... configs) {
-		return new PagedIterator<I>(sorting, 100) { 
+		return new PagedIterator<I>(sorting) { 
 			@Override
 			protected List<I> listItems(int start, int length, ColumnSort[] sorting) {
 				return search(clazz, null, null, start, length, sorting, configs);
 			}
+			
 			@Override
-			public void remove() {
-				delete(getCurrent());
+			protected void remove(I principal) {
+				delete(principal);
 			}
 			
 		};
