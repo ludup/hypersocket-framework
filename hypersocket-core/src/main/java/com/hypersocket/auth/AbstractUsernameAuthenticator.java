@@ -63,7 +63,7 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 			
 			if(Objects.isNull(state.getPrincipal())) {
 				principal = authenticationService.resolvePrincipalAndRealm(
-					state, username, selectedRealm);
+					state, username, selectedRealm, state.getPrincipalType());
 			} else {
 				principal = state.getPrincipal();
 			}

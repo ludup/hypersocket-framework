@@ -11,4 +11,12 @@ public class UnauthorizedException extends Exception {
 
 	private static final long serialVersionUID = 529531975586967571L;
 
+	public UnauthorizedException() {
+		super();
+	}
+
+	public UnauthorizedException(String message) {
+		super(message);
+	}
+
 }

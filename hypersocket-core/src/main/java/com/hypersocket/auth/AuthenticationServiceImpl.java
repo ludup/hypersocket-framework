@@ -992,7 +992,7 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public Principal resolvePrincipalAndRealm(AuthenticationState state,
 			String username,
-			Realm selectedRealm) throws AccessDeniedException,
+			Realm selectedRealm, PrincipalType... types) throws AccessDeniedException,
 			PrincipalNotFoundException {
 
 		// Set before we manipulate it
@@ -1019,10 +1019,10 @@ public class AuthenticationServiceImpl extends
 		if(realmService.isRealmStrictedToHost(authRealm) || selectedRealm!=null) {
 			principal =  realmService.getPrincipalByName(
 					authRealm,
-					username, PrincipalType.USER);
+					username, types);
 		} else {
 			try {
-				principal = realmService.getUniquePrincipal(username, PrincipalType.USER);
+				principal = realmService.getUniquePrincipal(username, types);
 			} catch (ResourceNotFoundException e) {
 			}
 		}
@@ -1042,7 +1042,7 @@ public class AuthenticationServiceImpl extends
 					log.debug("Performing realm direct lookup for principal " + username + " in "
 							+ authRealm.getName());
 				}
-				principal = realmService.getPrincipalByName(authRealm, username, PrincipalType.USER);
+				principal = realmService.getPrincipalByName(authRealm, username, types);
 			}
 			
 			if(principal==null) {

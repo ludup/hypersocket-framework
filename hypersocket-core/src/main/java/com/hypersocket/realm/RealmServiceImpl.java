@@ -2186,7 +2186,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			if (realm == null) {
 				throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.invalidRealm", realmName);
 			}
-			return getPrincipalByName(realm, username, PrincipalType.USER);
+			return getPrincipalByName(realm, username, type);
 		}
 
 		Collection<Principal> found = principalRepository.getPrincpalsByName(username, type);
