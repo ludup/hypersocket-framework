@@ -15,6 +15,7 @@ import java.util.concurrent.Callable;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
 
@@ -73,7 +74,7 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	int getAuthenticatorCount(Realm realm, String schemeResourceKey);
 	
 	Principal resolvePrincipalAndRealm(AuthenticationState state,
-			String username, Realm selectedRealm) throws AccessDeniedException,
+			String username, Realm selectedRealm, PrincipalType... types) throws AccessDeniedException,
 			PrincipalNotFoundException;
 
 	void setAuthenticationSchemeSelector(AuthenticationSchemeSelector authenticationSelector);

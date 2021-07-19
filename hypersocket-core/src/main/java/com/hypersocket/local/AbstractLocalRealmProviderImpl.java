@@ -179,10 +179,10 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 					+ principal.getPrincipalName());
 		}
 
-		if (principal.getType() != PrincipalType.USER) {
+		if (principal.getType() != PrincipalType.USER && principal.getType() != PrincipalType.SERVICE) {
 			if (log.isDebugEnabled()) {
 				log.debug("Principal " + principal.getPrincipalName()
-						+ " is not a user! cannot verify password");
+						+ " is not a user or a service! cannot verify password");
 			}
 			return false;
 		}

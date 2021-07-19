@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
@@ -67,6 +68,7 @@ public class AuthenticationState {
 	private Map<String, String> parameters = new HashMap<String, String>();
 	private Map<String, Object> environment = new HashMap<String, Object>();
 	private Map<String, String[]> requestParameters = new HashMap<String, String[]>();
+	private PrincipalType principalType = PrincipalType.USER;
 	
 	
 	AuthenticationState(String remoteAddress, Map<String,Object> environment, Locale locale) {
@@ -96,6 +98,14 @@ public class AuthenticationState {
 		this.initialScheme = initialScheme;
 	}
 	
+	public PrincipalType getPrincipalType() {
+		return principalType;
+	}
+
+	public void setPrincipalType(PrincipalType principalType) {
+		this.principalType = principalType;
+	}
+
 	public boolean isPrimaryState() {
 		return previousSchemes.isEmpty();
 	}

@@ -212,4 +212,13 @@ public abstract class Principal extends RealmResource {
 		this.suspended = suspended;
 	}
 
+	@Override
+	public String toString() {
+		return "Principal [primaryEmail=" + primaryEmail + ", organizationalUnit=" + organizationalUnit
+				+ ", isLocallyDeleted()=" + isLocallyDeleted() + ", getPrincipalType()=" + getPrincipalType()
+				+ ", getDescription()=" + getDescription() + ", getPrincipalName()=" + getPrincipalName()
+				+ ", isSuspended()=" + isSuspended() + ", isSystem()=" + isSystem() + ", isHidden()=" + isHidden()
+				+ ", isDeleted()=" + isDeleted() + "]";
+	}
+
 }
