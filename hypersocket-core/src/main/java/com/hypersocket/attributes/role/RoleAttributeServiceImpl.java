@@ -14,10 +14,10 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.attributes.AbstractAttributeServiceImpl;
 import com.hypersocket.attributes.role.events.RoleAttributeCreatedEvent;
 import com.hypersocket.attributes.role.events.RoleAttributeDeletedEvent;
-import com.hypersocket.attributes.role.events.RoleAttributeEvent;
 import com.hypersocket.attributes.role.events.RoleAttributeUpdatedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
+import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.realm.Realm;
@@ -30,7 +30,6 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 		implements RoleAttributeService {
 
 	static Logger log = LoggerFactory.getLogger(RoleAttributeServiceImpl.class);
-	public static final String RESOURCE_BUNDLE = "RoleAttributes";
 
 	@Autowired
 	private RoleAttributeRepository userAttributeRepository;
@@ -42,7 +41,7 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 	private RoleAttributeCategoryService userAttributeCategoryService;
 	
 	public RoleAttributeServiceImpl() {
-		super(RESOURCE_BUNDLE, RoleAttribute.class, RoleAttributePermission.class, RoleAttributePermission.CREATE,
+		super(PermissionService.RESOURCE_BUNDLE, RoleAttribute.class, RoleAttributePermission.class, RoleAttributePermission.CREATE,
 				RoleAttributePermission.READ, RoleAttributePermission.UPDATE, RoleAttributePermission.DELETE, "RoleAttributes");
 	}
 
@@ -52,19 +51,16 @@ public class RoleAttributeServiceImpl extends AbstractAttributeServiceImpl<RoleA
 		categoryRepository = userAttributeCategoryRepository;
 		categoryService = userAttributeCategoryService;
 
-		PermissionCategory cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE,
+		PermissionCategory cat = permissionService.registerPermissionCategory(PermissionService.RESOURCE_BUNDLE,
 				"category.RoleAttributes");
 
 		for (RoleAttributePermission p : RoleAttributePermission.values()) {
 			permissionService.registerPermission(p, cat);
 		}
 
-		i18nService.registerBundle(RESOURCE_BUNDLE);
-
-		eventService.registerEvent(RoleAttributeEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(RoleAttributeCreatedEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(RoleAttributeUpdatedEvent.class, RESOURCE_BUNDLE);
-		eventService.registerEvent(RoleAttributeDeletedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(RoleAttributeCreatedEvent.class, PermissionService.RESOURCE_BUNDLE);
+		eventService.registerEvent(RoleAttributeUpdatedEvent.class, PermissionService.RESOURCE_BUNDLE);
+		eventService.registerEvent(RoleAttributeDeletedEvent.class, PermissionService.RESOURCE_BUNDLE);
 
 		realmService.registerRealmListener(new RealmAdapter() {
 			@Override

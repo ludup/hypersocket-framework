@@ -16,6 +16,8 @@ import javax.cache.Cache;
 
 public interface I18NService {
 
+	boolean isRegistered(String bundle, I18NGroup group);
+
 	void registerBundle(String bundle);
 	
 	void registerBundle(String bundle, I18NGroup group);

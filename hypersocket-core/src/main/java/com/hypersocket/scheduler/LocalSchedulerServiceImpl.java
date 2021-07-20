@@ -2,23 +2,34 @@ package com.hypersocket.scheduler;
 
 import java.util.Properties;
 
+import javax.annotation.PostConstruct;
+
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
 
 @Service
 public class LocalSchedulerServiceImpl extends AbstractSchedulerServiceImpl implements LocalSchedulerService {
 
+	@Autowired
+	private I18NService i18nService;
+	
 	@Autowired 
 	private AutowiringSpringBeanJobFactory autowiringSpringBeanJobFactory;
 	
 	@Autowired
-	private UpgradeService upgradeService; 
+	private UpgradeService upgradeService;
+	
+	@PostConstruct
+	void setup() {
+		i18nService.registerBundle(RESOURCE_BUNDLE);
+	}
 	
 	protected Scheduler configureScheduler() throws SchedulerException {
 

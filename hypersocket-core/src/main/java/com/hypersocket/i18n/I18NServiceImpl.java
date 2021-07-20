@@ -179,6 +179,12 @@ public class I18NServiceImpl implements I18NService {
 	}
 	
 	@Override
+	public boolean isRegistered(String bundle, I18NGroup group) {
+		Set<String> bundleSet = bundleMap.get(group.getTitle());
+		return bundleSet != null && bundleSet.contains(bundle);
+	}
+
+	@Override
 	public synchronized void registerBundle(String bundle) {
 		registerBundle(bundle, I18NGroup.DEFAULT_GROUP);
 	}
@@ -244,8 +250,6 @@ public class I18NServiceImpl implements I18NService {
 		
 		registerBundle(RESOURCE_BUNDLE);
 		registerBundle(ConfigurationService.RESOURCE_BUNDLE);
-		registerBundle(AuthenticationService.RESOURCE_BUNDLE);
-		registerBundle(CertificateResourceService.RESOURCE_BUNDLE);
 		registerBundle(EmailNotificationService.RESOURCE_BUNDLE);
 		registerBundle(PermissionService.RESOURCE_BUNDLE);
 		registerBundle(RealmService.RESOURCE_BUNDLE);

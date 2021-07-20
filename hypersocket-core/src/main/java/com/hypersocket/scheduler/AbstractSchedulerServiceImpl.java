@@ -71,9 +71,6 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	static Logger log = LoggerFactory.getLogger(AbstractSchedulerServiceImpl.class);
 
 	private Scheduler scheduler;
-
-	@Autowired
-	private I18NService i18nService;
 	@Autowired
 	private PermissionService permissionService;
 	@Autowired
@@ -91,7 +88,6 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 
 		scheduler = configureScheduler();
 		scheduler.getListenerManager().addJobListener(this);
-		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
 	
 	@EventListener

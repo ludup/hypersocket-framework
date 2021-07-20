@@ -31,7 +31,7 @@ public class UnblockIPTask extends AbstractTaskProvider {
 
 	static Logger log = LoggerFactory.getLogger(UnblockIPTask.class);
 	
-	public static final String RESOURCE_BUNDLE = "BlockIPTask";
+	public static final String RESOURCE_BUNDLE = "UnblockIPTask";
 	
 	public static final String RESOURCE_KEY = "unblockIP";
 	

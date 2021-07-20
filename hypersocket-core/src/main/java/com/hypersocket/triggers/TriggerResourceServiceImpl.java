@@ -118,8 +118,6 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 
 		eventTriggerCache = new MaxSizeHashMap<>(MAX_CACHED_TRIGGERS);
 
-		i18nService.registerBundle(RESOURCE_BUNDLE);
-
 		PermissionCategory cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE, "category.triggers");
 
 		for (TriggerResourcePermission p : TriggerResourcePermission.values()) {
