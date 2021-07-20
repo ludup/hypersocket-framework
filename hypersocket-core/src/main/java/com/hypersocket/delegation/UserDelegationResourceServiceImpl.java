@@ -214,7 +214,7 @@ public class UserDelegationResourceServiceImpl extends
 			return;
 		}
 		
-		if(permissionService.hasAdministrativePermission(principal)) {
+		if(permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			return;
 		}
 		
