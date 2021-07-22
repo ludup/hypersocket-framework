@@ -16,7 +16,6 @@
 		<property resourceKey="description" inputType="text" weight="0"  defaultValue="" />
 		<property resourceKey="email" inputType="text" weight="100" allowEmpty="true" validateAll="email" defaultValue="" />
 		<property resourceKey="mobile" inputType="text" weight="300" defaultValue="" />
-		<property resourceKey="posixId" inputType="text"  disabled="true" weight="400" defaultValue="" minValue="0" maxValue="2147483647"/>
 	</propertyCategory>
 	
 	<propertyCategory resourceKey="local.userContacts"

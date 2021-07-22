@@ -1,7 +1,3 @@
 <?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates context="group">
-	<propertyCategory resourceKey="local.groupDetailsE"
-		resourceBundle="LocalRealm" weight="0">
-		<property resourceKey="posixId" inputType="text"  disabled="true" weight="100" defaultValue="" minValue="0" maxValue="2147483647"/>
-	</propertyCategory>
 </propertyTemplates>
