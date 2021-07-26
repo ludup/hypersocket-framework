@@ -15,6 +15,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.utils.ITokenResolver;
 
@@ -94,7 +95,7 @@ public interface MessageResourceService extends
 	void sendMessageNow(String resourceKey, Realm currentRealm, ITokenResolver ticketResolver,
 			Iterator<Principal> principals, Collection<String> emails);
 
-	void test(MessageResource resourceById, String email);
+	void test(MessageResource resourceById, String email) throws ResourceNotFoundException, AccessDeniedException;
 
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Collection<Principal> principals);
