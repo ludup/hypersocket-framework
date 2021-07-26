@@ -181,36 +181,37 @@ public class InboxProcessor {
 			if (isInlineButNotEmailBodyContent(part, textContent, htmlContent)) {
 				
 				String id = part.getContentID();
-				if(id.startsWith("<")) {
-					id = id.substring(1);
-				}
-				if(id.endsWith(">")) {
-					id = id.substring(0, id.length()-1);
-				}
-				
-				Document doc = Jsoup.parse(htmlContent.toString());
-				Elements els = doc.getElementsByAttributeValueContaining("src", "cid:" + id);
-				Element img = els.first();
-				if(Objects.nonNull(img)) {
-					String content = Base64.encodeBase64String(IOUtils.toByteArray(part.getInputStream()));
-					img.attr("src", String.format("data:%s;base64,%s", part.getContentType(), content));
-					htmlContent.setLength(0);
-					htmlContent.append(doc.toString());
-				} 
-				
-				File attachment = File.createTempFile("email", "attachment");
-				OutputStream out = new FileOutputStream(attachment);
-				InputStream in = part.getInputStream();
-				try {
-					IOUtils.copy(in, out);
+				if(Objects.nonNull(id)) {
+					if(id.startsWith("<")) {
+						id = id.substring(1);
+					}
+					if(id.endsWith(">")) {
+						id = id.substring(0, id.length()-1);
+					}
+					
+					Document doc = Jsoup.parse(htmlContent.toString());
+					Elements els = doc.getElementsByAttributeValueContaining("src", "cid:" + id);
+					Element img = els.first();
+					if(Objects.nonNull(img)) {
+						String content = Base64.encodeBase64String(IOUtils.toByteArray(part.getInputStream()));
+						img.attr("src", String.format("data:%s;base64,%s", part.getContentType(), content));
+						htmlContent.setLength(0);
+						htmlContent.append(doc.toString());
+					} 
+					
+					File attachment = File.createTempFile("email", "attachment");
+					OutputStream out = new FileOutputStream(attachment);
+					InputStream in = part.getInputStream();
+					try {
+						IOUtils.copy(in, out);
+						attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
+					} finally {
+						IOUtils.closeQuietly(out);
+						IOUtils.closeQuietly(in);
+					}
 					attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
-				} finally {
-					IOUtils.closeQuietly(out);
-					IOUtils.closeQuietly(in);
+				
 				}
-				attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
-				
-				
 				
 			} else if(Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
 				File attachment = File.createTempFile("email", "attachment");
