@@ -403,8 +403,8 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 
 	@Override
 	@Transactional
-	public void test(MessageResource message, String email) {
-		UserPrincipal<?> user = (UserPrincipal<?>) getCurrentPrincipal();
+	public void test(MessageResource message, String email) throws ResourceNotFoundException, AccessDeniedException {
+		UserPrincipal<?> user = (UserPrincipal<?>) realmService.getPrincipalByEmail(message.getRealm(), email);
 		Collection<String> recipients = StringUtils.isEmpty(email) ? null : Arrays.asList(email);
 		sendMessage(message, user.getRealm(), new PrincipalWithoutPasswordResolver(user), null,
 				(Iterator<Principal>)null, recipients, null,

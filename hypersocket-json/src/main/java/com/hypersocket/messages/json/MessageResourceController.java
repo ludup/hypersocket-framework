@@ -104,7 +104,9 @@ public class MessageResourceController extends ResourceController {
 					I18N.getResource(sessionUtils.getLocale(request),
 							MessageResourceServiceImpl.RESOURCE_BUNDLE,
 							"resource.messageSent.info", resource.getName(), StringUtils.isBlank(email) ? getCurrentPrincipal().getName(): email));
-		} finally {
+		} catch(Throwable e) { 
+			return new ResourceStatus<MessageResource>(false, e.getMessage());
+		}finally {
 			clearAuthenticatedContext();
 		}
 	}
