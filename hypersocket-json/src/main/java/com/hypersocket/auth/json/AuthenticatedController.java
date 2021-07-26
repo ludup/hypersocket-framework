@@ -30,9 +30,11 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionRepository;
+import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.json.SessionTimeoutException;
@@ -66,6 +68,10 @@ public class AuthenticatedController {
 
 	@Autowired
 	protected I18NService i18nService;
+	
+	@Autowired
+	private PermissionService permissionService; 
+	
 
 	@ExceptionHandler(RedirectException.class)
 	@ResponseStatus(value = HttpStatus.FOUND)
@@ -181,6 +187,10 @@ public class AuthenticatedController {
 
 	protected void clearAuthenticatedContext() {
 		authenticationService.clearPrincipalContext();
+	}
+	
+	protected void assertResourceAccess(AssignableResource resource, Principal principal) throws AccessDeniedException {
+		permissionService.assertResourceAccess(resource, principal);
 	}
 
 	@ExceptionHandler(NumberFormatException.class)
