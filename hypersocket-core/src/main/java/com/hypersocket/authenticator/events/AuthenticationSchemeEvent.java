@@ -2,6 +2,7 @@ package com.hypersocket.authenticator.events;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.util.StringUtils;
@@ -40,17 +41,23 @@ public class AuthenticationSchemeEvent extends ResourceEvent implements ProfileB
 		addAttribute(ATTR_AUTHENTICATION_SCHEME, resource.getName());
 		List<String> moduleNames = new ArrayList<String>();
 		List<String> oldModuleNames = new ArrayList<String>();
-		for(String module : moduleList) {
-			moduleNames.add(module);
-		}
 		
-		for(String module : oldModuleList) {
-			oldModuleNames.add(module);
+		if(Objects.nonNull(moduleList)) {
+			for(String module : moduleList) {
+				moduleNames.add(module);
+			}
+			
+			addAttribute(ATTR_AUTHENTICATION_SCHEME_MODULES,
+					StringUtils.collectionToCommaDelimitedString(moduleNames));
 		}
-		addAttribute(ATTR_AUTHENTICATION_SCHEME_MODULES,
-				StringUtils.collectionToCommaDelimitedString(moduleNames));
-		addAttribute(ATTR_AUTHENTICATION_OLD_SCHEME_MODULES,
+		if(Objects.nonNull(oldModuleList)) {
+		
+			for(String module : oldModuleList) {
+				oldModuleNames.add(module);
+			}
+			addAttribute(ATTR_AUTHENTICATION_OLD_SCHEME_MODULES,
 				StringUtils.collectionToCommaDelimitedString(oldModuleNames));
+		}
 	}
 
 	public String[] getResourceKeys() {
