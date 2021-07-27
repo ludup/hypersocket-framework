@@ -1184,7 +1184,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		}
 
 		if (!found) {
-			throw new AccessDeniedException();
+			throw new AccessDeniedException("You do not have access to " + resource.getName());
 		}
 	}
 
