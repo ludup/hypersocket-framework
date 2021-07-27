@@ -22,6 +22,7 @@ import com.hypersocket.auth.PostAuthenticationStep;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.input.FormTemplate;
+import com.hypersocket.input.HtmlField;
 import com.hypersocket.input.TextInputField;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.AbstractPropertyTemplate;
@@ -35,6 +36,7 @@ public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthe
 	private static final String CUSTOM_ATTRIBUTE_FILTER_KEY = "custom";
 	private static final String CUSTOM_ATTRIBUTE_MISSING_NAME_TAG = "_name";
 	private static final String CUSTOM_ATTRIBUTE_MISSING_VALUE_TAG = "_value";
+	private static final String CUSTOM_ATTRIBUTE_MISSING_DESCRIPTION_TAG = "_description";
 	
 	public static final String RESOURCE_KEY = "requiredAttributeChecker";
 	public static final String RESOURCE_BUNDLE = "RequiredAttributeChecker";
@@ -83,11 +85,13 @@ public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthe
 					
 					String key = getCustomAttributeKey(resourceKey);
 					
+					String description = template.getDescription();
+					
 					Map<String, String> stateParameters = state.getParameters();
 					
 					// In case it is missing in state first add, this will be the case first time page loads
 					// post that on subsequent submits everything will be in state
-					// we store three values for a missing attribute to track value, name and resource key all 
+					// we store four values for a missing attribute to track value, name, description and resource key all 
 					// are required in various phases for computation or UI
 					if (required && !stateParameters.containsKey(key) && StringUtils.isBlank(value)) {
 						
@@ -98,6 +102,7 @@ public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthe
 							state.addParameter(key, resourceKey);
 							state.addParameter(getCustomAttributeValueKey(key), null);
 							state.addParameter(getCustomAttributeNameKey(key), template.getName());
+							state.addParameter(getCustomAttributeDescription(key), description);
 						}
 						
 					}
@@ -183,11 +188,23 @@ public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthe
 			
 			FormTemplate t =  new FormTemplate(I18N.getResource(state.getLocale(), RESOURCE_BUNDLE, RESOURCE_KEY));
 			
-			for (String string : missingCustomAttributes) {
+			for (String missingCustomAttributeKey : missingCustomAttributes) {
 				
-				TextInputField field = new TextInputField(string, state.getParameter(string + CUSTOM_ATTRIBUTE_MISSING_VALUE_TAG), 
-						true, state.getParameter(string + CUSTOM_ATTRIBUTE_MISSING_NAME_TAG));
+				TextInputField field = new TextInputField(missingCustomAttributeKey, 
+						state.getParameter(missingCustomAttributeKey + CUSTOM_ATTRIBUTE_MISSING_VALUE_TAG), 
+						true, state.getParameter(missingCustomAttributeKey + CUSTOM_ATTRIBUTE_MISSING_NAME_TAG));
 				t.getInputFields().add(field);
+				
+				String description =  state.getParameter(missingCustomAttributeKey + CUSTOM_ATTRIBUTE_MISSING_DESCRIPTION_TAG);
+				
+				if (StringUtils.isNotBlank(description)) {
+					HtmlField descriptionField = new HtmlField(
+						String.format("description_%s", missingCustomAttributeKey), 
+						String.format("<span class='help-block'>%s</span>", description),
+						"logonInput"
+						);
+					t.getInputFields().add(descriptionField);
+				}
 			}
 			
 			t.setShowStartAgain(false);
@@ -220,6 +237,10 @@ public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthe
 		return key + CUSTOM_ATTRIBUTE_MISSING_NAME_TAG;
 	}
 	
+	private String getCustomAttributeDescription(String key) {
+		return key + CUSTOM_ATTRIBUTE_MISSING_DESCRIPTION_TAG;
+	}
+	
 	private void moveCustomAttributesFromParametersToState(AuthenticationState state, Map<String, ?> parameters) {
 		Set<String> keys = parameters.keySet();
 		for (String key : keys) {
@@ -235,7 +256,8 @@ public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthe
 		for (Entry<String, String> entry : parameters.entrySet()) {
 			if (entry.getKey().startsWith(CUSTOM_ATTRIBUTE) 
 					&& !entry.getKey().endsWith(CUSTOM_ATTRIBUTE_MISSING_VALUE_TAG) 
-					&& !entry.getKey().endsWith(CUSTOM_ATTRIBUTE_MISSING_NAME_TAG)) {
+					&& !entry.getKey().endsWith(CUSTOM_ATTRIBUTE_MISSING_NAME_TAG)
+					&& !entry.getKey().endsWith(CUSTOM_ATTRIBUTE_MISSING_DESCRIPTION_TAG)) {
 				missingCustomAttributes.add(entry.getKey());
 			}
 		}
