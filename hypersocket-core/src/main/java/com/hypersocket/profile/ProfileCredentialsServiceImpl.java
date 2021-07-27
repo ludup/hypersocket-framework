@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.authenticator.events.AuthenticationSchemeEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.profile.jobs.ProfileBatchUpdateJob;
@@ -28,7 +29,6 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.realm.UserPermission;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserUndeletedEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
