@@ -21,11 +21,11 @@
 	<distributionManagement>
 		<repository>
 			<id>opensource-releases</id>
-			<url>https://artifactory.jdaptive.com/opensource-releases</url>
+			<url>https://artifactory.jadaptive.com/opensource-releases</url>
 		</repository>
 		<snapshotRepository>
 			<id>opensource-snapshots</id>
-			<url>https://artifactory.jdaptive.com/opensource-snapshots</url>
+			<url>https://artifactory.jadaptive.com/opensource-snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -359,7 +359,7 @@
 		</pluginRepository>
 		<pluginRepository>
 			<id>opensource-snapshots</id>
-			<url>https://artifactory.jdaptive.com/opensource-snapshots</url>
+			<url>https://artifactory.jadaptive.com/opensource-snapshots</url>
 			<snapshots />
 			<releases>
 				<enabled>false</enabled>
