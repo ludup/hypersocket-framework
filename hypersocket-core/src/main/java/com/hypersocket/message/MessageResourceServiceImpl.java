@@ -139,9 +139,16 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 			@Override
 			public void onCreateRealm(Realm realm) throws ResourceException, AccessDeniedException {
 
+				if(realm.hasOwner()) {
+					/**
+					 * We don't want messages in secondary realms.
+					 */
+					return;
+				}
+				
 				for (MessageRegistration r : messageRegistrations.values()) {
 					try {
-						MessageResource message = repository.getMessageById(r.getMessageId(), realm);
+						MessageResource message = getMessageById(r.getMessageId(), realm);
 						if (message == null) {
 							message = repository.getResourceByName(
 									I18N.getResource(Locale.getDefault(), r.resourceBundle, r.resourceKey + ".name"),
@@ -434,7 +441,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver,
 			Collection<String> emails, List<EmailAttachment> attachments, String context) {
 
-		MessageResource message = repository.getMessageById(resourceKey, realm);
+		MessageResource message = getMessageById(resourceKey, realm);
 
 		if (message == null) {
 			log.error(String.format("Invalid message id %s", resourceKey));
@@ -454,7 +461,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	@Override
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
 			RecipientHolder replyTo, ITokenResolver tokenResolver, List<EmailAttachment> attachments, String context) {
-		MessageResource message = repository.getMessageById(resourceKey, realm);
+		MessageResource message = getMessageById(resourceKey, realm);
 
 		if (message == null) {
 			log.error(String.format("Invalid message id %s", resourceKey));
@@ -506,23 +513,23 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Iterator<Principal> principals, Collection<String> emails, Date schedule,
 			List<EmailAttachment> attachments) {
-
-		MessageResource message = repository.getMessageById(resourceKey, realm);
+		
+		MessageResource message = getMessageById(resourceKey, realm);
 
 		if (message == null) {
 			log.error(String.format("Invalid message id %s", resourceKey));
 			return;
 		}
 
-		sendMessage(message, realm, tokenResolver, replyTo, principals, emails, schedule, attachments, null);
+		sendMessage(message, message.getRealm(), tokenResolver, replyTo, principals, emails, schedule, attachments, null);
 	}
-
+	
 	@Override
 	public void sendMessage(String resourceKey, Realm realm, 
 			ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Collection<Principal> principals) {
 		
-		MessageResource message = repository.getMessageById(resourceKey, realm);
+		MessageResource message = getMessageById(resourceKey, realm);
 
 		if (message == null) {
 			log.error(String.format("Invalid message id %s", resourceKey));
@@ -795,6 +802,14 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 
 	@Override
 	public MessageResource getMessageById(String resourceKey, Realm realm) {
+		
+		if(realm.hasOwner()) {
+			Realm r = realm.getParent();
+			if(Objects.nonNull(r)) {
+				realm = r;
+			}
+		}
+		
 		return repository.getMessageById(resourceKey, realm);
 	}
 

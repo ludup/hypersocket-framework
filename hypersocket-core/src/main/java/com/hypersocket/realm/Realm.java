@@ -8,6 +8,7 @@
 package com.hypersocket.realm;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -87,6 +88,10 @@ public class Realm extends Resource {
 		builder.append(getName(), r.getName());
 	}
 
+	public boolean hasOwner() {
+		return Objects.nonNull(owner);
+	}
+	
 	public Long getOwner() {
 		return owner;
 	}

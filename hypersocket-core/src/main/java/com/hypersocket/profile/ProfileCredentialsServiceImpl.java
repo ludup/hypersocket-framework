@@ -207,7 +207,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	public void updateProfile(Profile profile, Principal target) throws AccessDeniedException {
 
 		if(log.isInfoEnabled()) {
-			log.info(String.format("Updating profile %s for user %s", profile.getState(), target.getPrincipalName()));
+			log.info(String.format("Updating profile for user %s", target.getPrincipalName()));
 		}
 		
 		Map<String,ProfileCredentials> creds = new HashMap<String,ProfileCredentials>();
