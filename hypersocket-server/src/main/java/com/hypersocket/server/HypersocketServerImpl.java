@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -131,7 +132,8 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	
 	private Map<Pattern,String> urlRewrite = new HashMap<Pattern,String>();
 	private Map<String,String> aliases = new HashMap<String,String>();
-
+	private Set<String> protectedPages = new HashSet<String>();
+	
 	private HypersocketServletContext servletContext;
 	
 	public HypersocketServerImpl() {
@@ -188,6 +190,16 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	@Override
 	public void removeAlias(String alias) {
 		aliases.remove(alias);
+	}
+	
+	@Override
+	public void protectPage(String page) {
+		protectedPages.add(page);
+	}
+	
+	@Override
+	public boolean isProtectedPage(String page) {
+		return protectedPages.contains(page);
 	}
 	
 	@Override

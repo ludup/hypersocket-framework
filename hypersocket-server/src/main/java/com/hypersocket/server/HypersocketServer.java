@@ -125,4 +125,8 @@ public interface HypersocketServer {
 	void removeHomePageResolver(HomePageResolver homePageResolver);
 
 	String processReplacements(String str);
+
+	void protectPage(String page);
+
+	boolean isProtectedPage(String page);
 }
