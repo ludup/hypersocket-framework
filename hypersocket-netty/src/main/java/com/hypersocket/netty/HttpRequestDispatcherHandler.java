@@ -58,6 +58,7 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFa
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.json.RestApi;
 import com.hypersocket.netty.forwarding.NettyWebsocketClient;
@@ -71,6 +72,7 @@ import com.hypersocket.server.websocket.WebsocketClient;
 import com.hypersocket.server.websocket.WebsocketClientCallback;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.request.Request;
+import com.hypersocket.session.json.SessionUtils;
 import com.hypersocket.utils.ITokenResolver;
 import com.hypersocket.utils.TokenAdapter;
 import com.hypersocket.utils.TokenReplacementReader;
@@ -254,6 +256,14 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
 				reverseUri = reverseUri.replace(server.getUiPath(), "${uiPath}");
 				reverseUri = reverseUri.replace(server.getBasePath(), "${basePath}");
+				
+				if(server.isProtectedPage(reverseUri)) {
+					if(!ApplicationContextServiceImpl.getInstance().getBean(SessionUtils.class).hasActiveSession(servletRequest)) {
+						nettyResponse.setStatus(HttpStatus.SC_NOT_FOUND);
+						sendResponse(servletRequest, nettyResponse, false);
+						return;
+					}
+				}
 				
 				Map<Pattern,String> rewrites = server.getUrlRewrites();
 				for(Pattern regex : rewrites.keySet()) {
