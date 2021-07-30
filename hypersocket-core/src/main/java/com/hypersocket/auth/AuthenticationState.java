@@ -537,4 +537,9 @@ public class AuthenticationState {
 		}
 		return false;
 	}
+
+	public static AuthenticationState createAuthenticationState(String scheme, HttpServletRequest request,
+			Realm currentRealm) throws AccessDeniedException {
+		return createAuthenticationState(scheme, request, currentRealm, null, null);
+	}
 }
