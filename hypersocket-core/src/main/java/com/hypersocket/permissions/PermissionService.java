@@ -126,7 +126,7 @@ public interface PermissionService extends AuthenticatedService {
 
 	boolean hasAnyPermission(Principal principal, Permission...permissions);
 
-	boolean hasRole(Principal principal, Role role) throws AccessDeniedException;
+	boolean hasRole(Principal principal, Role role);
 
 	void assertResourceAccess(AssignableResource resource, Principal principal) throws AccessDeniedException;
 	
