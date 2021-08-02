@@ -1140,7 +1140,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean hasRole(Principal principal, Role role) throws AccessDeniedException {
+	public boolean hasRole(Principal principal, Role role) {
 
 		for (Role r : getPrincipalRoles(principal)) {
 			if (r.equals(role)) {
