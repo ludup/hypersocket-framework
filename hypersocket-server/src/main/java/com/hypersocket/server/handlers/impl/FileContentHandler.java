@@ -10,6 +10,7 @@ package com.hypersocket.server.handlers.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,14 +51,28 @@ public abstract class FileContentHandler extends ContentHandlerImpl {
 	protected File resolveFile(String path) throws FileNotFoundException {
 		for(File p : baseDirs) {
 			File f = new File(p, path);
-			if(log.isDebugEnabled()) {
-				log.debug("Attempting to resolve " + f.getAbsolutePath());
-			}
-			if(f.exists()) {
-				if(log.isDebugEnabled()) {
-					log.debug("Resolved "+  f.getAbsolutePath());
+			try {
+ 				f = f.getCanonicalFile();
+				if(!f.getAbsolutePath().startsWith(p.getAbsolutePath())) {
+					if(log.isDebugEnabled()) {
+						log.debug("Requested path {} is not a child of the base path {}", f.getAbsolutePath(), p.getAbsolutePath());
+					}
+					continue;
 				}
-				return f;
+				if(log.isDebugEnabled()) {
+					log.debug("Attempting to resolve " + f.getAbsolutePath());
+				}
+				if(f.exists()) {
+					if(log.isDebugEnabled()) {
+						log.debug("Resolved "+  f.getAbsolutePath());
+					}
+					return f;
+				}
+			} catch(IOException e) {
+				if(log.isDebugEnabled()) {
+					log.debug("Could not canonicalise path {}", path);
+				}
+				continue;
 			}
 		}
 		throw new FileNotFoundException("Unable to resolve path " + path);
