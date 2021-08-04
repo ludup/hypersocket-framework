@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
@@ -38,10 +40,13 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 	Map<Class<? extends AssignableResource>, ResourceAssignmentChangeListener<?>> listeners = new HashMap<Class<? extends AssignableResource>, ResourceAssignmentChangeListener<?>>();
 
 	@Autowired
-	RealmService realmService;
+	private RealmService realmService;
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
+
+	@Autowired
+	private PlatformTransactionManager platformTransactionManager;
 
 	@Override
 	public synchronized void addListener(ResourceAssignmentChangeListener<?> listener) {
@@ -51,65 +56,70 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 	@EventListener
 	public synchronized void handleResourceEvent(AssignableResourceEvent event) {
 		if (event.isSuccess() && listeners.containsKey(event.getResource().getClass())) {
-			Set<Principal> assigned = new HashSet<Principal>();
-			Set<Principal> unassigned = new HashSet<Principal>();
-			boolean assignedEveryone = false;
-			boolean unassignedEveryone = false;
-			for (Role role : event.getAssignedRoles()) {
-				if (role.isAllUsers()) {
-					assignedEveryone = true;
-					assigned.clear();
-					break;
-				}
-				assigned.addAll(role.getPrincipals());
-			}
-
-			if (assignedEveryone) {
-				processEveryoneAssignment(event.getCurrentRealm(), (AssignableResource) event.getResource());
-			} else {
-				
-				for (Role role : event.getUnassignedRoles()) {
+			TransactionTemplate template = new TransactionTemplate(platformTransactionManager);
+			template.execute((status) -> {
+			
+				Set<Principal> assigned = new HashSet<Principal>();
+				Set<Principal> unassigned = new HashSet<Principal>();
+				boolean assignedEveryone = false;
+				boolean unassignedEveryone = false;
+				for (Role role : event.getAssignedRoles()) {
 					if (role.isAllUsers()) {
-						unassignedEveryone = true;
-						unassigned.clear();
-						break;
-					}
-					unassigned.addAll(role.getPrincipals());
-				}
-
-				assigned = Iterators.setFromIteration(permissionService.resolveUsers(assigned.iterator()));
-				unassigned = Iterators.setFromIteration(permissionService.resolveUsers(unassigned.iterator()));
-				unassigned.removeAll(assigned);
-
-				for (Role r : ((AssignableResource) event.getResource()).getRoles()) {
-					if (event.getAssignedRoles().contains(r) || event.getUnassignedRoles().contains(r)) {
-						continue;
-					}
-					if (r.isAllUsers()) {
+						assignedEveryone = true;
 						assigned.clear();
-						unassigned.clear();
-						assignedEveryone = false;
-						unassignedEveryone = false;
 						break;
 					}
-					Set<Principal> tmp = Iterators.setFromIteration(permissionService.resolveUsers(r.getPrincipals().iterator()));
-					assigned.removeAll(tmp);
-					unassigned.removeAll(tmp);
-					if (assigned.isEmpty() && unassigned.isEmpty()) {
-						break;
-					}
+					assigned.addAll(role.getPrincipals());
 				}
-
-				if (unassignedEveryone) {
-					processEveryoneUnassignment(event.getCurrentRealm(), (AssignableResource) event.getResource(),
-							assigned);
+	
+				if (assignedEveryone) {
+					processEveryoneAssignment(event.getCurrentRealm(), (AssignableResource) event.getResource());
 				} else {
-					if (!assigned.isEmpty() || !unassigned.isEmpty()) {
-						processAssignmentEvent(event.getCurrentRealm(), (AssignableResource) event.getResource(),
-								assigned, unassigned);
+					
+					for (Role role : event.getUnassignedRoles()) {
+						if (role.isAllUsers()) {
+							unassignedEveryone = true;
+							unassigned.clear();
+							break;
+						}
+						unassigned.addAll(role.getPrincipals());
+					}
+	
+					assigned = Iterators.setFromIteration(permissionService.resolveUsers(assigned.iterator()));
+					unassigned = Iterators.setFromIteration(permissionService.resolveUsers(unassigned.iterator()));
+					unassigned.removeAll(assigned);
+	
+					for (Role r : ((AssignableResource) event.getResource()).getRoles()) {
+						if (event.getAssignedRoles().contains(r) || event.getUnassignedRoles().contains(r)) {
+							continue;
+						}
+						if (r.isAllUsers()) {
+							assigned.clear();
+							unassigned.clear();
+							assignedEveryone = false;
+							unassignedEveryone = false;
+							break;
+						}
+						Set<Principal> tmp = Iterators.setFromIteration(permissionService.resolveUsers(r.getPrincipals().iterator()));
+						assigned.removeAll(tmp);
+						unassigned.removeAll(tmp);
+						if (assigned.isEmpty() && unassigned.isEmpty()) {
+							break;
+						}
+					}
+	
+					if (unassignedEveryone) {
+						processEveryoneUnassignment(event.getCurrentRealm(), (AssignableResource) event.getResource(),
+								assigned);
+					} else {
+						if (!assigned.isEmpty() || !unassigned.isEmpty()) {
+							processAssignmentEvent(event.getCurrentRealm(), (AssignableResource) event.getResource(),
+									assigned, unassigned);
+						}
 					}
 				}
-			}
+				return null;
+			});
 		}
 	}
 
@@ -142,39 +152,43 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 	private void processRoleEvent(Realm realm, Role role, Collection<Principal> granted,
 			Collection<Principal> revoked) {
 		if (!listeners.isEmpty()) {
+			TransactionTemplate template = new TransactionTemplate(platformTransactionManager);
+			template.execute((status) -> {
 
-			Set<Principal> assigned = Iterators.setFromIteration(permissionService.resolveUsers(granted.iterator()));
-			Set<Principal> unassigned = Iterators.setFromIteration(permissionService.resolveUsers(revoked.iterator()));
-			unassigned.removeAll(assigned);
-
-			if (!assigned.isEmpty() || !unassigned.isEmpty()) {
-				for (ResourceAssignmentChangeListener<?> listener : listeners.values()) {
-					long resources = listener.getRepository().getResourceByRoleCount(realm, role);
-					if (resources > 0) {
-						for (AssignableResource resource : listener.getRepository().getResourcesByRole(realm, role)) {
-							for (Role r : resource.getRoles()) {
-								if (r.equals(role)) {
-									continue;
+				Set<Principal> assigned = Iterators.setFromIteration(permissionService.resolveUsers(granted.iterator()));
+				Set<Principal> unassigned = Iterators.setFromIteration(permissionService.resolveUsers(revoked.iterator()));
+				unassigned.removeAll(assigned);
+	
+				if (!assigned.isEmpty() || !unassigned.isEmpty()) {
+					for (ResourceAssignmentChangeListener<?> listener : listeners.values()) {
+						long resources = listener.getRepository().getResourceByRoleCount(realm, role);
+						if (resources > 0) {
+							for (AssignableResource resource : listener.getRepository().getResourcesByRole(realm, role)) {
+								for (Role r : resource.getRoles()) {
+									if (r.equals(role)) {
+										continue;
+									}
+									if (r.isAllUsers()) {
+										assigned.clear();
+										unassigned.clear();
+										break;
+									}
+									Set<Principal> tmp = Iterators.setFromIteration(permissionService.resolveUsers(r.getPrincipals().iterator()));
+									assigned.removeAll(tmp);
+									unassigned.removeAll(tmp);
+									if (assigned.isEmpty() && unassigned.isEmpty()) {
+										break;
+									}
 								}
-								if (r.isAllUsers()) {
-									assigned.clear();
-									unassigned.clear();
-									break;
+								if (!assigned.isEmpty() || !unassigned.isEmpty()) {
+									processAssignmentEvent(realm, resource, assigned, unassigned);
 								}
-								Set<Principal> tmp = Iterators.setFromIteration(permissionService.resolveUsers(r.getPrincipals().iterator()));
-								assigned.removeAll(tmp);
-								unassigned.removeAll(tmp);
-								if (assigned.isEmpty() && unassigned.isEmpty()) {
-									break;
-								}
-							}
-							if (!assigned.isEmpty() || !unassigned.isEmpty()) {
-								processAssignmentEvent(realm, resource, assigned, unassigned);
 							}
 						}
 					}
 				}
-			}
+				return null;
+			});
 		}
 	}
 
@@ -198,39 +212,44 @@ public class ResourceAssignmentChangeServiceImpl implements ResourceAssignmentCh
 			Collection<Principal> revoked) {
 		if (!listeners.isEmpty()) {
 
-			Set<Principal> assigned = Iterators.setFromIteration(permissionService.resolveUsers(granted.iterator()));
-			Set<Principal> unassigned = Iterators.setFromIteration(permissionService.resolveUsers(revoked.iterator()));
-			unassigned.removeAll(assigned);
+			TransactionTemplate template = new TransactionTemplate(platformTransactionManager);
+			template.execute((status) -> {
 
-			if (!assigned.isEmpty() || !unassigned.isEmpty()) {
-				Collection<Role> roles = permissionService.getRolesByPrincipal(group);
-
-				for (ResourceAssignmentChangeListener<?> listener : listeners.values()) {
-					long resources = listener.getRepository().getResourceByRoleCount(realm, roles.toArray(new Role[0]));
-					if (resources > 0) {
-						for (AssignableResource resource : listener.getRepository().getResourcesByRole(realm,
-								roles.toArray(new Role[0]))) {
-							for (Role r : resource.getRoles()) {
-								if (r.isAllUsers()) {
-									assigned.clear();
-									unassigned.clear();
-									break;
+				Set<Principal> assigned = Iterators.setFromIteration(permissionService.resolveUsers(granted.iterator()));
+				Set<Principal> unassigned = Iterators.setFromIteration(permissionService.resolveUsers(revoked.iterator()));
+				unassigned.removeAll(assigned);
+	
+				if (!assigned.isEmpty() || !unassigned.isEmpty()) {
+					Collection<Role> roles = permissionService.getRolesByPrincipal(group);
+	
+					for (ResourceAssignmentChangeListener<?> listener : listeners.values()) {
+						long resources = listener.getRepository().getResourceByRoleCount(realm, roles.toArray(new Role[0]));
+						if (resources > 0) {
+							for (AssignableResource resource : listener.getRepository().getResourcesByRole(realm,
+									roles.toArray(new Role[0]))) {
+								for (Role r : resource.getRoles()) {
+									if (r.isAllUsers()) {
+										assigned.clear();
+										unassigned.clear();
+										break;
+									}
+									Set<Principal> tmp = Iterators.setFromIteration(permissionService.resolveUsers(r.getPrincipals().iterator()));
+									assigned.removeAll(tmp);
+									unassigned.removeAll(tmp);
+									if (assigned.isEmpty() && unassigned.isEmpty()) {
+										break;
+									}
 								}
-								Set<Principal> tmp = Iterators.setFromIteration(permissionService.resolveUsers(r.getPrincipals().iterator()));
-								assigned.removeAll(tmp);
-								unassigned.removeAll(tmp);
-								if (assigned.isEmpty() && unassigned.isEmpty()) {
-									break;
+								if (!assigned.isEmpty() || !unassigned.isEmpty()) {
+									processAssignmentEvent(realm, resource, assigned, unassigned);
 								}
-							}
-							if (!assigned.isEmpty() || !unassigned.isEmpty()) {
-								processAssignmentEvent(realm, resource, assigned, unassigned);
 							}
 						}
 					}
+	
 				}
-
-			}
+				return null;
+			});
 		}
 	}
 
