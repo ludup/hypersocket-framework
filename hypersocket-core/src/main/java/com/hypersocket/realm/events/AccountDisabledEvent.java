@@ -17,17 +17,25 @@ public class AccountDisabledEvent extends UserEvent {
 	public static final String ATTR_DISABLED_PRINCIPAL_REALM_NAME = "attr.disabledRealmName";
 	public static final String ATTR_DISABLED_PRINCIPAL_REALM = "attr.disabledRealm";
 	public static final String ATTR_DISABLED_PRINCIPAL_REALM_TYPE = "attr.disabledRealmType";
+	
+	private Principal disabledAccount;
 
 	public AccountDisabledEvent(Object source, Session session, RealmProvider provider,
 			Principal principal, Principal disabledAccount) {
 		super(source, EVENT_RESOURCE_KEY, session, principal.getRealm(), provider, principal);
+		this.disabledAccount = disabledAccount;
 		addAttributes(disabledAccount);
 	}
 
 	public AccountDisabledEvent(Object source, Throwable e, Session session, RealmProvider provider,
 			Principal principal, Principal disabledAccount) {
 		super(source, EVENT_RESOURCE_KEY, e, session, principal.getRealm(), provider, principal.getName());
+		this.disabledAccount = disabledAccount;
 		addAttributes(disabledAccount);
+	}
+	
+	public Principal getDisabledAccount() {
+		return disabledAccount;
 	}
 
 	public String[] getResourceKeys() {

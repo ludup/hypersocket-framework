@@ -17,18 +17,26 @@ public class AccountEnabledEvent extends UserEvent {
 	public static final String ATTR_ENABLED_PRINCIPAL_REALM_NAME = "attr.enabledRealmName";
 	public static final String ATTR_ENABLED_PRINCIPAL_REALM = "attr.enabledRealm";
 	public static final String ATTR_ENABLED_PRINCIPAL_REALM_TYPE = "attr.enabledRealmType";
+
+	private Principal enabledAccount;
 	
 	public AccountEnabledEvent(Object source, Session session,
 			RealmProvider provider, Principal principal, Principal enabledAccount) {
 		super(source, EVENT_RESOURCE_KEY, session, principal.getRealm(), provider, principal);
+		this.enabledAccount = enabledAccount;
 		addAttributes(enabledAccount);
 	}
 
 	public AccountEnabledEvent(Object source, Throwable e, Session session,
-			RealmProvider provider, Principal principal, Principal disabledAccount) {
+			RealmProvider provider, Principal principal, Principal enabledAccount) {
 		super(source, EVENT_RESOURCE_KEY, e, session, principal.getRealm(), provider,
 				principal.getName());
-		addAttributes(disabledAccount);
+		this.enabledAccount = enabledAccount;
+		addAttributes(enabledAccount);
+	}
+	
+	public Principal getDisabledAccount() {
+		return enabledAccount;
 	}
 
 	public String[] getResourceKeys() {

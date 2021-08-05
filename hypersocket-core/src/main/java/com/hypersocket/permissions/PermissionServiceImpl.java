@@ -1094,7 +1094,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 					if (count > 0) {
 						throw new ResourceException(RESOURCE_BUNDLE, "error.resourcesAssigned",
 								principal.getPrincipalName(), count);
-					}
+					} 
 
 					for (TransactionAdapter<Principal> op : ops) {
 						op.beforeOperation(principal, new HashMap<String, String>());
