@@ -517,13 +517,14 @@ public class AuthenticationState {
 	public static void clearCurrentState(HttpServletRequest request) {
 		
 		AuthenticationState currentState = AuthenticationState.getCurrentState(request);
+		request.getSession().setAttribute(AUTHENTICATION_STATE, null);
 		
 		if(currentState!=null) {
 			request.getSession().setAttribute(PREVIOUS_AUTHENTICATION_SCHEME,
 					currentState.getScheme().getResourceKey());
 		}
 		
-		request.getSession().setAttribute(AUTHENTICATION_STATE, null);
+		
 		
 	}
 
