@@ -751,6 +751,8 @@ public class AuthenticationServiceImpl extends
 							
 						} catch (AccessDeniedException e) {
 	
+							log.error("User cannot login", e);
+							
 							eventService.publishEvent(new AuthenticationAttemptEvent(
 											this, state, authenticator,
 											"hint.noPermission"));
