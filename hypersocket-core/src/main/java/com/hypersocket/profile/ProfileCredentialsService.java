@@ -6,6 +6,7 @@ import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.authenticator.events.AuthenticationSchemeEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserUndeletedEvent;
 import com.hypersocket.resource.ResourceException;
@@ -46,5 +47,9 @@ public interface ProfileCredentialsService {
 	void onUserUndeleted(UserUndeletedEvent event);
 
 	void undeleteProfile(Principal target);
+
+	void resumeBatchUpdate(Realm realm);
+
+	void disableBatchUpdate(Realm realm);
 
 }
