@@ -3,9 +3,11 @@ package com.hypersocket.profile;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -19,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationScheme;
-import com.hypersocket.authenticator.events.AuthenticationSchemeEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.profile.jobs.ProfileBatchUpdateJob;
@@ -55,6 +56,8 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	private RealmService realmService; 
 
 	private Map<String,ProfileCredentialsProvider> providers = new HashMap<String,ProfileCredentialsProvider>();
+	
+	Set<Realm> disabledRealms = new HashSet<>();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -345,6 +348,12 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	}
 
 	private void fireBatchUpdateJob(Realm currentRealm) {
+		
+		if(disabledRealms.contains(currentRealm)) {
+			log.warn("Realm {} is currently disable for batch updates", currentRealm.getName());
+			return;
+		}
+		
 		PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm, "profileBatchUpdateJob");
 		
 		try {
@@ -370,5 +379,18 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 			provider.deleteCredentials(principal);
 		}
 		
+	}
+
+	@Override
+	public void resumeBatchUpdate(Realm realm) {
+		disabledRealms.remove(realm);
+		log.warn("Realm {} is now enabled batch updates", realm.getName());
+		fireBatchUpdateJob(realm);		
+	}
+
+	@Override
+	public void disableBatchUpdate(Realm realm) {
+		log.warn("Realm {} is now disabled batch updates", realm.getName());
+		disabledRealms.add(realm);
 	}
 }
