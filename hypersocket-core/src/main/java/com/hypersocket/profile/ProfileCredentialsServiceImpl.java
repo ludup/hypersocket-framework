@@ -55,6 +55,8 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	@Autowired
 	private RealmService realmService; 
 
+	private ProfileValidator validator = null;
+	
 	private Map<String,ProfileCredentialsProvider> providers = new HashMap<String,ProfileCredentialsProvider>();
 	
 	Set<Realm> disabledRealms = new HashSet<>();
@@ -76,6 +78,11 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	@Override
 	public void registerProvider(ProfileCredentialsProvider provider) {
 		providers.put(provider.getResourceKey(), provider);
+	}
+	
+	@Override
+	public void setValidator(ProfileValidator validator) {
+		this.validator = validator;
 	}
 	
 	@Override
@@ -143,16 +150,27 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 			}
 		}
 		
-		if(incomplete > 0) {
-			if(partial > 0 || complete > 0) {
+		
+		if(Objects.nonNull(validator) && validator.hasMaximumCompletedAuth(profile.getRealm())) {
+			if(complete >= validator.getMaximumCompletedAuths(profile.getRealm())) {
+				profile.setState(ProfileCredentialsState.COMPLETE);
+			} else if(complete > 0 || partial > 0) {
 				profile.setState(ProfileCredentialsState.PARTIALLY_COMPLETE);
 			} else {
 				profile.setState(ProfileCredentialsState.INCOMPLETE);
 			}
-		} else if(partial > 0) {
-			profile.setState(ProfileCredentialsState.PARTIALLY_COMPLETE);
 		} else {
-			profile.setState(ProfileCredentialsState.COMPLETE);
+			if(incomplete > 0) {
+				if(partial > 0 || complete > 0) {
+					profile.setState(ProfileCredentialsState.PARTIALLY_COMPLETE);
+				} else {
+					profile.setState(ProfileCredentialsState.INCOMPLETE);
+				}
+			} else if(partial > 0) {
+				profile.setState(ProfileCredentialsState.PARTIALLY_COMPLETE);
+			} else {
+				profile.setState(ProfileCredentialsState.COMPLETE);
+			}
 		}
 		
 		return profile.getState()!=previousState;
