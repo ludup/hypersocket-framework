@@ -52,4 +52,6 @@ public interface ProfileCredentialsService {
 
 	void disableBatchUpdate(Realm realm);
 
+	void setValidator(ProfileValidator validator);
+
 }
