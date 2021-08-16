@@ -9,6 +9,9 @@ package com.hypersocket;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.prefs.Preferences;
@@ -20,12 +23,9 @@ import org.w3c.dom.Document;
 
 public class HypersocketVersion {
 
-	private static String version;
+	static Map<String,String> versions = Collections.synchronizedMap(new HashMap<>());
 	
 	public static String getVersion() {
-		if(Boolean.getBoolean("hypersocket.development")) {
-			return System.getProperty("hypersocket.devVersion", getVersion("hypersocket-common"));
-		}
 		return getVersion("hypersocket-common");
 	}
 	
@@ -43,14 +43,15 @@ public class HypersocketVersion {
 	}
 	
 	public static String getVersion(String artifactId) {
-		String fakeVersion = System.getProperty("hypersocket.development.version");
+		String fakeVersion = Boolean.getBoolean("hypersocket.development") ? 
+				System.getProperty("hypersocket.development.version", System.getProperty("hypersocket.devVersion")) : null;
 		if(fakeVersion != null) {
 			return fakeVersion;
 		}
-		
-	    if (version != null) {
-	        return version;
-	    }
+
+	    String detectedVersion = versions.get(artifactId);
+	    if(detectedVersion != null)
+	    	return detectedVersion;
 
 	    // try to load from maven properties first
 	    try {
@@ -59,38 +60,40 @@ public class HypersocketVersion {
 	        if(is == null) {
 		        is = HypersocketVersion.class.getResourceAsStream("/META-INF/maven/com.hypersocket/" + artifactId + "/pom.properties");
 	        }
-	        if (is != null) {
+	        if (is != null) { 
 	            p.load(is);
-	            version = p.getProperty("version", "");
+	            detectedVersion = p.getProperty("version", "");
 	        }
 	    } catch (Exception e) {
 	        // ignore
 	    }
 
 	    // fallback to using Java API
-	    if (version == null) {
+	    if (detectedVersion == null) {
 	        Package aPackage = HypersocketVersion.class.getPackage();
 	        if (aPackage != null) {
-	            version = aPackage.getImplementationVersion();
-	            if (version == null) {
-	                version = aPackage.getSpecificationVersion();
+	            detectedVersion = aPackage.getImplementationVersion();
+	            if (detectedVersion == null) {
+	                detectedVersion = aPackage.getSpecificationVersion();
 	            }
 	        }
 	    }
 
-	    if (version == null) {
+	    if (detectedVersion == null) {
 	    	try {
 	    		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 	            DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
 	            Document doc = docBuilder.parse (new File("pom.xml"));
-	            version = doc.getDocumentElement().getElementsByTagName("version").item(0).getTextContent();
+	            detectedVersion = doc.getDocumentElement().getElementsByTagName("version").item(0).getTextContent();
 	    	} catch (Exception e) {
-				version = "DEV_VERSION";
+				detectedVersion = "DEV_VERSION";
 			} 
 	        
 	    }
+	    
+	    versions.put(artifactId, detectedVersion);
 
-	    return version;
+	    return detectedVersion;
 	}
 
 	public static String getProductId() {

@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.hypersocket.auth.AuthenticationRequiredResult;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationServiceImpl;
 import com.hypersocket.auth.AuthenticationState;
@@ -37,7 +36,6 @@ import com.hypersocket.auth.FallbackAuthenticationRequired;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.input.ParagraphField;
-import com.hypersocket.json.AuthenticationRedirectResult;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -323,7 +321,7 @@ public class LogonController extends AuthenticatedController {
 				
 				request.getSession().setAttribute("lastFormTemplate", template);
 				
-				return new AuthenticationRequiredResult(
+				return new LogonRequiredResult(
 						configurationService.getValue(state.getRealm(),
 								"logon.banner"),
 						flash!=null ? flash : state.getLastErrorMsg(),
@@ -350,7 +348,7 @@ public class LogonController extends AuthenticatedController {
 			 */
 			throw e;
 		} catch(JsonRedirectException e) {
-			return new AuthenticationRedirectResult(
+			return new LogonRedirectResult(
 					configurationService.getValue(state.getRealm(),
 							"logon.banner"),
 					flash!=null ? flash : state.getLastErrorMsg(),
@@ -365,7 +363,7 @@ public class LogonController extends AuthenticatedController {
 			state.setLastErrorMsg(t.getMessage());
 			state.setLastErrorIsResourceKey(false);
 			
-			return new AuthenticationRequiredResult(
+			return new LogonRequiredResult(
 					configurationService.getValue(state.getRealm(),
 							"logon.banner"),
 					state.getLastErrorMsg(),
@@ -524,7 +522,7 @@ public class LogonController extends AuthenticatedController {
 			HttpServletRequest request, 
 			HttpServletResponse response) throws IOException, RedirectException {
 		
-		return new AuthenticationSuccessResult(info,
+		return new LogonSuccessResult(info,
 				configurationService.hasUserLocales(), session, homePage,
 				getCurrentRole(session));
 		
