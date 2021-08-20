@@ -30,6 +30,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.realm.UserPermission;
 import com.hypersocket.realm.events.UserDeletedEvent;
 import com.hypersocket.realm.events.UserUndeletedEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
