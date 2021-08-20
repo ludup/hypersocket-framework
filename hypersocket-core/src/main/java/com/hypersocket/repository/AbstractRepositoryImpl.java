@@ -547,6 +547,36 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 			return new Long(result);
 		}
 	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public <T> long searchCount(Class<T> clz, String searchColumn, String searchPattern,
+			CriteriaConfiguration... configs) {
+		
+		Criteria criteria = createCriteria(clz);
+		
+		Map<String,Criteria> assosications = new HashMap<String,Criteria>();
+		
+		for (String property : resolveCollectionProperties(clz)) {
+			 criteria.setFetchMode(property, org.hibernate.FetchMode.SELECT);
+		}
+		
+		if(StringUtils.isNotBlank(searchPattern) && HibernateUtils.isNotWildcard(searchPattern)) {
+			HibernateUtils.configureSearch(searchColumn, searchPattern, criteria, clz, assosications);
+		}
+
+		for (CriteriaConfiguration c : configs) {
+			c.configure(criteria);
+		}
+
+		criteria.setProjection(Projections.rowCount());
+
+		Object result = criteria.uniqueResult();
+		if(result!=null) {
+			return (Long) result;
+		}
+		return 0L;
+	}
 
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly = true)

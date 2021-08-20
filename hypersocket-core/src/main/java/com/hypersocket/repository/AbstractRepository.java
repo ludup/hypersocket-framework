@@ -46,5 +46,10 @@ public interface AbstractRepository<K> {
 	List<?> total(Class<?> clz, String column, Sort order, CriteriaConfiguration... configs);
 
 	Long getDistinctCount(Class<?> clz, String groupBy, CriteriaConfiguration... configs);
-	
+
+	<T> List<T> search(Class<T> clz, String searchColumn, String searchPattern, int start, int length,
+			ColumnSort[] sorting, CriteriaConfiguration... configs);
+
+	<T> long searchCount(Class<T> clz, String searchColumn, String searchPattern,
+			CriteriaConfiguration... configs);
 }
