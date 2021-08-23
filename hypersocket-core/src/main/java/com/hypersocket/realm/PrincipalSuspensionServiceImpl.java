@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 
@@ -15,12 +16,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
+import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.events.PrincipalResumedEvent;
+import com.hypersocket.realm.events.PrincipalSuspendedEvent;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
+import com.hypersocket.session.SessionService;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.DefaultTableFilter;
 import com.hypersocket.transactions.TransactionService;
@@ -48,7 +53,13 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	private RealmService realmService;
 	
 	@Autowired
-	I18NService i18nService; 
+	private I18NService i18nService; 
+	
+	@Autowired
+	private EventService eventService; 
+	
+	@Autowired
+	private SessionService sessionService; 
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -57,6 +68,9 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 		
 		realmService.registerPrincipalFilter(new PrincipalSuspendedFilter());
 		realmService.registerPrincipalFilter(new PrincipalEnabledFilter());
+
+		eventService.registerEvent(PrincipalSuspendedEvent.class, RealmServiceImpl.RESOURCE_BUNDLE);
+		eventService.registerEvent(PrincipalResumedEvent.class, RealmServiceImpl.RESOURCE_BUNDLE);
 	}
 
 	
@@ -166,8 +180,16 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 
 	private void updateSuspension(Principal principal, Boolean suspension) {
 		try {
-			principal.setSuspended(suspension);
-			principalRepository.saveResource(principal);
+			if(!Objects.equals(suspension, principal.isSuspended())) {
+				principal.setSuspended(suspension);
+				principalRepository.saveResource(principal);
+				if(suspension)
+					eventService.publishEvent(
+							new PrincipalSuspendedEvent(this, sessionService.getSystemSession(), sessionService.getSystemSession().getCurrentPrincipal(), principal));
+				else
+					eventService.publishEvent(
+							new PrincipalResumedEvent(this, sessionService.getSystemSession(), sessionService.getSystemSession().getCurrentPrincipal(), principal));
+			}
 		} catch (ResourceException e) {
 			throw new IllegalStateException(e.getMessage(), e);
 		}
