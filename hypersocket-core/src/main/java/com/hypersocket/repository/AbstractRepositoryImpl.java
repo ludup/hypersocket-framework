@@ -524,7 +524,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		if (result == null) {
 			return 0L;
 		} else {
-			return new Long(result);
+			return Long.valueOf(result);
 		}
 	}
 	
@@ -544,7 +544,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		if (result == null) {
 			return 0L;
 		} else {
-			return new Long(result);
+			return Long.valueOf(result);
 		}
 	}
 	

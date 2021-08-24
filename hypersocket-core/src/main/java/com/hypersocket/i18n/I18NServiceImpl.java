@@ -24,9 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.cache.CacheService;
-import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.permissions.PermissionService;

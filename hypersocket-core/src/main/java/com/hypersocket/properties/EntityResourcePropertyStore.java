@@ -481,10 +481,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "deprecation" })
+	@SuppressWarnings({ "unchecked"})
 	private <T> T getEnum(String value, Class<T> enumType) {
 		Enum<?>[] enumConstants = (Enum<?>[]) enumType.getEnumConstants();
-		if(NumberUtils.isNumber(value)){//ordinal
+		if(NumberUtils.isCreatable(value)){//ordinal
 			return (T) enumConstants[Integer.parseInt(value)];
 		}else{
 			for (Enum<?> enumConstant : enumConstants) {
@@ -532,7 +532,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	class IntegerValue implements PrimitiveParser<Integer> {
 		public Integer parseValue(String value) {
 			if(value == null) {
-				return new Integer(0);
+				return Integer.valueOf(0);
 			}
 			return Integer.valueOf(value);
 		}
@@ -541,7 +541,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	class LongValue implements PrimitiveParser<Long> {
 		public Long parseValue(String value) {
 			if(value == null) {
-				return new Long(0);
+				return Long.valueOf(0);
 			}
 			return Long.valueOf(value);
 		}
@@ -550,7 +550,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	class DoubleValue implements PrimitiveParser<Double> {
 		public Double parseValue(String value) {
 			if(value == null) {
-				return new Double(0F);
+				return Double.valueOf(0F);
 			}
 			return Double.valueOf(value);
 		}

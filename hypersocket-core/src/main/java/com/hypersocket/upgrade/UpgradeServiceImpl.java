@@ -412,7 +412,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 				@SuppressWarnings("unchecked")
 				Class<? extends Runnable> clazz = (Class<? extends Runnable>) getClass().getClassLoader()
 						.loadClass(path);
-				Runnable r = clazz.newInstance();
+				Runnable r = clazz.getConstructor().newInstance();
 				springContext.getAutowireCapableBeanFactory().autowireBean(r);
 				r.run();
 			} catch (Exception e) {

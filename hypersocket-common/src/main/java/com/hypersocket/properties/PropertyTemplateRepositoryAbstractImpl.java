@@ -225,7 +225,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 					Class<? extends PropertyStore> clz = (Class<? extends PropertyStore>) Class
 							.forName(node.getAttribute("type"));
 	
-					store = clz.newInstance();
+					store = clz.getConstructor().newInstance();
 				}
 				if(store instanceof XmlTemplatePropertyStore) {
 					((XmlTemplatePropertyStore)store).init(node);

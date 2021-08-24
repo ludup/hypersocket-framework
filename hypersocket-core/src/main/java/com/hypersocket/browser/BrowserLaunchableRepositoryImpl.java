@@ -102,7 +102,7 @@ public class BrowserLaunchableRepositoryImpl extends
 		
 		ids.addAll(criteria.list());
 		
-		return new Long(ids.size());
+		return Long.valueOf(ids.size());
 	}
 
 	@SuppressWarnings("unchecked")

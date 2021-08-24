@@ -309,7 +309,6 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 			return "filter.principal.suspended";
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
 				ColumnSort[] sorting) {
@@ -342,7 +341,6 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 			return "filter.principal.enabled";
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
 				ColumnSort[] sorting) {

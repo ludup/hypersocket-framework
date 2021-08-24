@@ -50,10 +50,10 @@ public class localRealm_1_DOT_2_DOT_1 implements Runnable {
 						updated = true;
 					}
 				}
-				if(StringUtils.isBlank(user.getFullname())) {
+				if(StringUtils.isBlank(user.getDescription())) {
 					String fullname = userRepository.getValue(user, "user.fullname");
 					if(StringUtils.isNotBlank(fullname)) {
-						user.setFullname(fullname);
+						user.setDescription(fullname);
 						updated = true;
 					}
 				}

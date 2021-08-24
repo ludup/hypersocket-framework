@@ -714,7 +714,7 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 				return o2.getResourceKey().compareTo(o1.getResourceKey());
 			}
 		});
-		return new Long(ret.size());
+		return Long.valueOf(ret.size());
 	}
 
 	private String getCacheKey(SystemEvent sourceEvent) {

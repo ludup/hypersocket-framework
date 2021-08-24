@@ -9,7 +9,7 @@ public abstract class AbstractAttributeCategory<A extends AbstractAttribute<?>> 
 	private static final long serialVersionUID = -8751695909133262852L;
 
 	@Column(name = "weight", nullable = false)
-	private Integer weight = new Integer(0);
+	private Integer weight = Integer.valueOf(0);
 
 	@Column(name="visibility_depends_on")
 	private String visibilityDependsOn;

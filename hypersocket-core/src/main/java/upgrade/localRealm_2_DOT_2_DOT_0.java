@@ -35,7 +35,7 @@ public class localRealm_2_DOT_2_DOT_0 implements Runnable {
 			for (Iterator<LocalUser> userIt = userRepository.iterateUsers(realm, new ColumnSort[0]); userIt
 					.hasNext();) {
 				LocalUser user = userIt.next();
-				user.setDescription(user.getFullname());
+				user.setDescription(user.getDescription());
 				log.info(String.format("Updating properties for user %s", user.getPrincipalName()));
 				userRepository.saveUser(user, null);
 			}

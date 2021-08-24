@@ -249,7 +249,7 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 			JobDataMap data = new JobDataMap();
 			data.put("resourceId", resource.getId());
 			data.put("jobName", "reconcileResourceJob");
-			data.put("initial", new Boolean(initial));
+			data.put("initial", Boolean.valueOf(initial));
 			
 			if(schedulerService.jobDoesNotExists(resource.getId().toString())) {
 

@@ -43,7 +43,7 @@ public class I18N {
 		}
 
 		try {
-			ResourceBundle rb = ResourceBundle.getBundle(bundle, Locale.getDefault(),
+			ResourceBundle.getBundle(bundle, Locale.getDefault(),
 					I18N.class.getClassLoader());
 			return true;
 		} catch (MissingResourceException e) {

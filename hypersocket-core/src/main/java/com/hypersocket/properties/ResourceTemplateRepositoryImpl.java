@@ -198,7 +198,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				Class<? extends PropertyStore> clz = (Class<? extends PropertyStore>) Class
 						.forName(node.getAttribute("type"));
 
-				PropertyStore store = clz.newInstance();
+				PropertyStore store = clz.getConstructor().newInstance();
 
 				if (store instanceof XmlTemplatePropertyStore) {
 					((XmlTemplatePropertyStore) store).init(node);

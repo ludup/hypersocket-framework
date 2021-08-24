@@ -390,7 +390,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 		processAdditionalAssignedResourceIds(ids, principals.iterator().next().getRealm(), searchPattern, searchColumn, principals);
 		
-		return new Long(ids.size());
+		return Long.valueOf(ids.size());
 	}
 
 

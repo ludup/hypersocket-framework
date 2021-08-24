@@ -2,7 +2,6 @@ package com.hypersocket.delegation.json;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +36,6 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.json.PropertyItem;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AssignableResourceUpdate;
-import com.hypersocket.resource.ResourceColumns;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.json.SessionTimeoutException;

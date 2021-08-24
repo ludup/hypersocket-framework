@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
-@SuppressWarnings("restriction")
 public class TextProcessor {
 	
 	public static class ObjectNotation implements Resolver {

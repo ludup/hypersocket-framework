@@ -28,9 +28,6 @@ public class HypersocketSession implements HttpSession {
 	private int maxInterval = 300;
 	private ServletContext context;
 	
-	/* TODO: Remove? Unsure if used client side */
-	private boolean invalidated = false;
-	
 	HypersocketSession( ServletContext context) {
 		this.context = context;
 	}
@@ -102,7 +99,6 @@ public class HypersocketSession implements HttpSession {
 	}
 
 	public void invalidate() {
-		invalidated = true;
 
 	}
 

@@ -267,7 +267,7 @@ public class CurrentRealmController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							try {
-								return new Long(results.get().size());
+								return Long.valueOf(results.get().size());
 							} finally {
 								results.remove();
 							}

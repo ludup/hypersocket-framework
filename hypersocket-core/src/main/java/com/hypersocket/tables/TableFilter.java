@@ -12,7 +12,7 @@ public interface TableFilter {
 	String getResourceKey();
 
 	@JsonIgnore
-	<T> List<T> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
+	List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting);
 
 	@JsonIgnore

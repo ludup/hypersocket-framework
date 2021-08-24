@@ -23,8 +23,8 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 		this.contentPath = contentPath;
 		this.large = large;
 		this.visible = true;
-		this.column = new Long(1);
-		this.position = new Long(-1);
+		this.column = Long.valueOf(1);
+		this.position = Long.valueOf(-1);
 		this.system = false;
 	}
 
@@ -36,8 +36,8 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 		this.contentPath = contentPath;
 		this.large = large;
 		this.visible = visible;
-		this.column = new Long(1);
-		this.position = new Long(-1);
+		this.column = Long.valueOf(1);
+		this.position = Long.valueOf(-1);
 		this.system = false;
 	}
 	
@@ -49,8 +49,8 @@ public abstract class OverviewWidget implements Comparable<OverviewWidget>{
 		this.contentPath = contentPath;
 		this.large = large;
 		this.visible = visible;
-		this.column = new Long(1);
-		this.position = new Long(-1);
+		this.column = Long.valueOf(1);
+		this.position = Long.valueOf(-1);
 		this.system = false;
 		this.decorate = decorate;
 	}

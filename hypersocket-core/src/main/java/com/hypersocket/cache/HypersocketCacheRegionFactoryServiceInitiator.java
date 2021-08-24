@@ -30,7 +30,7 @@ public class HypersocketCacheRegionFactoryServiceInitiator implements StandardSe
 	}
 
 	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	public RegionFactory initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		final Properties p = new Properties();
 		if (configurationValues != null) {

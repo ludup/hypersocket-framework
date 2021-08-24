@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -177,7 +178,7 @@ public class Session extends AbstractEntity<String> {
 		long time = signedOut!=null ? signedOut.getTime() : System.currentTimeMillis();
 		BigDecimal tmp = new BigDecimal(time	- getCreateDate().getTime());
 		tmp = tmp.divide(new BigDecimal(1000));
-		return tmp.setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue();
+		return tmp.setScale(0, RoundingMode.HALF_UP).doubleValue();
 	}
 	
 	Principal getPrincipal() {

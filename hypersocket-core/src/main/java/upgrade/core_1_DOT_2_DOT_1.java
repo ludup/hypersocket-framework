@@ -41,7 +41,7 @@ public class core_1_DOT_2_DOT_1 implements Runnable {
 				for(Iterator<LocalUser> userIt = repository.iterateUsers(realm, new ColumnSort[0]); userIt.hasNext(); ) {
 					LocalUser user = userIt.next();
 					try {
-						user.setFullname(repository.getValue(user, "user.fullname"));
+						user.setDescription(repository.getValue(user, "user.fullname"));
 						user.setEmail(repository.getValue(user, "user.email"));
 						user.setMobile(repository.getValue(user, "user.mobile"));
 						repository.saveUser(user, null);

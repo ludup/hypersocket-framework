@@ -75,7 +75,7 @@ public class Role extends RealmResource {
 	private Boolean allRealms = Boolean.FALSE;
 
 	@Column(name = "personal_role", nullable = true)
-	private Boolean personalRole = new Boolean(false);
+	private Boolean personalRole = Boolean.valueOf(false);
 
 	@Column(name = "role_type")
 	private RoleType type;
