@@ -77,7 +77,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 			state.addParameter("password", password);
 			return AuthenticatorResult.AUTHENTICATION_SUCCESS;
 			
-		} catch (ResourceException e) {
+		} catch (Throwable e) {
 			state.setLastErrorMsg(e.getMessage());
 			state.setLastErrorIsResourceKey(false);
 			
@@ -109,7 +109,10 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	
 	@Override
 	public FormTemplate createTemplate(AuthenticationState state) {
-		return new ChangePasswordTemplate(state, "changePassword.text");
+		FormTemplate t = new ChangePasswordTemplate(state, "changePassword.text", state.getLastErrorMsg(), state.getLastErrorIsResourceKey());
+		state.setLastErrorIsResourceKey(false);
+		state.setLastErrorMsg(null);
+		return t;
 	}
 
 	@Override
