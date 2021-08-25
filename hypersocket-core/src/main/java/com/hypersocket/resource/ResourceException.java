@@ -23,6 +23,10 @@ public class ResourceException extends Exception {
 		this(e.getCause(), e.getBundle(), e.getResourceKey(), e.getArgs());
 	}
 	
+	public ResourceException(String msg) {
+		super(msg);
+	}
+	
 	public ResourceException(String bundle, String resourceKey, Object... args) {
 		this(null, bundle, resourceKey, args);
 	}	
