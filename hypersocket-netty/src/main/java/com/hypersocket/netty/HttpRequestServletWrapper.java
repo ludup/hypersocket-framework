@@ -204,6 +204,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		if (pathInfo.equals(""))
 			pathInfo = null;
 
+		parameters.clear();
 		if (queryString != null && queryString.length() > 0) {
 			processParameters(queryString);
 		}
