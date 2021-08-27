@@ -27,7 +27,8 @@ public abstract class UserEvent extends PrincipalEvent {
 			Realm realm, RealmProvider provider, Principal principal) {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
-		addAttribute(ATTR_USER_NAME, principal.getName());
+		addAttribute(ATTR_PRINCIPAL_NAME, principal.getPrincipalName());
+		addAttribute(ATTR_PRINCIPAL_DESC, principal.getDescription());
 		Map<String,String> properties=  principal.getProperties();
 		if(properties!=null) {
 			for (String prop : properties.keySet()) {
