@@ -2,12 +2,17 @@ package com.hypersocket.server.interfaces.http;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -32,6 +37,8 @@ public class HTTPInterfaceResourceServiceImpl extends
 		AbstractResourceServiceImpl<HTTPInterfaceResource> implements
 		HTTPInterfaceResourceService {
 
+	static Logger LOG = LoggerFactory.getLogger(HTTPInterfaceResourceServiceImpl.class);
+
 	public static final String RESOURCE_BUNDLE = "HTTPInterfaceResourceService";
 
 	@Autowired
@@ -42,6 +49,9 @@ public class HTTPInterfaceResourceServiceImpl extends
 
 	@Autowired
 	private EventService eventService;
+	
+	@Autowired
+	private SystemConfigurationService configurationService;
 
 	public HTTPInterfaceResourceServiceImpl() {
 		super("HTTPInterface");
@@ -81,6 +91,68 @@ public class HTTPInterfaceResourceServiceImpl extends
 		eventService.registerEvent(HTTPInterfaceStoppedEvent.class, RESOURCE_BUNDLE);
 		
 		EntityResourcePropertyStore.registerResourceService(HTTPInterfaceResource.class, repository);
+		
+		/* Synchronize the port for Default HTTP and Default HTTPS 
+		 * interfaces from the system configuration properties so that
+		 * the port can be overridden by changing hypersocket.properties
+		 * (or re-running the installer).
+		 */
+		HTTPInterfaceResource http = repository.getResourceByName("Default HTTP", realmService.getSystemRealm());
+		int defaultHttpsPort = configurationService.getIntValue("https.port");
+		int defaultHttpPort = configurationService.getIntValue("http.port");
+		if (http == null) {
+			LOG.warn("Could not find default HTTP interface, cannot make it system");
+		} else {
+			http.setSystem(true);
+			if(!Objects.equals(defaultHttpPort, http.getPort())) {
+				LOG.info(String.format("Detected change to default HTTP port, changing from %d to %d", http.getPort(), defaultHttpPort));
+				http.setPort(defaultHttpPort);
+			}
+			if(!Objects.equals(defaultHttpsPort, http.getRedirectPort())) {
+				LOG.info(String.format("Detected change to default redirect HTTPS port, changing from %d to %d", http.getRedirectPort(), defaultHttpsPort));
+				http.setRedirectPort(defaultHttpsPort);
+			}
+			try {
+				repository.saveResource(http);
+			} catch (ResourceException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+		HTTPInterfaceResource https = repository.getResourceByName("Default HTTPS", realmService.getSystemRealm());
+		if (https == null) {
+			LOG.warn("Could not find default HTTPS interface, cannot make it system");
+		} else {
+			https.setSystem(true);
+			if(!Objects.equals(defaultHttpsPort, https.getPort())) {
+				LOG.info(String.format("Detected change to default HTTPS port, changing from %d to %d", https.getPort(), defaultHttpsPort));
+				https.setPort(defaultHttpsPort);
+			}
+			try {
+				repository.saveResource(https);
+			} catch (ResourceException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+	}
+	
+	@EventListener
+	@Override
+	public void httpInterfaceUpdated(HTTPInterfaceResourceUpdatedEvent resourceUpdated) throws AccessDeniedException, ResourceException {
+		int defaultHttpsPort = configurationService.getIntValue("https.port");
+		int defaultHttpPort = configurationService.getIntValue("http.port");
+		if(resourceUpdated.isSuccess()) {
+			HTTPInterfaceResource http = (HTTPInterfaceResource)resourceUpdated.getResource();
+			if(http.isSystem()) {
+				if(http.getProtocol().equals(HTTPProtocol.HTTPS) && !Objects.equals(defaultHttpsPort, http.getPort())) {
+					LOG.info(String.format("Detected change to default HTTPS port, changing from %d to %d", defaultHttpsPort, http.getPort()));
+					configurationService.setValue("https.port", http.getPort());
+				}
+				else if(http.getProtocol().equals(HTTPProtocol.HTTP) && !Objects.equals(defaultHttpPort, http.getPort())) {
+					LOG.info(String.format("Detected change to default HTTP port, changing from %d to %d", defaultHttpPort, http.getPort()));
+					configurationService.setValue("http.port", http.getPort());
+				}
+			}
+		}
 	}
 	
 	@Override

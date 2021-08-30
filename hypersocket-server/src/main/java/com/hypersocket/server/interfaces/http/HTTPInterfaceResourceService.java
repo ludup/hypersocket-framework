@@ -8,6 +8,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceUpdatedEvent;
 
 public interface HTTPInterfaceResourceService extends
 		AbstractResourceService<HTTPInterfaceResource> {
@@ -22,5 +23,7 @@ public interface HTTPInterfaceResourceService extends
 
 	Collection<PropertyCategory> getPropertyTemplate(HTTPInterfaceResource resource)
 			throws AccessDeniedException;
+
+	void httpInterfaceUpdated(HTTPInterfaceResourceUpdatedEvent resourceUpdated) throws AccessDeniedException, ResourceException;
 
 }
