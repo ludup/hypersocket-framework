@@ -2,6 +2,7 @@ package com.hypersocket.ip;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,7 +30,7 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 
 	static Logger log = LoggerFactory.getLogger(IPRestrictionServiceImpl.class);
 
-	private Set<IpFilterRule> deny = new HashSet<IpFilterRule>();
+	private Set<IpFilterRule> deny = Collections.synchronizedSet(new HashSet<IpFilterRule>());
 
 	@Autowired
 	private SystemConfigurationService configurationService;
@@ -45,26 +46,26 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 		ipRestrictionService.registerProvider(this);
 	}
 
-	public synchronized boolean isAllowedAddress(InetAddress addr, String service, Realm realm) {
+	public boolean isAllowedAddress(InetAddress addr, String service, Realm realm) {
 
-		for (IpFilterRule rule : deny) {
-			if (rule.contains(addr)) {
-				return false;
+		synchronized(deny) {
+			for (IpFilterRule rule : deny) {
+				if (rule.contains(addr)) {
+					return false;
+				}
 			}
+	
+			return true;
 		}
-
-		return true;
 	}
 
-	public synchronized void blockIPAddress(String addr) throws UnknownHostException {
-
+	public void blockIPAddress(String addr) throws UnknownHostException {
 		if (log.isInfoEnabled()) {
 			log.info("Blocking " + addr);
 		}
 
 		IpSubnetFilterRule rule = new IpSubnetFilterRule(false, processAddress(addr));
 		deny.add(rule);
-
 	}
 
 	public synchronized void blockIPAddress(String addr, boolean permanent) throws UnknownHostException {
