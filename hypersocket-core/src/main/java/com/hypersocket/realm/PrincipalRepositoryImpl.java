@@ -19,6 +19,7 @@ import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.repository.DeletedCriteria;
 import com.hypersocket.repository.HiddenCriteria;
 import com.hypersocket.repository.LocallyDeletedCriteria;
+import com.hypersocket.repository.PrincipalStatusCriteria;
 import com.hypersocket.repository.PrincipalSuspendedCriteria;
 import com.hypersocket.repository.PrincipalTypesCriteria;
 import com.hypersocket.resource.AbstractResourceRepositoryImpl;
@@ -182,5 +183,24 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 		user.setDeleted(false);
 		save(user);
 		flush();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<?> searchRemoteUserWithPrincipalStatus(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn,
+			String searchPattern, ColumnSort[] sorting, int start, int length, List<PrincipalStatus> principalStatuses,
+			CriteriaConfiguration... criteriaConfiguration) {
+		return super.search(clazz, searchColumn, searchPattern, start, length, sorting,
+				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
+						new PrincipalStatusCriteria(principalStatuses.toArray(new PrincipalStatus[0])), new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Long getRemoteUserWithPrincipalStatusCount(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn,
+			String searchPattern, List<PrincipalStatus> principalStatuses, CriteriaConfiguration... criteriaConfiguration) {
+		return getCount(clazz, searchColumn, searchPattern,
+				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
+						new PrincipalStatusCriteria(principalStatuses.toArray(new PrincipalStatus[0])), new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
 	}
 }
