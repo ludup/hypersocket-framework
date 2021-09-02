@@ -34,12 +34,12 @@ public class IPRestrictionServiceImpl implements IPRestrictionService {
 	}
 
 	@Override
-	public synchronized boolean isBlockedAddress(InetAddress addr, String service, Realm realm) {
+	public boolean isBlockedAddress(InetAddress addr, String service, Realm realm) {
 		return !isAllowedAddress(addr, service, realm);
 	}
 
 	@Override
-	public synchronized boolean isAllowedAddress(InetAddress addr, String service, Realm realm) {
+	public boolean isAllowedAddress(InetAddress addr, String service, Realm realm) {
 		if(globalDisabled)
 			return true;
 		
@@ -61,7 +61,7 @@ public class IPRestrictionServiceImpl implements IPRestrictionService {
 	}
 
 	@Override
-	public synchronized boolean isBlockedAddress(String addr, String service, Realm realm) throws UnknownHostException {
+	public boolean isBlockedAddress(String addr, String service, Realm realm) throws UnknownHostException {
 		return isBlockedAddress(InetAddress.getByName(addr), service, realm);
 	}
 
