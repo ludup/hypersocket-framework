@@ -196,6 +196,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	private I18NService i18nService;
 	
 	@Autowired
+	private UserEnabledFilter userEnabledFilter;
+	
+	@Autowired
+	private UserDisableFilter userDisabledFilter;
+	
+	@Autowired
 	private UserDelegationResourceService delegationService;
 
 	private List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
@@ -298,6 +304,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 		registerBuiltInPrincipalFilter(new LocalAccountFilter());
 		registerBuiltInPrincipalFilter(new RemoteAccountFilter());
+		registerPrincipalFilter(userEnabledFilter);
+		registerPrincipalFilter(userDisabledFilter);
 
 	}
 
@@ -2814,7 +2822,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Collection<TableFilter> getPrincipalFilters() {
-		return principalFilters.values();
+		Collection<TableFilter> filters = new ArrayList<>();
+		for(TableFilter filter : principalFilters.values()) {
+			if(filter.isEnabled(getCurrentRealm())) {
+				filters.add(filter);
+			}
+		}
+		
+		return filters;
 	}
 
 	class LocalAccountFilter extends DefaultTableFilter {
