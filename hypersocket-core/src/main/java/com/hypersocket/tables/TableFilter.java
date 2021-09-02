@@ -28,5 +28,9 @@ public interface TableFilter {
 
 	@JsonIgnore
 	Long searchPersonalResourcesCount(Principal principal, String searchColumn, String searchPattern);
+	
+	default boolean isEnabled(Realm realm) {
+		return true;
+	}
 
 }
