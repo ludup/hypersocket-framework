@@ -88,7 +88,7 @@ public class ExtensionHelper {
 								Version v = new Version(fakeVersion);
 								int[] fakeVersionElements = v.getVersionElements();
 								if(fakeVersionElements.length == 4) {
-									remote.setVersion(fakeVersionElements[0] + "." + fakeVersionElements[1] + "." + fakeVersionElements[2] + "-" + (fakeVersionElements[3] - 1));
+									remote.setVersion(fakeVersionElements[0] + "." + fakeVersionElements[1] + "." + fakeVersionElements[2] + "-" + (Math.max(0, fakeVersionElements[3] - 1)));
 									log.warn("Faking existence of extension for purposes of update testing of " + extensionId + " in " + extensionsPlace.getApp() + ". Using version " + remote.getVersion());
 									remote.setState(ExtensionState.UPDATABLE);
 								}
