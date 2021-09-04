@@ -91,22 +91,24 @@ public class HypersocketVersion {
 	    }
 
 	    // try to load from maven properties first
-	    try {
-	        Properties p = new Properties();
-	        InputStream is = cl.getResourceAsStream("META-INF/maven/com.hypersocket/" + artifactId + "/pom.properties");
-	        if(is == null) {
-		        is = HypersocketVersion.class.getResourceAsStream("/META-INF/maven/com.hypersocket/" + artifactId + "/pom.properties");
-	        }
-	        if (is != null) { 
-	            p.load(is);
-	            detectedVersion = p.getProperty("version", "");
-	        }
-	    } catch (Exception e) {
-	        // ignore
-	    }
+		if(StringUtils.isBlank(detectedVersion)) {
+		    try {
+		        Properties p = new Properties();
+		        InputStream is = cl.getResourceAsStream("META-INF/maven/com.hypersocket/" + artifactId + "/pom.properties");
+		        if(is == null) {
+			        is = HypersocketVersion.class.getResourceAsStream("/META-INF/maven/com.hypersocket/" + artifactId + "/pom.properties");
+		        }
+		        if (is != null) { 
+		            p.load(is);
+		            detectedVersion = p.getProperty("version", "");
+		        }
+		    } catch (Exception e) {
+		        // ignore
+		    }
+		}
 
 	    // fallback to using Java API
-	    if (detectedVersion == null) {
+		if(StringUtils.isBlank(detectedVersion)) {
 	        Package aPackage = HypersocketVersion.class.getPackage();
 	        if (aPackage != null) {
 	            detectedVersion = aPackage.getImplementationVersion();
@@ -116,17 +118,20 @@ public class HypersocketVersion {
 	        }
 	    }
 
-	    if (detectedVersion == null) {
+		if(StringUtils.isBlank(detectedVersion)) {
 	    	try {
 	    		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 	            DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
 	            Document doc = docBuilder.parse (new File("pom.xml"));
 	            detectedVersion = doc.getDocumentElement().getElementsByTagName("version").item(0).getTextContent();
 	    	} catch (Exception e) {
-				detectedVersion = "DEV_VERSION";
 			} 
 	        
 	    }
+
+		if(StringUtils.isBlank(detectedVersion)) {
+			detectedVersion = "DEV_VERSION";
+		}
 
 	    /* Treat snapshot versions as build zero */
 	    if(detectedVersion.endsWith("-SNAPSHOT")) {
