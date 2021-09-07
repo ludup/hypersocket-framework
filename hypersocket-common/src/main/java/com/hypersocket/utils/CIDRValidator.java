@@ -26,26 +26,23 @@ package com.hypersocket.utils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
  
-public class IPAddressValidator {
+public class CIDRValidator {
  
     private Pattern pattern;
     private Matcher matcher;
  
-    private static IPAddressValidator instance = new IPAddressValidator();
+    private static CIDRValidator instance = new CIDRValidator();
     
-    public static IPAddressValidator getInstance() {
+    public static CIDRValidator getInstance() {
     	return instance;
     }
     
-    private static final String IPADDRESS_PATTERN = 
-		"^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-		"([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-		"([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-		"([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
+    private static final String CIDR_PATTERN = 
+		"^([0-9]{1,3}\\.){3}[0-9]{1,3}(\\/([0-9]|[1-2][0-9]|3[0-2]))?$";
  
     
-    private IPAddressValidator(){
-	  pattern = Pattern.compile(IPADDRESS_PATTERN);
+    private CIDRValidator(){
+	  pattern = Pattern.compile(CIDR_PATTERN);
     }
  
    /**
@@ -56,12 +53,5 @@ public class IPAddressValidator {
     public boolean validate(final String ip){		  
 	  matcher = pattern.matcher(ip);
 	  return matcher.matches();	    	    
-    }
-    
-    public String getGuaranteedHostname(String address) {
-    	if(validate(address)) {
-    		address = "host_" + address.replace(".", "_");
-    	}
-    	return address;
     }
 }

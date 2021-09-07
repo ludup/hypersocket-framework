@@ -413,6 +413,10 @@ public class HypersocketUtils {
 		return IPAddressValidator.getInstance().validate(ip);
 	}
 	
+	public static boolean isCIDRString(String val) {
+		return CIDRValidator.getInstance().validate(val);
+	}
+	
 	public static String generateRandomAlphaNumericString(int length) {
 	    return new BigInteger(length * 8, random).toString(32).substring(0,  length);
 	}
