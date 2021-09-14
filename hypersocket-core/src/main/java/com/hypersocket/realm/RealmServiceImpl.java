@@ -2846,38 +2846,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	
-	class LocalAccountFilter extends DefaultTableFilter {
-
-		@Override
-		public String getResourceKey() {
-			return "filter.accounts.local";
-		}
-
-		@Override
-		public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
-				ColumnSort[] sorting) {
-			RealmProvider local = getLocalProvider();
-			return local.getPrincipals(realm, PrincipalType.USER, searchColumn, searchPattern, start, length, sorting);
-		}
-
-		@Override
-		public Long searchResourcesCount(Realm realm, String searchColumn, String searchPattern) {
-			RealmProvider local = getLocalProvider();
-			return local.getPrincipalCount(realm, PrincipalType.USER, searchColumn, searchPattern);
-		}
-
-		@Override
-		public List<?> searchPersonalResources(Principal principal, String searchColumn, String searchPattern,
-				int start, int length, ColumnSort[] sorting) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Long searchPersonalResourcesCount(Principal principal, String searchColumn, String searchPattern) {
-			throw new UnsupportedOperationException();
-		}
-
-	}
 
 	@Override
 	public boolean isDisabled(Principal principal) {
@@ -2886,38 +2854,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	
-	class RemoteAccountFilter extends DefaultTableFilter {
-
-		@Override
-		public String getResourceKey() {
-			return "filter.accounts.remote";
-		}
-
-		@Override
-		public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
-				ColumnSort[] sorting) {
-			RealmProvider remote = getProviderForRealm(realm);
-			return remote.getPrincipals(realm, PrincipalType.USER, searchColumn, searchPattern, start, length, sorting);
-		}
-
-		@Override
-		public Long searchResourcesCount(Realm realm, String searchColumn, String searchPattern) {
-			RealmProvider remote = getProviderForRealm(realm);
-			return remote.getPrincipalCount(realm, PrincipalType.USER, searchColumn, searchPattern);
-		}
-
-		@Override
-		public List<?> searchPersonalResources(Principal principal, String searchColumn, String searchPattern,
-				int start, int length, ColumnSort[] sorting) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Long searchPersonalResourcesCount(Principal principal, String searchColumn, String searchPattern) {
-			throw new UnsupportedOperationException();
-		}
-
-	}
 
 	@Override
 	public Collection<Realm> getRealmsByOwner() {
