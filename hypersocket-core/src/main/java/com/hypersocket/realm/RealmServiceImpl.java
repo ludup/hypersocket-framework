@@ -204,6 +204,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Autowired
 	private UserDelegationResourceService delegationService;
 
+	@Autowired
+	private LocalAccountFilter localAccountFilter;
+	
+	@Autowired
+	private RemoteAccountFilter remoteAccountFilter;
+	
 	private List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
 	private Principal systemPrincipal;
 	private Realm systemRealm;
@@ -302,8 +308,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		messageService.registerI18nMessage(RESOURCE_BUNDLE, "realmService.passwordReset",
 				PrincipalWithPasswordResolver.getVariables());
 
-		registerBuiltInPrincipalFilter(new LocalAccountFilter());
-		registerBuiltInPrincipalFilter(new RemoteAccountFilter());
+		registerBuiltInPrincipalFilter(localAccountFilter);
+		registerBuiltInPrincipalFilter(remoteAccountFilter);
 		registerPrincipalFilter(userEnabledFilter);
 		registerPrincipalFilter(userDisabledFilter);
 
@@ -613,7 +619,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				provider, sendNotifications, type);
 	}
 
-	private RealmProvider getLocalProvider() {
+	@Override
+	public RealmProvider getLocalProvider() {
 		return getProviderForRealm(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY);
 	}
 
@@ -2832,39 +2839,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return filters;
 	}
 
-	class LocalAccountFilter extends DefaultTableFilter {
-
-		@Override
-		public String getResourceKey() {
-			return "filter.accounts.local";
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
-				ColumnSort[] sorting) {
-			RealmProvider local = getLocalProvider();
-			return local.getPrincipals(realm, PrincipalType.USER, searchColumn, searchPattern, start, length, sorting);
-		}
-
-		@Override
-		public Long searchResourcesCount(Realm realm, String searchColumn, String searchPattern) {
-			RealmProvider local = getLocalProvider();
-			return local.getPrincipalCount(realm, PrincipalType.USER, searchColumn, searchPattern);
-		}
-
-		@Override
-		public List<?> searchPersonalResources(Principal principal, String searchColumn, String searchPattern,
-				int start, int length, ColumnSort[] sorting) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Long searchPersonalResourcesCount(Principal principal, String searchColumn, String searchPattern) {
-			throw new UnsupportedOperationException();
-		}
-
-	}
+	
 
 	@Override
 	public boolean isDisabled(Principal principal) {
@@ -2872,39 +2847,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return provider.isDisabled(principal);
 	}
 
-	class RemoteAccountFilter extends DefaultTableFilter {
-
-		@Override
-		public String getResourceKey() {
-			return "filter.accounts.remote";
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
-				ColumnSort[] sorting) {
-			RealmProvider remote = getProviderForRealm(realm);
-			return remote.getPrincipals(realm, PrincipalType.USER, searchColumn, searchPattern, start, length, sorting);
-		}
-
-		@Override
-		public Long searchResourcesCount(Realm realm, String searchColumn, String searchPattern) {
-			RealmProvider remote = getProviderForRealm(realm);
-			return remote.getPrincipalCount(realm, PrincipalType.USER, searchColumn, searchPattern);
-		}
-
-		@Override
-		public List<?> searchPersonalResources(Principal principal, String searchColumn, String searchPattern,
-				int start, int length, ColumnSort[] sorting) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Long searchPersonalResourcesCount(Principal principal, String searchColumn, String searchPattern) {
-			throw new UnsupportedOperationException();
-		}
-
-	}
+	
 
 	@Override
 	public Collection<Realm> getRealmsByOwner() {

@@ -95,7 +95,7 @@ public class AuthenticationServiceImpl extends
 
 	@Autowired
 	private UserVariableReplacementService variableReplacement;
-	
+		
 	private Map<String, Authenticator> authenticators = new HashMap<String, Authenticator>();
 	private List<PostAuthenticationStep> postAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
 	private List<AuthenticationServiceListener> listeners = new ArrayList<AuthenticationServiceListener>();
@@ -530,19 +530,19 @@ public class AuthenticationServiceImpl extends
 						state, authenticator, "hint.invalidPrincipal"));
 			} else {
 				
-				AuthenticatorResult result;
-				if(state.getPrincipal()!=null && state.getPrincipal() instanceof FakePrincipal) {
-					result = AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
-				} else {
-					preProcess(authenticator, state, parameterMap);
-					
-					result = authenticator.authenticate(state, parameterMap);
-					
-					postProcess(authenticator, result, state, parameterMap);
-				}
-				
 				if(checkSuspensions(state, authenticator)) {
 				
+					AuthenticatorResult result;
+					if(state.getPrincipal()!=null && state.getPrincipal() instanceof FakePrincipal) {
+						result = AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
+					} else {
+						preProcess(authenticator, state, parameterMap);
+						
+						result = authenticator.authenticate(state, parameterMap);
+						
+						postProcess(authenticator, result, state, parameterMap);
+					}
+					
 					switch (result) {
 					case INSUFFICIENT_DATA: {
 						if (state.getLastErrorMsg() == null && parameterMap.size() > 1) {
@@ -850,24 +850,21 @@ public class AuthenticationServiceImpl extends
 
 	private boolean checkSuspensions(AuthenticationState state, Authenticator authenticator) {
 		
-//		Principal principal = state.getPrincipal();
-//		if(principal==null) {
-//			principal = state.getLastPrincipal();
-//		}
-//		if(principal!=null && !(principal instanceof FakePrincipal)) {
-		if (!realmService.verifyPrincipal(state.getLastPrincipalName(), state.getRealm())) {
-			state.clean();
-			state.setLastErrorMsg("error.accountSuspended");
-			state.setLastErrorIsResourceKey(true);
-			
-			eventService.publishEvent(new AuthenticationAttemptEvent(
-					this, state, authenticator,
-					"hint.accountSuspended"));
-			
-			
-			return false;
-		} 
-//		}
+		if(authenticator.isSecretModule()) {
+			if (!realmService.verifyPrincipal(state.getLastPrincipalName(), state.getRealm())) {
+				state.clean();
+				state.setLastErrorMsg("error.accountSuspended");
+				state.setLastErrorIsResourceKey(true);
+				
+				eventService.publishEvent(new AuthenticationAttemptEvent(
+						this, state, authenticator,
+						"hint.accountSuspended"));
+				
+				
+				return false;
+			} 
+		}
+
 		return true;
 	}
 	

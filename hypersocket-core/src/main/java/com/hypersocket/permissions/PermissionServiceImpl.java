@@ -1407,5 +1407,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 		return (Set<Realm>) roleCache.get(cacheKey);
 	}
+
+	@Override
+	public Set<Role> getAllUserRoles() {
+		return repository.getAllUserRoles(getCurrentRealm());
+	}
 	
 }

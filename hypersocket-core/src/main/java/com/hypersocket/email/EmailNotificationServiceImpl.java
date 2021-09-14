@@ -1,5 +1,9 @@
 package com.hypersocket.email;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.mail.Message.RecipientType;
+import javax.net.ssl.SSLSocketFactory;
 import javax.mail.Session;
 
 import org.apache.commons.codec.binary.Base64;
@@ -20,9 +25,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.simplejavamail.MailException;
-import org.simplejavamail.email.Email;
-import org.simplejavamail.mailer.Mailer;
-import org.simplejavamail.mailer.config.TransportStrategy;
+import org.simplejavamail.api.email.EmailPopulatingBuilder;
+import org.simplejavamail.api.mailer.Mailer;
+import org.simplejavamail.api.mailer.config.TransportStrategy;
+import org.simplejavamail.email.EmailBuilder;
+import org.simplejavamail.mailer.MailerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,7 +119,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		
 		Properties properties = new Properties();
 	    properties.put("mail.smtp.auth", "false");
-	    properties.put("mail.smtp.starttls.enable", TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)]==TransportStrategy.SMTP_PLAIN ? "false" : "true");
+	    properties.put("mail.smtp.starttls.enable", TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)]==TransportStrategy.SMTP ? "false" : "true");
 	    properties.put("mail.smtp.host", getSMTPValue(realm, SMTP_HOST));
 	    properties.put("mail.smtp.port", getSMTPIntValue(realm, SMTP_PORT));
 	    properties.put("mail.smtp.ssl.checkserveridentity", "false");
@@ -148,18 +155,29 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		try {
 		
 			Mailer mail;
+					
 			
 			if(StringUtils.isNotBlank(getSMTPValue(realm, SMTP_USERNAME))) {
-				mail = new Mailer(getSMTPValue(realm, SMTP_HOST), 
-						getSMTPIntValue(realm, SMTP_PORT), 
-						getSMTPValue(realm, SMTP_USERNAME),
-						getSMTPDecryptedValue(realm, SMTP_PASSWORD),
-						TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)]);
+				mail = MailerBuilder.withSMTPServer(getSMTPValue(realm, SMTP_HOST), getSMTPIntValue(realm, SMTP_PORT))
+					.withSMTPServerUsername(getSMTPValue(realm, SMTP_USERNAME))
+					.withSMTPServerPassword(getSMTPDecryptedValue(realm, SMTP_PASSWORD))
+					.withTransportStrategy(TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)])
+					.withConnectionPoolCoreSize(1)
+				    .withProperty("mail.smtp.ssl.checkserveridentity", false)
+				    .withProperty("mail.smtp.ssl.trust", "*")
+					.withSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000)
+					.buildMailer();
 			} else {
-				mail = new Mailer(createSession(realm));
+				mail = MailerBuilder.withSMTPServer(getSMTPValue(realm, SMTP_HOST), getSMTPIntValue(realm, SMTP_PORT))
+						.withTransportStrategy(TransportStrategy.values()[getSMTPIntValue(realm, SMTP_PROTOCOL)])
+						.withConnectionPoolCoreSize(1)
+					    .withProperty("mail.smtp.ssl.checkserveridentity", false)
+					    .withProperty("mail.smtp.ssl.trust", "*")
+						.withSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000)
+						.buildMailer();
 			}
 			
-			mail.setSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000);
+//			mail.setSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000);
 			
 			String archiveAddress = configurationService.getValue(realm, "email.archiveAddress");
 			List<RecipientHolder> archiveRecipients = new ArrayList<RecipientHolder>();
@@ -247,7 +265,10 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 					}
 				}
 			}
-		} finally {
+		} catch(Throwable e) { 
+			log.error("Mail failed", e);
+			throw e;
+		}finally {
 			clearElevatedPermissions();
 		}
 	}
@@ -346,21 +367,18 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			}
 		}
 		
-		Email email = new Email();
-		email.setFromAddress(
-				getSMTPValue(realm, SMTP_FROM_NAME), 
-				fromAddress);
+		EmailPopulatingBuilder email = EmailBuilder.startingBlank().from(getSMTPValue(realm, SMTP_FROM_NAME), fromAddress);
 		
 		if(StringUtils.isNotBlank(replyToName) && StringUtils.isNotBlank(replyToEmail)) {
-			email.setReplyToAddress(replyToName, replyToEmail);
+			email.withReplyTo(replyToName, replyToEmail);
 		} else if(StringUtils.isNotBlank(getSMTPValue(realm, SMTP_REPLY_NAME))
 				&& StringUtils.isNotBlank(getSMTPValue(realm, SMTP_REPLY_ADDRESS))) {
-			email.setReplyToAddress(getSMTPValue(realm, SMTP_REPLY_NAME), getSMTPValue(realm, SMTP_REPLY_ADDRESS));
+			email.withReplyTo(getSMTPValue(realm, SMTP_REPLY_NAME), getSMTPValue(realm, SMTP_REPLY_ADDRESS));
 		}
 		
-		email.addRecipient(r.getName(), r.getEmail(), RecipientType.TO);
+		email.to(r.getName(), r.getEmail());
 		
-		email.setSubject(subject.equals("") ? "<No Subject>" : subject);
+		email.withSubject(subject.equals("") ? "<No Subject>" : subject);
 
 		if(StringUtils.isNotBlank(htmlText)) {
 			Document doc = Jsoup.parse(htmlText);
@@ -388,7 +406,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 								byte[] bytes = Base64.decodeBase64(data);
 								UUID cid = UUID.randomUUID();
 								el.attr("src", "cid:" + OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid);
-								email.addEmbeddedImage(OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid.toString(), bytes, mime);
+								email.withEmbeddedImage(OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid.toString(), bytes, mime);
 							}
 							else {
 								log.warn(String.format("Unexpected attribute in embedded image data URI. %s", arg));
@@ -400,14 +418,14 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			catch(Exception e) {
 				log.error(String.format("Failed to parse embedded images in email %s to %s.", subject, r.getEmail()), e);
 			}
-			email.setTextHTML(doc.toString());
+			email.appendTextHTML(doc.toString());
 		}
 		
-		email.setText(plainText);
+		email.withPlainText(plainText);
 		
 		if(attachments!=null) {
 			for(EmailAttachment attachment : attachments) {
-				email.addAttachment(attachment.getName(), attachment);
+				email.withAttachment(attachment.getName(), attachment);
 			}
 		}
 		
@@ -421,7 +439,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			}
 			
 			if("true".equals(System.getProperty("hypersocket.email", "true")))
-				mail.sendMail(email);
+				mail.sendMail(email.buildEmail());
 			
 			eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context));
 		} catch (MailException e) {
