@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.hypersocket</groupId>
 		<artifactId>hypersocket-framework</artifactId>
-		<version>2.3.8-LOCAL</version>
+		<version>2.3.9-LOCAL</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>hypersocket-inbox</artifactId>
