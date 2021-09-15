@@ -77,9 +77,13 @@ public abstract class AbstractCreateUserTask extends AbstractTaskProvider {
 			return new TaskResultHolder(eventService.getLastResult(), true);
 				
 		} catch (ResourceException | AccessDeniedException e) {
-			return null;
+			return new TaskResultHolder(eventService.getLastResult(), true);
+		} finally {
+			eventService.undelayEvents();
+			eventService.rollbackDelayedEvents(false);
 		}
 
+		
 	}
 	
 	protected void doCreateUser(Realm currentRealm, String principalName, Map<String,String> properties, 
