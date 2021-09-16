@@ -121,7 +121,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				}
 			}
 			if(result==null) {
-				throw new IllegalStateException(String.format("Cannot resolve property %s", template.getResourceKey()));
+				throw new IllegalStateException(String.format("Cannot resolve property %s via %s", template.getResourceKey(), attributeField));
 			}
 			return result;
 		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
@@ -313,6 +313,9 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			}
 		}
 		
+		if(log.isDebugEnabled()) {
+			log.debug("Setting {}={} on {}", fieldName, value, resource.getClass().getSimpleName());
+		}
 		
 		Method[] methods = resource.getClass().getMethods();
 		
