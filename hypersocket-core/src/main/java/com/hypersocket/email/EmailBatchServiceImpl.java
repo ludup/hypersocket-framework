@@ -52,7 +52,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 	}
 
 	@Override
-	protected boolean process(EmailBatchItem item) {
+	protected boolean process(EmailBatchItem item) throws Exception {
 
 		try {
 
@@ -91,6 +91,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 					item.getToEmail(), 
 					item.getSubject(),
 					e);
+			throw e;
 		}
 
 		return true;
@@ -131,6 +132,15 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 		}
 
 		repository.merge(item);
+	}
+
+	@Override
+	protected boolean onProcessFailure(EmailBatchItem item, Throwable exception) {
+		if(exception instanceof MailException && exception.getClass().getSimpleName().equals("MailSenderException")) {
+			/* Retry on sender exceptions */
+			return false;
+		}
+		return super.onProcessFailure(item, exception);
 	}
 
 }

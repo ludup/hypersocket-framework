@@ -38,7 +38,7 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 
 	protected abstract int getBatchInterval();
 
-	protected abstract boolean process(T item);
+	protected abstract boolean process(T item) throws Exception;
 
 	protected abstract String getResourceKey();
 
@@ -72,7 +72,7 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@Transactional(isolation = Isolation.SERIALIZABLE)
+	@Transactional(rollbackFor = { LockAcquisitionException.class, IllegalStateException.class }, isolation = Isolation.SERIALIZABLE)
 	public void processBatchItems() {
 
 		synchronized (this) {
@@ -113,11 +113,11 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 			 * 
 			 */
 			try {
-				getRepository().markAllAsDeleted(running);
+				getRepository().markAllAsDeleted(running, true);
 			} catch (LockAcquisitionException lae) {
 				log.warn(
 						"Database locked, the batch process cannot complete. This is likely a running synchronize, or other job that has written a realm that has a batch item ready.");
-				return;
+				throw lae;
 			}
 
 			/* Now iterate over all those that were marked as deleted */
@@ -137,8 +137,7 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 					processed = process(item);
 				} catch (Throwable t) {
 					log.error("Failed to process batch item", t);
-					// processed = onProcessFailure(item);
-					onProcessFailure(item);
+					processed = onProcessFailure(item, t);
 				} finally {
 					if (processed) {
 						/* Finally physically remove the item */
@@ -148,6 +147,12 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 						failed++;
 				}
 			}
+
+			/* Anything thats left over, remove the deleted flag so it is 
+			 * picked up again on the cycle. Note this is not strictly required,
+			 * just for neatness
+			 */
+			getRepository().markAllAsDeleted(running, false);
 
 			if (log.isDebugEnabled()) {
 				log.debug(String.format("Processed batch items. %d processed and deleted, %d failed and deleted.",
@@ -164,7 +169,7 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 
 	}
 
-	protected boolean onProcessFailure(T item) {
+	protected boolean onProcessFailure(T item, Throwable exception) {
 		return true;
 	}
 
