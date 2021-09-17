@@ -33,6 +33,7 @@ import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
+import com.hypersocket.realm.DelegationCriteria;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -54,9 +55,13 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	
 	@Autowired
 	private EncryptionService encryptionService;
+
 	@Autowired
 	private SystemConfigurationService systemConfigurationService;
 
+	@Autowired
+	private DelegationCriteria delegationCriteria;
+	
 	private EntityResourcePropertyStore entityPropertyStore;
 
 	private Object idLock = new Object();
@@ -254,7 +259,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Override
 	@Transactional(readOnly=true)
 	public Long countUsers(final Realm realm, String searchColumn, final String searchPattern) {
-		return getCount(LocalUser.class, searchColumn, searchPattern, new CriteriaConfiguration() {
+		return getCount(LocalUser.class, searchColumn, searchPattern, delegationCriteria, new CriteriaConfiguration() {
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
@@ -268,7 +273,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Transactional(readOnly=true)
 	public List<?> getUsers(final Realm realm, String searchColumn, final String searchPattern, final int start,
 			final int length, final ColumnSort[] sorting) {
-		return search(LocalUser.class, searchColumn, searchPattern, start, length, sorting, new CriteriaConfiguration() {
+		return search(LocalUser.class, searchColumn, searchPattern, start, length, sorting, delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {

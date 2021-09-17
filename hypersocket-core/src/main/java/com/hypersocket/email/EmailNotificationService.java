@@ -41,4 +41,8 @@ public interface EmailNotificationService {
 
 	String getEmailAddress(String val) throws InvalidCredentialsException;
 
+	void enableSynchronousEmail();
+
+	void disableSynchronousEmail();
+
 }
