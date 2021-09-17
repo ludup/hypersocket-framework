@@ -41,7 +41,7 @@ public class server_2_DOT_3_DOT_8 extends PermissionsAwareUpgradeScript {
 		} else {
 			https.setSystem(true);
 			try {
-				repository.saveResource(http);
+				repository.saveResource(https);
 			} catch (ResourceException e) {
 				throw new IllegalStateException(e);
 			}
