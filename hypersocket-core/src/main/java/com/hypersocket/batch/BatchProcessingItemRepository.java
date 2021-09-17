@@ -14,5 +14,5 @@ public interface BatchProcessingItemRepository<T extends AbstractEntity<Long>> e
 	
 	Class<? extends T> getEntityClass();
 
-	void markAllAsDeleted(List<Long> excludeRealms);
+	void markAllAsDeleted(List<Long> excludeRealms, boolean deleted);
 }

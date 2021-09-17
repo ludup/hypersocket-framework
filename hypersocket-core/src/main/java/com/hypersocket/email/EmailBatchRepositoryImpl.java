@@ -16,15 +16,15 @@ public class EmailBatchRepositoryImpl extends BatchProcessingItemRepositoryImpl<
 
 	@Override
 	@Transactional
-	public void markAllAsDeleted(List<Long> exclude) {
+	public void markAllAsDeleted(List<Long> exclude, boolean deleted) {
 		Query q;
 		if(exclude.isEmpty()) {
 			q = createQuery(String.format("update %s ent set ent.deleted = :r", getEntityClass().getSimpleName()), true);
-			q.setParameter("r", true);
+			q.setParameter("r", deleted);
 		}
 		else {
 			q = createQuery(String.format("update %s ent set ent.deleted = :r where ent.realm not in :l", getEntityClass().getSimpleName()), true);
-			q.setParameter("r", true);
+			q.setParameter("r", deleted);
 			q.setParameterList("l", exclude);
 		}
 		q.executeUpdate();
