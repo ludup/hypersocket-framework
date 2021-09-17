@@ -360,5 +360,7 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	void assertChangeCredentials(Principal principal) throws AccessDeniedException, ResourceException;
 
+	RealmProvider getLocalProvider();
+
 }
 

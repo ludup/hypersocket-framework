@@ -334,13 +334,7 @@
 		<dependency>
 		    <groupId>org.simplejavamail</groupId>
 		    <artifactId>simple-java-mail</artifactId>
-		    <version>4.4.5</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.sun.mail</groupId>
-					<artifactId>javax.mail</artifactId>
-				</exclusion>
-			</exclusions>
+		    <version>6.6.1</version>
 		</dependency>
 
 		<dependency>

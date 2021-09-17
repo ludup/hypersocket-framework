@@ -173,4 +173,6 @@ public interface PermissionService extends AuthenticatedService {
 
 	Set<Realm> getPrincipalPermissionRealms(Principal principal);
 
+	Set<Role> getAllUserRoles();
+
 }

@@ -12,10 +12,12 @@ import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.local.PrincipalTypeRestriction;
+import com.hypersocket.realm.DelegationCriteria;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -36,6 +38,8 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 		return Profile.class;
 	}
 
+	@Autowired
+	private DelegationCriteria delegationCriteria;
 	
 	@Override
 	@Transactional(readOnly=true)
@@ -107,7 +111,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, 
 				new RealmCriteria(realm), 
 				new DeletedCriteria(false), 
-				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+				new PrincipalTypeRestriction(PrincipalType.USER), delegationCriteria,  new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -131,7 +135,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 		return getCount(Principal.class, searchColumn, searchPattern, 
 				new RealmCriteria(realm), 
 				new DeletedCriteria(false), 
-				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+				new PrincipalTypeRestriction(PrincipalType.USER), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -152,7 +156,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	public List<?> searchCompleteProfiles(final Realm realm, String searchColumn, String searchPattern, ColumnSort[] sorting, int start, int length) {
 		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, new RealmCriteria(realm), 
 				new DeletedCriteria(false), 
-				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+				new PrincipalTypeRestriction(PrincipalType.USER), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -175,7 +179,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 		
 		return getCount(Principal.class, searchColumn, searchPattern, new RealmCriteria(realm), 
 				new DeletedCriteria(false), 
-				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+				new PrincipalTypeRestriction(PrincipalType.USER), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -196,7 +200,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	public List<?> searchNeverVisitedProfiles(final Realm realm, String searchColumn, String searchPattern, ColumnSort[] sorting, int start, int length) {
 		return search(Principal.class, searchColumn, searchPattern, start, length, sorting, new RealmCriteria(realm), 				
 				new DeletedCriteria(false), 
-				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+				new PrincipalTypeRestriction(PrincipalType.USER), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -217,7 +221,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 		
 		return getCount(Principal.class, searchColumn, searchPattern, new RealmCriteria(realm), 
 				new DeletedCriteria(false), 
-				new PrincipalTypeRestriction(PrincipalType.USER), new CriteriaConfiguration() {
+				new PrincipalTypeRestriction(PrincipalType.USER), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {

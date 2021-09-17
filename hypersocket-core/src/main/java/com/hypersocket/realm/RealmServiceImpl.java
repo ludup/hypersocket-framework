@@ -204,6 +204,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Autowired
 	private UserDelegationResourceService delegationService;
 
+	@Autowired
+	private LocalAccountFilter localAccountFilter;
+	
+	@Autowired
+	private RemoteAccountFilter remoteAccountFilter;
+	
 	private List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
 	private Principal systemPrincipal;
 	private Realm systemRealm;
@@ -302,8 +308,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		messageService.registerI18nMessage(RESOURCE_BUNDLE, "realmService.passwordReset",
 				PrincipalWithPasswordResolver.getVariables());
 
-		registerBuiltInPrincipalFilter(new LocalAccountFilter());
-		registerBuiltInPrincipalFilter(new RemoteAccountFilter());
+		registerBuiltInPrincipalFilter(localAccountFilter);
+		registerBuiltInPrincipalFilter(remoteAccountFilter);
 		registerPrincipalFilter(userEnabledFilter);
 		registerPrincipalFilter(userDisabledFilter);
 
@@ -613,7 +619,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				provider, sendNotifications, type);
 	}
 
-	private RealmProvider getLocalProvider() {
+	@Override
+	public RealmProvider getLocalProvider() {
 		return getProviderForRealm(LocalRealmProviderImpl.REALM_RESOURCE_CATEGORY);
 	}
 
@@ -2837,6 +2844,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return filters;
 	}
 
+	
 	class LocalAccountFilter extends DefaultTableFilter {
 
 		@Override
@@ -2876,6 +2884,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return provider.isDisabled(principal);
 	}
 
+	
 	class RemoteAccountFilter extends DefaultTableFilter {
 
 		@Override

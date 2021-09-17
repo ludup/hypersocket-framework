@@ -227,6 +227,7 @@ public class EmailTask extends AbstractTaskProvider {
 		
 		int delay = repository.getIntValue(task, "email.delay");
 		
+		emailService.enableSynchronousEmail();
 		try {
 			emailService.sendEmail(currentRealm, subject, body, bodyHtml,
 					replyToName, replyToEmail, 
@@ -236,6 +237,8 @@ public class EmailTask extends AbstractTaskProvider {
 		} catch (Exception ex) {
 			log.error("Failed to send email", ex);
 			return new EmailTaskResult(this, currentRealm, task, ex);
+		} finally {
+			emailService.disableSynchronousEmail();
 		}
 		
 		

@@ -34,6 +34,9 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	@Autowired
 	private SessionFactory sessionFactory;
 
+	@Autowired
+	private DelegationCriteria delegationCriteria;
+	
 	@Override
 	public void deleteRealm(Realm realm) {
 		Query q = sessionFactory.getCurrentSession().createSQLQuery(
@@ -51,26 +54,26 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	public List<Principal> search(Realm realm, PrincipalType type, String searchColumn, String searchPattern, int start,
 			int length, ColumnSort[] sorting) {
 		return super.search(realm, searchColumn, searchPattern, start, length, sorting, new DeletedCriteria(false),
-				new PrincipalTypeCriteria(type));
+				new PrincipalTypeCriteria(type), delegationCriteria);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public long getResourceCount(Realm realm, PrincipalType type, String searchColumn, String searchPattern) {
 		return super.getResourceCount(realm, searchColumn, searchPattern, new DeletedCriteria(false),
-				new PrincipalTypeCriteria(type));
+				new PrincipalTypeCriteria(type), delegationCriteria);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public long getResourceCount(Collection<Realm> realms, PrincipalType type) {
-		return super.getResourceCount(realms, "", "", new DeletedCriteria(false), new PrincipalTypeCriteria(type));
+		return super.getResourceCount(realms, "", "", new DeletedCriteria(false), new PrincipalTypeCriteria(type), delegationCriteria);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public long getResourceCount(Realm realm, PrincipalType type) {
-		return super.getResourceCount(realm, "", "", new DeletedCriteria(false), new PrincipalTypeCriteria(type));
+		return super.getResourceCount(realm, "", "", new DeletedCriteria(false), new PrincipalTypeCriteria(type), delegationCriteria);
 	}
 
 	@Override
@@ -145,7 +148,7 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	public List<?> searchDeleted(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn, String searchPattern,
 			ColumnSort[] sorting, int start, int length, boolean local, CriteriaConfiguration... criteriaConfiguration) {
 		return super.search(clazz, searchColumn, searchPattern, start, length, sorting,
-				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
+				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type), delegationCriteria, 
 						local ? new LocallyDeletedCriteria(true): new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
 	}
 
@@ -154,7 +157,7 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	public Long getDeletedCount(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn, String searchPattern,
 			boolean local, CriteriaConfiguration... criteriaConfiguration) {
 		return getCount(clazz, searchColumn, searchPattern,
-				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
+				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),delegationCriteria, 
 						local ? new LocallyDeletedCriteria(true): new DeletedCriteria(true), new DefaultCriteriaConfiguration()));
 	}
 	
@@ -164,7 +167,7 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 			ColumnSort[] sorting, int start, int length, boolean suspended, CriteriaConfiguration... criteriaConfiguration) {
 		return super.search(clazz, searchColumn, searchPattern, start, length, sorting,
 				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
-						new PrincipalSuspendedCriteria(suspended), new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
+						new PrincipalSuspendedCriteria(suspended), delegationCriteria, new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
 	}
 
 	@Override
@@ -173,7 +176,7 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 			boolean suspended, CriteriaConfiguration... criteriaConfiguration) {
 		return getCount(clazz, searchColumn, searchPattern,
 				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
-						new PrincipalSuspendedCriteria(suspended), new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
+						new PrincipalSuspendedCriteria(suspended), delegationCriteria, new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
 	}
 
 	@Override
@@ -192,7 +195,7 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 			CriteriaConfiguration... criteriaConfiguration) {
 		return super.search(clazz, searchColumn, searchPattern, start, length, sorting,
 				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
-						new PrincipalStatusCriteria(principalStatuses.toArray(new PrincipalStatus[0])), new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
+						new PrincipalStatusCriteria(principalStatuses.toArray(new PrincipalStatus[0])), delegationCriteria, new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
 	}
 
 	@Override
@@ -201,6 +204,6 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 			String searchPattern, List<PrincipalStatus> principalStatuses, CriteriaConfiguration... criteriaConfiguration) {
 		return getCount(clazz, searchColumn, searchPattern,
 				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
-						new PrincipalStatusCriteria(principalStatuses.toArray(new PrincipalStatus[0])), new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
+						new PrincipalStatusCriteria(principalStatuses.toArray(new PrincipalStatus[0])), delegationCriteria, new DeletedCriteria(false), new DefaultCriteriaConfiguration()));
 	}
 }
