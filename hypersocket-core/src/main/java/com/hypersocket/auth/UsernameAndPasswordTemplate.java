@@ -13,6 +13,8 @@ import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.hypersocket.ApplicationContextServiceImpl;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.input.Option;
@@ -35,10 +37,11 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 		setResourceKey(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 
 		if(realms.size() > 1) {
-			SelectInputField select = new SelectInputField("realm", defaultRealm.getName(), true, "realm.label");
-			select.setOnChange("changeLogonRealm");
+			boolean enforceSelect = ApplicationContextServiceImpl.getInstance().getBean(SystemConfigurationService.class).getBooleanValue("auth.enforceSelectRealm");
+			SelectInputField select = new SelectInputField("realm", enforceSelect ? "" : defaultRealm.getName(), true, "Select");
+			
 			for(Realm realm : realms) {
-				select.addOption(new Option(realm.getName(), realm.getName(), realm.equals(state.getRealm()), false));
+				select.addOption(new Option(realm.getName(), realm.getName(), !enforceSelect && realm.equals(defaultRealm), false));
 			}
 			fields.add(select);
 		}
