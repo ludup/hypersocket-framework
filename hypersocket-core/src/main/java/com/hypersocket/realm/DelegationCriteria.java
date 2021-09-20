@@ -50,7 +50,7 @@ public class DelegationCriteria implements CriteriaConfiguration {
 		@SuppressWarnings("rawtypes")
 		Cache<Long,Collection> cachedUserIds = cacheService.getCacheOrCreate("delegationQueryUserIds", Long.class, Collection.class);
 		
-		if(cachedRoleIds.containsKey(realmService.getCurrentPrincipal().getId())) {
+		if(!cachedRoleIds.containsKey(currentUser.getId())) {
 			
 			int maximumRoles = Integer.parseInt(System.getProperty("hypersocket.maximumRoleDelegates", "100"));
 			int maximumUsers = Integer.parseInt(System.getProperty("hypersocket.maximumUserDelegates", "1000"));
@@ -107,12 +107,12 @@ public class DelegationCriteria implements CriteriaConfiguration {
 		@SuppressWarnings("unchecked")
 		Collection<Long> userIds =  (Collection<Long>) cachedUserIds.get(currentUser.getId());
 		
-		if(!roleIds.isEmpty()) {
+		if(roleIds != null && !roleIds.isEmpty()) {
 			criteria.createAlias("roles", "delegated");
 			criteria.add(Restrictions.in("delegated.id", roleIds));
 		}
 		
-		if(!userIds.isEmpty()) {
+		if(userIds != null && !userIds.isEmpty()) {
 			criteria.add(Restrictions.in("id", userIds));
 		}
 	}
