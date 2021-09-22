@@ -784,7 +784,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 			if (template == null) {
 				if(log.isDebugEnabled()) {
-					log.debug("No template could be resolved for {}. Sending to database store.", resourceKey, r.getClass().getSimpleName());
+					log.debug("No template could be resolved for {}. Sending to database store.", resourceKey);
 				}
 				configPropertyStore.setProperty(resource, resourceKey, value);
 				return;
@@ -801,7 +801,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		 validate(template, value);
 
 		 if(log.isDebugEnabled()) {
-			log.debug("Passing {} to EntityResourcePropertyStore", resourceKey);
+			log.debug("Passing {} to {}", resourceKey, template.getPropertyStore().getClass().getSimpleName());
 		 }
 		 
 		 ((ResourcePropertyStore) template.getPropertyStore()).setPropertyValue(template, resource, value);
