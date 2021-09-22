@@ -766,27 +766,45 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		PropertyTemplate template = propertyTemplates.get(resourceKey);
 
 		if (template == null) {
-
+			if(log.isDebugEnabled()) {
+				log.debug("There is no template for {} in this repository", resourceKey);
+			}
 			for (PropertyResolver r : propertyResolvers) {
 				template = r.getPropertyTemplate(resource, resourceKey);
 				if (template != null) {
+					if(log.isDebugEnabled()) {
+						log.debug("Found template for {} in {}", resourceKey, r.getClass().getSimpleName());
+					}
 					break;
+				}
+				if(log.isDebugEnabled()) {
+					log.debug("There is no template for {} in {}", resourceKey, r.getClass().getSimpleName());
 				}
 			}
 
 			if (template == null) {
+				if(log.isDebugEnabled()) {
+					log.debug("No template could be resolved for {}. Sending to database store.", resourceKey, r.getClass().getSimpleName());
+				}
 				configPropertyStore.setProperty(resource, resourceKey, value);
 				return;
 			}
 		}
 
 		 if (template.isReadOnly()) {
+			 if(log.isDebugEnabled()) {
+					log.debug("The template for {} is read only", resourceKey);
+				}
 			 return;
 		 }
 		 
 		 validate(template, value);
 
-		((ResourcePropertyStore) template.getPropertyStore()).setPropertyValue(template, resource, value);
+		 if(log.isDebugEnabled()) {
+			log.debug("Passing {} to EntityResourcePropertyStore", resourceKey);
+		 }
+		 
+		 ((ResourcePropertyStore) template.getPropertyStore()).setPropertyValue(template, resource, value);
 	}
 
 	protected void clearPropertyCache(SimpleResource resource) {
