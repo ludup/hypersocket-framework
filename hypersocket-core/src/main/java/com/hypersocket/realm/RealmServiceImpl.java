@@ -2010,7 +2010,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 								tmp.add(t);
 								continue;
 							}
-							t.setReadOnly(true);
+							t.getAttributes().put("disabled", "true");
+							//t.setReadOnly(true);
 							continue;
 						}
 					}
