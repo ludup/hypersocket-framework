@@ -49,6 +49,11 @@ public class DelegationCriteria implements CriteriaConfiguration {
 		}
 		
 		Principal currentUser = realmService.getCurrentPrincipal();
+		
+		if(currentUser.isSystem()) {
+			return;
+		}
+		
 		@SuppressWarnings("rawtypes")
 		Cache<String,Collection> cachedRoleIds = cacheService.getCacheOrCreate("delegationQueryRoleIds", String.class, Collection.class);
 		@SuppressWarnings("rawtypes")
