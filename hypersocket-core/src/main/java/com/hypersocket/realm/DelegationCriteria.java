@@ -44,13 +44,21 @@ public class DelegationCriteria implements CriteriaConfiguration {
 	@Override
 	public void configure(Criteria criteria) {
 		
+		if(!realmService.hasAuthenticatedContext()) {
+			return;
+		}
+		
 		Principal currentUser = realmService.getCurrentPrincipal();
 		@SuppressWarnings("rawtypes")
-		Cache<Long,Collection> cachedRoleIds = cacheService.getCacheOrCreate("delegationQueryRoleIds", Long.class, Collection.class);
+		Cache<String,Collection> cachedRoleIds = cacheService.getCacheOrCreate("delegationQueryRoleIds", String.class, Collection.class);
 		@SuppressWarnings("rawtypes")
-		Cache<Long,Collection> cachedUserIds = cacheService.getCacheOrCreate("delegationQueryUserIds", Long.class, Collection.class);
+		Cache<String,Collection> cachedUserIds = cacheService.getCacheOrCreate("delegationQueryUserIds", String.class, Collection.class);
 		
-		if(!cachedRoleIds.containsKey(currentUser.getId())) {
+		String key = String.format("%s/%s", 
+				realmService.getCurrentRealm().getUuid(),
+				currentUser.getUUID());
+		
+		if(!cachedRoleIds.containsKey(key)) {
 			
 			int maximumRoles = Integer.parseInt(System.getProperty("hypersocket.maximumRoleDelegates", "100"));
 			int maximumUsers = Integer.parseInt(System.getProperty("hypersocket.maximumUserDelegates", "1000"));
@@ -97,15 +105,15 @@ public class DelegationCriteria implements CriteriaConfiguration {
 				return;
 			}
 			
-			cachedRoleIds.put(realmService.getCurrentPrincipal().getId(), HibernateUtils.getResourceIds(delegatedRoles));
-			cachedUserIds.put(realmService.getCurrentPrincipal().getId(), HibernateUtils.getResourceIds(delegatedPrincipals));
+			cachedRoleIds.put(key, HibernateUtils.getResourceIds(delegatedRoles));
+			cachedUserIds.put(key, HibernateUtils.getResourceIds(delegatedPrincipals));
 		
 		}
 		
 		@SuppressWarnings("unchecked")
-		Collection<Long> roleIds =  (Collection<Long>) cachedRoleIds.get(currentUser.getId());
+		Collection<Long> roleIds =  (Collection<Long>) cachedRoleIds.get(key);
 		@SuppressWarnings("unchecked")
-		Collection<Long> userIds =  (Collection<Long>) cachedUserIds.get(currentUser.getId());
+		Collection<Long> userIds =  (Collection<Long>) cachedUserIds.get(key);
 		
 		if(roleIds != null && !roleIds.isEmpty()) {
 			criteria.createAlias("roles", "delegated");
