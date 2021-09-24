@@ -24,7 +24,6 @@ public class UserEnabledFilter extends DefaultTableFilter {
 		return "filter.ad.principal.enabled";
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) {

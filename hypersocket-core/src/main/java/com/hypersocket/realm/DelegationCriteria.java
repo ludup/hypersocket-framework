@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
 import javax.cache.Cache;
 
 import org.hibernate.Criteria;
@@ -15,8 +14,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.cache.CacheService;
-import com.hypersocket.change.ResourceAssignmentChangeListener;
-import com.hypersocket.change.ResourceAssignmentChangeService;
 import com.hypersocket.delegation.UserDelegationResource;
 import com.hypersocket.delegation.UserDelegationResourceService;
 import com.hypersocket.delegation.events.UserDelegationResourceEvent;

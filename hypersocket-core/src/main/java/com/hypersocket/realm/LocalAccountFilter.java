@@ -19,7 +19,6 @@ class LocalAccountFilter extends DefaultTableFilter {
 		return "filter.accounts.local";
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) {

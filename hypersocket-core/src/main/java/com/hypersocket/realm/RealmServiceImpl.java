@@ -104,7 +104,6 @@ import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.DefaultTableFilter;
 import com.hypersocket.tables.TableFilter;
 import com.hypersocket.transactions.TransactionCallbackWithError;
 import com.hypersocket.transactions.TransactionService;
