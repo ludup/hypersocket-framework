@@ -179,4 +179,8 @@ public class Role extends RealmResource {
 	public void setPermissionRealms(Set<Realm> realms) {
 		this.realms = realms;
 	}
+	
+	public String getSystemName() {
+		return String.format("%s/%s", getRealm().getName(), getName());
+	}
 }

@@ -7,11 +7,11 @@
 	<propertyCategory resourceKey="category.delegates"
 		resourceBundle="UserDelegationResourceService" weight="100">
 		<property resourceKey="roleDelegates" inputType="multipleSearchInput" 
-		    	url="roles/table" 
+		    	url="roles/delegatable" 
 		    	defaultValue="" 
-		    	nameAttr="name"
 		    	nameIsResourceKey="false"
 		    	valueAttr="id"
+		    	nameAttr="systemName"
 		    	remoteSearch="true"
 				weight="100" />
 			<property resourceKey="userDelegates" inputType="multipleSearchInput" 

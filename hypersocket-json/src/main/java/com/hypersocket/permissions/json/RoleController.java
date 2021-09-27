@@ -292,7 +292,7 @@ public class RoleController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return permissionService.getRoles(searchPattern, searchColumn,
-									start, length, sorting, RoleType.BUILTIN, RoleType.CUSTOM);
+									start, length, sorting, false, RoleType.BUILTIN, RoleType.CUSTOM);
 						}
 
 						@Override
@@ -300,7 +300,49 @@ public class RoleController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return permissionService
-									.getRoleCount(searchPattern, searchColumn, RoleType.BUILTIN, RoleType.CUSTOM);
+									.getRoleCount(searchPattern, searchColumn, false, RoleType.BUILTIN, RoleType.CUSTOM);
+						}
+					});
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "roles/delegatable", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public BootstrapTableResult<?> delegatableRoles(final HttpServletRequest request,
+			HttpServletResponse response) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+
+		try {
+			return processDataTablesRequest(request,
+					new BootstrapTablePageProcessor() {
+
+						@Override
+						public Column getColumn(String col) {
+							return RoleColumns.valueOf(col.toUpperCase());
+						}
+
+						@Override
+						public List<?> getPage(String searchColumn, String searchPattern, int start,
+								int length, ColumnSort[] sorting)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return permissionService.getRoles(searchPattern, searchColumn,
+									start, length, sorting, true, RoleType.BUILTIN, RoleType.CUSTOM);
+						}
+
+						@Override
+						public Long getTotalCount(String searchColumn, String searchPattern)
+								throws UnauthorizedException,
+								AccessDeniedException {
+							return permissionService
+									.getRoleCount(searchPattern, searchColumn, true, RoleType.BUILTIN, RoleType.CUSTOM);
 						}
 					});
 		} finally {
@@ -334,7 +376,7 @@ public class RoleController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return permissionService.getRoles(searchPattern, searchColumn,
-									start, length, sorting, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER);
+									start, length, sorting, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER);
 						}
 
 						@Override
@@ -342,7 +384,7 @@ public class RoleController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return permissionService
-									.getRoleCount(searchPattern, searchColumn, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER);
+									.getRoleCount(searchPattern, searchColumn, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER);
 						}
 					});
 		} finally {
@@ -376,7 +418,7 @@ public class RoleController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return permissionService.getRoles(searchPattern, searchColumn,
-									start, length, sorting, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER, RoleType.GROUP);
+									start, length, sorting, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER, RoleType.GROUP);
 						}
 
 						@Override
@@ -384,7 +426,7 @@ public class RoleController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							return permissionService
-									.getRoleCount(searchPattern, searchColumn, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER, RoleType.GROUP);
+									.getRoleCount(searchPattern, searchColumn, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER, RoleType.GROUP);
 						}
 					});
 		} finally {

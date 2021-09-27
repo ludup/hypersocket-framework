@@ -276,7 +276,13 @@ public class RealmRepositoryImpl extends
 
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.eq("parent", realm));
+				if(!realm.isSystem()) {
+					criteria.add(Restrictions.eq("parent", realm));
+				} else {
+					criteria.add(Restrictions.isNull("parent"));
+				}
+				criteria.add(Restrictions.isNull("owner"));
+				criteria.add(Restrictions.eq("publicRealm", true));
 			}
 			
 		});
