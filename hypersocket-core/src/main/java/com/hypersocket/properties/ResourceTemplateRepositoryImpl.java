@@ -242,8 +242,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			context = root.getAttribute("context");
 		}
 
-		if (log.isInfoEnabled()) {
-			log.info("Loading property template resource " + url.toExternalForm());
+		if (log.isDebugEnabled()) {
+			log.debug("Loading property template resource " + url.toExternalForm());
 		}
 
 		loadPropertyStores(doc);
@@ -311,8 +311,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 					PropertyTemplate t = propertyTemplates.get(pnode.getAttribute("resourceKey"));
 					if (t != null) {
-						if (log.isInfoEnabled()) {
-							log.info("Overriding default value of " + t.getResourceKey() + " to "
+						if (log.isDebugEnabled()) {
+							log.debug("Overriding default value of " + t.getResourceKey() + " to "
 									+ pnode.getAttribute("defaultValue"));
 						}
 						t.setDefaultValue(pnode.getAttribute("defaultValue"));
