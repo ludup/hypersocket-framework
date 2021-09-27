@@ -653,13 +653,7 @@ public class AuthenticationServiceImpl extends
 							
 							if(state.getPrincipal()!=null) {
 								if(!state.getScheme().getAllowedRoles().isEmpty()) {
-									boolean found = false;
-									for(Role role : state.getScheme().getAllowedRoles()) {
-										if(permissionService.hasRole(state.getPrincipal(), role)) {
-											found = true;
-											break;
-										}
-									}
+									boolean found = permissionService.hasRole(state.getPrincipal(), state.getScheme().getAllowedRoles());
 									
 									if(!found) {
 										state.clean();
@@ -672,13 +666,7 @@ public class AuthenticationServiceImpl extends
 								}
 								
 								if(!state.getScheme().getDeniedRoles().isEmpty()) {
-									boolean found = false;
-									for(Role role : state.getScheme().getDeniedRoles()) {
-										if(role.getPrincipals().contains(state.getPrincipal())) {
-											found = true;
-											break;
-										}
-									}
+									boolean found = permissionService.hasRole(state.getPrincipal(), state.getScheme().getDeniedRoles());
 									
 									if(found) {
 										state.clean();
