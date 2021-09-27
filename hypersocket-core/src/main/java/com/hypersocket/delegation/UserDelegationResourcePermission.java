@@ -9,11 +9,12 @@ package com.hypersocket.delegation;
 
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.RolePermission;
+import com.hypersocket.realm.UserPermission;
 
 
 public enum UserDelegationResourcePermission implements PermissionType {
 	
-	READ("read", RolePermission.READ),
+	READ("read", RolePermission.READ, UserPermission.READ),
 	CREATE("create", READ),
 	UPDATE("update", READ),
 	DELETE("delete", READ);

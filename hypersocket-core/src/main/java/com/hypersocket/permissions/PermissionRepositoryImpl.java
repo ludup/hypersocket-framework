@@ -485,7 +485,7 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Override
 	@Transactional(readOnly = true)
 	public List<Role> searchRoles(final Realm realm, String searchPattern, String searchColumn,
-			int start, int length, ColumnSort[] sorting, RoleType... types) {
+			int start, int length, ColumnSort[] sorting, boolean includeChildRealms, RoleType... types) {
 		return search(Role.class, searchColumn, searchPattern, start, length,
 				sorting, new CriteriaConfiguration() {
 
@@ -496,16 +496,30 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 						criteria.setFetchMode("principals", FetchMode.SELECT);
 						criteria.setFetchMode("resources", FetchMode.SELECT);
 						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-						criteria.add(Restrictions.eq("realm", realm));
-						criteria.add(Restrictions.or(Restrictions.isNull("type"),
-								Restrictions.in("type", types)));
+						
+						if(!includeChildRealms) {
+							criteria.add(Restrictions.eq("realm", realm));
+						} else {
+							criteria.createAlias("realm", "r");
+							
+							if(realm.isSystem()) {
+								criteria.add(Restrictions.or(Restrictions.eq("realm", realm),
+										Restrictions.eq("r.publicRealm", Boolean.TRUE)));
+							} else {
+								criteria.add(Restrictions.or(Restrictions.eq("realm", realm), 
+										Restrictions.and(Restrictions.eq("r.parent", realm), 
+												Restrictions.eq("r.publicRealm", Boolean.TRUE))));
+							}
+						}
+						
+						criteria.add(Restrictions.or(Restrictions.isNull("type"), Restrictions.in("type", types)));
 					}
 				});
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public Long countRoles(final Realm realm, String searchPattern, String searchColumn, RoleType... types) {
+	public Long countRoles(final Realm realm, String searchPattern, String searchColumn, boolean includeChildRealms, RoleType... types) {
 		return getCount(Role.class, searchColumn, searchPattern,
 				new CriteriaConfiguration() {
 
@@ -513,7 +527,22 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 					public void configure(Criteria criteria) {
 						criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 						criteria.add(Restrictions.eq("hidden", false));
-						criteria.add(Restrictions.eq("realm", realm));
+						
+						if(!includeChildRealms) {
+							criteria.add(Restrictions.eq("realm", realm));
+						} else {
+							criteria.createAlias("realm", "r");
+							
+							if(realm.isSystem()) {
+								criteria.add(Restrictions.or(Restrictions.eq("realm", realm),
+										Restrictions.eq("r.publicRealm", Boolean.TRUE)));
+							} else {
+								criteria.add(Restrictions.or(Restrictions.eq("realm", realm), 
+										Restrictions.and(Restrictions.eq("r.parent", realm), 
+												Restrictions.eq("r.publicRealm", Boolean.TRUE))));
+							}
+						}
+						
 						criteria.add(Restrictions.or(Restrictions.isNull("type"),
 								Restrictions.in("type", types)));
 						

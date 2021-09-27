@@ -10,6 +10,7 @@ import javax.cache.Cache;
 
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.sql.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -50,7 +51,7 @@ public class DelegationCriteria implements CriteriaConfiguration {
 		
 		Principal currentUser = realmService.getCurrentPrincipal();
 		
-		if(currentUser.isSystem()) {
+		if(currentUser.isSystem() || permissionService.hasAdministrativePermission(currentUser)) {
 			return;
 		}
 		
@@ -121,11 +122,15 @@ public class DelegationCriteria implements CriteriaConfiguration {
 		Collection<Long> userIds =  (Collection<Long>) cachedUserIds.get(key);
 		
 		if(roleIds != null && !roleIds.isEmpty()) {
-			criteria.createAlias("roles", "delegated");
-			criteria.add(Restrictions.in("delegated.id", roleIds));
-		}
-		
-		if(userIds != null && !userIds.isEmpty()) {
+			criteria.createAlias("roles", "delegated", JoinType.LEFT_OUTER_JOIN);
+
+			if(userIds!=null && !userIds.isEmpty()) {
+				criteria.add(Restrictions.or(Restrictions.in("delegated.id", roleIds),
+						Restrictions.in("id", userIds)));
+			} else {
+				criteria.add(Restrictions.in("delegated.id", roleIds));
+			}
+		} else if(userIds != null && !userIds.isEmpty()) {
 			criteria.add(Restrictions.in("id", userIds));
 		}
 	}
@@ -134,10 +139,10 @@ public class DelegationCriteria implements CriteriaConfiguration {
 	public void onRoleChange(RoleEvent evt) {
 		if(evt.isSuccess()) {
 			@SuppressWarnings("rawtypes")
-			Cache<Long,Collection> cachedRoleIds = cacheService.getCacheOrCreate("delegationQueryRoleIds", Long.class, Collection.class);
+			Cache<String,Collection> cachedRoleIds = cacheService.getCacheOrCreate("delegationQueryRoleIds", String.class, Collection.class);
 			cachedRoleIds.removeAll();
 			@SuppressWarnings("rawtypes")
-			Cache<Long,Collection> cachedUserIds = cacheService.getCacheOrCreate("delegationQueryUserIds", Long.class, Collection.class);
+			Cache<String,Collection> cachedUserIds = cacheService.getCacheOrCreate("delegationQueryUserIds", String.class, Collection.class);
 			cachedUserIds.removeAll();
 		}
 	}
@@ -146,10 +151,10 @@ public class DelegationCriteria implements CriteriaConfiguration {
 	public void onDelegationChange(UserDelegationResourceEvent evt) {
 		if(evt.isSuccess()) {
 			@SuppressWarnings("rawtypes")
-			Cache<Long,Collection> cachedRoleIds = cacheService.getCacheOrCreate("delegationQueryRoleIds", Long.class, Collection.class);
+			Cache<String,Collection> cachedRoleIds = cacheService.getCacheOrCreate("delegationQueryRoleIds", String.class, Collection.class);
 			cachedRoleIds.removeAll();
 			@SuppressWarnings("rawtypes")
-			Cache<Long,Collection> cachedUserIds = cacheService.getCacheOrCreate("delegationQueryUserIds", Long.class, Collection.class);
+			Cache<String,Collection> cachedUserIds = cacheService.getCacheOrCreate("delegationQueryUserIds", String.class, Collection.class);
 			cachedUserIds.removeAll();
 		}
 	}
