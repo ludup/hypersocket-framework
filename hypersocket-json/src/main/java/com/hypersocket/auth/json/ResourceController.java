@@ -38,7 +38,7 @@ public class ResourceController extends BootstrapTableController<Resource> {
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	public <T>  ResourceStatusConfirmation<T> resourceConfirmation(HttpServletRequest request,
-			HttpServletResponse response, ResourceStatusConfirmation<?> e) {
+			HttpServletResponse response, ResourceConfirmationException e) {
 		log.debug("Resource confirmation.", e);
 		return new ResourceStatusConfirmation<T>(e.getMessage(), e.getOptions(), e.getArgs());
 	}
