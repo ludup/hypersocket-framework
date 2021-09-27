@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.config.ConfigurationService;
@@ -51,7 +52,15 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 		
 		Realm selectedRealm = null;
 		if(parameters.containsKey("realm")) {
-			selectedRealm = realmService.getRealmByName((String)parameters.get("realm"));
+			String name = (String)parameters.get("realm");
+			if(systemConfigurationService.getBooleanValue("auth.enforceSelectRealm")) {
+				if(StringUtils.isBlank(name)) {
+					state.setLastErrorIsResourceKey(true);
+					state.setLastErrorMsg("error.userMustSelectRealm");
+					return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPALY_ERROR;
+				}
+			}
+			selectedRealm = realmService.getRealmByName(name);
 		}
 
 		if(!processFields(state, parameters)) {
