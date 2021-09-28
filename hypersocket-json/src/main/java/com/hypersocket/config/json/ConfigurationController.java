@@ -67,13 +67,17 @@ public class ConfigurationController extends AuthenticatedController {
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		Set<NameValuePair> tl = new HashSet<>();
 		for (String tzid : TimeZone.getAvailableIDs()) {
-			TimeZone tz = TimeZone.getTimeZone(tzid);
-			tl.add(new NameValuePair(String.format("%-30s (UTC %s)", tzid,
-					tz.getRawOffset() == 0 ? ""
-							: (tz.getRawOffset() > 0 ? "+" : "") + ((tz.getRawOffset() / 1000 / 60 / 60) + ":00")
-					), tzid));
+			add(tl, TimeZone.getTimeZone(tzid));
 		}
+		add(tl, TimeZone.getDefault());
 		return new ResourceList<NameValuePair>(tl);
+	}
+
+	protected void add(Set<NameValuePair> tl, TimeZone tz) {
+		tl.add(new NameValuePair(String.format("%-30s (UTC %s)", tz.getID(),
+				tz.getRawOffset() == 0 ? ""
+						: (tz.getRawOffset() > 0 ? "+" : "") + ((tz.getRawOffset() / 1000 / 60 / 60) + ":00")
+				), tz.getID()));
 	}
 
 	@AuthenticationRequired
