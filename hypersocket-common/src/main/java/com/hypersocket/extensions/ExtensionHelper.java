@@ -84,17 +84,29 @@ public class ExtensionHelper {
 							extsByName.put(extensionId, remote);
 							
 							if("true".equals(System.getProperty("hypersocket.development", "false"))) {
-								String fakeVersion = remote.getVersion();
-								Version v = new Version(fakeVersion);
-								int[] fakeVersionElements = v.getVersionElements();
-								if(fakeVersionElements.length == 4) {
-									remote.setVersion(fakeVersionElements[0] + "." + fakeVersionElements[1] + "." + fakeVersionElements[2] + "-" + (Math.max(0, fakeVersionElements[3] - 1)));
-									log.warn("Faking existence of extension for purposes of update testing of " + extensionId + " in " + extensionsPlace.getApp() + ". Using version " + remote.getVersion());
+								Version remoteVersion = new Version(remote.getVersion());
+								Version localVersion = new Version(HypersocketVersion.getVersion());
+								log.warn("Faking existence of extension for purposes of update testing of " + extensionId + " in " + extensionsPlace.getApp() + ". Using version " + localVersion);
+
+								if (remoteVersion.compareTo(localVersion) >= 0) {
+
+									if (log.isInfoEnabled()) {
+										log.info(extensionId + " is installed but an update is available ["
+												+ remoteVersion.compareTo(localVersion) + "]");
+									}
+
 									remote.setState(ExtensionState.UPDATABLE);
 								}
-								else {
-									log.error("Can't fake version. Can't create a smaller version than " + fakeVersion);
-								}
+								
+//								int[] fakeVersionElements = v.getVersionElements();
+//								if(fakeVersionElements.length == 4) {
+//									remote.setVersion(fakeVersionElements[0] + "." + fakeVersionElements[1] + "." + fakeVersionElements[2] + "-" + (Math.max(0, fakeVersionElements[3] - 1)));
+//									log.warn("Faking existence of extension for purposes of update testing of " + extensionId + " in " + extensionsPlace.getApp() + ". Using version " + remote.getVersion());
+//									remote.setState(ExtensionState.UPDATABLE);
+//								}
+//								else {
+//									log.error("Can't fake version. Can't create a smaller version than " + fakeVersion);
+//								}
 							}
 							else
 								log.warn("Using installed version of " + remote.getVersion() + " for " + extensionId);
