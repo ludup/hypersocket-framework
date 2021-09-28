@@ -198,7 +198,7 @@ public abstract class AbstractExtensionUpdater {
 					
 					try {
 
-						byte[] buf = new byte[32768];
+						byte[] buf = new byte[1024 * 1024];
 						int b;
 						long read = 0;
 						String delayStr = System.getProperty("hypersocket.development.fakeSlowUpdate");
