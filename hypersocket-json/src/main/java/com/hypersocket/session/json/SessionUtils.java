@@ -72,27 +72,27 @@ public class SessionUtils {
 			session = sessionService.getSession((String)request.getHeader(HYPERSOCKET_API_SESSION));
 		}
 		
-		if (session != null && sessionService.isLoggedOn(session, true)) {
+		if (session != null && sessionService.isLoggedOn(session, false)) {
 			return session;
 		}
 		
 		if (request.getAttribute(AUTHENTICATED_SESSION) != null) {
 			session = (Session) request.getAttribute(AUTHENTICATED_SESSION);
-			if(sessionService.isLoggedOn(session, true)) {
+			if(sessionService.isLoggedOn(session, false)) {
 				return session;
 			}
 		}
 		if (Objects.nonNull(request.getSession()) && request.getSession().getAttribute(AUTHENTICATED_SESSION) != null) {
 			session = (Session) request.getSession().getAttribute(
 					AUTHENTICATED_SESSION);
-			if(sessionService.isLoggedOn(session, true)) {
+			if(sessionService.isLoggedOn(session, false)) {
 				return session;
 			}
 		}
 		for (Cookie c : request.getCookies()) {
 			if (c.getName().equals(HYPERSOCKET_API_SESSION)) {
 				session = sessionService.getSession(c.getValue());
-				if (session != null && sessionService.isLoggedOn(session, true)) {
+				if (session != null && sessionService.isLoggedOn(session, false)) {
 					return session;
 				}
 			}
