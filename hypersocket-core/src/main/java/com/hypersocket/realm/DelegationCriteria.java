@@ -46,14 +46,20 @@ public class DelegationCriteria implements CriteriaConfiguration {
 			return;
 		}
 		
+		/**
+		 * This used ot incliude roles in the query but it would not work with groups. We now
+		 * resolve all roles down to principals, and groups principals down to user principals.
+		 * 
+		 * We will apply a limit of 1000 user principals to make this managable.
+		 */
 		Principal currentUser = realmService.getCurrentPrincipal();
 		
 		if(currentUser.isSystem() || permissionService.hasAdministrativePermission(currentUser)) {
 			return;
 		}
 		
-		@SuppressWarnings("rawtypes")
-		Cache<String,Collection> cachedRoleIds = cacheService.getCacheOrCreate("delegationQueryRoleIds", String.class, Collection.class);
+//		@SuppressWarnings("rawtypes")
+//		Cache<String,Collection> cachedRoleIds = cacheService.getCacheOrCreate("delegationQueryRoleIds", String.class, Collection.class);
 		@SuppressWarnings("rawtypes")
 		Cache<String,Collection> cachedUserIds = cacheService.getCacheOrCreate("delegationQueryUserIds", String.class, Collection.class);
 		
@@ -61,13 +67,13 @@ public class DelegationCriteria implements CriteriaConfiguration {
 				realmService.getCurrentRealm().getUuid(),
 				currentUser.getUUID());
 		
-		if(!cachedRoleIds.containsKey(key)) {
+		if(!cachedUserIds.containsKey(key)) {
 			
 			int maximumRoles = Integer.parseInt(System.getProperty("hypersocket.maximumRoleDelegates", "100"));
 			int maximumUsers = Integer.parseInt(System.getProperty("hypersocket.maximumUserDelegates", "1000"));
 			
 			Collection<UserDelegationResource> resources = delegationService.getPersonalResources();
-			Set<Role> delegatedRoles = new HashSet<>();
+//			Set<Role> delegatedRoles = new HashSet<>();
 			Set<Principal> delegatedPrincipals = new HashSet<>();
 			Set<Role> allUserRoles = permissionService.getAllUserRoles();
 			boolean everyone = false;
@@ -76,11 +82,31 @@ public class DelegationCriteria implements CriteriaConfiguration {
 					everyone = true;
 					break;
 				}
-				delegatedRoles.addAll(resource.getRoleDelegates());
 				
-				if(delegatedRoles.size() > maximumRoles) {
-					throw new IllegalStateException("Too many role delegates for principal query");
+				
+				/**
+				 * TODO we will only resolve users of the role this way. What about groups?
+				 */
+				
+				for(Role role : resource.getRoleDelegates()) {
+					
+					for(Principal principal : role.getPrincipals()) {
+						for(Principal assosciated : realmService.getAssociatedPrincipals(principal)) {
+							if(assosciated.getType()==PrincipalType.USER) {
+								delegatedPrincipals.add(assosciated);
+							} else if(assosciated.getType() == PrincipalType.GROUP) {
+								delegatedPrincipals.addAll(realmService.getAssociatedPrincipals(assosciated, PrincipalType.USER));
+							}
+						}
+						
+						if(delegatedPrincipals.size() > maximumUsers) {
+							throw new IllegalStateException("Too many user delegates for principal query");
+						}
+					}
 				}
+//				if(delegatedRoles.size() > maximumRoles) {
+//					throw new IllegalStateException("Too many role delegates for principal query");
+//				}
 				
 				delegatedPrincipals.addAll(resource.getUserDelegates());
 				
@@ -108,26 +134,28 @@ public class DelegationCriteria implements CriteriaConfiguration {
 				return;
 			}
 			
-			cachedRoleIds.put(key, HibernateUtils.getResourceIds(delegatedRoles));
+//			cachedRoleIds.put(key, HibernateUtils.getResourceIds(delegatedRoles));
 			cachedUserIds.put(key, HibernateUtils.getResourceIds(delegatedPrincipals));
 		
 		}
 		
-		@SuppressWarnings("unchecked")
-		Collection<Long> roleIds =  (Collection<Long>) cachedRoleIds.get(key);
+//		@SuppressWarnings("unchecked")
+//		Collection<Long> roleIds =  (Collection<Long>) cachedRoleIds.get(key);
 		@SuppressWarnings("unchecked")
 		Collection<Long> userIds =  (Collection<Long>) cachedUserIds.get(key);
 		
-		if(roleIds != null && !roleIds.isEmpty()) {
-			criteria.createAlias("roles", "delegated", JoinType.LEFT_OUTER_JOIN);
-
-			if(userIds!=null && !userIds.isEmpty()) {
-				criteria.add(Restrictions.or(Restrictions.in("delegated.id", roleIds),
-						Restrictions.in("id", userIds)));
-			} else {
-				criteria.add(Restrictions.in("delegated.id", roleIds));
-			}
-		} else if(userIds != null && !userIds.isEmpty()) {
+//		if(roleIds != null && !roleIds.isEmpty()) {
+//			criteria.createAlias("roles", "delegated", JoinType.LEFT_OUTER_JOIN);
+//
+//			if(userIds!=null && !userIds.isEmpty()) {
+//				criteria.add(Restrictions.or(Restrictions.in("delegated.id", roleIds),
+//						Restrictions.in("id", userIds)));
+//			} else {
+//				criteria.add(Restrictions.in("delegated.id", roleIds));
+//			}
+//		} else 
+			
+		if(userIds != null && !userIds.isEmpty()) {
 			criteria.add(Restrictions.in("id", userIds));
 		}
 	}
