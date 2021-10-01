@@ -15,8 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.config.ConfigurationChangedEvent;
 import com.hypersocket.config.ConfigurationService;
+import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 
@@ -65,10 +65,10 @@ public class MailerServiceImpl implements MailerService {
 	
 	@Override
 	@EventListener
-	public void onConfigurationChange(ConfigurationChangedEvent evt) {
+	public void onConfigurationChange(ConfigurationValueChangedEvent evt) {
 		
 		if(evt.isSuccess()) {
-			if(evt.getResourceKey().startsWith("smtp.")) {
+			if(evt.getConfigResourceKey().startsWith("smtp.")) {
 				if(log.isInfoEnabled()) {
 					log.info("Resetting cached mailer because of SMTP configuration change");
 				}

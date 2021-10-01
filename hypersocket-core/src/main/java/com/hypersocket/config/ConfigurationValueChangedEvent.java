@@ -48,6 +48,18 @@ public class ConfigurationValueChangedEvent extends SessionEvent {
 			Throwable e, Session session, Realm realm) {
 		super(source, resourceKey, e, session, realm);
 	}
+	
+	public String getConfigResourceKey() {
+		return org.apache.commons.lang3.StringUtils.defaultString(getAttribute(ATTR_CONFIG_RESOURCE_KEY), "");
+	}
+	
+	public String getOldValue() {
+		return getAttribute(ATTR_OLD_VALUE);
+	}
+	
+	public String getNewValue() {
+		return getAttribute(ATTR_NEW_VALUE);
+	}
 
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
