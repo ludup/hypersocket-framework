@@ -729,25 +729,23 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 			sessionCookieName = getApplicationName().toUpperCase().replace(' ', '_')
 					+ "_HTTP_SESSION";
 		}
-		if(event instanceof ConfigurationValueChangedEvent) {
+		if(event instanceof ConfigurationValueChangedEvent && event.isSuccess()) {
 			ConfigurationValueChangedEvent configEvent = (ConfigurationValueChangedEvent) event;
-			if(configEvent.hasAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY)){
-				if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.includeCiphers") 
-						|| configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.excludeCiphers")
-						|| configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.includeProtocols")
-						|| configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ssl.excludeProtocols")) {
-					rebuildEnabledCipherSuites();
+			if(configEvent.getConfigResourceKey().equals("ssl.includeCiphers") 
+					|| configEvent.getConfigResourceKey().equals("ssl.excludeCiphers")
+					|| configEvent.getConfigResourceKey().equals("ssl.includeProtocols")
+					|| configEvent.getConfigResourceKey().equals("ssl.excludeProtocols")) {
+				rebuildEnabledCipherSuites();
+			}
+			if(configEvent.getConfigResourceKey().equals("application.path")) {
+				System.setProperty("hypersocket.appPath", getBasePath());
+				if(log.isInfoEnabled()) {
+					log.info(String.format("Application path changed to %s", getBasePath()));
 				}
-				if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("application.path")) {
-					System.setProperty("hypersocket.appPath", getBasePath());
-					if(log.isInfoEnabled()) {
-						log.info(String.format("Application path changed to %s", getBasePath()));
-					}
-				} else if(configEvent.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY).equals("ui.path")) {
-					System.setProperty("hypersocket.uiPath", getUiPath());
-					if(log.isInfoEnabled()) {
-						log.info(String.format("UI path changed to %s", getUiPath()));
-					}
+			} else if(configEvent.getConfigResourceKey().equals("ui.path")) {
+				System.setProperty("hypersocket.uiPath", getUiPath());
+				if(log.isInfoEnabled()) {
+					log.info(String.format("UI path changed to %s", getUiPath()));
 				}
 			}
 			

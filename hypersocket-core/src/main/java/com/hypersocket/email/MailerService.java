@@ -2,7 +2,7 @@ package com.hypersocket.email;
 
 import org.simplejavamail.api.mailer.Mailer;
 
-import com.hypersocket.config.ConfigurationChangedEvent;
+import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.realm.Realm;
 
 public interface MailerService {
@@ -15,5 +15,5 @@ public interface MailerService {
 
 	String getSMTPDecryptedValue(Realm realm, String name);
 
-	void onConfigurationChange(ConfigurationChangedEvent evt);
+	void onConfigurationChange(ConfigurationValueChangedEvent evt);
 }

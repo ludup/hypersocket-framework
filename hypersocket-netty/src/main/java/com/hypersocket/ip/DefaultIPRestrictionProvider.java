@@ -113,9 +113,9 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 
 	@EventListener
 	private void configurationValueChanged(ConfigurationValueChangedEvent c) {
-		if ("server.blockIPs".equals(c.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY))) {
-			String[] oldValues = c.getAttribute(ConfigurationValueChangedEvent.ATTR_OLD_VALUE).split("\\r\\n");
-			String[] newValues = c.getAttribute(ConfigurationValueChangedEvent.ATTR_NEW_VALUE).split("\\r\\n");
+		if ("server.blockIPs".equals(c.getConfigResourceKey())) {
+			String[] oldValues = c.getOldValue().split("\\r\\n");
+			String[] newValues = c.getNewValue().split("\\r\\n");
 
 			for (String ip : newValues) {
 				if (StringUtils.isBlank(ip)) {
