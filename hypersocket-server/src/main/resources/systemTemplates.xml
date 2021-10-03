@@ -6,10 +6,11 @@
 	</propertyStore>
 	<propertyCategory resourceKey="category.server" resourceBundle="HypersocketServer" weight="0">
 		<property resourceKey="application.name" inputType="text" refreshUserInterface="true"
-			restart="true" defaultValue="LogonBox" weight="0" regex="^[a-zA-Z0-9_-]*$"/>
+			restart="true" defaultValue="LogonBox" weight="0" regex="^[a-zA-Z0-9_- ]*$"/>
+			
 		<property resourceKey="application.path" inputType="hidden" refreshUserInterface="true"
 			restart="true" defaultValue="app" weight="100" />
-		<property resourceKey="ui.path" inputType="text" refreshUserInterface="true" defaultValue="ui" weight="200" />
+		<property resourceKey="ui.path" inputType="hidden" refreshUserInterface="true" defaultValue="ui" weight="200" />
 		<property resourceKey="server.defaultRedirect" inputType="text" defaultValue="" weight="400" />
 		<property resourceKey="server.robotsTxt" inputType="textarea" defaultValue="User-agent: *\r\nDisallow: /\r\n" weight="500" />
 	<!-- Following are hidden as they are the old way and needed for upgrade -->
