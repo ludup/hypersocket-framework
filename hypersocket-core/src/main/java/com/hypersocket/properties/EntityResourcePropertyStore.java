@@ -588,7 +588,12 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			SimpleResource resource) {
 
 		Object entity = resolveTargetEntity(resource, template);
-		String methodName = "get" + StringUtils.capitalize(template.getResourceKey());
+		String methodName;
+		if(template.hasMapping()) {
+			methodName = "get" + StringUtils.capitalize(template.getMapping());
+		} else {
+			methodName = "get" + StringUtils.capitalize(template.getResourceKey());
+		}
 		try {
 
 			entity.getClass().getMethod(methodName, (Class<?>[]) null);

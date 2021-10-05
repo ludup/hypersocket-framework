@@ -33,6 +33,7 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.email.events.EmailEvent;
 import com.hypersocket.events.EventService;
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
@@ -68,6 +69,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	@Autowired
 	private MailerService mailerService; 
 	
+	@Autowired
+	private I18NService i18nService; 
+	
 	private EmailController controller; 
 	
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
@@ -84,6 +88,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 	@PostConstruct
 	private void postConstruct() {
+		i18nService.registerBundle(RESOURCE_BUNDLE);
 		ThreadLocal.withInitial(()->(new Boolean(false)));
 	}
 	
