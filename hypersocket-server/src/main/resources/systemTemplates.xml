@@ -6,7 +6,7 @@
 	</propertyStore>
 	<propertyCategory resourceKey="category.server" resourceBundle="HypersocketServer" weight="0">
 		<property resourceKey="application.name" inputType="text" refreshUserInterface="true"
-			restart="true" defaultValue="LogonBox" weight="0" regex="^[a-zA-Z0-9_- ]*$"/>
+			restart="true" defaultValue="LogonBox" weight="0" regex="^[a-zA-Z0-9_-\s]*$"/>
 			
 		<property resourceKey="application.path" inputType="hidden" refreshUserInterface="true"
 			restart="true" defaultValue="app" weight="100" />
