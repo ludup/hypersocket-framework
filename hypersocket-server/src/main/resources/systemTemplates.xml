@@ -6,7 +6,7 @@
 	</propertyStore>
 	<propertyCategory resourceKey="category.server" resourceBundle="HypersocketServer" weight="0">
 		<property resourceKey="application.name" inputType="text" refreshUserInterface="true"
-			restart="true" defaultValue="LogonBox" weight="0" regex="^[a-zA-Z0-9_-\s]*$"/>
+			restart="true" defaultValue="LogonBox" weight="0" regex="^[a-zA-Z0-9_- ]*$"/>
 			
 		<property resourceKey="application.path" inputType="hidden" refreshUserInterface="true"
 			restart="true" defaultValue="app" weight="100" />
@@ -59,10 +59,11 @@
 	   	    <property resourceKey="proxy.type" inputType="select" defaultValue="HTTP" options="HTTP,SOCKS" weight="400"/>
 	   	    <property resourceKey="proxy.bypass" inputType="multipleTextInput" defaultValue="" weight="400"/>
 	</propertyCategory>
-	<propertyCategory resourceKey="category.ipRestrictions" resourceBundle="HypersocketServer" weight="400">
-	     <property resourceKey="server.blockIPs" inputType="multipleTextInput"
+    <!-- Deprecated only for now so upgrade script  (in enhanced security) -->
+	<propertyCategory resourceKey="category.ipRestrictions" resourceBundle="HypersocketServer" weight="400" hidden="true">
+	     <property resourceKey="server.blockIPs" inputType="hidden"
 			restart="false" weight="8888" allowEmpty="true"/>
-	    <property resourceKey="server.allowedIPs" inputType="multipleTextInput"
+	    <property resourceKey="server.allowedIPs" inputType="hidden"
 			restart="false" weight="8889" allowEmpty="true"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.authentication"
