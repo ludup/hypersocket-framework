@@ -150,7 +150,7 @@ public class RealmRepositoryImpl extends
 	}
 
 	protected Realm getRealm(String column, Object value, CriteriaConfiguration...configurations ) {
-		return get(column, value, Realm.class, true, configurations);
+		return get(column, value, Realm.class, configurations);
 	}
 
 	@Override

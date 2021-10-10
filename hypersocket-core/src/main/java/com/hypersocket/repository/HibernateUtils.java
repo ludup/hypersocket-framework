@@ -217,7 +217,11 @@ public class HibernateUtils {
 	}
 
 	public static boolean isString(Class<?> clz, String column) {
-		return ReflectionUtils.findMethod(clz, "get" + StringUtils.capitalize(column)).getReturnType().equals(String.class);
+		Method m = ReflectionUtils.findMethod(clz, "get" + StringUtils.capitalize(column));
+		if(Objects.nonNull(m)) {
+			return m.getReturnType().equals(String.class);
+		}
+		return false;
 	}
 	
 	public static Method findMethod(Class<?> clz, String name) {
