@@ -98,12 +98,9 @@ public class DelegationCriteria implements CriteriaConfiguration {
 					throw new IllegalStateException("Too many user delegates for principal query");
 				}
 				
+				Set<Principal> processed = new HashSet<>();
 				for(Principal principal : resource.getGroupDelegates()) {
-					
-					for(Principal assosciated : realmService.getAssociatedPrincipals(principal)) {
-						delegatedPrincipals.addAll(realmService.getAssociatedPrincipals(assosciated));
-					}
-					
+					iterateGroupMembership(principal, delegatedPrincipals, processed);
 					if(delegatedPrincipals.size() > maximumUsers) {
 						throw new IllegalStateException("Too many user delegates for principal query");
 					}
@@ -123,6 +120,18 @@ public class DelegationCriteria implements CriteriaConfiguration {
 			
 		if(userIds != null && !userIds.isEmpty()) {
 			criteria.add(Restrictions.in("id", userIds));
+		}
+	}
+
+	private void iterateGroupMembership(Principal principal, Set<Principal> delegatedPrincipals,
+			Set<Principal> processed) {
+		if(processed.contains(principal)) {
+			return;
+		}
+		processed.add(principal);
+		delegatedPrincipals.addAll(realmService.getGroupUsers(principal));
+		for(Principal assosciated : realmService.getGroupGroups(principal)) {
+			iterateGroupMembership(assosciated, delegatedPrincipals, processed);
 		}
 	}
 

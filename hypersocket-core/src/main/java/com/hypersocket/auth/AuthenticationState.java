@@ -146,6 +146,10 @@ public class AuthenticationState {
 		this.scheme = previousSchemes.pop();
 		this.modules = previousModules.pop();
 		
+		if(!isPrimaryState() && isAuthenticationComplete()) {
+			switchBack();
+		}
+		
 	}
 	
 	public void addListener(AuthenticationStateListener listener) {

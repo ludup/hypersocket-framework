@@ -303,13 +303,13 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Override
 	@Transactional(readOnly=true)
 	public Principal getUserByEmail(String email, Realm realm) {
-		return get("email", email, LocalUser.class, true, new DeletedCriteria(false), new RealmCriteria(realm));
+		return get("email", email, LocalUser.class, new DeletedCriteria(false), new RealmCriteria(realm));
 	}
 
 	@Override
 	@Transactional(readOnly=true)
 	public UserPrincipal<?> getUserByFullName(String fullName, Realm realm) {
-		return get("description", fullName, LocalUser.class, true, new DeletedCriteria(false), new RealmCriteria(realm));
+		return get("description", fullName, LocalUser.class, new DeletedCriteria(false), new RealmCriteria(realm));
 	}
 
 	@Override
