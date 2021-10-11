@@ -279,7 +279,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		if(StringUtils.isNotBlank(column)) {
 			if (HibernateUtils.isString(cls, column)) {
-				criteria.add(Restrictions.eq(column, value).ignoreCase());
+				criteria.add(Restrictions.eq(column,  StringUtils.defaultString((String)value)).ignoreCase());
 			} else {
 				criteria.add(Restrictions.eq(column, value));
 			}
