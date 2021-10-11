@@ -78,6 +78,7 @@ public class AuthenticationModuleRepositoryImpl extends AbstractEntityRepository
 			public void configure(Criteria criteria) {
 				criteria.createAlias("scheme", "s");
 				criteria.add(Restrictions.eq("s.realm", realm));
+				criteria.add(Restrictions.eq("s.deleted", false));
 				if(schemes.length > 0) {
 					criteria.add(Restrictions.in("s.resourceKey", schemes));
 				}
