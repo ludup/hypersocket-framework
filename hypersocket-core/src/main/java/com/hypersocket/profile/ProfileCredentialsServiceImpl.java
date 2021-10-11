@@ -174,7 +174,14 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 			}
 		}
 		
-		return profile.getState()!=previousState;
+		switch(profile.getState()) {
+		case INCOMPLETE:
+		case PARTIALLY_COMPLETE:
+			return !Boolean.getBoolean("hypersocket.disableDefaultProfileUpdate");
+		default:
+			return profile.getState()!=previousState;
+		}
+		
 	}
 	
 	@Override
