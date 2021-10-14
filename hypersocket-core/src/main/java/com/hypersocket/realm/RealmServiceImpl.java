@@ -202,6 +202,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	private UserDisableFilter userDisabledFilter;
 	
 	@Autowired
+	private UserNotLoggedIn30DaysFilter userNotLoggedIn30DaysFilter;
+	
+	@Autowired
+	private UserNeverLoggedInFilter userNeverLoggedInFilter;
+	
+	@Autowired
 	private UserDelegationResourceService delegationService;
 
 	@Autowired
@@ -312,6 +318,8 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		registerBuiltInPrincipalFilter(remoteAccountFilter);
 		registerPrincipalFilter(userEnabledFilter);
 		registerPrincipalFilter(userDisabledFilter);
+		registerPrincipalFilter(userNeverLoggedInFilter);
+		registerPrincipalFilter(userNotLoggedIn30DaysFilter);
 
 	}
 
