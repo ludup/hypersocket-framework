@@ -1620,4 +1620,28 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/forceProfileSync/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public RequestStatus forceProfileSync(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			ResourceNotFoundException, SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Principal principal = realmService.getPrincipalById(id);
+			if(principal ==null)
+				throw new IllegalStateException("Invalid principal");
+			
+			credentialsService.updateProfile(principal);
+			
+			return new RequestStatus(true);
+		} catch(Throwable t) { 
+			return new RequestStatus(false, t.getMessage());
+		}finally {
+			clearAuthenticatedContext();
+		}
+	}
 }
