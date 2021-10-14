@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.profile.jobs.ProfileBatchUpdateJob;
@@ -43,6 +44,11 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 
 	static Logger log = LoggerFactory.getLogger(ProfileCredentialsServiceImpl.class);
 	
+	public static final String RESOURCE_BUNDLE = "ProfileCredentialsService";
+	
+	@Autowired
+	private I18NService i18nService;
+	
 	@Autowired
 	private PermissionService permissionService; 
 	
@@ -54,7 +60,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	
 	@Autowired
 	private RealmService realmService; 
-
+	
 	private ProfileValidator validator = null;
 	
 	private Map<String,ProfileCredentialsProvider> providers = new HashMap<String,ProfileCredentialsProvider>();
@@ -63,6 +69,9 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	
 	@PostConstruct
 	private void postConstruct() {
+		
+		i18nService.registerBundle(RESOURCE_BUNDLE);
+		
 		realmService.registerRealmListener(new RealmAdapter() {
 
 			@Override
