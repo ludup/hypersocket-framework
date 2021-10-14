@@ -318,7 +318,14 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		}
 		
 		if(activeCategories.containsKey(categoryKey)) {
-			return activeCategories.get(categoryKey);
+			PropertyCategory existingCategory = activeCategories.get(categoryKey);
+			if(existingCategory.isHidden() && !hidden) {
+				/* Always show if any are visible */
+				log.info(String.format("Multiple registrations of %s, with different visibility. Visible takes precedence", categoryKey));
+			}
+			else {
+				return existingCategory;
+			}
 		}
 
 		PropertyCategory category = new PropertyCategory();
