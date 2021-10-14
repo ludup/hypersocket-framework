@@ -239,7 +239,7 @@
 						<cacheTag>main</cacheTag>
 						<sourceDirectory>${basedir}/src/main/resources/i18n</sourceDirectory>
 						<targetDirectory>${basedir}/target/classes/i18n</targetDirectory>
-						<languages>da,nl,fi,fr,de,it,no,pl,ru,sv,es,ja,he</languages>
+						<languages>da,nl,fi,fr,de,it,no,pl,ru,sv,es,ja,he,pt</languages>
 						<failOnMissingSourceDir>false</failOnMissingSourceDir>
 						<noTranslatePattern>
 							<param><![CDATA[<a.*href.*>.*</a>]]></param>
