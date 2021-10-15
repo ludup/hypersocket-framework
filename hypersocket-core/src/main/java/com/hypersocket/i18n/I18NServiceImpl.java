@@ -201,6 +201,7 @@ public class I18NServiceImpl implements I18NService {
 		supportedLocales.add(getLocale("ru"));
 		supportedLocales.add(getLocale("es"));
 		supportedLocales.add(getLocale("sv"));
+		supportedLocales.add(getLocale("pt"));
 		
 	}
 
