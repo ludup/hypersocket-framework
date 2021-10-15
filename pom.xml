@@ -52,6 +52,9 @@
 		<org.springframework.version>4.3.1.RELEASE</org.springframework.version>
 		<aspectj.version>1.8.13</aspectj.version>
 		<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
+		
+		<!-- When you change this, remember to also change hypersocket-client, hypersocket-enterprise, hypersocket-ui  -->
+		<hypersocket.languages>da,nl,fi,fr,de,it,no,pl,ru,sv,es,ja,he,pt</hypersocket.languages>
 	</properties>
 
 	<modules>
@@ -183,6 +186,7 @@
                         <manifestEntries>
                           <X-Extension-Version>${project.version}</X-Extension-Version>
                           <X-Extension-Priority>0</X-Extension-Priority>
+						  <X-Translations>${hypersocket.languages}</X-Translations>
                         </manifestEntries>
 					</archive>
 				</configuration>
@@ -239,7 +243,7 @@
 						<cacheTag>main</cacheTag>
 						<sourceDirectory>${basedir}/src/main/resources/i18n</sourceDirectory>
 						<targetDirectory>${basedir}/target/classes/i18n</targetDirectory>
-						<languages>da,nl,fi,fr,de,it,no,pl,ru,sv,es,ja,he,pt</languages>
+						<languages>${hypersocket.languages}</languages>
 						<failOnMissingSourceDir>false</failOnMissingSourceDir>
 						<noTranslatePattern>
 							<param><![CDATA[<a.*href.*>.*</a>]]></param>
