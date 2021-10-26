@@ -7,17 +7,23 @@
  ******************************************************************************/
 package com.hypersocket.i18n;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.Manifest;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -188,20 +194,44 @@ public class I18NServiceImpl implements I18NService {
 		
 		registerBundle(USER_INTERFACE_BUNDLE);
 		
+		
 		supportedLocales.add(Locale.ENGLISH);
-		supportedLocales.add(getLocale("da"));
-		supportedLocales.add(getLocale("nl"));
-		supportedLocales.add(getLocale("fi"));
-		supportedLocales.add(getLocale("fr"));
-		supportedLocales.add(getLocale("de"));
-		supportedLocales.add(getLocale("it"));
-		supportedLocales.add(getLocale("ja"));
-		supportedLocales.add(getLocale("no"));
-		supportedLocales.add(getLocale("pl"));
-		supportedLocales.add(getLocale("pt"));
-		supportedLocales.add(getLocale("ru"));
-		supportedLocales.add(getLocale("es"));
-		supportedLocales.add(getLocale("sv"));
+		try {
+			Enumeration<URL> resources = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+			while (resources.hasMoreElements()) {
+				try(InputStream in = resources.nextElement().openStream()) {
+					Manifest manifest = new Manifest(in);
+					String translations = manifest.getMainAttributes().getValue("X-Translations");
+					if(StringUtils.isNotBlank(translations)) {
+						for(String lang : translations.split(",")) {
+							supportedLocales.add(getLocale(lang.trim()));					
+						}
+					}
+				} catch (IOException E) {
+				}
+			}
+		}
+		catch(Exception e) {
+			// Ignore
+		}
+		if(supportedLocales.size() == 1) {
+			/* DEPRECATED. The property hypersocket.translations should be set in hypersocket-core instead.
+			 * That is injected to the MANIFEST.MF as read above.
+			 */
+			supportedLocales.add(getLocale("da"));
+			supportedLocales.add(getLocale("nl"));
+			supportedLocales.add(getLocale("fi"));
+			supportedLocales.add(getLocale("fr"));
+			supportedLocales.add(getLocale("de"));
+			supportedLocales.add(getLocale("it"));
+			supportedLocales.add(getLocale("ja"));
+			supportedLocales.add(getLocale("no"));
+			supportedLocales.add(getLocale("pl"));
+			supportedLocales.add(getLocale("ru"));
+			supportedLocales.add(getLocale("es"));
+			supportedLocales.add(getLocale("sv"));
+			supportedLocales.add(getLocale("pt"));
+		}
 		
 	}
 
