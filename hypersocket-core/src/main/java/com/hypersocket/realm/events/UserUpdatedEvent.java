@@ -44,13 +44,13 @@ public class UserUpdatedEvent extends UserEvent {
 			if(oldProperties.containsKey(en.getKey())) {
 				final String oldVal = oldProperties.get(en.getKey());
 				if(!Objects.equals(en.getValue(), oldVal)) {
-					changes.add(String.format("%s was changed from %s to %s", en.getKey(), oldVal, en.getValue()));
+					changes.add(String.format("%s was changed from %s to %s", en.getKey(), friendlyNull(oldVal), friendlyNull(en.getValue())));
 					changedProperties.put(en.getKey(), new String[] {oldVal, en.getValue()});
 					allChangedProperties.put(en.getKey(), new String[] {oldVal, en.getValue()});
 				}
 			}
 			else {
-				changes.add(String.format("%s was added with a value of %s", en.getKey(), en.getValue()));
+				changes.add(String.format("%s was added with a value of %s", en.getKey(), friendlyNull(en.getValue())));
 				addedProperties.put(en.getKey(), en.getValue());
 				allChangedProperties.put(en.getKey(), new String[] { en.getValue() });
 			} 
@@ -72,6 +72,10 @@ public class UserUpdatedEvent extends UserEvent {
 
 		if(!changes.isEmpty())
 			addAttribute(ATTR_CHANGES, String.join("\n", changes));
+	}
+
+	private String friendlyNull(String val) {
+		return val == null ? "[empty]" : val;
 	}
 
 	public UserUpdatedEvent(Object source, Throwable e, Session session,

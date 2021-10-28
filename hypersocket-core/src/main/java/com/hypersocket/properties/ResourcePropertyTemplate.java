@@ -38,7 +38,8 @@ public class ResourcePropertyTemplate extends AbstractPropertyTemplate {
 	}
 
 	public String getValue() {
-		return ((ResourcePropertyStore) propertyStore).getPropertyValue(this, resource);
+		String val = ((ResourcePropertyStore) propertyStore).getPropertyValue(this, resource);
+		return val == null ? getDefaultValue() : val;
 	}
 
 	public SimpleResource getResource() {
