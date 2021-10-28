@@ -11,6 +11,7 @@ import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.repository.AbstractEntity;
 
 @Entity
@@ -38,6 +39,7 @@ public class ProfileCredentials extends AbstractEntity<Long> {
 		return id;
 	}
 	
+	@JsonIgnore
 	public Profile getProfile() {
 		return profile;
 	}
