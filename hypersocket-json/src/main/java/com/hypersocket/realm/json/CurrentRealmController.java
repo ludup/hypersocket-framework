@@ -45,6 +45,7 @@ import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.profile.Profile;
 import com.hypersocket.profile.ProfileCredentialsService;
 import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.properties.PropertyCategory;
@@ -1644,4 +1645,28 @@ public class CurrentRealmController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/userProfile/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceStatus<Profile> getUserProfile(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id)
+			throws AccessDeniedException, UnauthorizedException,
+			ResourceNotFoundException, SessionTimeoutException {
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			Principal principal = realmService.getPrincipalById(id);
+			if(principal ==null)
+				throw new IllegalStateException("Invalid principal");
+			
+			return new ResourceStatus<>(credentialsService.getProfileForUser(principal));
+		} catch(Throwable t) { 
+			return new ResourceStatus<>(false, t.getMessage());
+		}finally {
+			clearAuthenticatedContext();
+		}
+	}
+	
+	
 }

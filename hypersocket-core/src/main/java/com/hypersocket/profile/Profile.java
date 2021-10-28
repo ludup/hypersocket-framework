@@ -19,6 +19,7 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntity;
@@ -67,6 +68,7 @@ public class Profile extends AbstractEntity<Long>{
 		this.credentials = credentials;
 	}
 
+	@JsonIgnore
 	public Realm getRealm() {
 		return realm;
 	}
