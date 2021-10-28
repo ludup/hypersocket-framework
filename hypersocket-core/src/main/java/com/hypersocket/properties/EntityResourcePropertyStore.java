@@ -238,7 +238,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			} else {
 				Object obj = m.invoke(resource);
 				if(obj==null) {
-					return "";
+					return null;
 				}
 				return obj.toString();
 			}
@@ -255,7 +255,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			t = e;
 		}
 		log.error(methodName + " not found", t);
-		return "";
+		return null;
 	}
 	
 	
@@ -587,6 +587,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	public boolean hasPropertyValueSet(AbstractPropertyTemplate template,
 			SimpleResource resource) {
 
+		/* TODO: It looks like this needs to support dot notation like get/set does */
+		
 		Object entity = resolveTargetEntity(resource, template);
 		String methodName;
 		if(template.hasMapping()) {
