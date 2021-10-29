@@ -59,6 +59,9 @@
 		<aspectj.version>1.8.13</aspectj.version>
 		<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
 		
+		<!-- Also in hypersocket.enterprise and I4J -->
+		<jackson.version>2.9.10</jackson.version>
+		
 		<!-- When you change this, remember to also change hypersocket-client, hypersocket-enterprise, hypersocket-ui  -->
 		<hypersocket.languages>da,nl,fi,fr,de,it,no,pl,ru,sv,es,ja,he,pt</hypersocket.languages>
 	</properties>
