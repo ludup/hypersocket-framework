@@ -504,20 +504,24 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public Set<Role> getPrincipalRolesForRealm(Principal principal, Realm realm) {
 		
-		String cacheKey = String.format("%d:::%d", principal.getId(), realm.getId());
-		if (!roleCache.containsKey(cacheKey)) {
-			roleCache.put(cacheKey, repository.getPrincipalRolesForRealm(realmService.getAssociatedPrincipals(principal), realm));
+		synchronized(roleCache) {
+			String cacheKey = String.format("%d:::%d", principal.getId(), realm.getId());
+			if (!roleCache.containsKey(cacheKey)) {
+				roleCache.put(cacheKey, repository.getPrincipalRolesForRealm(realmService.getAssociatedPrincipals(principal), realm));
+			}
+	
+			return (Set<Role>) roleCache.get(cacheKey);
 		}
-
-		return (Set<Role>) roleCache.get(cacheKey);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<Role> getPrincipalRoles(Principal principal) {
 
-		if (!roleCache.containsKey(principal)) {
-			roleCache.put(principal, repository.getRolesForPrincipal(realmService.getAssociatedPrincipals(principal)));
+		synchronized(roleCache) {
+			if (!roleCache.containsKey(principal)) {
+				roleCache.put(principal, repository.getRolesForPrincipal(realmService.getAssociatedPrincipals(principal)));
+			}
 		}
 
 		return (Set<Role>) roleCache.get(principal);
@@ -1397,15 +1401,17 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		
 		String cacheKey = String.format("%d:::permissionRealms", principal.getId());
 		
-		if (!roleCache.containsKey(cacheKey)) {
-			Set<Realm> realms = new HashSet<Realm>();
-			for(Role r : repository.getRolesForPrincipal(realmService.getAssociatedPrincipals(principal))) {
-				realms.addAll(r.getPermissionRealms());
+		synchronized(roleCache) {
+			if (!roleCache.containsKey(cacheKey)) {
+				Set<Realm> realms = new HashSet<Realm>();
+				for(Role r : repository.getRolesForPrincipal(realmService.getAssociatedPrincipals(principal))) {
+					realms.addAll(r.getPermissionRealms());
+				}
+				roleCache.put(cacheKey, realms);
 			}
-			roleCache.put(cacheKey, realms);
+	
+			return (Set<Realm>) roleCache.get(cacheKey);
 		}
-
-		return (Set<Realm>) roleCache.get(cacheKey);
 	}
 
 	@Override
