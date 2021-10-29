@@ -573,10 +573,12 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		}
 		
+		defaultValue = StringUtils.isBlank(defaultValue) ? template.getDefaultValue() : defaultValue;
 		if(((ResourcePropertyStore) template.getPropertyStore()).hasPropertyValueSet(template, resource)) {
-			return ((ResourcePropertyStore) template.getPropertyStore()).getPropertyValue(template, resource);
+			String val = ((ResourcePropertyStore) template.getPropertyStore()).getPropertyValue(template, resource);
+			return val == null ? defaultValue : val;
 		} else{
-			return StringUtils.isBlank(defaultValue) ? template.getDefaultValue() : defaultValue;
+			return defaultValue;
 		}
 		
 	}

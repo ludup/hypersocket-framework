@@ -48,7 +48,7 @@ public class TransientPropertyStore implements ResourcePropertyStore {
 
 	@Override
 	public String getPropertyValue(AbstractPropertyTemplate template, SimpleResource resource) {
-		return "";
+		return null;
 	}
 
 	@Override
