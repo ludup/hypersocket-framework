@@ -8,6 +8,7 @@ import javax.cache.Cache;
 import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +43,9 @@ public class IStackServiceImpl implements IStackService {
 		}
 		ObjectMapper o = new ObjectMapper();
 		String accessKey = systemConfiguration.getValue("ipstack.accesskey");
-		
+		if(StringUtils.isBlank(accessKey)) {
+			throw new IOException("No ipstack.com access key configured");
+		}
 		//06c4553e8c8f2216596a7c26d9e281a9
 		
 		String locationJson = httpUtils.doHttpGetContent(
