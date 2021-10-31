@@ -41,22 +41,28 @@ public class IStackServiceImpl implements IStackService {
 		if(Objects.nonNull(loc)) {
 			return loc;
 		}
-		ObjectMapper o = new ObjectMapper();
-		String accessKey = systemConfiguration.getValue("ipstack.accesskey");
-		if(StringUtils.isBlank(accessKey)) {
+		
+		try {
+			ObjectMapper o = new ObjectMapper();
+			String accessKey = systemConfiguration.getValue("ipstack.accesskey");
+			if(StringUtils.isBlank(accessKey)) {
+				throw new IOException("No ipstack.com access key configured");
+			}
+			//06c4553e8c8f2216596a7c26d9e281a9
+			
+			String locationJson = httpUtils.doHttpGetContent(
+					String.format("http://api.ipstack.com/%s?access_key=%s", 
+								ipAddress, accessKey),
+							false, 
+							new HashMap<String,String>());
+			
+			IStackLocation location =  o.readValue(locationJson, IStackLocation.class);
+			cached.put(ipAddress, location);
+			return location;
+			
+		} catch(IllegalStateException e ) {
 			throw new IOException("No ipstack.com access key configured");
 		}
-		//06c4553e8c8f2216596a7c26d9e281a9
-		
-		String locationJson = httpUtils.doHttpGetContent(
-				String.format("http://api.ipstack.com/%s?access_key=%s", 
-							ipAddress, accessKey),
-						false, 
-						new HashMap<String,String>());
-		
-		IStackLocation location =  o.readValue(locationJson, IStackLocation.class);
-		cached.put(ipAddress, location);
-		return location;
 		
 	}
 	
