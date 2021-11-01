@@ -2981,9 +2981,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				if(!attributes.isEmpty()){
 					RealmProvider provider = getProviderForRealm(princ.getRealm());
 					for(String a : attrs) {
-						if(!map.containsKey(a))
-							map.put(a, provider.getUserProperty(princ, a));
+						if(!map.containsKey(a)) {
+							if(provider.hasPropertyValueSet(princ, a)) {
+								map.put(a, provider.getUserProperty(princ, a));
+							}
+							else {
+								map.put(a, "");	
+							}
+						}
 					}
+						
 				}
 				
 				final Map<String, String> properties = princ.getProperties();
