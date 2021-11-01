@@ -23,8 +23,18 @@ public class SessionOpenEvent extends SessionStateEvent {
 		addAttribute(ATTR_OS, session.getOs());
 		addAttribute(ATTR_OS_VERSION, session.getOsVersion());
 		addAttribute(ATTR_TRANSIENT, session.isTransient());
+		
+		/* Ignore local-api calls only */
+		if(isLocalApiEvent(session)) {
+			hidden = true;
+		}
 	}
 	
+	@Override
+	public boolean isHidden() {
+		return super.isHidden();
+	}
+
 	public String[] getResourceKeys() {
 		return ArrayUtils.add(super.getResourceKeys(), EVENT_RESOURCE_KEY);
 	}

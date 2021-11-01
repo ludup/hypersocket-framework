@@ -6,6 +6,7 @@ import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.session.events.SessionStateEvent;
 
 public class AuthenticationAttemptEvent extends SystemEvent {
 
@@ -60,6 +61,9 @@ public class AuthenticationAttemptEvent extends SystemEvent {
 				state.getLastPrincipalName());
 		addAttribute(AuthenticationAttemptEvent.ATTR_PRINCIPAL_REALM, 
 				state.getLastRealmName());
+		if(state.getScheme() != null && state.getScheme().getName().equals("localApi")) {
+			hidden = true;
+		}
 	}
 
 	public AuthenticationAttemptEvent(Object source, Throwable e, Realm currentRealm) {

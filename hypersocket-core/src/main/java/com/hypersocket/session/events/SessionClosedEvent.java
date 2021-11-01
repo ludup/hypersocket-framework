@@ -13,6 +13,11 @@ public class SessionClosedEvent extends SessionStateEvent {
 	public SessionClosedEvent(Object source,
 			Session session) {
 		super(source, EVENT_RESOURCE_KEY, true, session);
+		
+		/* Ignore local-api calls only */
+		if(isLocalApiEvent(session)) {
+			hidden = true;
+		}
 	}
 
 	public String[] getResourceKeys() {
