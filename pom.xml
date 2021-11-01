@@ -49,9 +49,19 @@
 	</developers>
 
 	<properties>
-		<org.springframework.version>4.3.1.RELEASE</org.springframework.version>
-		<aspectj.version>1.8.13</aspectj.version>
+		<org.springframework.version>4.3.30.RELEASE</org.springframework.version>
+		<aspectj.version>1.9.7</aspectj.version>
 		<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
+		<hazelcast.version>4.2.2</hazelcast.version>
+        <hazelcast.hibernate.version>2.2.1</hazelcast.hibernate.version>
+        <hazelcast.client.version>3.12.12</hazelcast.client.version>
+        <hibernate.version>5.3.23.Final</hibernate.version>
+        <hibernate.search.version>5.10.12.Final</hibernate.search.version>
+        <hibernate.elasticsearch.version>5.10.12.Final</hibernate.elasticsearch.version> 
+        <netty.version>4.1.69.Final</netty.version> 
+		
+		<!-- Also in hypersocket.enterprise and I4J -->
+        <jackson.version>2.13.0</jackson.version>
 		
 		<!-- When you change this, remember to also change hypersocket-client, hypersocket-enterprise, hypersocket-ui  -->
 		<hypersocket.languages>da,nl,fi,fr,de,it,no,pl,ru,sv,es,ja,he,pt</hypersocket.languages>

@@ -167,33 +167,33 @@
 
 		<dependency>
 			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-hibernate5</artifactId>
-			<version>1.3.2</version>
+			<artifactId>hazelcast-hibernate53</artifactId>
+			<version>${hazelcast.hibernate.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast</artifactId>
-			<version>3.7-EA</version>
+			<version>${hazelcast.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-client</artifactId>
-			<version>3.7-EA</version>
+			<version>${hazelcast.client.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-spring</artifactId>
-			<version>3.7-EA</version>
+			<version>${hazelcast.version}</version>
 		</dependency>
 
 		<!-- Jackson -->
 		<dependency>
 			<artifactId>jackson-databind</artifactId>
 			<groupId>com.fasterxml.jackson.core</groupId>
-			<version>2.8.7</version>
+			<version>${jackson.version}</version>
 		</dependency>
 
 		<!-- JAXB -->
@@ -239,22 +239,22 @@
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
-			<version>10.7.1.1</version>
+			<version>10.15.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derbyclient</artifactId>
-			<version>10.7.1.1</version>
+			<version>10.15.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derbynet</artifactId>
-			<version>10.7.1.1</version>
+			<version>10.15.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derbytools</artifactId>
-			<version>10.7.1.1</version>
+			<version>10.15.2.0</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
@@ -268,14 +268,15 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
-			<version>5.0.9.Final</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.geronimo.specs</groupId>
-					<artifactId>geronimo-jta_1.1_spec</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>${hibernate.version}</version>
 		</dependency>
+        
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-ehcache</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
 		<dependency>
 			<groupId>javax.transaction</groupId>
 			<artifactId>jta</artifactId>
@@ -285,13 +286,13 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-search-orm</artifactId>
-			<version>5.6.0.Beta2</version>
+			<version>${hibernate.search.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-search-elasticsearch</artifactId>
-			<version>5.6.0.Beta2</version>
+			<version>${hibernate.elasticsearch.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.commons</groupId>
@@ -332,9 +333,9 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>org.simplejavamail</groupId>
-		    <artifactId>simple-java-mail</artifactId>
-		    <version>6.6.1</version>
+			<groupId>org.simplejavamail</groupId>
+			<artifactId>simple-java-mail</artifactId>
+			<version>6.6.1</version>
 		</dependency>
 
 		<dependency>

@@ -1,11 +1,14 @@
 package com.hypersocket.netty.forwarding;
 
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
-
 import com.hypersocket.server.websocket.WebsocketClient;
 
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.util.AttributeKey;
+
 public interface NettyWebsocketClient extends WebsocketClient {
+	
+	public static final AttributeKey<NettyWebsocketClient> WEBSOCKET_CLIENT = AttributeKey.newInstance(NettyWebsocketClient.class.getSimpleName());
 
 	void setWebsocketChannel(Channel channel);
 

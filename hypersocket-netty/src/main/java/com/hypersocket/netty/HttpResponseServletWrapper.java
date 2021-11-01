@@ -20,14 +20,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.DateUtils;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
 import com.hypersocket.netty.util.ChannelBufferServletOutputStream;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class HttpResponseServletWrapper implements HttpServletResponse {
 
@@ -36,7 +37,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	private Locale locale;
 	private boolean committed = false;
 	private int bufferSize = 65535;
-	private ChannelBuffer buffer;
+	private ByteBuf buffer;
 	private ChannelBufferServletOutputStream out;
 	private Channel channel;
 	private HttpRequest request;
@@ -65,7 +66,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	public void reset() {
 		charset = "ISO-8859-1";
-		buffer = ChannelBuffers.dynamicBuffer(65535);
+		buffer = Unpooled.buffer(65535);
 		out = new ChannelBufferServletOutputStream(buffer);
 	}
 	
@@ -73,7 +74,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		return response;
 	}
 	
-	public ChannelBuffer getContent() {
+	public ByteBuf getContent() {
 		return buffer;
 	}
 
@@ -84,7 +85,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public String getContentType() {
-		String contentType = response.getHeader(HttpHeaders.CONTENT_TYPE);
+		String contentType = response.headers().get(HttpHeaders.CONTENT_TYPE);
 		if (contentType != null
 				&& contentType.indexOf("charset=") == -1) {
 			return contentType + "; charset=" + charset;
@@ -109,12 +110,12 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public void setContentLength(int len) {
-		response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(len));
+		response.headers().set(HttpHeaders.CONTENT_LENGTH, String.valueOf(len));
 	}
 
 	@Override
 	public void setContentType(String type) {
-		response.setHeader(HttpHeaders.CONTENT_TYPE, type);
+		response.headers().set(HttpHeaders.CONTENT_TYPE, type);
 	}
 
 	@Override
@@ -135,7 +136,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public void resetBuffer() {
-		buffer = ChannelBuffers.dynamicBuffer(bufferSize);
+		buffer = Unpooled.buffer(bufferSize);
 	}
 
 	@Override
@@ -191,7 +192,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		/**
 		 * Make sure we are not adding duplicate cookies
 		 */
-		for(Entry<String,String> entry : response.getHeaders()) {
+		for(Entry<String,String> entry : response.headers()) {
 			if(entry.getKey().equals("Set-Cookie") && entry.getValue().equals(cookieHeader.toString())) {
 				return;
 			}
@@ -202,7 +203,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public boolean containsHeader(String name) {
-		return response.containsHeader(name);
+		return response.headers().contains(name);
 	}
 
 	@Override
@@ -253,36 +254,36 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public void addDateHeader(String name, long date) {
-		response.setHeader(name, DateUtils.formatDate(new Date(date)));
+		response.headers().set(name, DateUtils.formatDate(new Date(date)));
 
 	}
 
 	@Override
 	public void setHeader(String name, String value) {
-		response.setHeader(name, value);
+		response.headers().set(name, value);
 	}
 	
 	public void removeHeader(String name) {
-		response.removeHeader(name);
+		response.headers().remove(name);
 	}
 
 	@Override
 	public void addHeader(String name, String value) {
-		if(name.equalsIgnoreCase("content-type") && response.containsHeader("Content-Type")) {
+		if(name.equalsIgnoreCase("content-type") && response.headers().contains("Content-Type")) {
 			setHeader(name, value);
 		} else {
-			response.addHeader(name, value);
+			response.headers().add(name, value);
 		}
 	}
 
 	@Override
 	public void setIntHeader(String name, int value) {
-		response.setHeader(name, String.valueOf(value));
+		response.headers().set(name, String.valueOf(value));
 	}
 
 	@Override
 	public void addIntHeader(String name, int value) {
-		response.addHeader(name, String.valueOf(value));
+		response.headers().add(name, String.valueOf(value));
 	}
 
 	@Override
@@ -313,21 +314,21 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public int getStatus() {
-		return response.getStatus() != null ? response.getStatus().getCode() : 0;
+		return response.status() != null ? response.status().code() : 0;
 	}
 
 	@Override
 	public String getHeader(String name) {
-		return response.getHeader(name);
+		return response.headers().get(name);
 	}
 
 	@Override
 	public Collection<String> getHeaders(String name) {
-		return response.getHeaders(name);
+		return response.headers().getAll(name);
 	}
 
 	@Override
 	public Collection<String> getHeaderNames() {
-		return response.getHeaderNames();
+		return response.headers().names();
 	}
 }

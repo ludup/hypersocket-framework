@@ -7,13 +7,17 @@
  ******************************************************************************/
 package com.hypersocket.netty.forwarding;
 
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.util.AttributeKey;
+
 public class SocketForwardingWebsocketClient implements NettyWebsocketClient {
 	
+	public static final AttributeKey<SocketForwardingWebsocketClient> ATTACHMENT = AttributeKey.newInstance(SocketForwardingWebsocketClient.class.getSimpleName());
+
 	static Logger log = LoggerFactory.getLogger(SocketForwardingWebsocketClient.class);
 	
 	private Channel socketChannel;
@@ -35,22 +39,22 @@ public class SocketForwardingWebsocketClient implements NettyWebsocketClient {
 	
 	public void setWebsocketChannel(Channel websocketChannel) {
 		this.websocketChannel = websocketChannel;
-		websocketChannel.setAttachment(this);
-		socketChannel.setAttachment(this);
+		websocketChannel.attr(ATTACHMENT).set(this);;
+		socketChannel.attr(ATTACHMENT).set(this);
 	}
 	
 	@Override
 	public void open() {
-		socketChannel.setReadable(true);
+		socketChannel.config().setAutoRead(true);
 	}
 	
 	@Override
 	public void close() {
-		if(socketChannel.isConnected()) {
+		if(socketChannel.isOpen()) {
 			socketChannel.close();
 		}
 		
-		if(websocketChannel.isConnected()) {
+		if(websocketChannel.isOpen()) {
 			websocketChannel.close();
 		}
 	}
@@ -77,19 +81,19 @@ public class SocketForwardingWebsocketClient implements NettyWebsocketClient {
 	public void frameReceived(WebSocketFrame msg) {
 	
 		if (socketChannel != null) {
-			if (socketChannel.isConnected()) {
+			if (socketChannel.isOpen()) {
 				if (log.isDebugEnabled()) {
 					log.debug("Forwarding frame to socket "
-							+ socketChannel.getRemoteAddress());
+							+ socketChannel.remoteAddress());
 				}
 
-				reportInputBytes(msg.getBinaryData()
+				reportInputBytes(msg.content()
 						.readableBytes());
-				socketChannel.write(msg.getBinaryData());
+				socketChannel.write(msg.content());
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("Forwarding socket is no longer connected for "
-							+ socketChannel.getRemoteAddress());
+							+ socketChannel.remoteAddress());
 				}
 				close();
 			}

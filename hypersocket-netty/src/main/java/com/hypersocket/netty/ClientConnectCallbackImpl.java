@@ -8,13 +8,14 @@
 package com.hypersocket.netty;
 
 import org.apache.http.HttpStatus;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
 
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClient;
 import com.hypersocket.server.websocket.WebsocketClient;
 import com.hypersocket.server.websocket.WebsocketClientCallback;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 
 class ClientConnectCallbackImpl implements ChannelFutureListener {
 
@@ -29,10 +30,10 @@ class ClientConnectCallbackImpl implements ChannelFutureListener {
 	public void operationComplete(ChannelFuture future) throws Exception {
 
 		if (future.isSuccess()) {
-			future.getChannel().setReadable(false);
-			client = createClient(future.getChannel());
+			future.channel().config().setAutoRead(false);
+			client = createClient(future.channel());
 			callback.websocketAccepted(client);
-			future.getChannel().getCloseFuture().addListener(new ChannelFutureListener() {
+			future.channel().closeFuture().addListener(new ChannelFutureListener() {
 
 				@Override
 				public void operationComplete(ChannelFuture future)
@@ -42,7 +43,7 @@ class ClientConnectCallbackImpl implements ChannelFutureListener {
 				
 			});
 		} else {
-			callback.websocketRejected(future.getCause(), HttpStatus.SC_NOT_FOUND);
+			callback.websocketRejected(future.cause(), HttpStatus.SC_NOT_FOUND);
 		}
 	}
 	

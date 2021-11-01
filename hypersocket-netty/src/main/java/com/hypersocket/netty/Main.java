@@ -22,8 +22,6 @@ import javax.servlet.ServletException;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.hibernate.SessionFactory;
-import org.jboss.netty.logging.InternalLoggerFactory;
-import org.jboss.netty.logging.Slf4JLoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -42,6 +40,9 @@ import com.hypersocket.server.MiniHttpServer;
 import com.hypersocket.server.MiniHttpServer.DynamicContent;
 import com.hypersocket.server.MiniHttpServer.DynamicContentFactory;
 import com.hypersocket.upgrade.UpgradeService;
+
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.Slf4JLoggerFactory;
 
 public class Main {
 
@@ -145,7 +146,7 @@ public class Main {
 			log.info("Using class loader " + classLoader.getClass().getName());
 		}
 
-		InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
+		InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE);
 
 		try {
 			createMiniServer();

@@ -1,6 +1,7 @@
 package com.hypersocket.ip;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,8 +11,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.netty.handler.ipfilter.IpFilterRule;
-import org.jboss.netty.handler.ipfilter.IpSubnetFilterRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +23,10 @@ import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
+
+import io.netty.handler.ipfilter.IpFilterRule;
+import io.netty.handler.ipfilter.IpFilterRuleType;
+import io.netty.handler.ipfilter.IpSubnetFilterRule;
 
 @Component
 public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
@@ -50,7 +53,7 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 
 		synchronized(deny) {
 			for (IpFilterRule rule : deny) {
-				if (rule.contains(addr)) {
+				if (rule.matches(InetSocketAddress.createUnresolved(addr.getHostAddress(), 0))) {
 					return false;
 				}
 			}
@@ -64,7 +67,7 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 			log.info("Blocking " + addr);
 		}
 
-		IpSubnetFilterRule rule = new IpSubnetFilterRule(false, processAddress(addr));
+		IpSubnetFilterRule rule = new IpSubnetFilterRule(DefaultIPRestrictionProvider.processAddressForIp(addr), DefaultIPRestrictionProvider.processAddressForCIDR(addr), IpFilterRuleType.REJECT);
 		deny.add(rule);
 	}
 
@@ -89,21 +92,31 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 			log.info("Unblocking " + addr);
 		}
 
-		IpFilterRule rule = new IpSubnetFilterRule(false, processAddress(addr));
+		IpSubnetFilterRule rule = new IpSubnetFilterRule(DefaultIPRestrictionProvider.processAddressForIp(addr), DefaultIPRestrictionProvider.processAddressForCIDR(addr), IpFilterRuleType.REJECT);
 		deny.remove(rule);
 
 	}
 
-	public static String processAddress(String addr) {
+	public static String processAddressForIp(String addr) {
+		int idx = addr.indexOf('/');
+		if (idx == -1) {
+			return addr;
+		}
+		return addr.substring(0, idx);
+	}
 
-		if (addr.indexOf('/') == -1) {
+
+	public static int processAddressForCIDR(String addr) {
+		int idx = addr.indexOf('/');
+		if (idx == -1) {
 			if (addr.indexOf(":") > -1) {
-				addr += "/128";
+				return 128;
 			} else {
-				addr += "/32";
+				return 32;
 			}
 		}
-		return addr;
+		else
+			return Integer.parseInt(addr.substring(idx + 1));
 	}
 
 	@EventListener()

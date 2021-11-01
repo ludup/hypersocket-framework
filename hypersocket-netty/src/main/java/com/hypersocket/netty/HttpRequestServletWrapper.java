@@ -43,17 +43,22 @@ import javax.servlet.http.Part;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.DateUtils;
-import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.netty.util.ChannelBufferServletInputStream;
+import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.servlet.HypersocketServletConfig;
 import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.util.AttributeKey;
+
 public class HttpRequestServletWrapper implements HttpServletRequest {
+
+	public static final AttributeKey<HttpRequestServletWrapper> REQUEST = AttributeKey.newInstance(HttpRequestServletWrapper.class.getSimpleName());
 
 	static Logger log = LoggerFactory.getLogger(HttpRequestServletWrapper.class);
 	
@@ -132,7 +137,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		 * reconstructed URL must reflect the path used to obtain the
 		 * RequestDispatcher, and not the server path specified by the client.
 		 */
-		this.requestUrl = (secure ? "https://" : "http://") + request.getHeader(HttpHeaders.HOST) + requestUri;
+		this.requestUrl = (secure ? "https://" : "http://") + request.headers().get(HttpHeaders.HOST) + requestUri;
 		
 		/* Strip the context path from the working URI */
 		uri = uri.equals("/") || !uri.startsWith(getContextPath()) ? uri : uri.substring(getContextPath().length());
@@ -260,14 +265,14 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	public String getCharacterEncoding() {
 		if (charset != null) {
 			return charset;
-		} else if (request.getHeader(HttpHeaders.CONTENT_TYPE) == null) {
+		} else if (request.headers().get(HttpHeaders.CONTENT_TYPE) == null) {
 			return null;
 		} else {
-			int charsetPos = request.getHeader(HttpHeaders.CONTENT_TYPE).indexOf("charset=");
+			int charsetPos = request.headers().get(HttpHeaders.CONTENT_TYPE).indexOf("charset=");
 			if (charsetPos == -1) {
 				return "UTF-8";
 			} else {
-				return request.getHeader(HttpHeaders.CONTENT_TYPE).substring(charsetPos + 8);
+				return request.headers().get(HttpHeaders.CONTENT_TYPE).substring(charsetPos + 8);
 			}
 		}
 	}
@@ -280,12 +285,12 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	@SuppressWarnings("deprecation")
 	@Override
 	public int getContentLength() {
-		return (int) request.getContentLength();
+		return (int) request.headers().getContentLength();
 	}
 
 	@Override
 	public String getContentType() {
-		return request.getHeader(HttpHeaders.CONTENT_TYPE);
+		return request.headers().get(HttpHeaders.CONTENT_TYPE);
 	}
 
 	@Override
@@ -476,27 +481,27 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public String getHeader(String name) {
-		return request.getHeader(name);
+		return request.headers().get(name);
 	}
 
 	@Override
 	public Enumeration<String> getHeaders(String name) {
-		return new Vector<String>(request.getHeaders(name)).elements();
+		return new Vector<String>(request.headers().getAll(name)).elements();
 	}
 
 	@Override
 	public Enumeration<String> getHeaderNames() {
-		return new Vector<String>(request.getHeaderNames()).elements();
+		return new Vector<String>(request.headers().names()).elements();
 	}
 
 	@Override
 	public int getIntHeader(String name) {
-		return Integer.parseInt(request.getHeader(name));
+		return Integer.parseInt(request.headers().get(name));
 	}
 
 	@Override
 	public String getMethod() {
-		return request.getMethod().getName();
+		return request.method().name();
 	}
 
 	@Override

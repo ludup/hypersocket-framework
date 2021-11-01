@@ -7,53 +7,50 @@
  ******************************************************************************/
 package com.hypersocket.netty.forwarding;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SocketForwardingWebsocketClientHandler extends SimpleChannelUpstreamHandler {
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+
+public class SocketForwardingWebsocketClientHandler extends ChannelInboundHandlerAdapter {
 
 	Logger log = LoggerFactory.getLogger(SocketForwardingWebsocketClientHandler.class);
 
 	@Override
-	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
+	public void channelActive(ChannelHandlerContext ctx)
 			throws Exception {
 
-		Channel ch = e.getChannel();
+		Channel ch = ctx.channel();
 
 		if (log.isDebugEnabled()) {
-			log.debug("Connected to " + ch.getRemoteAddress());
+			log.debug("Connected to " + ch.remoteAddress());
 		}
 	}
 
 	@Override
-	public void channelDisconnected(ChannelHandlerContext ctx,
-			ChannelStateEvent e) throws Exception {
+	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 
-		Channel ch = e.getChannel();
+		Channel ch = ctx.channel();
 
 		if (log.isDebugEnabled()) {
-			log.debug("Disconnected from " + ch.getRemoteAddress());
+			log.debug("Disconnected from " + ch.remoteAddress());
 		}
 	}
 
 	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 			throws Exception {
 
-		Channel ch = e.getChannel();
-		SocketForwardingWebsocketClient socketClient = (SocketForwardingWebsocketClient) ch.getAttachment();
+		Channel ch = ctx.channel();
+		SocketForwardingWebsocketClient socketClient = ch.attr(SocketForwardingWebsocketClient.ATTACHMENT).get();
 		
 		if (log.isDebugEnabled()) {
-			log.debug("Received exception from " + ch.getRemoteAddress(),
-					e.getCause());
+			log.debug("Received exception from " + ch.remoteAddress(),
+					cause);
 		}
 		if(socketClient!=null) {
 			socketClient.close();
@@ -61,30 +58,30 @@ public class SocketForwardingWebsocketClientHandler extends SimpleChannelUpstrea
 		
 	}
 
-	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
-			throws Exception {
+	@Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
-		Channel ch = e.getChannel();
-		SocketForwardingWebsocketClient socketClient = (SocketForwardingWebsocketClient) ch.getAttachment();
+		Channel ch = ctx.channel();
+		SocketForwardingWebsocketClient socketClient = ch.attr(SocketForwardingWebsocketClient.ATTACHMENT).get();
 
 		if (log.isDebugEnabled()) {
-			log.debug("Received data from " + ch.getRemoteAddress());
+			log.debug("Received data from " + ch.remoteAddress());
 		}
 		
-		if (!socketClient.getWebsocketChannel().isConnected()) {
+		if (!socketClient.getWebsocketChannel().isOpen()) {
 
 			if (log.isDebugEnabled()) {
 				log.debug("Web socket is no longer connected, disconnecting forwarded socket "
-						+ ch.getRemoteAddress());
+						+ ch.remoteAddress());
 			}
 			ch.close();
 		} else {
 			if (log.isDebugEnabled()) {
 				log.debug("Forwarding data to web socket "
-						+ socketClient.getWebsocketChannel().getRemoteAddress());
+						+ socketClient.getWebsocketChannel().remoteAddress());
 			}
 
-			ChannelBuffer buf = (ChannelBuffer)  e.getMessage();
+			ByteBuf buf = (ByteBuf) msg;
 			
 			socketClient.reportOutputBytes(buf.readableBytes());
 			

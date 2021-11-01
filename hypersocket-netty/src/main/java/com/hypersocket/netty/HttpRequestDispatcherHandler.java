@@ -34,27 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.DateUtils;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpChunk;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import org.jboss.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
-import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
-import org.jboss.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
-import org.jboss.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
+import org.apache.http.impl.nio.reactor.ExceptionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +57,26 @@ import com.hypersocket.utils.ITokenResolver;
 import com.hypersocket.utils.TokenAdapter;
 import com.hypersocket.utils.TokenReplacementReader;
 
-public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
+import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
+import io.netty.handler.stream.ChunkedStream;
+
+public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 		implements HttpResponseProcessor {
 
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
@@ -94,9 +93,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	}
 
 	@Override
-	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
-			throws Exception {
-		Object msg = e.getMessage();
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
 		if(msg instanceof HttpRequest) {
 		
@@ -105,7 +102,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		} else if (msg instanceof WebSocketFrame) {
 
-			processWebsocketFrame((WebSocketFrame) msg, ctx.getChannel());
+			processWebsocketFrame((WebSocketFrame) msg, ctx.channel());
 
 		} else if (msg instanceof HttpChunk) {
 	
@@ -115,7 +112,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				log.debug(String.format("Received HTTP chunk of %d bytes", ((HttpChunk) msg).getContent().readableBytes()));
 			}
 			
-			HttpRequestServletWrapper servletRequest = (HttpRequestServletWrapper) ctx.getChannel().getAttachment();
+			HttpRequestServletWrapper servletRequest = ctx.channel().attr(HttpRequestServletWrapper.REQUEST).get();
 			((HttpRequestChunkStream)servletRequest.getInputStream()).setCurrentChunk(chunk);
 
 		} else {
@@ -155,16 +152,16 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			this.ctx = ctx;
 			this.nettyRequest = nettyRequest;
 			
-			interfaceResource = (HTTPInterfaceResource) ctx.getChannel().getParent().getAttachment();
+			interfaceResource = ctx.channel().parent().attr(NettyServer.INTERFACE_RESOURCE).get();
 			
 			nettyResponse = new HttpResponseServletWrapper(
 					new DefaultHttpResponse(HttpVersion.HTTP_1_1,
 							HttpResponseStatus.OK),
-					ctx.getChannel(), nettyRequest);
+					ctx.channel(), nettyRequest);
 	
-			InetSocketAddress remoteAddress = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
-			if(nettyRequest.containsHeader("X-Forwarded-For")) {
-				String[] ips = nettyRequest.getHeader("X-Forwarded-For").split(",");
+			InetSocketAddress remoteAddress = (InetSocketAddress) ctx.channel().remoteAddress();
+			if(nettyRequest.headers().contains("X-Forwarded-For")) {
+				String[] ips = nettyRequest.headers().get("X-Forwarded-For").split(",");
 				
 				/* Some proxies might senda port number. It seems a bit ambiguous if
 				 * this is in the spec or not, depending on where you look. 
@@ -174,8 +171,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				String[] ipAndPort = ips[0].split(":");
 				
 				remoteAddress = new InetSocketAddress(ips[0], ipAndPort.length > 1 ? Integer.parseInt(ipAndPort[1]) : remoteAddress.getPort());
-			} else if(nettyRequest.containsHeader("Forwarded")) {
-				StringTokenizer t = new StringTokenizer(nettyRequest.getHeader("Forwarded"), ";");
+			} else if(nettyRequest.headers().contains("Forwarded")) {
+				StringTokenizer t = new StringTokenizer(nettyRequest.headers().get("Forwarded"), ";");
 				while(t.hasMoreTokens()) {
 					String[] pair = t.nextToken().split("=");
 					if(pair.length == 2 && pair[0].equalsIgnoreCase("for")) {
@@ -185,21 +182,21 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			}
 			
 			session = server.setupHttpSession(
-					nettyRequest.getHeaders("Cookie"), 
+					nettyRequest.headers().getAll("Cookie"), 
 					interfaceResource.getProtocol()==HTTPProtocol.HTTPS,
-					StringUtils.substringBefore(nettyRequest.getHeader("Host"), ":"),
+					StringUtils.substringBefore(nettyRequest.headers().get("Host"), ":"),
 					nettyResponse);
 			
 			servletRequest = new HttpRequestServletWrapper(
-					nettyRequest, (InetSocketAddress) ctx.getChannel()
-							.getLocalAddress(), remoteAddress, 
+					nettyRequest, (InetSocketAddress) ctx.channel()
+							.localAddress(), remoteAddress, 
 							interfaceResource.getProtocol()==HTTPProtocol.HTTPS, 
 							server.getServletContext(), session);
 			
 
 			
 			if(nettyRequest.isChunked()) {
-				ctx.getChannel().setAttachment(servletRequest);
+				ctx.channel().attr(HttpRequestServletWrapper.REQUEST).set(servletRequest);
 			}
 		}
 		
@@ -208,7 +205,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			try {
 				requestLocal.set(servletRequest);
 
-				String contentType = nettyRequest.getHeader(HttpHeaders.CONTENT_TYPE);
+				String contentType = nettyRequest.headers().get(HttpHeaders.CONTENT_TYPE);
 				
 				int idx;
 				if (contentType != null) {
@@ -271,7 +268,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					if(matcher.matches()) {
 						String uri = processReplacements(rewrites.get(regex));
 						uri = matcher.replaceAll(uri);
-						servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
+						servletRequest.setAttribute(BROWSER_URI, nettyRequest.uri());
 						servletRequest.parseUri(uri);
 						reverseUri = servletRequest.getRequestURI();
 						reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
@@ -299,7 +296,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						if(log.isDebugEnabled()) {
 							log.debug("Using alias " + path + " for path " + reverseUri);
 						}
-						servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
+						servletRequest.setAttribute(BROWSER_URI, nettyRequest.uri());
 						servletRequest.parseUri(path);
 						reverseUri = path;
 						reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
@@ -330,17 +327,17 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					}
 				}
 		
-				if (ctx.getChannel().getLocalAddress() instanceof InetSocketAddress) {
+				if (ctx.channel().localAddress() instanceof InetSocketAddress) {
 					
-					if (interfaceResource.getProtocol()==HTTPProtocol.HTTP && server.isRedirectable(nettyRequest.getUri()) && interfaceResource.getRedirectHTTPS()) {
+					if (interfaceResource.getProtocol()==HTTPProtocol.HTTP && server.isRedirectable(nettyRequest.uri()) && interfaceResource.getRedirectHTTPS()) {
 						
-						if(nettyRequest.getUri().equals("/health-check")) {
+						if(nettyRequest.uri().equals("/health-check")) {
 							nettyResponse.setStatus(HttpStatus.SC_OK);
 							sendResponse(servletRequest, nettyResponse, false);
 							return;
 						} else {
 							// Redirect the plain port to SSL
-							String host = nettyRequest.getHeader(HttpHeaders.HOST);
+							String host = nettyRequest.headers().get(HttpHeaders.HOST);
 							if(host==null) {
 								nettyResponse.sendError(400, "No Host Header");
 							} else {
@@ -351,7 +348,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 										+ host
 										+ (interfaceResource.getRedirectPort() != 443 ? ":"
 												+ String.valueOf(interfaceResource.getRedirectPort()) : "")
-										+ nettyRequest.getUri());
+										+ nettyRequest.uri());
 							}
 							sendResponse(servletRequest, nettyResponse, false);
 							return;
@@ -359,12 +356,12 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					}
 				}
 		
-				if (nettyRequest.containsHeader("Upgrade")) {
+				if (nettyRequest.headers().contains("Upgrade")) {
 					for (WebsocketHandler handler : server.getWebsocketHandlers()) {
 						if (handler.handlesRequest(servletRequest)) {
 							try {
 								handler.acceptWebsocket(servletRequest, nettyResponse,
-										new WebsocketConnectCallback(ctx.getChannel(),
+										new WebsocketConnectCallback(ctx.channel(),
 												servletRequest, nettyResponse, handler), 
 										HttpRequestDispatcherHandler.this);
 							} catch (AccessDeniedException ex) {
@@ -413,10 +410,10 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				}
 			} catch(IOException ex) { 
 				log.error(String.format("I/O error HTTP request worker: %s", ex.getMessage()), ex);
-				ctx.getChannel().close();
+				ctx.channel().close();
 			} catch(Throwable t) {
 				log.error("Exception in HTTP request worker", t);
-				ctx.getChannel().close();
+				ctx.channel().close();
 			}
 			finally {
 				requestLocal.remove();
@@ -471,7 +468,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		if (log.isDebugEnabled()) {
 			log.debug("Received websocket frame from "
-					+ channel.getRemoteAddress());
+					+ channel.remoteAddress());
 		}
 		// Check for closing frame
 		if (msg instanceof CloseWebSocketFrame) {
@@ -481,7 +478,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			// Close
 		}
 
-		NettyWebsocketClient nettyClient = (NettyWebsocketClient) channel.getAttachment();
+		NettyWebsocketClient nettyClient = channel.attr(NettyWebsocketClient.WEBSOCKET_CLIENT).get();
 		nettyClient.frameReceived(msg);
 		
 	}
@@ -499,7 +496,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		try {
 			HttpResponse nettyResponse = ((HttpResponseServletWrapper)servletResponse).getNettyResponse();
 			if(!StringUtils.equals(RestApi.API_REST, (CharSequence) servletRequest.getAttribute(RestApi.API_REST))) {
-				switch (nettyResponse.getStatus().getCode()) {
+				switch (nettyResponse.status().code()) {
 					case HttpStatus.SC_NOT_FOUND: {
 						send404(servletRequest, servletResponse);
 						break;
@@ -519,18 +516,17 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			InputStream content = processContent(
 					servletRequest,
 					servletResponse,
-					servletResponse.getRequest().getHeader(
+					servletResponse.getRequest().headers().get(
 							HttpHeaders.ACCEPT_ENCODING));
 
-			if (nettyResponse != null && (log.isDebugEnabled() || isLoggableStatus(nettyResponse.getStatus()))) {
+			if (nettyResponse != null && (log.isDebugEnabled() || isLoggableStatus(nettyResponse.status()))) {
 				synchronized (log) {
 					log.info("Begin Response >>>>>> " + servletRequest.getRequestURI());
-					log.info(nettyResponse.getStatus()
-							.toString());
+					log.info(nettyResponse.status().toString());
 					for (String header : nettyResponse
-							.getHeaderNames()) {
+							.headers().names()) {
 						for (String value : nettyResponse
-								.getHeaders(header)) {
+								.headers().getAll(header)) {
 							log.debug(header + ": " + value);
 						}
 					}
@@ -554,8 +550,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 					servletResponse
 							.getChannel()
-							.write(new HttpChunkStream(content, servletRequest
-									.getRequestURI()))
+							.write(new ChunkedStream(content))
 							.addListener(
 									new CheckCloseStateListener(servletResponse));
 				} catch (Exception e) {
@@ -587,7 +582,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	}
 	
 	private boolean isLoggableStatus(HttpResponseStatus status) {
-		switch(status.getCode()) {
+		switch(status.code()) {
 		case 400:
 		case 405:
 		case 406:
@@ -611,9 +606,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			if (servletResponse.isCloseOnComplete() && future.isDone()) {
 				if (log.isDebugEnabled()) {
 					log.debug("Closing HTTP connection remoteAddress="
-							+ future.getChannel().getRemoteAddress()
+							+ future.channel().remoteAddress()
 							+ " localAddress="
-							+ future.getChannel().getLocalAddress());
+							+ future.channel().localAddress());
 				}
 				servletResponse.getChannel().close();
 			}
@@ -640,11 +635,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		if (servletResponse.getContent().readableBytes() > 0) {
 
-			ChannelBuffer buffer = servletResponse.getContent();
+			ByteBuf buffer = servletResponse.getContent();
 			boolean doGzip = false;
 
 			if (servletResponse.getNettyResponse()
-					.getHeader("Content-Encoding") == null) {
+					.headers().get("Content-Encoding") == null) {
 				if (acceptEncodings != null) {
 					doGzip = acceptEncodings.indexOf("gzip") > -1;
 				}
@@ -655,7 +650,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						GZIPOutputStream gzip = new GZIPOutputStream(gzipped);
 						gzip.write(buffer.array(), 0, buffer.readableBytes());
 						gzip.finish();
-						buffer = ChannelBuffers.wrappedBuffer(gzipped
+						buffer = Unpooled.wrappedBuffer(gzipped
 								.toByteArray());
 						servletResponse.setHeader("Content-Encoding", "gzip");
 					} catch (IOException e) {
@@ -678,7 +673,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 		servletResponse.setHeader("Server", server.getApplicationName());
 
-		String connection = servletResponse.getRequest().getHeader(
+		String connection = servletResponse.getRequest().headers().get(
 				HttpHeaders.CONNECTION);
 		if (connection!=null && connection.equalsIgnoreCase("close")) {
 			servletResponse.setHeader("Connection", "close");
@@ -691,14 +686,13 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	}
 
 	@Override
-	public void channelDisconnected(ChannelHandlerContext ctx,
-			ChannelStateEvent e) throws Exception {
-		Channel ch = (Channel) ctx.getChannel();
+	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		Channel ch = (Channel) ctx.channel();
 
 		if (log.isDebugEnabled()) {
 			log.debug("Channel disconnected remoteAddress="
-					+ ch.getRemoteAddress() + " localAddress="
-					+ ch.getLocalAddress());
+					+ ch.remoteAddress() + " localAddress="
+					+ ch.localAddress());
 		}
 
 		if (ch.isOpen()) {
@@ -707,53 +701,30 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	}
 
 	@Override
-	public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws Exception {
-		Channel ch = (Channel) ctx.getChannel();
-
-		if (log.isDebugEnabled()) {
-			log.debug("Channel closed remoteAddress=" + ch.getRemoteAddress()
-					+ " localAddress=" + ch.getLocalAddress());
-		}
-	}
-
-	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 			throws Exception {
 
-		if (log.isDebugEnabled() && !(e.getCause() instanceof ClosedChannelException)) {
-			if(e.getCause() instanceof IOException) {
-				log.debug(String.format("Exception in HTTP request worker: %s", e.getCause().getMessage()));
+		if (log.isDebugEnabled() && !(cause instanceof ClosedChannelException)) {
+			if(cause instanceof IOException) {
+				log.debug(String.format("Exception in HTTP request worker: %s", cause.getMessage()));
 			} else {
 				log.error("Exception in http request remoteAddress="
-						+ e.getChannel().getRemoteAddress() + " localAddress="
-						+ e.getChannel().getLocalAddress(), e.getCause());
+						+ ctx.channel().remoteAddress() + " localAddress="
+						+ ctx.channel().localAddress(), cause);
 			}
 		}
 
-		ctx.getChannel().close();
+		ctx.channel().close();
 	}
 
 	@Override
-	public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
+	public void channelActive(ChannelHandlerContext ctx)
 			throws Exception {
-		Channel ch = (Channel) ctx.getChannel();
+		Channel ch = (Channel) ctx.channel();
 
 		if (log.isDebugEnabled()) {
-			log.debug("Channel open remoteAddress=" + ch.getRemoteAddress()
-					+ " localAddress=" + ch.getLocalAddress());
-		}
-	}
-
-	@Override
-	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws Exception {
-		Channel ch = (Channel) ctx.getChannel();
-
-		if (log.isDebugEnabled()) {
-			log.debug("Channel connected remoteAddress="
-					+ ch.getRemoteAddress() + " localAddress="
-					+ ch.getLocalAddress());
+			log.debug("Channel open remoteAddress=" + ch.remoteAddress()
+					+ " localAddress=" + ch.localAddress());
 		}
 	}
 
@@ -779,7 +750,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 			if (log.isDebugEnabled()) {
 				log.debug("Socket connected, completing handshake for "
-						+ websocketChannel.getRemoteAddress());
+						+ websocketChannel.remoteAddress());
 			}
 
 			NettyWebsocketClient websocketClient = (NettyWebsocketClient) client;
@@ -792,8 +763,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			WebSocketServerHandshaker handshaker = wsFactory
 					.newHandshaker(request.getNettyRequest());
 			if (handshaker == null) {
-				wsFactory
-						.sendUnsupportedWebSocketVersionResponse(websocketChannel);
+				WebSocketServerHandshakerFactory
+						.sendUnsupportedVersionResponse(websocketChannel);
 			} else {
 				handshaker.handshake(websocketChannel,
 						request.getNettyRequest()).addListener(
@@ -807,9 +778,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 									if (log.isDebugEnabled())
 										log.debug("Handshake complete for "
 												+ websocketChannel
-														.getRemoteAddress());
+														.remoteAddress());
 									client.open();
-									websocketChannel.getCloseFuture().addListener(new ChannelFutureListener() {
+									websocketChannel.closeFuture().addListener(new ChannelFutureListener() {
 										
 										@Override
 										public void operationComplete(ChannelFuture future) throws Exception {
@@ -820,7 +791,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 									if (log.isDebugEnabled())
 										log.debug("Handshake failed for "
 												+ websocketChannel
-														.getRemoteAddress());
+														.remoteAddress());
 									client.close();
 								}
 							}
@@ -847,7 +818,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 	}
 
 	private static String getWebSocketLocation(HttpRequest req) {
-		return "ws://" + req.getHeader(HttpHeaders.HOST) + req.getUri();
+		return "ws://" + req.headers().get(HttpHeaders.HOST) + req.uri();
 	}
 
 }

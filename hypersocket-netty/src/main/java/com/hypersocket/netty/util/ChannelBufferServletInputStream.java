@@ -11,13 +11,13 @@ import java.io.IOException;
 
 import javax.servlet.ServletInputStream;
 
-import org.jboss.netty.buffer.ChannelBuffer;
+import io.netty.buffer.ByteBuf;
 
 public class ChannelBufferServletInputStream extends ServletInputStream {
 
-	private ChannelBuffer content;
+	private ByteBuf content;
 	
-	public ChannelBufferServletInputStream(ChannelBuffer content) {
+	public ChannelBufferServletInputStream(ByteBuf content) {
 		this.content = content;
 	}
 	

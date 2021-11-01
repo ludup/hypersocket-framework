@@ -28,12 +28,11 @@ import org.springframework.core.io.FileSystemResource;
 import com.hazelcast.cache.HazelcastCachingProvider;
 import com.hazelcast.config.AwsConfig;
 import com.hazelcast.config.Config;
+import com.hazelcast.config.EvictionConfig;
 import com.hazelcast.config.EvictionPolicy;
-import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.MapConfig;
-import com.hazelcast.config.MaxSizeConfig;
-import com.hazelcast.config.MaxSizeConfig.MaxSizePolicy;
+import com.hazelcast.config.MaxSizePolicy;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.config.TcpIpConfig;
@@ -58,8 +57,7 @@ public class HazelcastSpringConfiguration {
 	Config config(NetworkConfig networkConfig, @Qualifier("hazelcastProperties") Properties hazelcastProperties) {
 		Config config = new Config();
 		
-		GroupConfig groupConfig = new GroupConfig(hazelcastProperties.getProperty("ha.hazelcast.group", "hypersocket"));
-		config.setGroupConfig(groupConfig);
+		config.setClusterName(hazelcastProperties.getProperty("ha.hazelcast.group", "hypersocket"));
 		config.setInstanceName(applicationContext.getId());
 		config.setNetworkConfig(networkConfig);
 		config.setProperty("hazelcast.logging.type", "log4j");
@@ -69,11 +67,13 @@ public class HazelcastSpringConfiguration {
 		mapConfig.setBackupCount(1);
 		mapConfig.setTimeToLiveSeconds(3600);
 		mapConfig.setMaxIdleSeconds(600);
-		mapConfig.setEvictionPolicy(EvictionPolicy.LRU);
-		mapConfig.setMaxSizeConfig(
-				new MaxSizeConfig(Integer.parseInt(System.getProperty("performance.maxSynchronizeCacheSize", "32")),
-						MaxSizePolicy.PER_NODE));
+		
+		EvictionConfig evictionConfig = new EvictionConfig();
+		evictionConfig.setEvictionPolicy(EvictionPolicy.LRU);
+		evictionConfig.setMaxSizePolicy(MaxSizePolicy.PER_NODE);
+		evictionConfig.setSize(Integer.parseInt(System.getProperty("performance.maxSynchronizeCacheSize", "32")));
 		config.addMapConfig(mapConfig);
+		mapConfig.setEvictionConfig(evictionConfig);
 
 		return config;
 	}
@@ -122,8 +122,8 @@ public class HazelcastSpringConfiguration {
 	}
 
 	@Bean(destroyMethod = "stop")
-	RegionFactory regionFactory(HazelcastInstance instance) {
-		HazelcastCacheRegionFactory cacheRegionFactory = new HazelcastCacheRegionFactory(instance);
+	RegionFactory regionFactory() {
+		HazelcastCacheRegionFactory cacheRegionFactory = new HazelcastCacheRegionFactory();
 		return cacheRegionFactory;
 	}
 

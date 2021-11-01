@@ -11,15 +11,15 @@ import java.io.IOException;
 
 import javax.servlet.ServletOutputStream;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferOutputStream;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 
 public class ChannelBufferServletOutputStream extends ServletOutputStream {
 
-	private ChannelBufferOutputStream out;
+	private ByteBufOutputStream out;
 	
-	public ChannelBufferServletOutputStream(ChannelBuffer buffer) {
-		out = new ChannelBufferOutputStream(buffer);
+	public ChannelBufferServletOutputStream(ByteBuf buffer) {
+		out = new ByteBufOutputStream(buffer);
 	}
 
 	@Override

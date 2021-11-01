@@ -9,27 +9,27 @@ package com.hypersocket.netty;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import javax.servlet.ServletException;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.handler.codec.frame.FrameDecoder;
-import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
-import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
-import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.jboss.netty.handler.ssl.SslHandler;
-import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.server.interfaces.http.HTTPProtocol;
 
-public class SSLSwitchingHandler extends FrameDecoder {
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.stream.ChunkedWriteHandler;
+
+public class SSLSwitchingHandler extends ByteToMessageDecoder {
 
 	static Logger log = LoggerFactory.getLogger(SSLSwitchingHandler.class);
 
@@ -40,22 +40,21 @@ public class SSLSwitchingHandler extends FrameDecoder {
 	}
 	
 	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 			throws Exception {
-		e.getCause().printStackTrace();
-		super.exceptionCaught(ctx, e);
+		cause.printStackTrace();
+		super.exceptionCaught(ctx, cause);
 	}
 	
 	@Override
-	protected Object decode(ChannelHandlerContext ctx, Channel channel,
-			ChannelBuffer buffer) throws Exception {
+	protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) throws Exception {
 
 		// Will use the first two bytes to detect a protocol.
 		if (buffer.readableBytes() < 2) {
-			return null;
+			return;
 		}
 
-		HTTPInterfaceResource interfaceResource = (HTTPInterfaceResource) channel.getParent().getAttachment();
+		HTTPInterfaceResource interfaceResource = ctx.channel().parent().attr(NettyServer.INTERFACE_RESOURCE).get();
 		if (interfaceResource.getProtocol()==HTTPProtocol.HTTPS) {
 			enableSsl(interfaceResource, ctx);
 		} else {
@@ -63,53 +62,52 @@ public class SSLSwitchingHandler extends FrameDecoder {
 		} 
 
 		// Forward the current read buffer as is to the new handlers.
-		return buffer.readBytes(buffer.readableBytes());
+		out.add(buffer.readBytes(buffer.readableBytes()));
 	}
 
 
 
 	private void enableSsl(HTTPInterfaceResource resource, ChannelHandlerContext ctx) throws IOException {
 
-		if (!(ctx.getChannel().getLocalAddress() instanceof InetSocketAddress)) {
+		if (!(ctx.channel().localAddress() instanceof InetSocketAddress)) {
 			throw new IllegalStateException(
 					"Cannot perform SSL over SocketAddress of type "
-							+ ctx.getChannel().getLocalAddress().getClass()
+							+ ctx.channel().localAddress().getClass()
 									.getName());
 		}
 
-		ChannelPipeline p = ctx.getPipeline();
+		ChannelPipeline p = ctx.pipeline();
 		
 		p.addLast(
 				"ssl",
 				new SslHandler(server
 						.createSSLEngine(resource,
-								(InetSocketAddress) ctx.getChannel()
-								.getLocalAddress(), (InetSocketAddress) ctx
-								.getChannel().getRemoteAddress())));
+								(InetSocketAddress) ctx.channel()
+								.localAddress(), (InetSocketAddress) ctx
+								.channel().remoteAddress())));
 		p.addLast("decoder", new HttpRequestDecoder());
 		p.addLast("encoder", new HttpResponseEncoder());
 		p.addLast("chunkedWriter", new ChunkedWriteHandler());
-		p.addLast("executionHandler", server.getHandler());
 		try {
 			p.addLast("http", new HttpRequestDispatcherHandler(server));
 		} catch (ServletException e) {
 			log.error("Servlet error", e);
-			ctx.getChannel().close();
+			ctx.channel().close();
 		}
 		p.remove(this);
 	}
 
 	private void enablePlainHttp(ChannelHandlerContext ctx) {
-		ChannelPipeline p = ctx.getPipeline();
+		ChannelPipeline p = ctx.pipeline();
 		p.addLast("decoder", new HttpRequestDecoder());
-		p.addLast("aggregator", new HttpChunkAggregator(Integer.MAX_VALUE));
+		p.addLast("aggregator", new HttpObjectAggregator(Integer.MAX_VALUE));
 		p.addLast("encoder", new HttpResponseEncoder());
 		p.addLast("chunkedWriter", new ChunkedWriteHandler());
 		try {
 			p.addLast("http", new HttpRequestDispatcherHandler(server));
 		} catch (ServletException e) {
 			log.error("Servlet error", e);
-			ctx.getChannel().close();
+			ctx.channel().close();
 		}
 		p.remove(this);
 	}
