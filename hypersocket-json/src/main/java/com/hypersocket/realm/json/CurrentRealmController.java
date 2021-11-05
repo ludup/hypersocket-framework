@@ -1026,6 +1026,7 @@ public class CurrentRealmController extends ResourceController {
 			Principal user = realmService.getPrincipalById(realm, id,
 					PrincipalType.USER);
 			String oldName = user.getPrincipalName();
+			credentialsService.resetProfile(user);
 			realmService.deleteUser(realm, user, deleteLocallyOnly);
 
 			return new ResourceStatus<Principal>(true, I18N.getResource(
