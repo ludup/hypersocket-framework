@@ -12,6 +12,7 @@ public class CredentialsUpdate {
 	private Long principalId;
 	private String password;
 	private boolean forceChange;
+	private boolean resendNewUserNotification;
 	
 	public CredentialsUpdate() {
 		
@@ -40,6 +41,13 @@ public class CredentialsUpdate {
 	public void setPrincipalId(Long principalId) {
 		this.principalId = principalId;
 	}
-	
+
+	public boolean isResendNewUserNotification() {
+		return resendNewUserNotification;
+	}
+
+	public void setResendNewUserNotification(boolean resendNewUserNotification) {
+		this.resendNewUserNotification = resendNewUserNotification;
+	}
 	
 }

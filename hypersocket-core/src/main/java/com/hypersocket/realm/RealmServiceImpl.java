@@ -1024,6 +1024,14 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon,
 			boolean administrative) throws ResourceException, AccessDeniedException {
 
+		setPassword(principal, password, forceChangeAtNextLogon, false, administrative);
+
+	}
+	
+	@Override
+	public void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon, boolean resendNewUserNotification,
+			boolean administrative) throws ResourceException, AccessDeniedException {
+
 		if (permissionService.hasSystemPermission(principal)) {
 			try {
 				assertPermission(SystemPermission.SYSTEM_ADMINISTRATION);
@@ -1065,19 +1073,32 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				eventService.publishEvent(new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider,
 						principal, password));
 
-				messageService.sendMessageNow(MESSAGE_PASSWORD_RESET, principal.getRealm(),
-						transactionService.doInTransaction((status) -> 
-							new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password, forceChangeAtNextLogon)
-								),
-						Arrays.asList(principal));
+				if (resendNewUserNotification) {
+					messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, principal.getRealm(), transactionService.doInTransaction((status) -> 
+						new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password, forceChangeAtNextLogon)
+							), principal);
+				} else {
+					messageService.sendMessageNow(MESSAGE_PASSWORD_RESET, principal.getRealm(),
+							transactionService.doInTransaction((status) -> 
+								new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password, forceChangeAtNextLogon)
+									),
+							Arrays.asList(principal));
+				}
 			} else {
 
 				eventService.publishEvent(new ResetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider,
 						principal, password));
 
-				messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, principal.getRealm(),
-						new PrincipalWithoutPasswordResolver((UserPrincipal<?>) principal), Arrays.asList(principal));
+				PrincipalWithoutPasswordResolver resolver = new PrincipalWithoutPasswordResolver((UserPrincipal<?>) principal);
+				
+				if (resendNewUserNotification) {
+					messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, principal.getRealm(), resolver, principal);
+				} else {
+					messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, principal.getRealm(),
+						resolver, Arrays.asList(principal));
+				}
 			}
+			
 
 		} catch (ResourceException ex) {
 			if (administrative) {
