@@ -46,14 +46,13 @@ import org.apache.http.client.utils.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hypersocket.netty.util.ChannelBufferServletInputStream;
-import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.servlet.HypersocketServletConfig;
 import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.AttributeKey;
 
 public class HttpRequestServletWrapper implements HttpServletRequest {
@@ -75,7 +74,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	private boolean secure;
 	private HttpSession session;
 	private ServletContext context;
-	private HttpRequestChunkStream chunkedInputStream = null;
+//	private HttpRequestChunkStream chunkedInputStream = null;
 	private String servletPath;
 	private String requestUrl;
 	private Date timestamp;
@@ -285,7 +284,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	@SuppressWarnings("deprecation")
 	@Override
 	public int getContentLength() {
-		return (int) request.headers().getContentLength();
+		return (int) HttpUtil.getContentLength(request);
 	}
 
 	@Override
@@ -295,13 +294,15 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public ServletInputStream getInputStream() throws IOException {
-		if (request.isChunked()) {
-			if (chunkedInputStream == null) {
-				chunkedInputStream = new HttpRequestChunkStream();
-			}
-			return chunkedInputStream;
-		}
-		return new ChannelBufferServletInputStream(request.getContent());
+//		if (request.isChunked()) {
+//			ChunkedInput ci;
+//			if (chunkedInputStream == null) {
+//				chunkedInputStream = new HttpRequestChunkStream();
+//			}
+//			return chunkedInputStream;
+//		}
+//		return new ChannelBufferServletInputStream(request.getContent());
+		throw new UnsupportedOperationException("TODO");
 	}
 
 	public String getParameter(String name) {

@@ -12,7 +12,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,10 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -41,7 +37,6 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
-import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClient;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
 import com.hypersocket.netty.log.NCSARequestLog;
 import com.hypersocket.properties.ResourceUtils;
@@ -73,17 +68,13 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.MessageSizeEstimator;
-import io.netty.channel.MessageSizeEstimator.Handle;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.channel.socket.nio.NioChannelOption;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultEventExecutor;
-import io.netty.util.internal.logging.InternalLogLevel;
 
 @Component
 public class NettyServer extends HypersocketServerImpl implements MessageSizeEstimator  {
@@ -236,6 +227,7 @@ public class NettyServer extends HypersocketServerImpl implements MessageSizeEst
 		// Configure the server.
 		serverBootstrap = new ServerBootstrap();
 		serverBootstrap.group(bossGroup, workerGroup);
+		serverBootstrap.channel(NioServerSocketChannel.class);
 
 		// Set up the event pipeline factory.
 		serverBootstrap.childHandler(new ChannelInitializer<Channel>() {
@@ -252,11 +244,11 @@ public class NettyServer extends HypersocketServerImpl implements MessageSizeEst
 			}
 		});
 
-		serverBootstrap.option(ChannelOption.SO_RCVBUF, 
+		serverBootstrap.option(NioChannelOption.SO_RCVBUF, 
 				configurationService.getIntValue("netty.receiveBuffer"));
-		serverBootstrap.option(ChannelOption.SO_SNDBUF,
+		serverBootstrap.option(NioChannelOption.SO_SNDBUF,
 				configurationService.getIntValue("netty.sendBuffer"));
-		serverBootstrap.option(ChannelOption.SO_BACKLOG,
+		serverBootstrap.option(NioChannelOption.SO_BACKLOG,
 				configurationService.getIntValue("netty.backlog"));
 
 		httpChannels = new HashMap<HTTPInterfaceResource,Set<Channel>>();
@@ -383,7 +375,8 @@ public class NettyServer extends HypersocketServerImpl implements MessageSizeEst
 					log.info("Binding server to all interfaces on port "
 							+ port);
 				}
-				Channel ch = serverBootstrap.bind(new InetSocketAddress(port)).channel();
+				InetSocketAddress localAddr = new InetSocketAddress(port);
+				Channel ch = serverBootstrap.bind(localAddr).channel();
 				ch.attr(INTERFACE_RESOURCE).set(interfaceResource);
 				switch(interfaceResource.getProtocol()) {
 				case HTTP:
@@ -393,14 +386,15 @@ public class NettyServer extends HypersocketServerImpl implements MessageSizeEst
 					httpsChannels.get(interfaceResource).add(ch);
 				}
 
+				InetAddress iaddr = localAddr.getAddress();
 				eventService.publishEvent(new HTTPInterfaceStartedEvent(this,
 						sessionService.getSystemSession(),
 						interfaceResource,
-						((InetSocketAddress)ch.localAddress()).getAddress().getHostAddress()));
+						iaddr == null ? null : iaddr.getHostAddress()));
 
 				if(log.isInfoEnabled()) {
 					log.info("Bound " + interfaceResource.getProtocol() + " to port "
-							+ ((InetSocketAddress)ch.localAddress()).getPort());
+							+ localAddr.getPort());
 				}
 			} catch (Exception e1) {
 				eventService.publishEvent(new HTTPInterfaceStartedEvent(this,
@@ -649,57 +643,58 @@ public class NettyServer extends HypersocketServerImpl implements MessageSizeEst
 			@Override
 			public int size(Object obj) {
 				int size = 1024;
-				if(obj instanceof ChannelUpstreamEventRunnable) {
-					ChannelUpstreamEventRunnable e = (ChannelUpstreamEventRunnable) obj;
-					if(e.getEvent() instanceof UpstreamMessageEvent) {
-						UpstreamMessageEvent evt = (UpstreamMessageEvent) e.getEvent();
-
-						if(evt.getMessage() instanceof HttpRequest) {
-							HttpRequest request = (HttpRequest) evt.getMessage();
-
-							size = (int) HttpUtil.getContentLength(request, 1024);
-						}
-
-						if(evt.getMessage() instanceof HttpChunk) {
-							HttpChunk chunk = (HttpChunk) evt.getMessage();
-							size = chunk.getContent().readableBytes();
-						}
-
-						if(evt.getMessage() instanceof WebSocketFrame) {
-							WebSocketFrame frame = (WebSocketFrame) evt.getMessage();
-							size = frame.content().readableBytes();
-						}
-					}
-					if(log.isDebugEnabled()) {
-						log.debug(String.format("Incoming message is %d bytes in size", size));
-					}
-				} else if(obj instanceof ChannelDownstreamEventRunnable) {
-					ChannelDownstreamEventRunnable e = (ChannelDownstreamEventRunnable) obj;
-					if(e.getEvent() instanceof DownstreamMessageEvent) {
-
-						DownstreamMessageEvent evt = (DownstreamMessageEvent) e.getEvent();
-
-						if(evt.getMessage() instanceof HttpRequest) {
-							HttpRequest request = (HttpRequest) evt.getMessage();
-
-							size = (int) HttpUtil.getContentLength(request, 1024);
-						}
-
-						if(evt.getMessage() instanceof HttpChunk) {
-							HttpChunk chunk = (HttpChunk) evt.getMessage();
-							size = chunk.getContent().readableBytes();
-						}
-
-						if(evt.getMessage() instanceof WebSocketFrame) {
-							WebSocketFrame frame = (WebSocketFrame) evt.getMessage();
-							size = frame.content().readableBytes();
-						}
-
-						if(log.isDebugEnabled()) {
-							log.debug(String.format("Outgoing message is %d bytes in size", size));
-						}
-					}
-				}
+				System.out.println(obj);
+//				if(obj instanceof ChannelUpstreamEventRunnable) {
+//					ChannelUpstreamEventRunnable e = (ChannelUpstreamEventRunnable) obj;
+//					if(e.getEvent() instanceof UpstreamMessageEvent) {
+//						UpstreamMessageEvent evt = (UpstreamMessageEvent) e.getEvent();
+//
+//						if(evt.getMessage() instanceof HttpRequest) {
+//							HttpRequest request = (HttpRequest) evt.getMessage();
+//
+//							size = (int) HttpUtil.getContentLength(request, 1024);
+//						}
+//
+//						if(evt.getMessage() instanceof HttpChunk) {
+//							HttpChunk chunk = (HttpChunk) evt.getMessage();
+//							size = chunk.getContent().readableBytes();
+//						}
+//
+//						if(evt.getMessage() instanceof WebSocketFrame) {
+//							WebSocketFrame frame = (WebSocketFrame) evt.getMessage();
+//							size = frame.content().readableBytes();
+//						}
+//					}
+//					if(log.isDebugEnabled()) {
+//						log.debug(String.format("Incoming message is %d bytes in size", size));
+//					}
+//				} else if(obj instanceof ChannelDownstreamEventRunnable) {
+//					ChannelDownstreamEventRunnable e = (ChannelDownstreamEventRunnable) obj;
+//					if(e.getEvent() instanceof DownstreamMessageEvent) {
+//
+//						DownstreamMessageEvent evt = (DownstreamMessageEvent) e.getEvent();
+//
+//						if(evt.getMessage() instanceof HttpRequest) {
+//							HttpRequest request = (HttpRequest) evt.getMessage();
+//
+//							size = (int) HttpUtil.getContentLength(request, 1024);
+//						}
+//
+//						if(evt.getMessage() instanceof HttpChunk) {
+//							HttpChunk chunk = (HttpChunk) evt.getMessage();
+//							size = chunk.getContent().readableBytes();
+//						}
+//
+//						if(evt.getMessage() instanceof WebSocketFrame) {
+//							WebSocketFrame frame = (WebSocketFrame) evt.getMessage();
+//							size = frame.content().readableBytes();
+//						}
+//
+//						if(log.isDebugEnabled()) {
+//							log.debug(String.format("Outgoing message is %d bytes in size", size));
+//						}
+//					}
+//				}
 
 
 				return size;

@@ -61,7 +61,8 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	}
 	
 	public void setChunked(boolean chunked) {
-		response.setChunked(chunked);
+		System.out.println("All responses are chunked?");
+//		response.setChunked(chunked);
 	}
 
 	public void reset() {

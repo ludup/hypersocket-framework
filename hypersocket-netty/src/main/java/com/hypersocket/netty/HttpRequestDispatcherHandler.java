@@ -65,6 +65,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -95,6 +96,13 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 	@Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
+		if(msg instanceof HttpResponse) {
+			// TODO
+		}
+		if(msg instanceof HttpContent) {
+			/* Chunk */
+			// TODO
+		}
 		if(msg instanceof HttpRequest) {
 		
 			HttpRequest nettyRequest = (HttpRequest) msg;
@@ -104,18 +112,22 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 
 			processWebsocketFrame((WebSocketFrame) msg, ctx.channel());
 
-		} else if (msg instanceof HttpChunk) {
-	
-			HttpChunk chunk = (HttpChunk) msg;
-			
-			if(log.isDebugEnabled()) {
-				log.debug(String.format("Received HTTP chunk of %d bytes", ((HttpChunk) msg).getContent().readableBytes()));
-			}
-			
-			HttpRequestServletWrapper servletRequest = ctx.channel().attr(HttpRequestServletWrapper.REQUEST).get();
-			((HttpRequestChunkStream)servletRequest.getInputStream()).setCurrentChunk(chunk);
-
-		} else {
+		} /*
+			 * else if (msg instanceof HttpChunk) {
+			 * 
+			 * HttpChunk chunk = (HttpChunk) msg;
+			 * 
+			 * if(log.isDebugEnabled()) {
+			 * log.debug(String.format("Received HTTP chunk of %d bytes", ((HttpChunk)
+			 * msg).getContent().readableBytes())); }
+			 * 
+			 * HttpRequestServletWrapper servletRequest =
+			 * ctx.channel().attr(HttpRequestServletWrapper.REQUEST).get();
+			 * ((HttpRequestChunkStream)servletRequest.getInputStream()).setCurrentChunk(
+			 * chunk);
+			 * 
+			 * }
+			 */ else {
 			if (log.isErrorEnabled()) {
 				log.error("Received invalid MessageEvent " + msg.toString());
 			}
@@ -125,11 +137,11 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 	
 	private void dispatchRequest(ChannelHandlerContext ctx,
 			HttpRequest nettyRequest) {
-		if(nettyRequest.isChunked()) {
-			server.getExecutor().submit(new RequestWorker(ctx, nettyRequest));
-		} else {
+//		if(nettyRequest.isChunked()) {
+//			server.getExecutor().submit(new RequestWorker(ctx, nettyRequest));
+//		} else {
 			new RequestWorker(ctx, nettyRequest).run();
-		}
+//		}
 	}
 	
 	private static ThreadLocal<HttpServletRequest> requestLocal = new ThreadLocal<>();
@@ -195,9 +207,10 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 			
 
 			
-			if(nettyRequest.isChunked()) {
+			// Always chunked?
+//			if(nettyRequest.isChunked()) {
 				ctx.channel().attr(HttpRequestServletWrapper.REQUEST).set(servletRequest);
-			}
+//			}
 		}
 		
 		public void run() {
@@ -219,11 +232,12 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 					}
 					if (contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
 						String content; 
-						if(nettyRequest.isChunked()) {
+						// Always chunked?
+//						if(nettyRequest.isChunked()) {
 							content = IOUtils.toString(servletRequest.getInputStream(), contentTypeCharset);
-						} else {
-							content = servletRequest.getNettyRequest().getContent().toString(Charset.forName(contentTypeCharset));
-						}
+//						} else {
+//							content = servletRequest.getNettyRequest().getContent().toString(Charset.forName(contentTypeCharset));
+//						}
 						servletRequest.processParameters(content);
 					}
 				}
@@ -659,7 +673,12 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 				}
 			}
 
-			servletResponse.getNettyResponse().setContent(buffer);
+			// TODO
+			//
+			// XXXXXX
+			//
+//			servletResponse.getNettyResponse().setContent(buffer);
+			
 			servletResponse.setHeader("Content-Length",
 					String.valueOf(buffer.readableBytes()));
 		} else {
