@@ -589,14 +589,7 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 
 		/* TODO: It looks like this needs to support dot notation like get/set does */
 		
-		Object entity;
-		try {
-			entity = resolveTargetEntity(resource, template);
-		}
-		catch(IllegalStateException ise) {
-			return false;
-		}
-		
+		Object entity = resolveTargetEntity(resource, template);
 		String methodName;
 		if(template.hasMapping()) {
 			methodName = "get" + StringUtils.capitalize(template.getMapping());
