@@ -43,6 +43,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	private HttpRequest request;
 	private boolean closeOnComplete = false;
 	private Date timestamp;
+	private boolean chunked;
 	
 	public HttpResponseServletWrapper(HttpResponse response, Channel channel, HttpRequest request) {
 		this.response = response;
@@ -60,9 +61,12 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		return timestamp;
 	}
 	
+	public boolean isChunked() {
+		return chunked;
+	}
+	
 	public void setChunked(boolean chunked) {
-		System.out.println("All responses are chunked?");
-//		response.setChunked(chunked);
+		this.chunked = chunked;
 	}
 
 	public void reset() {

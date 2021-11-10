@@ -68,6 +68,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.MessageSizeEstimator;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -562,6 +563,7 @@ public class NettyServer extends HypersocketServerImpl implements MessageSizeEst
 	}
 
 
+	@Sharable
 	class MonitorChannelHandler extends ChannelDuplexHandler {
 
 		@Override
@@ -643,7 +645,7 @@ public class NettyServer extends HypersocketServerImpl implements MessageSizeEst
 			@Override
 			public int size(Object obj) {
 				int size = 1024;
-				System.out.println(obj);
+				System.out.println(">>> " + obj);
 //				if(obj instanceof ChannelUpstreamEventRunnable) {
 //					ChannelUpstreamEventRunnable e = (ChannelUpstreamEventRunnable) obj;
 //					if(e.getEvent() instanceof UpstreamMessageEvent) {

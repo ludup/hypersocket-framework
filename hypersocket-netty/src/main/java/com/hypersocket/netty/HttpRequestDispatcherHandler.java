@@ -34,7 +34,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.DateUtils;
-import org.apache.http.impl.nio.reactor.ExceptionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,10 +64,14 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.FullHttpMessage;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
@@ -96,38 +99,23 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 	@Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
-		if(msg instanceof HttpResponse) {
-			// TODO
-		}
-		if(msg instanceof HttpContent) {
-			/* Chunk */
-			// TODO
-		}
-		if(msg instanceof HttpRequest) {
-		
-			HttpRequest nettyRequest = (HttpRequest) msg;
-			dispatchRequest(ctx, nettyRequest);
-
-		} else if (msg instanceof WebSocketFrame) {
-
+		if (msg instanceof WebSocketFrame) {
 			processWebsocketFrame((WebSocketFrame) msg, ctx.channel());
-
-		} /*
-			 * else if (msg instanceof HttpChunk) {
-			 * 
-			 * HttpChunk chunk = (HttpChunk) msg;
-			 * 
-			 * if(log.isDebugEnabled()) {
-			 * log.debug(String.format("Received HTTP chunk of %d bytes", ((HttpChunk)
-			 * msg).getContent().readableBytes())); }
-			 * 
-			 * HttpRequestServletWrapper servletRequest =
-			 * ctx.channel().attr(HttpRequestServletWrapper.REQUEST).get();
-			 * ((HttpRequestChunkStream)servletRequest.getInputStream()).setCurrentChunk(
-			 * chunk);
-			 * 
-			 * }
-			 */ else {
+		}
+	    else if (msg instanceof HttpRequest) {
+	    	HttpRequest chunk = (HttpRequest) msg;
+			dispatchRequest(ctx, chunk);
+	    }
+	    else if (msg instanceof HttpContent) {
+	      HttpContent chunk = (HttpContent) msg;
+		  if(log.isDebugEnabled()) {
+			  log.debug(String.format("Received HTTP chunk of %d bytes", chunk.content().readableBytes())); 
+		  }
+		  HttpRequestServletWrapper servletRequest = ctx.channel().attr(HttpRequestServletWrapper.REQUEST).get();
+		  ((HttpRequestChunkStream)servletRequest.getInputStream()).setCurrentChunk(chunk);
+			  
+	  	}
+	    else {
 			if (log.isErrorEnabled()) {
 				log.error("Received invalid MessageEvent " + msg.toString());
 			}
@@ -137,11 +125,11 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 	
 	private void dispatchRequest(ChannelHandlerContext ctx,
 			HttpRequest nettyRequest) {
-//		if(nettyRequest.isChunked()) {
-//			server.getExecutor().submit(new RequestWorker(ctx, nettyRequest));
-//		} else {
+		if(HttpUtil.isTransferEncodingChunked(nettyRequest)) {
+			server.getExecutor().submit(new RequestWorker(ctx, nettyRequest));
+		} else {
 			new RequestWorker(ctx, nettyRequest).run();
-//		}
+		}
 	}
 	
 	private static ThreadLocal<HttpServletRequest> requestLocal = new ThreadLocal<>();
@@ -205,12 +193,9 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 							interfaceResource.getProtocol()==HTTPProtocol.HTTPS, 
 							server.getServletContext(), session);
 			
-
-			
-			// Always chunked?
-//			if(nettyRequest.isChunked()) {
+			if(HttpUtil.isTransferEncodingChunked(nettyRequest)) {
 				ctx.channel().attr(HttpRequestServletWrapper.REQUEST).set(servletRequest);
-//			}
+			}
 		}
 		
 		public void run() {
@@ -232,12 +217,11 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 					}
 					if (contentType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
 						String content; 
-						// Always chunked?
-//						if(nettyRequest.isChunked()) {
+						if(HttpUtil.isTransferEncodingChunked(nettyRequest)) {
 							content = IOUtils.toString(servletRequest.getInputStream(), contentTypeCharset);
-//						} else {
-//							content = servletRequest.getNettyRequest().getContent().toString(Charset.forName(contentTypeCharset));
-//						}
+						} else {
+							content = servletRequest.getRequestContent().toString(Charset.forName(contentTypeCharset));
+						}
 						servletRequest.processParameters(content);
 					}
 				}
@@ -527,7 +511,7 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 			
 			addStandardHeaders(servletRequest, servletResponse);
 
-			InputStream content = processContent(
+			Object contentObj = processContent(
 					servletRequest,
 					servletResponse,
 					servletResponse.getRequest().headers().get(
@@ -544,41 +528,68 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 							log.debug(header + ": " + value);
 						}
 					}
-
 				}
 			}
 
-			if (content != null) {
-
+			if (contentObj != null) {
 				try {
 					servletResponse.getChannel().write(
 							nettyResponse);
-
-					if (log.isDebugEnabled()) {
-						try {
-							log.debug("Sending " + content.available() 
-									+ " bytes of HTTP content");
-						} catch (IOException e) {
+					
+					if(contentObj instanceof ByteBuf) {
+						ByteBuf content = (ByteBuf)contentObj;
+						if (log.isDebugEnabled()) {
+							log.debug("Sending " + content.capacity() + " " +
+									( servletResponse.isChunked() ? "chunked" : "non-chunked") + " bytes of buffered HTTP content");
+						}
+						if(servletResponse.isChunked()) {
+							servletResponse
+									.getChannel()
+									.writeAndFlush(content)
+									.addListener(
+											new CheckCloseStateListener(servletResponse));
+						}
+						else {
+							servletResponse.getChannel().writeAndFlush(content);
 						}
 					}
-
-					servletResponse
-							.getChannel()
-							.write(new ChunkedStream(content))
-							.addListener(
-									new CheckCloseStateListener(servletResponse));
+					else {
+						InputStream content = (InputStream)contentObj;
+						if (log.isDebugEnabled()) {
+							try {
+								log.debug("Sending " + content.available() + " " +
+										( servletResponse.isChunked() ? "chunked" : "non-chunked") + " bytes of streamed HTTP content");
+							} catch (IOException e) {
+							}
+						}
+						if(servletResponse.isChunked()) {
+							servletResponse
+									.getChannel()
+									.writeAndFlush(new ChunkedStream(content))
+									.addListener(
+											new CheckCloseStateListener(servletResponse));
+						}
+						else {
+							servletResponse.getChannel().writeAndFlush(content);
+						}
+					}
 				} catch (Exception e) {
 					log.error("Unexpected exception writing content stream", e);
 				}
 			} else {
 				if (log.isDebugEnabled()) {
-					log.debug("Sending non-content response");
+					log.debug("Sending " + ( servletResponse.isChunked() ? "chunked" : "non-chunked") + " non-content response");
 				}
-				servletResponse
-						.getChannel()
-						.write(nettyResponse)
-						.addListener(
-								new CheckCloseStateListener(servletResponse));
+				if(servletResponse.isChunked()) {
+					servletResponse
+							.getChannel()
+							.writeAndFlush(nettyResponse)
+							.addListener(
+									new CheckCloseStateListener(servletResponse));
+				}
+				else {
+					servletResponse.getChannel().writeAndFlush(nettyResponse);
+				}
 			}
 			
 		} catch(IOException ex) {
@@ -629,7 +640,7 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 		}
 	}
 
-	private InputStream processContent(
+	private Object processContent(
 			HttpServletRequest servletRequest,
 			HttpResponseServletWrapper servletResponse, String acceptEncodings) {
 
@@ -652,8 +663,7 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 			ByteBuf buffer = servletResponse.getContent();
 			boolean doGzip = false;
 
-			if (servletResponse.getNettyResponse()
-					.headers().get("Content-Encoding") == null) {
+			if (servletResponse.getHeader("Content-Encoding") == null) {
 				if (acceptEncodings != null) {
 					doGzip = acceptEncodings.indexOf("gzip") > -1;
 				}
@@ -673,14 +683,9 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 				}
 			}
 
-			// TODO
-			//
-			// XXXXXX
-			//
-//			servletResponse.getNettyResponse().setContent(buffer);
-			
 			servletResponse.setHeader("Content-Length",
 					String.valueOf(buffer.readableBytes()));
+			return buffer;
 		} else {
 			servletResponse.setHeader("Content-Length", "0");
 		}

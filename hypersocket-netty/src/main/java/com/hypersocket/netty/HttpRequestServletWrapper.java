@@ -46,11 +46,14 @@ import org.apache.http.client.utils.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hypersocket.netty.util.ChannelBufferServletInputStream;
 import com.hypersocket.servlet.HypersocketServletConfig;
 import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.AttributeKey;
@@ -74,7 +77,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	private boolean secure;
 	private HttpSession session;
 	private ServletContext context;
-//	private HttpRequestChunkStream chunkedInputStream = null;
+	private HttpRequestChunkStream chunkedInputStream = null;
 	private String servletPath;
 	private String requestUrl;
 	private Date timestamp;
@@ -294,17 +297,15 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public ServletInputStream getInputStream() throws IOException {
-//		if (request.isChunked()) {
-//			ChunkedInput ci;
-//			if (chunkedInputStream == null) {
-//				chunkedInputStream = new HttpRequestChunkStream();
-//			}
-//			return chunkedInputStream;
-//		}
-//		return new ChannelBufferServletInputStream(request.getContent());
-		throw new UnsupportedOperationException("TODO");
+		if (HttpUtil.isTransferEncodingChunked(request)) {
+			if (chunkedInputStream == null) {
+				chunkedInputStream = new HttpRequestChunkStream();
+			}
+			return chunkedInputStream;
+		}
+		return new ChannelBufferServletInputStream(getRequestContent());
 	}
-
+	
 	public String getParameter(String name) {
 		if (parameters.containsKey(name)) {
 			return parameters.get(name).get(0);
@@ -656,5 +657,9 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	@Override
 	public Part getPart(String name) throws IOException, ServletException {
 		return null;
+	}
+
+	public ByteBuf getRequestContent() {
+		return ((FullHttpRequest)request).content();
 	}
 }

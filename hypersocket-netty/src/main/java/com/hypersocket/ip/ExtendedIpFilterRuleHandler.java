@@ -10,9 +10,11 @@ import org.springframework.stereotype.Component;
 import com.hypersocket.netty.NettyServer;
 
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.handler.ipfilter.AbstractRemoteAddressFilter;
 
 @Component
+@Sharable
 public class ExtendedIpFilterRuleHandler extends AbstractRemoteAddressFilter<InetSocketAddress> {
 
 	@Autowired
