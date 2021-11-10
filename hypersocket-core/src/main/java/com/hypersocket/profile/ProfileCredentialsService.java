@@ -3,7 +3,6 @@ package com.hypersocket.profile;
 import java.util.Collection;
 
 import com.hypersocket.auth.AuthenticationScheme;
-import com.hypersocket.authenticator.events.AuthenticationSchemeEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
