@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -15,7 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.input.FormTemplate;
+import com.hypersocket.local.LocalUser;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
 
@@ -23,6 +27,12 @@ import com.hypersocket.resource.ResourceException;
 public class ChangePasswordAuthenticationStep implements PostAuthenticationStep {
 
 	public static final String RESOURCE_KEY = "changePassword";
+	// depends on HaveIBeenPwnedPostAuthenticationStep
+	private static final String HAVE_I_BEEN_PWNED_FLAGGED_CHANGED = "hibp.forceChangePassword";
+	private static final String HAVE_I_BEEN_PWNED_USER_PASSWORD_HASH = "hibp.userPasswordHash";
+	private static final String HAVE_I_BEEN_PWNED_USER_PASSWORD_HASH_SALT = "hibp.userPasswordHashSalt";
+	private static final String HAVE_I_BEEN_PWNED_USER_PASSWORD_RESULT = "hibp.userPasswordResult";
+	
 	
 	@Autowired
 	private RealmService realmService;
@@ -37,6 +47,12 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	
 	@Override
 	public boolean requiresProcessing(AuthenticationState state) {
+		
+		if (state.hasEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED) 
+				&& (Boolean) state.getEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED)) {
+			return true;
+		}
+		
 		return AuthenticationServiceImpl.AUTHENTICATION_SCHEME_USER_LOGIN_RESOURCE_KEY.equals(state.getScheme().getResourceKey()) 
 				&& realmService.requiresPasswordChange(state.getPrincipal(), state.getRealm());
 	}
@@ -75,6 +91,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 			 * credentials update.
 			 */
 			state.addParameter("password", password);
+			resetHIBPState(state);
 			return AuthenticatorResult.AUTHENTICATION_SUCCESS;
 			
 		} catch (Throwable e) {
@@ -117,6 +134,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 
 	@Override
 	public int getOrderPriority() {
+		// depends on HaveIBeenPwnedPostAuthenticationStep
 		return 0;
 	}
 
@@ -128,6 +146,27 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	@Override
 	public boolean requiresSession(AuthenticationState state) {
 		return false;
+	}
+	
+	private void resetHIBPState(AuthenticationState state) throws ResourceException {
+
+		Map<String, String> properties = new HashMap<String, String>();
+		properties.put(HAVE_I_BEEN_PWNED_USER_PASSWORD_HASH, null);
+		properties.put(HAVE_I_BEEN_PWNED_USER_PASSWORD_HASH_SALT, null);
+		properties.put(HAVE_I_BEEN_PWNED_USER_PASSWORD_RESULT, null);
+		
+		RealmProvider realmProvider = getProviderForPrincipal(state.getPrincipal());
+		
+		realmProvider.updateUserProperties(state.getPrincipal(), properties);
+		
+		state.removeEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED);
+	}
+	
+	private RealmProvider getProviderForPrincipal(Principal principal) {
+		if (principal instanceof LocalUser || principal instanceof FakePrincipal) {
+			return realmService.getLocalProvider();
+		}
+		return realmService.getProviderForRealm(principal.getRealm());
 	}
 
 }
