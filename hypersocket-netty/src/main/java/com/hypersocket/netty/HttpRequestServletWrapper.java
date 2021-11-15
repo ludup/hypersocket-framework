@@ -94,7 +94,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		this.context = context;
 		this.session = session;
 
-		parseUri(request.getUri());
+		parseUri(request.uri());
 	}
 
 	void parseUri(String uri) {
@@ -284,7 +284,6 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		this.charset = charset;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public int getContentLength() {
 		return (int) HttpUtil.getContentLength(request);

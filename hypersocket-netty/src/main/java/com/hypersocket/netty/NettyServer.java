@@ -62,20 +62,18 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.MessageSizeEstimator;
-import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.DefaultEventExecutor;
 
 @Component
 public class NettyServer extends HypersocketServerImpl implements MessageSizeEstimator  {
@@ -116,8 +114,6 @@ public class NettyServer extends HypersocketServerImpl implements MessageSizeEst
 	private MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
 	private Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
 
-	private DefaultEventExecutor executionHandler;
-
 	private NettyThreadFactory nettyThreadFactory;
 
 	private List<ClientConnector> clientConnectors = new ArrayList<ClientConnector>();
@@ -149,7 +145,7 @@ public class NettyServer extends HypersocketServerImpl implements MessageSizeEst
 		nettyThreadFactory = new NettyThreadFactory();
 
 		// TODO how to configre this now?
-		executionHandler = new DefaultEventExecutor(nettyThreadFactory);
+//		executionHandler = new DefaultEventExecutor(nettyThreadFactory);
 //	            new OrderedMemoryAwareThreadPoolExecutor(
 //	            		configurationService.getIntValue("netty.maxChannels"),
 //	            		configurationService.getIntValue("netty.maxChannelMemory"),
@@ -569,8 +565,6 @@ public class NettyServer extends HypersocketServerImpl implements MessageSizeEst
 		@Override
 		public void channelActive(ChannelHandlerContext ctx)
 				throws Exception {
-			
-			ChannelHandler h;
 			
 			InetAddress addr = ((InetSocketAddress)ctx.channel().remoteAddress()).getAddress();
 
