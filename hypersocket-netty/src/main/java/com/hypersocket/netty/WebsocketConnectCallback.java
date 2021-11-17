@@ -94,7 +94,7 @@ class WebsocketConnectCallback implements WebsocketClientCallback {
 	@Override
 	public void websocketRejected(Throwable cause, int error) {
 		response.setStatus(error);
-		responseProcessor.sendResponse(request, response, false);
+		responseProcessor.sendResponse(request, response);
 	}
 
 	@Override

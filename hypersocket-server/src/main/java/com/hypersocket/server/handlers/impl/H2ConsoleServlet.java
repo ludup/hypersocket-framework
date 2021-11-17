@@ -73,7 +73,7 @@ public class H2ConsoleServlet extends ServletRequestHandler {
 		
 		try {
 			responseProcessor.send404(request, response);
-			responseProcessor.sendResponse(request, response, false);
+			responseProcessor.sendResponse(request, response);
 		} catch (IOException e) {
 			log.error("Failed to send response", e);
 		}

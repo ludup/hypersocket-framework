@@ -53,6 +53,8 @@ import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufHolder;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
@@ -659,6 +661,9 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	}
 
 	public ByteBuf getRequestContent() {
-		return ((FullHttpRequest)request).content();
+		if(request instanceof ByteBufHolder)
+			return ((ByteBufHolder)request).content();
+		else 
+			return Unpooled.EMPTY_BUFFER;
 	}
 }

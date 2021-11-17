@@ -7,16 +7,15 @@
  ******************************************************************************/
 package com.hypersocket.netty;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +25,7 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.utils.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,22 +44,29 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpChunkedInput;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.stream.ChunkedStream;
 
-public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
+public class HttpRequestDispatcherHandler extends SimpleChannelInboundHandler<Object>
 		implements HttpResponseProcessor {
 
+	/* Not part of servlet spec, a simple way to stream large
+	 * content. 
+	 */
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
+	
 	public static final String BROWSER_URI = "browserRequestUri";
 	
 	static Logger log = LoggerFactory
@@ -73,29 +80,44 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 	}
 
 	@Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-		log.info("Channel read: " + msg.getClass().getName());
+	public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+		ctx.flush();
+	}
+
+	@Override
+	protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+		if(log.isDebugEnabled()) {
+			log.debug("Channel read: " + msg.getClass().getName());
+		}
 		if (msg instanceof WebSocketFrame) {
 			processWebsocketFrame((WebSocketFrame) msg, ctx.channel());
 		}
 	    else if (msg instanceof HttpRequest) {
 	    	HttpRequest chunk = (HttpRequest) msg;
-			dispatchRequest(ctx, chunk);
+	    	if (HttpUtil.is100ContinueExpected(chunk)) {
+  	    	    ctx.write(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE, 
+  	  	    	      Unpooled.EMPTY_BUFFER));
+	        }
+	    	else
+	    		dispatchRequest(ctx, chunk);
 	    }
 	    else if (msg instanceof HttpContent) {
 	      HttpContent chunk = (HttpContent) msg;
 		  if(log.isDebugEnabled()) {
 			  log.debug(String.format("Received HTTP chunk of %d bytes", chunk.content().readableBytes())); 
 		  }
-		  if(msg instanceof LastHttpContent) {
-		    	// End of content for chunked encoding
-		    	/* TODO anything? */
-//				dispatchRequest(ctx, msg);
-		  }
-		  else {
-			  HttpRequestServletWrapper servletRequest = ctx.channel().attr(HttpRequestServletWrapper.REQUEST).get();
+		  HttpRequestServletWrapper servletRequest = ctx.channel().attr(HttpRequestServletWrapper.REQUEST).get();
+		  if(HttpUtil.isTransferEncodingChunked(servletRequest.getNettyRequest())) {
 			  HttpRequestChunkStream in = (HttpRequestChunkStream)servletRequest.getInputStream();
-			  in.setCurrentChunk(chunk);
+			  if(msg instanceof LastHttpContent) {
+			    	// End of content for chunked encoding
+			    	/* TODO anything? */
+	//				dispatchRequest(ctx, msg);
+				  in.setCurrentChunk(null);
+			  }
+			  else {
+				  in.setCurrentChunk(chunk);
+			  }
 		  }
 	  	}
 	    else {
@@ -109,7 +131,8 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 	private void dispatchRequest(ChannelHandlerContext ctx,
 			HttpRequest nettyRequest) {
 		if(HttpUtil.isTransferEncodingChunked(nettyRequest)) {
-			server.getExecutor().submit(new RequestWorker(ctx, nettyRequest, server, this));
+			throw new UnsupportedOperationException("TODO");
+//			server.getExecutor().submit(new RequestWorker(ctx, nettyRequest, server, this));
 		} else {
 			new RequestWorker(ctx, nettyRequest, server, this).run();
 		}
@@ -129,7 +152,7 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 			url = (URL) servletRequest.getAttribute("404.html");
 		}
 		servletResponse.setContentType("text/html");
-		servletRequest.setAttribute(CONTENT_INPUTSTREAM, url.openStream());
+		servletRequest.setAttribute(CONTENT_INPUTSTREAM, url);
 	}
 	
 	@Override
@@ -179,13 +202,13 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 
 	@Override
 	public void sendResponse(HttpServletRequest request,
-			HttpServletResponse response, boolean chunked) {
+			HttpServletResponse response) {
 		sendResponse((HttpRequestServletWrapper)request,
-				(HttpResponseServletWrapper) response, chunked);
+				(HttpResponseServletWrapper) response);
 	}
 
 	public void sendResponse(final HttpRequestServletWrapper servletRequest,
-			final HttpResponseServletWrapper servletResponse, boolean chunked) {
+			final HttpResponseServletWrapper servletResponse) {
 
 		try {
 			HttpResponse nettyResponse = ((HttpResponseServletWrapper)servletResponse).getNettyResponse();
@@ -227,66 +250,119 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 				}
 			}
 
-			if (contentObj != null) {
-				try {
-					servletResponse.getChannel().write(
-							nettyResponse);
-					
-					if(contentObj instanceof ByteBuf) {
-						ByteBuf content = (ByteBuf)contentObj;
-						if (log.isDebugEnabled()) {
-							log.debug("Sending " + content.capacity() + " " +
-									( servletResponse.isChunked() ? "chunked" : "non-chunked") + " bytes of buffered HTTP content");
-						}
-						if(servletResponse.isChunked()) {
-							servletResponse
-									.getChannel()
-									.writeAndFlush(content)
-									.addListener(
-											new CheckCloseStateListener(servletResponse));
-						}
-						else {
-							servletResponse.getChannel().writeAndFlush(content);
-						}
-					}
-					else {
-						InputStream content = (InputStream)contentObj;
-						if (log.isDebugEnabled()) {
-							try {
-								log.debug("Sending " + content.available() + " " +
-										( servletResponse.isChunked() ? "chunked" : "non-chunked") + " bytes of streamed HTTP content");
-							} catch (IOException e) {
-							}
-						}
-						if(servletResponse.isChunked()) {
-							servletResponse
-									.getChannel()
-									.writeAndFlush(new ChunkedStream(content))
-									.addListener(
-											new CheckCloseStateListener(servletResponse));
-						}
-						else {
-							servletResponse.getChannel().writeAndFlush(content);
-						}
-					}
-				} catch (Exception e) {
-					log.error("Unexpected exception writing content stream", e);
-				}
-			} else {
+			
+			if(contentObj == null) {
 				if (log.isDebugEnabled()) {
-					log.debug("Sending " + ( servletResponse.isChunked() ? "chunked" : "non-chunked") + " non-content response");
+					log.debug("Sending " + ( servletResponse.isChunked() ? "chunked" : "non-chunked") + " non-content response " + (servletResponse.isCloseOnComplete() ? "close on complete" : "keep alive"));
 				}
-				if(servletResponse.isChunked()) {
-					servletResponse
-							.getChannel()
-							.writeAndFlush(nettyResponse)
-							.addListener(
-									new CheckCloseStateListener(servletResponse));
+				servletResponse.getChannel().write(nettyResponse);
+				if(servletResponse.isCloseOnComplete()) {
+					servletResponse.getChannel().writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+				}	
+			}
+			else if(contentObj instanceof ByteBuf) {
+				ByteBuf content = (ByteBuf)contentObj;
+				if (log.isDebugEnabled()) {
+					log.debug("Sending " + content.readableBytes() + " " +
+							( servletResponse.isChunked() ? "chunked" : "non-chunked") + " bytes of buffered HTTP content " + (servletResponse.isCloseOnComplete() ? "close on complete" : "keep alive"));
 				}
-				else {
-					servletResponse.getChannel().writeAndFlush(nettyResponse);
+				servletResponse.getChannel().write(nettyResponse);
+				if(servletResponse.isCloseOnComplete()) {
+					servletResponse.getChannel().writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
 				}
 			}
+			else if(contentObj instanceof InputStream) {
+				InputStream content = (InputStream)contentObj;
+				if (log.isDebugEnabled()) {
+					try {
+						log.debug("Sending " + content.available() + " " +
+								( servletResponse.isChunked() ? "chunked" : "non-chunked") + " bytes of streamed HTTP content " + (servletResponse.isCloseOnComplete() ? "close on complete" : "keep alive"));
+					} catch (IOException e) {
+					}
+				}
+				// Write the content and flush it.
+				servletResponse.getChannel().writeAndFlush(new HttpChunkedInput(new ChunkedStream(content))).addListener(new InputStreamListener(content));
+				servletResponse.getChannel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+				
+				// TODO check not needed
+//				if(servletResponse.isCloseOnComplete()) {
+//					servletResponse.getChannel().writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+//				}
+			} else
+				throw new UnsupportedOperationException();
+
+//			if (contentObj != null) {
+//				try {
+//					servletResponse.getChannel().write(
+//							nettyResponse);
+//					
+//					if(contentObj instanceof ByteBuf) {
+//						ByteBuf content = (ByteBuf)contentObj;
+//						if (log.isDebugEnabled()) {
+//							log.debug("Sending " + content.readableBytes() + " " +
+//									( servletResponse.isChunked() ? "chunked" : "non-chunked") + " bytes of buffered HTTP content " + (servletResponse.isCloseOnComplete() ? "close on complete" : "keep alive"));
+//						}
+//						if(servletResponse.isChunked()) {
+//							servletResponse
+//									.getChannel()
+//									.writeAndFlush(content)
+//									.addListener(
+//											new CheckCloseStateListener(servletResponse));
+//						}
+//						else {
+//							servletResponse.getChannel().writeAndFlush(content);
+//							if (servletResponse.isCloseOnComplete()) {
+//								servletResponse.getChannel().close();	
+//							}
+//							else {
+//								servletResponse.getChannel().writeAndFlush(Unpooled.EMPTY_BUFFER);
+//							}
+//						}
+//					}
+//					else {
+//						InputStream content = (InputStream)contentObj;
+//						if (log.isDebugEnabled()) {
+//							try {
+//								log.debug("Sending " + content.available() + " " +
+//										( servletResponse.isChunked() ? "chunked" : "non-chunked") + " bytes of streamed HTTP content " + (servletResponse.isCloseOnComplete() ? "close on complete" : "keep alive"));
+//							} catch (IOException e) {
+//							}
+//						}
+//						if(servletResponse.isChunked()) {
+//							servletResponse
+//									.getChannel()
+//									.writeAndFlush(new ChunkedStream(content))
+//									.addListener(
+//											new CheckCloseStateListener(servletResponse));
+//						}
+//						else {
+//							servletResponse.getChannel().writeAndFlush(content);
+//							if (servletResponse.isCloseOnComplete()) {
+//								servletResponse.getChannel().close();
+//							}
+//							else {
+//								servletResponse.getChannel().writeAndFlush(Unpooled.EMPTY_BUFFER);	
+//							}
+//						}
+//					}
+//				} catch (Exception e) {
+//					log.error("Unexpected exception writing content stream", e);
+//				}
+//			} else {
+//				if (log.isDebugEnabled()) {
+//					log.debug("Sending " + ( servletResponse.isChunked() ? "chunked" : "non-chunked") + " non-content response " + (servletResponse.isCloseOnComplete() ? "close on complete" : "keep alive"));
+//				}
+//				if(servletResponse.isChunked()) {
+//					servletResponse
+//							.getChannel()
+//							.writeAndFlush(nettyResponse)
+//							.addListener(
+//									new CheckCloseStateListener(servletResponse));
+//				}
+//				else {
+//					servletResponse.getChannel().writeAndFlush(nettyResponse);
+//				}
+//			}
 			
 		} catch(IOException ex) {
 			log.error("IO Error sending HTTP response", ex);
@@ -314,33 +390,50 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 		}
 	}
 
-	class CheckCloseStateListener implements ChannelFutureListener {
 
-		HttpResponseServletWrapper servletResponse;
+	class InputStreamListener implements ChannelFutureListener {
 
-		CheckCloseStateListener(HttpResponseServletWrapper servletResponse) {
-			this.servletResponse = servletResponse;
+		InputStream in;
+
+		InputStreamListener(InputStream in) {
+			this.in = in;
 		}
 
 		@Override
 		public void operationComplete(ChannelFuture future) throws Exception {
-			if (servletResponse.isCloseOnComplete() && future.isDone()) {
-				if (log.isDebugEnabled()) {
-					log.debug("Closing HTTP connection remoteAddress="
-							+ future.channel().remoteAddress()
-							+ " localAddress="
-							+ future.channel().localAddress());
-				}
-				servletResponse.getChannel().close();
+			if (future.isDone()) {
+				in.close();
 			}
 		}
 	}
+
+//	class CheckCloseStateListener implements ChannelFutureListener {
+//
+//		HttpResponseServletWrapper servletResponse;
+//
+//		CheckCloseStateListener(HttpResponseServletWrapper servletResponse) {
+//			this.servletResponse = servletResponse;
+//		}
+//
+//		@Override
+//		public void operationComplete(ChannelFuture future) throws Exception {
+//			if (servletResponse.isCloseOnComplete() && future.isDone()) {
+//				if (log.isDebugEnabled()) {
+//					log.debug("Closing HTTP connection remoteAddress="
+//							+ future.channel().remoteAddress()
+//							+ " localAddress="
+//							+ future.channel().localAddress());
+//				}
+//				servletResponse.getChannel().close();
+//			}
+//		}
+//	}
 
 	private Object processContent(
 			HttpServletRequest servletRequest,
 			HttpResponseServletWrapper servletResponse, String acceptEncodings) {
 
-		InputStream writer = (InputStream) servletRequest
+		Object writer = (Object) servletRequest
 				.getAttribute(CONTENT_INPUTSTREAM);
 
 		if (writer != null) {
@@ -348,58 +441,62 @@ public class HttpRequestDispatcherHandler extends ChannelInboundHandlerAdapter
 				log.debug("Response for " + servletRequest.getRequestURI()
 						+ " will be chunked");
 			}
-			servletResponse.setChunked(true);
-			servletResponse.removeHeader(HttpHeaders.CONTENT_LENGTH);
-			servletResponse.setHeader(HttpHeaders.TRANSFER_ENCODING, "chunked");
-			return writer;
-		}
-
-		if (servletResponse.getContent().readableBytes() > 0) {
-
-			ByteBuf buffer = servletResponse.getContent();
-			boolean doGzip = false;
-
-			if (servletResponse.getHeader("Content-Encoding") == null) {
-				if (acceptEncodings != null) {
-					doGzip = acceptEncodings.indexOf("gzip") > -1;
+			InputStream stream = null;
+			if(writer instanceof InputStream) {
+				stream = (InputStream)writer;
+				/* TODO is this needed? */
+				servletResponse.removeHeader(HttpHeaders.CONTENT_LENGTH);
+			}
+			else if(writer instanceof URL) {
+				try {
+					URLConnection conx = ((URL)writer).openConnection();
+					stream = conx.getInputStream();
+					if(conx.getContentLength() != -1)
+						servletResponse.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(conx.getContentLengthLong()));
+					if(conx.getContentType() != null)
+						servletResponse.setHeader(HttpHeaders.CONTENT_TYPE, conx.getContentType());
+				} catch (IOException e) {
+					throw new IllegalStateException("Content failed.", e);
 				}
-
-				if (doGzip) {
-					try {
-						ByteArrayOutputStream gzipped = new ByteArrayOutputStream();
-						GZIPOutputStream gzip = new GZIPOutputStream(gzipped);
-						gzip.write(buffer.array(), 0, buffer.readableBytes());
-						gzip.finish();
-						buffer = Unpooled.wrappedBuffer(gzipped
-								.toByteArray());
-						servletResponse.setHeader("Content-Encoding", "gzip");
-					} catch (IOException e) {
-						log.error("Failed to gzip response", e);
-					}
+			} 
+			else if(writer instanceof CloseableHttpResponse) {
+				try {
+					/* TODO: Do we need to close this or does it close on close of input stream? */
+					CloseableHttpResponse resp = (CloseableHttpResponse)writer;
+					stream = resp.getEntity().getContent();
+					if(resp.getLastHeader("Content-Length") != null)
+						servletResponse.setHeader(HttpHeaders.CONTENT_LENGTH, resp.getLastHeader("Content-Length").getValue());
+					if(resp.getLastHeader("Content-Type") != null)
+						servletResponse.setHeader(HttpHeaders.CONTENT_TYPE, resp.getLastHeader("Content-Length").getValue());
+				} catch (IOException e) {
+					throw new IllegalStateException("Content failed.", e);
 				}
 			}
-
-			servletResponse.setHeader("Content-Length",
-					String.valueOf(buffer.readableBytes()));
-			return buffer;
-		} else {
-			servletResponse.setHeader("Content-Length", "0");
+			else
+				throw new UnsupportedOperationException("Invalid type " + writer.getClass().getName() + " in " + CONTENT_INPUTSTREAM + " attribute.");
+			
+			servletResponse.setChunked(true);
+			servletResponse.setHeader(HttpHeaders.TRANSFER_ENCODING, "chunked");
+			return stream;
 		}
+
+		if (servletResponse.getAvailableContentSize() > -1) {
+			servletResponse.setHeader("Content-Length",
+					String.valueOf(servletResponse.getAvailableContentSize()));
+			return servletResponse.getAvailableContentSize() > 0 ? servletResponse.getContent() : null;
+		} 
 
 		return null;
 	}
 
-	private void addStandardHeaders(HttpServletRequest request, HttpResponseServletWrapper servletResponse) {
+	private void addStandardHeaders(HttpRequestServletWrapper request, HttpResponseServletWrapper servletResponse) {
 
 		servletResponse.setHeader("Server", server.getApplicationName());
-
-		String connection = servletResponse.getRequest().headers().get(
-				HttpHeaders.CONNECTION);
-		if (connection!=null && connection.equalsIgnoreCase("close")) {
+		if (servletResponse.isCloseOnComplete()) {
 			servletResponse.setHeader("Connection", "close");
-			servletResponse.setCloseOnComplete(true);
 		}
 
+		/* TODO: Really? */
 		servletResponse.setHeader("Date",
 				DateUtils.formatDate(new Date(System.currentTimeMillis())));
 		

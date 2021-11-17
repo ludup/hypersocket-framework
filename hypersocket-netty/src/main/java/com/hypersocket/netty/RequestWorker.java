@@ -30,7 +30,7 @@ import com.hypersocket.servlet.request.Request;
 import com.hypersocket.session.json.SessionUtils;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
@@ -64,8 +64,11 @@ public class RequestWorker implements Runnable {
 
 		interfaceResource = ctx.channel().parent().attr(NettyServer.INTERFACE_RESOURCE).get();
 
+		
 		servletResponse = new HttpResponseServletWrapper(
-				new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK), ctx.channel(), nettyRequest);
+				new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK), ctx.channel(), nettyRequest);
+		boolean keepAlive = HttpUtil.isKeepAlive(nettyRequest);
+		servletResponse.setCloseOnComplete(!keepAlive);
 
 		InetSocketAddress remoteAddress = (InetSocketAddress) ctx.channel().remoteAddress();
 		io.netty.handler.codec.http.HttpHeaders headers = nettyRequest.headers();
@@ -167,7 +170,7 @@ public class RequestWorker implements Runnable {
 				if (!ApplicationContextServiceImpl.getInstance().getBean(SessionUtils.class)
 						.hasActiveSession(servletRequest)) {
 					servletResponse.setStatus(HttpStatus.SC_NOT_FOUND);
-					responseProcessor.sendResponse(servletRequest, servletResponse, false);
+					responseProcessor.sendResponse(servletRequest, servletResponse);
 					return;
 				}
 			}
@@ -203,7 +206,7 @@ public class RequestWorker implements Runnable {
 					}
 					servletResponse.sendRedirect(redirPath,
 							false /* Don't use a permanent redirection as the alias target may change */);
-					responseProcessor.sendResponse(servletRequest, servletResponse, false);
+					responseProcessor.sendResponse(servletRequest, servletResponse);
 					return;
 				} else {
 					if (log.isDebugEnabled()) {
@@ -247,7 +250,7 @@ public class RequestWorker implements Runnable {
 
 					if (nettyRequest.uri().equals("/health-check")) {
 						servletResponse.setStatus(HttpStatus.SC_OK);
-						responseProcessor.sendResponse(servletRequest, servletResponse, false);
+						responseProcessor.sendResponse(servletRequest, servletResponse);
 						return;
 					} else {
 						// Redirect the plain port to SSL
@@ -265,7 +268,7 @@ public class RequestWorker implements Runnable {
 											: "")
 									+ nettyRequest.uri());
 						}
-						responseProcessor.sendResponse(servletRequest, servletResponse, false);
+						responseProcessor.sendResponse(servletRequest, servletResponse);
 						return;
 					}
 				}
@@ -282,11 +285,11 @@ public class RequestWorker implements Runnable {
 						} catch (AccessDeniedException ex) {
 							log.error("Failed to open tunnel", ex);
 							servletResponse.setStatus(HttpStatus.SC_FORBIDDEN);
-							responseProcessor.sendResponse(servletRequest, servletResponse, false);
+							responseProcessor.sendResponse(servletRequest, servletResponse);
 						} catch (UnauthorizedException ex) {
 							log.error("Failed to open tunnel", ex);
 							servletResponse.setStatus(HttpStatus.SC_UNAUTHORIZED);
-							responseProcessor.sendResponse(servletRequest, servletResponse, false);
+							responseProcessor.sendResponse(servletRequest, servletResponse);
 						}
 						return;
 					}
@@ -312,7 +315,7 @@ public class RequestWorker implements Runnable {
 
 			this.nettyServer.processDefaultResponse(servletRequest, servletResponse, true);
 			responseProcessor.send404(servletRequest, servletResponse);
-			responseProcessor.sendResponse(servletRequest, servletResponse, false);
+			responseProcessor.sendResponse(servletRequest, servletResponse);
 
 			if (log.isDebugEnabled()) {
 				log.debug("Leaving HttpRequestDispatcherHandler processRequest");

@@ -9,6 +9,7 @@ package com.hypersocket.netty;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
@@ -20,31 +21,38 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.utils.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hypersocket.netty.util.ChannelBufferServletOutputStream;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class HttpResponseServletWrapper implements HttpServletResponse {
 
+	static Logger LOG = LoggerFactory.getLogger(HttpResponseServletWrapper.class);
+
 	private HttpResponse response;
 	private String charset;
 	private Locale locale;
 	private boolean committed = false;
-	private int bufferSize = 65535;
-	private ByteBuf buffer;
+//	private int bufferSize = 65535;
+//	private ByteBuf buffer;
 	private ChannelBufferServletOutputStream out;
 	private Channel channel;
 	private HttpRequest request;
 	private boolean closeOnComplete = false;
 	private Date timestamp;
-	private boolean chunked;
-	
+
+	private PrintWriter writer;
+
 	public HttpResponseServletWrapper(HttpResponse response, Channel channel, HttpRequest request) {
 		this.response = response;
 		this.channel = channel;
@@ -52,35 +60,57 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		timestamp = new Date();
 		reset();
 	}
-	
+
 	public void stamp() {
 		timestamp = new Date();
 	}
-	
+
 	public Date getTimestamp() {
 		return timestamp;
 	}
-	
+
 	public boolean isChunked() {
-		return chunked;
+		return !(response instanceof FullHttpResponse);
 	}
-	
+
 	public void setChunked(boolean chunked) {
-		this.chunked = chunked;
+		boolean was = isChunked(); 
+		if (chunked != was) {
+			HttpResponse old = this.response;
+			if (chunked) {
+				LOG.info("Switching to streamed response.");
+				if(((DefaultFullHttpResponse)response).content() != null)
+					throw new IllegalStateException("Already have content.");
+				response = new DefaultHttpResponse(response.protocolVersion(), response.status());
+			} else {
+				LOG.info("Switching to full response.");
+				response = new DefaultFullHttpResponse(response.protocolVersion(), response.status());
+			}
+			response.headers().add(old.headers());
+		}
 	}
 
 	public void reset() {
 		charset = "ISO-8859-1";
-		buffer = Unpooled.buffer(65535);
-		out = new ChannelBufferServletOutputStream(buffer);
+//		buffer = Unpooled.buffer(65535);
+//		out = new ChannelBufferServletOutputStream(buffer);
 	}
-	
+
 	public HttpResponse getNettyResponse() {
 		return response;
 	}
-	
+
+	public int getAvailableContentSize() {
+		if(isChunked())
+			return -1;
+		else
+			return getContent().readableBytes();
+	}
+
 	public ByteBuf getContent() {
-		return buffer;
+		if(isChunked())
+			throw new IllegalStateException("Not buffered.");
+		return ((FullHttpResponse)response).content();
 	}
 
 	@Override
@@ -91,8 +121,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	@Override
 	public String getContentType() {
 		String contentType = response.headers().get(HttpHeaders.CONTENT_TYPE);
-		if (contentType != null
-				&& contentType.indexOf("charset=") == -1) {
+		if (contentType != null && contentType.indexOf("charset=") == -1) {
 			return contentType + "; charset=" + charset;
 		}
 		return contentType;
@@ -100,12 +129,27 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public ServletOutputStream getOutputStream() throws IOException {
+		if(out == null) {
+			out = new ChannelBufferServletOutputStream(getContent()) {
+				@Override
+				public void flush() throws IOException {
+					super.flush();
+					committed = true;
+				}
+			};
+		}
 		return out;
 	}
 
 	@Override
 	public PrintWriter getWriter() throws IOException {
-		return new PrintWriter(out);
+		if(writer == null) {
+			if(charset == null)
+				writer = new PrintWriter(getOutputStream(), false, Charset.forName("ISO-8859-1"));
+			else
+				writer = new PrintWriter(getOutputStream(), false, Charset.forName(charset));
+		}
+		return writer;
 	}
 
 	@Override
@@ -125,12 +169,12 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public void setBufferSize(int size) {
-		this.bufferSize = size;
+		throw new UnsupportedOperationException("TODO");
 	}
 
 	@Override
 	public int getBufferSize() {
-		return bufferSize;
+		throw new UnsupportedOperationException("TODO");
 	}
 
 	@Override
@@ -141,7 +185,8 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public void resetBuffer() {
-		buffer = Unpooled.buffer(bufferSize);
+		throw new UnsupportedOperationException("TODO");
+//		buffer = Unpooled.buffer(bufferSize);
 	}
 
 	@Override
@@ -185,11 +230,11 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 			if (cookie.getMaxAge() == 0) {
 				cookieHeader.append(DateUtils.formatDate(new Date(10000), DateUtils.PATTERN_RFC1036));
 			} else {
-				cookieHeader.append(DateUtils.formatDate(new Date(System
-						.currentTimeMillis() + cookie.getMaxAge() * 1000L), DateUtils.PATTERN_RFC1036));
+				cookieHeader.append(DateUtils.formatDate(
+						new Date(System.currentTimeMillis() + cookie.getMaxAge() * 1000L), DateUtils.PATTERN_RFC1036));
 			}
 		}
-		
+
 		if (cookie.getSecure()) {
 			cookieHeader.append("; Secure");
 		}
@@ -197,13 +242,13 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		/**
 		 * Make sure we are not adding duplicate cookies
 		 */
-		for(Entry<String,String> entry : response.headers()) {
-			if(entry.getKey().equals("Set-Cookie") && entry.getValue().equals(cookieHeader.toString())) {
+		for (Entry<String, String> entry : response.headers()) {
+			if (entry.getKey().equals("Set-Cookie") && entry.getValue().equals(cookieHeader.toString())) {
 				return;
 			}
 		}
 		addHeader("Set-Cookie", cookieHeader.toString());
-		
+
 	}
 
 	@Override
@@ -244,12 +289,12 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	@Override
 	public void sendRedirect(String location) throws IOException {
 		setStatus(302);
-	    setHeader(HttpHeaders.LOCATION, location);
+		setHeader(HttpHeaders.LOCATION, location);
 	}
-	
+
 	public void sendRedirect(String location, boolean permanent) throws IOException {
 		setStatus(permanent ? 301 : 302);
-	    setHeader(HttpHeaders.LOCATION, location);
+		setHeader(HttpHeaders.LOCATION, location);
 	}
 
 	@Override
@@ -267,14 +312,14 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	public void setHeader(String name, String value) {
 		response.headers().set(name, value);
 	}
-	
+
 	public void removeHeader(String name) {
 		response.headers().remove(name);
 	}
 
 	@Override
 	public void addHeader(String name, String value) {
-		if(name.equalsIgnoreCase("content-type") && response.headers().contains("Content-Type")) {
+		if (name.equalsIgnoreCase("content-type") && response.headers().contains("Content-Type")) {
 			setHeader(name, value);
 		} else {
 			response.headers().add(name, value);
@@ -300,11 +345,11 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	public void setStatus(int sc, String msg) {
 		response.setStatus(HttpResponseStatus.valueOf(sc));
 	}
-	
+
 	public Channel getChannel() {
 		return channel;
 	}
-	
+
 	public HttpRequest getRequest() {
 		return request;
 	}
@@ -312,7 +357,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 	public void setCloseOnComplete(boolean closeOnComplete) {
 		this.closeOnComplete = closeOnComplete;
 	}
-	
+
 	public boolean isCloseOnComplete() {
 		return closeOnComplete;
 	}

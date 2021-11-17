@@ -43,7 +43,7 @@ public class DiscoverHandler extends HttpRequestHandler {
 	public void handleHttpRequest(HttpServletRequest request, HttpServletResponse response,
 			HttpResponseProcessor responseProcessor) throws IOException {
 		response.sendRedirect(server.resolvePath("api/server/discover"));
-		responseProcessor.sendResponse(request, response, false);
+		responseProcessor.sendResponse(request, response);
 	}
 
 }

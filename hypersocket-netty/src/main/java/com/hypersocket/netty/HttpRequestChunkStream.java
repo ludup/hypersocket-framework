@@ -65,7 +65,7 @@ public class HttpRequestChunkStream extends ServletInputStream {
 				throw new InterruptedIOException("Interupted whilst waiting for next HTTP request chunk");
 			}
 		}
-		if(currentChunk.content().readableBytes()==0) {
+		if(currentChunk == null || currentChunk.content().readableBytes()==0) {
 			isEOF = true;
 		} else {
 			this.currentChunk = currentChunk;

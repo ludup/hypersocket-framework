@@ -199,7 +199,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				}
 			}
 		} finally {
-			responseProcessor.sendResponse(request, response, false);
+			responseProcessor.sendResponse(request, response);
 		}
 
     }

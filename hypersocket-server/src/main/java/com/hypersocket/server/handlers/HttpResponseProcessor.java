@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public interface HttpResponseProcessor {
 
-	void sendResponse(HttpServletRequest request, HttpServletResponse response, boolean chunked);
+	void sendResponse(HttpServletRequest request, HttpServletResponse response);
 
 	void send404(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException;
 

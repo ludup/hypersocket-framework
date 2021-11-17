@@ -23,6 +23,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.handler.codec.http.HttpContentCompressor;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.ssl.SslHandler;
@@ -85,8 +87,9 @@ public class SSLSwitchingHandler extends ByteToMessageDecoder {
 								.localAddress(), (InetSocketAddress) ctx
 								.channel().remoteAddress())));
 		p.addLast("decoder", new HttpRequestDecoder());
-//		p.addLast("aggregator", new HttpObjectAggregator(Integer.MAX_VALUE));
+		p.addLast("aggregator", new HttpObjectAggregator(Integer.MAX_VALUE));
 		p.addLast("encoder", new HttpResponseEncoder());
+		p.addLast("deflater", new HttpContentCompressor());
 		p.addLast("chunkedWriter", new ChunkedWriteHandler());
 		try {
 			p.addLast("http", new HttpRequestDispatcherHandler(server));
@@ -100,8 +103,9 @@ public class SSLSwitchingHandler extends ByteToMessageDecoder {
 	private void enablePlainHttp(ChannelHandlerContext ctx) {
 		ChannelPipeline p = ctx.pipeline();
 		p.addLast("decoder", new HttpRequestDecoder());
-//		p.addLast("aggregator", new HttpObjectAggregator(Integer.MAX_VALUE));
+		p.addLast("aggregator", new HttpObjectAggregator(Integer.MAX_VALUE));
 		p.addLast("encoder", new HttpResponseEncoder());
+		p.addLast("deflater", new HttpContentCompressor());
 		p.addLast("chunkedWriter", new ChunkedWriteHandler());
 		try {
 			p.addLast("http", new HttpRequestDispatcherHandler(server));
