@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
@@ -346,6 +347,16 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 			schedulerService.scheduleNow(ProfileUpdateJob.class, UUID.randomUUID().toString(), data);
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule profile update job", e);
+		}
+	}
+	
+	@EventListener
+	@Override
+	public void onConfigurationChange(ConfigurationValueChangedEvent evt) {
+		if(evt.isSuccess()) {
+			if("2fa.minimumFactors".equals(evt.getAttribute(ConfigurationValueChangedEvent.ATTR_CONFIG_RESOURCE_KEY))) {
+				fireBatchUpdateJob(evt.getCurrentRealm());
+			}
 		}
 	}
 	
