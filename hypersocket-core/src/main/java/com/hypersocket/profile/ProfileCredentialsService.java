@@ -3,6 +3,8 @@ package com.hypersocket.profile;
 import java.util.Collection;
 
 import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.config.ConfigurationChangedEvent;
+import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -52,5 +54,7 @@ public interface ProfileCredentialsService {
 	void disableBatchUpdate(Realm realm);
 
 	void setValidator(ProfileValidator validator);
+
+	void onConfigurationChange(ConfigurationValueChangedEvent evt);
 
 }

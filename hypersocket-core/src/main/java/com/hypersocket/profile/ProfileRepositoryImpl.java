@@ -239,7 +239,14 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	@Override
 	@Transactional(readOnly=true)
 	public boolean hasCompletedProfile(Principal principal) {
-		return get("id", principal.getId(), Profile.class, new DeletedCriteria(false)) != null;
+		return get("id", principal.getId(), Profile.class, new DeletedCriteria(false), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("state", ProfileCredentialsState.COMPLETE));
+			}
+			
+		}) != null;
 	}
 
 
