@@ -72,6 +72,8 @@
 		    	valueAttr="resourceKey"
 		    	resourceKeyTemplate="{0}.label"
 		    	weight="400"/>
+		 <property resourceKey="session.menu.state" inputType="switch"
+			defaultValue="true" weight="500" />
 	</propertyCategory>
 	<propertyCategory resourceKey="realm.userProfiles"
 		resourceBundle="RealmService" weight="999999" group="userProfiles">
