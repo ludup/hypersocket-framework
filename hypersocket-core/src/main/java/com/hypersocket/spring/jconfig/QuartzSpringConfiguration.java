@@ -133,7 +133,7 @@ public class QuartzSpringConfiguration {
 				properties.put("org.quartz.threadPool.threadCount", "2");
 			}
 			else {
-				properties.put("org.quartz.threadPool.threadCount", Math.max(2, String.valueOf(Runtime.getRuntime().availableProcessors() / 2)));
+				properties.put("org.quartz.threadPool.threadCount", String.valueOf(Math.max(2, Runtime.getRuntime().availableProcessors() / 2)));
 			}
 		}
 		
