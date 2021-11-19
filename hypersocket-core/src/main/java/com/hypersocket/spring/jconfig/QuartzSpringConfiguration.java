@@ -1,5 +1,7 @@
 package com.hypersocket.spring.jconfig;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.BatchUpdateException;
@@ -30,6 +32,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import com.hypersocket.scheduler.AutowiringSpringBeanJobFactory;
 import com.hypersocket.util.DatabaseInformation;
+import com.hypersocket.utils.HypersocketUtils;
 
 @Configuration
 public class QuartzSpringConfiguration {
@@ -112,6 +115,26 @@ public class QuartzSpringConfiguration {
 
 		} catch (IOException e) {
 			throw new IllegalStateException(e.getMessage(), e);
+		}
+		
+		File quartzProperties = new File(HypersocketUtils.getConfigDir(), "quartz.properties");
+		if(quartzProperties.exists()) {
+			try(InputStream in = new FileInputStream(quartzProperties)) {
+				properties.load(in);
+			}
+			catch(IOException ioe) {
+				throw new IllegalStateException("Failed to load custom quartz properties.");
+			}
+		}
+		
+		if("0".equals(properties.get("org.quartz.threadPool.threadCount"))) {
+			/* max(2,C / 2) for product, or just a fixed 2 for development*/
+			if(Boolean.getBoolean("hypersocket.development")) {
+				properties.put("org.quartz.threadPool.threadCount", "2");
+			}
+			else {
+				properties.put("org.quartz.threadPool.threadCount", Math.max(2, String.valueOf(Runtime.getRuntime().availableProcessors() / 2)));
+			}
 		}
 		
 		properties.put("org.quartz.jobStore.isClustered", String.valueOf(environment.acceptsProfiles("HA")));
