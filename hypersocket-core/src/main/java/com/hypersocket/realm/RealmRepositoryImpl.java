@@ -280,7 +280,7 @@ public class RealmRepositoryImpl extends
 				if(!realm.isSystem()) {
 					criteria.add(Restrictions.eq("parent", realm));
 				} else {
-					criteria.add(Restrictions.isNull("parent"));
+					criteria.add(Restrictions.or(Restrictions.isNull("parent"), Restrictions.eq("parent", realm)));
 				}
 				criteria.add(Restrictions.isNull("owner"));
 				criteria.add(Restrictions.eq("publicRealm", true));
