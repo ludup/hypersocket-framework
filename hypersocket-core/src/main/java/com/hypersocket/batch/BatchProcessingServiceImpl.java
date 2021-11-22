@@ -15,13 +15,11 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.repository.CriteriaConfiguration;
@@ -90,17 +88,14 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 			if (log.isDebugEnabled()) {
 				log.debug("Processing batch items");
 			}
-
 			
 			List<Long> running = new ArrayList<>(); 
 			for(Realm realm : realmService.allRealms()) {
-				RealmProvider provider = realmService.getProviderForRealm(realm);
-				if("reconcile.status.inprogress".equals(provider.getValue(realm, "realm.lastReconcileStatus"))) {
-					log.info(String.format("Skipping batch items for realm %s because it is reconciling (based on 'lastReconcileStatus')", realm.getName()));
+				if(cacheService.getCacheOrCreate("reconcilingRealms", String.class, Realm.class).containsKey(realm.getUuid())) {
+					log.info(String.format("Skipping batch items for realm %s because it is reconciling (based on item in distributed cache)", realm.getName()));
 					running.add(realm.getId());
 				}
 			}
-			
 			
 			int succeeded = 0;
 			int failed = 0;
