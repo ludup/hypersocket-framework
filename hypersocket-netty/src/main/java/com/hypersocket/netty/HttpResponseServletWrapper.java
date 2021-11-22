@@ -79,8 +79,8 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 			HttpResponse old = this.response;
 			if (chunked) {
 				LOG.info("Switching to streamed response.");
-				if(((DefaultFullHttpResponse)response).content() != null)
-					throw new IllegalStateException("Already have content.");
+//				if(((DefaultFullHttpResponse)response).content() != null && ((DefaultFullHttpResponse)response).content().readableBytes() > 0)
+//					throw new IllegalStateException("Already have content.");
 				response = new DefaultHttpResponse(response.protocolVersion(), response.status());
 			} else {
 				LOG.info("Switching to full response.");

@@ -282,7 +282,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelInboundHandler<Ob
 				}
 				// Write the content and flush it.
 				servletResponse.getChannel().writeAndFlush(new HttpChunkedInput(new ChunkedStream(content))).addListener(new InputStreamListener(content));
-				servletResponse.getChannel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+//				servletResponse.getChannel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
 				
 				// TODO check not needed
 //				if(servletResponse.isCloseOnComplete()) {
