@@ -430,6 +430,11 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 		sendMessage(resourceKey, realm, tokenResolver, replyTo, attachments, principals,
 				Collections.<String>emptyList(), null);
 	}
+	
+	@Override
+	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder recipient) {
+		sendMessage(resourceKey, realm, tokenResolver, recipient, Collections.emptyList());
+	}
 
 	@Override
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver,

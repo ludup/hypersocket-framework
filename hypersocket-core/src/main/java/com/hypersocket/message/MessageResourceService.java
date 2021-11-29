@@ -100,4 +100,6 @@ public interface MessageResourceService extends
 	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Collection<Principal> principals);
 
+	void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder recipient);
+
 }
