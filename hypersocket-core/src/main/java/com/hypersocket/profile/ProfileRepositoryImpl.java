@@ -117,6 +117,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			public void configure(Criteria criteria) {
 				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
 						.add(Restrictions.eq("p.realm.id", realm.getId()))
+						.add(Restrictions.eq("deleted", false))
 						.add(Restrictions.in("p.state", 
 							new ProfileCredentialsState[] { ProfileCredentialsState.COMPLETE, ProfileCredentialsState.NOT_REQUIRED }))  
 					    		.setProjection( Projections.property("p.id"));
@@ -141,6 +142,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			public void configure(Criteria criteria) {
 				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
 						.add(Restrictions.eq("p.realm.id", realm.getId()))
+						.add(Restrictions.eq("deleted", false))
 						.add(Restrictions.in("p.state", 
 							new ProfileCredentialsState[] { ProfileCredentialsState.COMPLETE, ProfileCredentialsState.NOT_REQUIRED }))  
 					    		.setProjection( Projections.property("p.id"));
@@ -162,7 +164,8 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			public void configure(Criteria criteria) {
 				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
 						.add(Restrictions.eq("p.realm.id", realm.getId()))
-						.add(Restrictions.in("p.state", 
+						.add(Restrictions.eq("deleted", false))
+						.add(Restrictions.in("p.state",
 							new ProfileCredentialsState[] { ProfileCredentialsState.COMPLETE }))  
 					    		.setProjection( Projections.property("p.id"));
 				
@@ -185,6 +188,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			public void configure(Criteria criteria) {
 				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
 						.add(Restrictions.eq("p.realm.id", realm.getId()))
+						.add(Restrictions.eq("deleted", false))
 						.add(Restrictions.in("p.state", 
 							new ProfileCredentialsState[] { ProfileCredentialsState.COMPLETE }))  
 					    		.setProjection( Projections.property("p.id"));
@@ -206,6 +210,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			public void configure(Criteria criteria) {
 				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
 						.add(Restrictions.eq("p.realm.id", realm.getId()))
+						.add(Restrictions.eq("deleted", false))
 						.setProjection( Projections.property("p.id"));
 				
 				criteria.add(Subqueries.propertyNotIn("id", profileSubquery));
@@ -227,6 +232,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			public void configure(Criteria criteria) {
 				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p") 
 								.add(Restrictions.eq("p.realm.id", realm.getId()))
+								.add(Restrictions.eq("deleted", false))
 					    		.setProjection( Projections.property("p.id"));
 				
 				criteria.add(Subqueries.propertyNotIn("id", profileSubquery));
