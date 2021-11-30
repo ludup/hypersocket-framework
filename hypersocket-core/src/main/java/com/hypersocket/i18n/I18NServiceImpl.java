@@ -10,7 +10,7 @@ package com.hypersocket.i18n;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -51,8 +51,7 @@ public class I18NServiceImpl implements I18NService {
 	private CacheService cacheService;
 	
 	private Map<String, Set<String>> bundleMap = new HashMap<>();
-	private long lastUpdate = System.currentTimeMillis(); 
-	private HashMap<Locale,Map<String,String>> resources = new HashMap<Locale,Map<String,String>>();
+	private long lastUpdate = System.currentTimeMillis();
 	private Set<Locale> supportedLocales = new LinkedHashSet<Locale>();
 	
 	public static String convertFromTag(String tag, Locale locale, Object... arguments) {
