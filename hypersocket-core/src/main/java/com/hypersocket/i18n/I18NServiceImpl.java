@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -51,7 +52,8 @@ public class I18NServiceImpl implements I18NService {
 	
 	private Map<String, Set<String>> bundleMap = new HashMap<>();
 	private long lastUpdate = System.currentTimeMillis(); 
-	private List<Locale> supportedLocales = new ArrayList<>();
+	private HashMap<Locale,Map<String,String>> resources = new HashMap<Locale,Map<String,String>>();
+	private Set<Locale> supportedLocales = new LinkedHashSet<Locale>();
 	
 	public static String convertFromTag(String tag, Locale locale, Object... arguments) {
 		if(tag.startsWith("i18n/")) {
@@ -147,7 +149,7 @@ public class I18NServiceImpl implements I18NService {
 	
 	@Override
 	public List<Locale> getSupportedLocales() {
-		return supportedLocales;
+		return Arrays.asList(supportedLocales.toArray(new Locale[0]));
 	}
 	
 	@Override
@@ -291,7 +293,7 @@ public class I18NServiceImpl implements I18NService {
 			supportedLocales.add(getLocale("fi"));
 			supportedLocales.add(getLocale("fr"));
 			supportedLocales.add(getLocale("de"));
-			supportedLocales.add(getLocale("it"));
+			supportedLocales.add(getLocale("he"));
 			supportedLocales.add(getLocale("ja"));
 			supportedLocales.add(getLocale("no"));
 			supportedLocales.add(getLocale("pl"));
