@@ -7,8 +7,9 @@ public class StaticResolver implements ITokenResolver {
 
 	private Map<String,Object> tokens = new HashMap<String,Object>();
 	
-	public void addToken(String name, Object value) {
+	public StaticResolver addToken(String name, Object value) {
 		tokens.put(name, value);
+		return this;
 	}
 	
 	@Override
