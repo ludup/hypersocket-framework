@@ -14,8 +14,8 @@ public enum RealmPermission implements PermissionType {
 	READ("realm.read"),
 	CREATE("realm.create", READ),
 	UPDATE("realm.update", READ),
-	DELETE("realm.delete", READ);
-	
+	DELETE("realm.delete", READ),
+	SYNCHRONIZE("realm.sync");
 	private final String val;
 	
 	private PermissionType[] implies;

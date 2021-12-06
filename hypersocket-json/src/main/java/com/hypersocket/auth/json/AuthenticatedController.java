@@ -70,7 +70,7 @@ public class AuthenticatedController {
 	protected I18NService i18nService;
 	
 	@Autowired
-	private PermissionService permissionService; 
+	protected PermissionService permissionService; 
 	
 
 	@ExceptionHandler(RedirectException.class)
