@@ -880,7 +880,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public IStackLocation lookupGeoIP(Realm realm, String ipAddress) {
 		try {
 			
-			String accessKey = configurationService.getValue(realm, "ipstack.accesskey");
+			String accessKey = systemConfigurationService.getValue("ipstack.accesskey");
 			
 			if (StringUtils.isBlank(accessKey)) {
 				return null;
@@ -917,7 +917,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	
 	@Override
 	public boolean isIpStackAPIKeySet(Realm realm) {
-		return StringUtils.isNotBlank(configurationService.getValue(realm, "ipstack.accesskey"));
+		return StringUtils.isNotBlank(systemConfigurationService.getValue("ipstack.accesskey"));
 	}
 	
 	private void populateGeoInfoIfEnabled(String remoteAddress, Map<String, String> parameters, Realm realm) {
