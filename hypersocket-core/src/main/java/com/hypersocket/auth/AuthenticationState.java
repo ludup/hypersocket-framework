@@ -188,7 +188,9 @@ public class AuthenticationState {
 	}
 	
 	void revertModule() {
-		this.currentIndex--;
+		if(currentIndex > 0) {
+			this.currentIndex--;
+		}
 	}
 
 	public AuthenticationScheme getScheme() {
