@@ -89,7 +89,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	@PostConstruct
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-		ThreadLocal.withInitial(()->(new Boolean(false)));
+		ThreadLocal.withInitial(()->(Boolean.FALSE));
 	}
 	
 	@Override

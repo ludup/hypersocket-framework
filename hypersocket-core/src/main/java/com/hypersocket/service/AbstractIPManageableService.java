@@ -3,7 +3,9 @@ package com.hypersocket.service;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractIPManageableService implements IPManageableService {
+import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
+
+public abstract class AbstractIPManageableService extends AbstractAuthenticatedServiceImpl implements IPManageableService {
 
 	private List<Listener> listeners = new ArrayList<>();
 
