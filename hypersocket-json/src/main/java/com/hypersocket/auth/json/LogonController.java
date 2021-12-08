@@ -349,10 +349,10 @@ public class LogonController extends AuthenticatedController {
 			throw e;
 		} catch(JsonRedirectException e) {
 			return new LogonRedirectResult(
-					configurationService.getValue(state.getRealm(),
+					configurationService.getValue(state==null ? sessionUtils.getCurrentRealmOrDefault(request) : state.getRealm(),
 							"logon.banner"),
-					flash!=null ? flash : state.getLastErrorMsg(),
-					flashStyle!=null ? flashStyle : state.getLastErrorType(),
+					flash!=null ? flash : state==null ? "" : state.getLastErrorMsg(),
+					flashStyle!=null ? flashStyle : state==null ? "" : state.getLastErrorType(),
 					configurationService.hasUserLocales(), e.getMessage());
 		} catch(Throwable t) {
 			
