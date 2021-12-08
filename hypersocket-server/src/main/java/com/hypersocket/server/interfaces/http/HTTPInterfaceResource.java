@@ -29,7 +29,7 @@ public class HTTPInterfaceResource extends InterfaceResource {
 	@Column(name="protocol")
 	private HTTPProtocol protocol;
 	
-	@OneToOne
+	@ManyToOne
 	private CertificateResource certificate;
 
 	@Column(name="redirect_https")

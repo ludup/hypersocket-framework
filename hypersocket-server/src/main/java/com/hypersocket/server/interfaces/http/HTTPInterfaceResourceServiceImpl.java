@@ -24,7 +24,9 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceChangeException;
+import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceCreatedEvent;
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceDeletedEvent;
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceResourceEvent;
@@ -260,7 +262,19 @@ public class HTTPInterfaceResourceServiceImpl extends
 		 * Remember to fill in the fire*Event methods to ensure events are fired
 		 * for all operations.
 		 */
-		createResource(resource, properties);
+		createResource(resource, properties, new TransactionAdapter<HTTPInterfaceResource>() {
+
+			@Override
+			public void beforeOperation(HTTPInterfaceResource resource, Map<String, String> properties)
+					throws ResourceException {
+				if(resource.getProtocol()==HTTPProtocol.HTTPS) {
+					if(Objects.isNull(resource.getCertificate())) {
+						throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noCertificate");
+					}
+				}
+			}
+			
+		});
 
 		return resource;
 	}
