@@ -21,7 +21,7 @@
 		</property>
 	</bean>
 
-	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+	<bean id="dataSource" class="com.hypersocket.util.ConfigurableComboPooledDataSource"
 		destroy-method="close">
 		<property name="driverClass" value="${jdbc.driver.className}" />
 		<property name="jdbcUrl" value="${jdbc.url}" />
@@ -29,10 +29,11 @@
 		<property name="password" value="${jdbc.password}" />
 		<property name="acquireIncrement" value="3" />
 		<property name="minPoolSize" value="1" />
+		<property name="initialPoolSize" value="5" />
 		<property name="maxPoolSize" value="${jdbc.maxPoolSize:500}" />
 		<property name="maxStatementsPerConnection" value="${jdbc.maxStatementsPerConnection:100}" />
 		<property name="automaticTestTable" value="c3p0_test_table" />
-		<property name="numHelperThreads" value="${jdbc.numHelperThreads:20}" />
+		<property name="numHelperThreads" value="${jdbc.numHelperThreads:0}" />
 		<property name="testConnectionOnCheckout" value="true" />
 		<property name="acquireRetryDelay" value="${jdbc.acquireRetryDelay:1000}" />
 		<property name="acquireRetryAttempts" value="${jdbc.acquireRetryAttempts:10}" />

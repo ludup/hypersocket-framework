@@ -36,13 +36,6 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 	
 	protected Scheduler configureScheduler() throws SchedulerException {
 		
-		File quartzProperties = new File(HypersocketUtils.getConfigDir(), "quartz.properties");
-		if(quartzProperties.exists()) {
-			System.setProperty("org.quartz.properties", quartzProperties.getAbsolutePath());
-		}
-
-		
-		
 		upgradeService.registerListener(new UpgradeServiceListener() {
 			
 			@Override

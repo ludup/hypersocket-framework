@@ -22,9 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -44,8 +46,11 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.DownstreamMessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.UpstreamMessageEvent;
+import org.jboss.netty.channel.socket.nio.NioClientBossPool;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioServerBossPool;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioWorkerPool;
 import org.jboss.netty.handler.codec.http.HttpChunk;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
@@ -90,6 +95,8 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	public static final String RESOURCE_BUNDLE = "NettyServer";
 	public static final String HTTPD = "httpd";
+	
+	private static final long WORKER_TIMEOUT_MINUTES = 2;
 
 	static Logger log = LoggerFactory.getLogger(NettyServer.class);
 
@@ -116,7 +123,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	private Map<HTTPInterfaceResource,Set<Channel>> httpChannels;
 	private Map<HTTPInterfaceResource,Set<Channel>> httpsChannels;
 
-	private ExecutorService executor;
+	private ExecutorService workerExecutor;
 
 	private MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
 	private Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
@@ -130,6 +137,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	private Set<String> preventUrlRedirection = new HashSet<>();
 	private NCSARequestLog requestLog;
 	private boolean setupMode;
+	private ThreadPoolExecutor clientExecutor;
 
 	public NettyServer() {
 
@@ -153,9 +161,18 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 		nettyThreadFactory = new NettyThreadFactory();
 
+		Integer maxChannels = configurationService.getIntValue("netty.maxChannels");
+		if(maxChannels == 0) {
+			if(Boolean.getBoolean("hypersocket.development")) {
+				maxChannels = 20;
+			}
+			else {
+				maxChannels = Math.max(Runtime.getRuntime().availableProcessors() * 10, 100);
+			}
+		}
 		executionHandler = new ExecutionHandler(
 	            new OrderedMemoryAwareThreadPoolExecutor(
-	            		configurationService.getIntValue("netty.maxChannels"),
+	            		maxChannels,
 	            		configurationService.getIntValue("netty.maxChannelMemory"),
 	            		configurationService.getIntValue("netty.maxTotalMemory"),
 	            		60 * 5,
@@ -203,20 +220,40 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	@Override
 	public ExecutorService getExecutor() {
-		return executor;
+		return workerExecutor;
 	}
 
 	@Override
 	protected void doStart() throws IOException {
 
 		System.setProperty("hypersocket.netty.debug", "true");
-
-		executor = Executors.newCachedThreadPool(new NettyThreadFactory());
+		int maxWorkerThreads = configurationService.getIntValue("netty.maxWorkerThreads");
+		int bosses = Math.max(4, Runtime.getRuntime().availableProcessors());
+		if(Boolean.getBoolean("hypersocket.development")) {
+			bosses = 1;
+		}
+		int minWorkerThreads = 1;
+		SynchronousQueue<Runnable> queue = new SynchronousQueue<>(true);
+		if(maxWorkerThreads == 0) {
+			if(Boolean.getBoolean("hypersocket.development")) {
+				maxWorkerThreads = 5;
+			}
+			else {
+				maxWorkerThreads = 10 + ( Runtime.getRuntime().availableProcessors() * 10 );
+			}
+		}
+		if(minWorkerThreads > maxWorkerThreads) {
+			minWorkerThreads = maxWorkerThreads;
+		}
+		log.info(String.format("Using %d minimum worker threads, %d max worker threads and %d bosses", minWorkerThreads, maxWorkerThreads, bosses));
+		workerExecutor = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads, WORKER_TIMEOUT_MINUTES, TimeUnit.MINUTES, queue, new NettyThreadFactory());
+		ThreadPoolExecutor bossExecutor = new ThreadPoolExecutor(1, bosses, WORKER_TIMEOUT_MINUTES, TimeUnit.MINUTES, queue, new NettyThreadFactory());
+		ThreadPoolExecutor clientBossExecutor = new ThreadPoolExecutor(1, bosses, WORKER_TIMEOUT_MINUTES, TimeUnit.MINUTES, queue, new NettyThreadFactory());
+		clientExecutor = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads, WORKER_TIMEOUT_MINUTES, TimeUnit.MINUTES, queue, new NettyThreadFactory());
 
 		clientBootstrap = new ClientBootstrap(
 				new NioClientSocketChannelFactory(
-						executor,
-						executor));
+						clientBossExecutor, clientExecutor, bosses, maxWorkerThreads));
 
 		clientBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 			public ChannelPipeline getPipeline() throws Exception {
@@ -229,8 +266,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		// Configure the server.
 		serverBootstrap = new ServerBootstrap(
 				new NioServerSocketChannelFactory(
-						executor,
-						executor));
+						bossExecutor, bosses, workerExecutor, maxWorkerThreads));
 
 		// Set up the event pipeline factory.
 		serverBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
@@ -548,12 +584,15 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	}
 
+	static AtomicInteger threadId = new AtomicInteger();
+	
 	class NettyThreadFactory implements ThreadFactory {
 
 		@Override
 		public Thread newThread(Runnable run) {
-			Thread t = new Thread(run);
+			Thread t = new Thread(run, "WebThread-" + threadId.incrementAndGet());
 			t.setContextClassLoader(Main.getInstance().getClassLoader());
+			t.setDaemon(true);
 			return t;
 		}
 
@@ -605,7 +644,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	protected void processApplicationEvent(final SystemEvent event) {
 		if(event instanceof HTTPInterfaceResourceEvent) {
-			executor.execute(new Runnable() {
+			workerExecutor.execute(new Runnable() {
 				public void run() {
 					try {
 						HTTPInterfaceResource resource = (HTTPInterfaceResource) ((HTTPInterfaceResourceEvent) event).getResource();
