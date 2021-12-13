@@ -9,8 +9,11 @@ package com.hypersocket.netty;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.LogManager;
 import java.util.prefs.Preferences;
 
 import javax.servlet.ServletException;
