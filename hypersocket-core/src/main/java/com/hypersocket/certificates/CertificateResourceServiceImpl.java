@@ -18,6 +18,14 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAKey;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECKey;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.RSAKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,12 +41,15 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.asn1.eac.ECDSAPublicKey;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.jcajce.interfaces.EdDSAPrivateKey;
+import org.bouncycastle.jcajce.interfaces.EdDSAPublicKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -793,7 +804,8 @@ public class CertificateResourceServiceImpl extends
 					Certificate[] chain = keystore.getCertificateChain(alias);
 
 					PublicKey publicKey = cert.getPublicKey();
-					KeyPair pair = new KeyPair(publicKey, (PrivateKey) key);
+					PrivateKey pk = (PrivateKey) key;
+					KeyPair pair = new KeyPair(publicKey, pk);
 
 					ByteArrayOutputStream privateKeyFile = new ByteArrayOutputStream();
 					X509CertificateUtils.saveKeyPair(pair, privateKeyFile);
@@ -846,6 +858,20 @@ public class CertificateResourceServiceImpl extends
 					resource.setOrganization("");
 					resource.setOrganizationalUnit("");
 					resource.setState("");
+					int keySize = 0;
+					if(pk instanceof RSAPrivateKey) {
+						keySize = ((RSAPrivateKey)pk).getModulus().bitLength();
+					}
+					else if(pk instanceof DSAPrivateKey) {
+						// TODO always?
+						keySize = 1024;
+					}
+					else if(pk instanceof ECKey) {
+						keySize = ((ECKey)pk).getParams().getCurve().getField().getFieldSize();
+					}
+					else
+						throw new UnsupportedOperationException("Key type not supported.");
+					resource.setType(CertificateType.valueOf(pk.getAlgorithm() + "_" + keySize));
 					
 					if (cert.getNotBefore() != null) {
 						resource.setIssueDate(cert.getNotBefore());

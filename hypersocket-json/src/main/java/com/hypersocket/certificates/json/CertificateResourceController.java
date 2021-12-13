@@ -23,6 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.openssl.jcajce.JcePEMEncryptorBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -70,6 +72,8 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 @Controller
 public class CertificateResourceController extends ResourceController {
 
+	static Logger log = LoggerFactory
+			.getLogger(CertificateResourceController.class);
 	@Autowired
 	private CertificateResourceService resourceService;
 
@@ -645,6 +649,7 @@ public class CertificateResourceController extends ResourceController {
 				// CertificateService.RESOURCE_BUNDLE,
 				// "error.invalidPassphrase"));
 			} catch (Exception e) {
+				log.error("Failed to import PFX.", e);
 				status.setMessage(I18N.getResource(sessionUtils.getLocale(request),
 						CertificateResourceServiceImpl.RESOURCE_BUNDLE, "error.generalError", e.getMessage()));
 			}
