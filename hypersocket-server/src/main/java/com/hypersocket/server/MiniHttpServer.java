@@ -83,7 +83,7 @@ public class MiniHttpServer extends Thread implements Closeable {
 
 		BAD_REQUEST(400, "Bad Request"), FORBIDDEN(403, "Forbidden"), FOUND(302, "Found"),
 		INTERNAL_SERVER_ERROR(500, "Not Found"), MOVED_PERMANENTLY(301, "Moved Permanently"), NOT_FOUND(404, "Not Found"),
-		NOT_IMPLEMENTED(501, "Not Implement"), OK(200, "OK");
+		NOT_IMPLEMENTED(501, "Not Implement"), OK(200, "OK"), SERVICE_UNAVAILABLE(503, "Service Unavailable");
 
 		private int code;
 		private String text;
@@ -341,21 +341,26 @@ public class MiniHttpServer extends Thread implements Closeable {
 		if (!path.startsWith("/"))
 			path = "/" + path;
 
-		if (path.startsWith("/app") || path.startsWith("/hypersocket")) {
-			output.write(header(Status.FOUND, "text/plain", -1, "Location", "/"));
-			return;
-		}
-
 		for (DynamicContentFactory c : contentFactories) {
-			DynamicContent content = c.get(path);
-			if (content != null) {
-				output.write(header(Status.OK, content.getMimeType(), content.getContentLength()));
-				InputStream in = content.getIn();
-				try {
-					IOUtils.copy(in, output);
-				} finally {
-					in.close();
+			try {
+				DynamicContent content = c.get(path);
+				if (content != null) {
+					output.write(header(Status.OK, content.getMimeType(), content.getContentLength()));
+					InputStream in = content.getIn();
+					try {
+						IOUtils.copy(in, output);
+					} finally {
+						in.close();
+					}
+					return;
 				}
+			}
+			catch(IllegalArgumentException iae) {
+				output.write(header(Status.FOUND, "text/plain", -1, "Location", iae.getMessage() == null ? "/" : iae.getMessage()));
+				return;
+			}
+			catch(IllegalStateException ise) {
+				output.write(header(Status.SERVICE_UNAVAILABLE, "text/plain", 0));
 				return;
 			}
 		}

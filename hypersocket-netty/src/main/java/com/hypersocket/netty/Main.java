@@ -8,14 +8,9 @@
 package com.hypersocket.netty;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.LogManager;
 import java.util.prefs.Preferences;
 
 import javax.servlet.ServletException;
@@ -32,8 +27,6 @@ import org.springframework.core.SpringVersion;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.hypersocket.netty.log.UIAppender;
-import com.hypersocket.netty.log.UIAppender.UILogEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.profile.ProfileLoaderClassPathXmlApplicationContext;
 import com.hypersocket.profile.ProfileNameFinder;
@@ -150,6 +143,16 @@ public class Main {
 					miniServer = new MiniHttpServer(80, 443, bootKeystore);
 				else
 					miniServer = new MiniHttpServer(8080, 8443, bootKeystore);
+
+				miniServer.addContent(new DynamicContentFactory() {
+					@Override
+					public DynamicContent get(String path) throws IOException {
+						if (path.matches("/.*/api/.*")) {
+							throw new IllegalStateException("Booting up and not ready yet, try again shortly.");
+						}
+						return null;
+					}
+				});
 				miniServer.addContent(new DynamicContentFactory() {
 					@Override
 					public DynamicContent get(String path) throws IOException {
@@ -165,26 +168,8 @@ public class Main {
 				miniServer.addContent(new DynamicContentFactory() {
 					@Override
 					public DynamicContent get(String path) throws IOException {
-						if (path.startsWith("/log")) {
-							int idx = path.indexOf('?');
-							long since = 0;
-							if (idx != -1)
-								since = Long.parseLong(path.substring(idx + 1));
-							ByteArrayOutputStream bos = new ByteArrayOutputStream();
-							List<UILogEvent> buf = UIAppender.getLoggingEventBuffer();
-							if (!buf.isEmpty()) {
-								synchronized (buf) {
-									UILogEvent lastevt = null;
-									for (UILogEvent evt : buf) {
-										lastevt = evt;
-										if (evt.getTimestamp() >= since) {
-											bos.write((evt.getText()).getBytes());
-										}
-									}
-									bos.write((lastevt.getTimestamp() + "").getBytes());
-								}
-							}
-							return new DynamicContent("text/plain", new ByteArrayInputStream(bos.toByteArray()));
+						if (path.startsWith("/app") || path.startsWith("/hypersocket")) {
+							throw new IllegalArgumentException("/");
 						}
 						return null;
 					}

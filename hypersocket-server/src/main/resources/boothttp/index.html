@@ -24,31 +24,10 @@
 			<div id="progress-text"></div>
 			<div id="progress-bar-inner"></div>
 		</div>
-		<div id="reveal-console">
-			<a href="javascript:revealConsole();">Show log output</a>
-		</div>
-		<div id="log-console" style="display: none;">
-			<pre><code id="log-console-out"></code></pre>
-		</div>
-		<div id="hide-console" style="display: none;">
-			<a href="javascript:hideConsole();">Hide log output</a>
-		</div>
 	</div>
 	<script type="text/javascript">
 		var since;
 		var online = true;
-		
-		function revealConsole() {
-			document.getElementById('reveal-console').style.display = 'none';
-			document.getElementById('log-console').style.display = 'block';
-			document.getElementById('hide-console').style.display = 'block';	
-		}
-		
-		function hideConsole() {
-			document.getElementById('reveal-console').style.display = 'block';
-			document.getElementById('log-console').style.display = 'none';
-			document.getElementById('hide-console').style.display = 'none';	
-		}
 
 		function loadProgress() {
 			var xhttp = new XMLHttpRequest();
@@ -147,38 +126,6 @@
 			xhttp.send();
 		}
 
-		function loadLog() {
-			var xhttp = new XMLHttpRequest();
-			xhttp.onreadystatechange = function() {
-				if (this.readyState == 4) {
-					if(this.status == 200) {
-						var lines = xhttp.responseText.split('\n');
-						var el = document.getElementById('log-console-out');
-						var h = el.innerHTML;
-						for(var i = 0 ; i < lines.length; i++) {
-							if(i == lines.length - 1) {
-								since = parseInt(lines[i]);	
-							}
-							else {
-								if(i > 0)
-									h += '\n';
-								if(h.length > 13200)
-									h = h.substring(13200 - h.length); 
-								h += lines[i].trim();
-							}
-						}
-						el.innerHTML = h;
-						console.log('scroll to ' + el.scrollHeight);
-						el = document.getElementById('log-console');
-						el.scrollTop = el.scrollHeight;		
-						window.setTimeout(loadLog, 1000);			
-					}
-				}
-			};
-			xhttp.open('GET', 'log' + (since ? '?' + since : ''), true);
-			xhttp.send();
-		}
-		window.setTimeout(loadLog, 100);
 		window.setTimeout(loadProgress, 100);
 	</script>
 </body>
