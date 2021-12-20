@@ -15,7 +15,8 @@ import java.util.prefs.Preferences;
 
 import javax.servlet.ServletException;
 
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.hibernate.SessionFactory;
 import org.jboss.netty.logging.InternalLoggerFactory;
 import org.jboss.netty.logging.Slf4JLoggerFactory;
@@ -98,7 +99,8 @@ public class Main {
 
 		System.setProperty("hypersocket.conf", conf.getPath());
 
-		PropertyConfigurator.configure(new File(conf, "log4j.properties").getAbsolutePath());
+		LoggerContext context = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
+		context.setConfigLocation(new File(conf, "log4j.properties").toURI());
 
 		classLoader = getClass().getClassLoader();
 		if (log.isInfoEnabled()) {

@@ -1,5 +1,6 @@
 package com.hypersocket.netty.log;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -7,12 +8,15 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Layout;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Property;
+import org.slf4j.event.EventConstants;
 import org.slf4j.event.Level;
 
-public class UIAppender extends AppenderSkeleton {
+public class UIAppender extends AbstractAppender {
 	
 	public interface Listener {
 		void logEvent(UILogEvent event);
@@ -27,39 +31,40 @@ public class UIAppender extends AppenderSkeleton {
 		private String className;
 		private String fileName;
 		private String methodName;
-		private String lineNumber;
+		private int lineNumber;
 		private String rawText;
 
-		public UILogEvent(String text, LoggingEvent evt) {
+		public UILogEvent(String text, LogEvent evt) {
 			this.text = text;
-			rawText = evt.getRenderedMessage();
-			timestamp = evt.timeStamp;
-			syslogLevel = evt.getLevel().getSyslogEquivalent();
-			switch(evt.getLevel().toInt()) {
-			case org.apache.log4j.Level.ALL_INT:
-			case org.apache.log4j.Level.TRACE_INT:
+			rawText = evt.getMessage().getFormat();
+			timestamp = evt.getTimeMillis();
+			switch(evt.getLevel().intLevel()) {
+			case EventConstants.TRACE_INT:
 				level = Level.TRACE;
+				syslogLevel = 7;
 				break;
-			case org.apache.log4j.Level.DEBUG_INT:
+			case EventConstants.DEBUG_INT:
 				level = Level.DEBUG;
+				syslogLevel = 7;
 				break;
-			case org.apache.log4j.Level.ERROR_INT:
-			case org.apache.log4j.Level.FATAL_INT:
-			case org.apache.log4j.Level.OFF_INT:
+			case EventConstants.ERROR_INT:
 				level = Level.ERROR;
+				syslogLevel = 3;
 				break;
-			case org.apache.log4j.Level.WARN_INT:
+			case EventConstants.WARN_INT:
 				level = Level.WARN;
+				syslogLevel = 4;
 				break;
 			default:
 				level = Level.INFO;
+				syslogLevel = 6;
 				break;
 			}
 			logger = evt.getLoggerName();
-			className = evt.getLocationInformation().getClassName();
-			fileName = evt.getLocationInformation().getFileName();
-			methodName = evt.getLocationInformation().getMethodName();
-			lineNumber = evt.getLocationInformation().getLineNumber();
+			className = evt.getSource().getClassName();
+			fileName = evt.getSource().getFileName();
+			methodName = evt.getSource().getMethodName();
+			lineNumber = evt.getSource().getLineNumber();
 		}
 		
 		public int getSyslogLevel() {
@@ -83,7 +88,7 @@ public class UIAppender extends AppenderSkeleton {
 		}
 
 		public String getLineNumber() {
-			return lineNumber;
+			return String.valueOf(lineNumber);
 		}
 
 		public Level getLevel() {
@@ -109,7 +114,12 @@ public class UIAppender extends AppenderSkeleton {
 	private static UIAppender instance;
 	private List<Listener> listeners=  new ArrayList<>();
 
-	public UIAppender() {
+	public UIAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions,
+			Property[] properties) {
+		super(name, filter, layout, ignoreExceptions, properties);
+	}
+
+	{
 		instance = this;
 	}
 	
@@ -125,21 +135,8 @@ public class UIAppender extends AppenderSkeleton {
 		return instance;
 	}
 
-	public UIAppender(Layout layout) {
-		setLayout(layout);
-	}
-
 	@Override
-	public void close() {
-	}
-
-	@Override
-	public boolean requiresLayout() {
-		return true;
-	}
-
-	@Override
-	protected void append(LoggingEvent event) {
+	public void append(LogEvent event) {
 		queue.execute(() -> {
 			UILogEvent uiLogEvent = toUILogEvent(event);
 			buffer.add(uiLogEvent);
@@ -152,8 +149,8 @@ public class UIAppender extends AppenderSkeleton {
 		});
 	}
 
-	private UILogEvent toUILogEvent(LoggingEvent event) {
-		return new UILogEvent(layout.format(event), event);
+	private UILogEvent toUILogEvent(LogEvent event) {
+		return new UILogEvent((String)toSerializable(event), event);
 	}
 
 	public static List<UILogEvent> getLoggingEventBuffer() {
