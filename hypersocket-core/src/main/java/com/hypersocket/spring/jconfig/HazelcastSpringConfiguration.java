@@ -63,6 +63,12 @@ public class HazelcastSpringConfiguration {
 		config.setInstanceName(applicationContext.getId());
 		config.setNetworkConfig(networkConfig);
 		config.setProperty("hazelcast.logging.type", "log4j");
+		if(Boolean.getBoolean("hypersocket.development")) {
+			config.setProperty("hazelcast.operation.thread.count", "4");
+			config.setProperty("hazelcast.event.thread.count", "3");
+			config.setProperty("hazelcast.operation.generic.thread.count", "2");
+			
+		}
 
 		/* For synchronization only */
 		MapConfig mapConfig = new MapConfig("com.hypersocket.synchronize.*");

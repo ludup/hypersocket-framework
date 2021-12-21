@@ -38,7 +38,13 @@ public class LocalSchedulerServiceImpl extends AbstractSchedulerServiceImpl impl
 		props.setProperty("org.quartz.scheduler.instanceId", "LOCAL_JOBS");
 		props.setProperty("org.quartz.threadPool.class", "com.hypersocket.scheduler.LocalThreadPool");
 		props.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore");
-		props.setProperty("org.quartz.threadPool.threadCount", "50");
+		/* We don't have many local jobs, a low count is fine. min(8,Cores) for production, or just a fixed 2 for development  */
+		if(Boolean.getBoolean("hypersocket.development")) {
+			props.setProperty("org.quartz.threadPool.threadCount", "2");
+		}
+		else {
+			props.setProperty("org.quartz.threadPool.threadCount", String.valueOf(Math.min(8, Runtime.getRuntime().availableProcessors())));
+		}
 		
 		StdSchedulerFactory schedFact = new org.quartz.impl.StdSchedulerFactory(props);
 		
