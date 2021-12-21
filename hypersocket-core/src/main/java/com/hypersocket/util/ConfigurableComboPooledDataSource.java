@@ -37,7 +37,7 @@ public class ConfigurableComboPooledDataSource extends AbstractComboPooledDataSo
 			if(Boolean.getBoolean("hypersocket.development"))
 				super.setNumHelperThreads(5);
 			else
-				super.setNumHelperThreads(Runtime.getRuntime().availableProcessors() * 2);
+				super.setNumHelperThreads(Runtime.getRuntime().availableProcessors() * 5);
 		else {
 			super.setNumHelperThreads(numHelperThreads);
 		}

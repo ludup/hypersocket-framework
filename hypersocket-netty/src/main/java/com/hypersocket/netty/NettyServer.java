@@ -21,8 +21,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -90,6 +94,7 @@ import com.hypersocket.session.SessionService;
 @Component
 public class NettyServer extends HypersocketServerImpl implements ObjectSizeEstimator  {
 
+	private static final int MIN_WORKERS = 50;
 	public static final String RESOURCE_BUNDLE = "NettyServer";
 	public static final String HTTPD = "httpd";
 	
@@ -120,7 +125,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	private Map<HTTPInterfaceResource,Set<Channel>> httpChannels;
 	private Map<HTTPInterfaceResource,Set<Channel>> httpsChannels;
 
-	private ExecutorService workerExecutor;
+	private ExecutorService serverWorkerExecutor;
 
 	private MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
 	private Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
@@ -134,7 +139,6 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	private Set<String> preventUrlRedirection = new HashSet<>();
 	private NCSARequestLog requestLog;
 	private boolean setupMode;
-	private ThreadPoolExecutor clientExecutor;
 
 	public NettyServer() {
 
@@ -156,7 +160,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	@PostConstruct
 	private void postConstruct() {
 
-		nettyThreadFactory = new NettyThreadFactory();
+		nettyThreadFactory = new NettyThreadFactory("Execution");
 
 		Integer maxChannels = configurationService.getIntValue("netty.maxChannels");
 		if(maxChannels == 0) {
@@ -217,41 +221,31 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	@Override
 	public ExecutorService getExecutor() {
-		return workerExecutor;
+		return getExecutionHandler();
 	}
 
 	@Override
 	protected void doStart() throws IOException {
-
+		
 		System.setProperty("hypersocket.netty.debug", "true");
 		int maxWorkerThreads = configurationService.getIntValue("netty.maxWorkerThreads");
-		int bosses = Math.max(4, Runtime.getRuntime().availableProcessors());
-		if(Boolean.getBoolean("hypersocket.development")) {
-			bosses = 1;
-		}
-		int minWorkerThreads = 1;
-		SynchronousQueue<Runnable> queue = new SynchronousQueue<>(true);
 		if(maxWorkerThreads == 0) {
 			if(Boolean.getBoolean("hypersocket.development")) {
-				maxWorkerThreads = 5;
+				maxWorkerThreads = MIN_WORKERS;
 			}
 			else {
-				maxWorkerThreads = 10 + ( Runtime.getRuntime().availableProcessors() * 10 );
+				maxWorkerThreads = MIN_WORKERS + ( Runtime.getRuntime().availableProcessors() * 500 );
 			}
 		}
-		if(minWorkerThreads > maxWorkerThreads) {
-			minWorkerThreads = maxWorkerThreads;
+		if(maxWorkerThreads < MIN_WORKERS) {
+			log.warn(String.format("Adjusted max worker threads back to %d, the absolute minimum.", MIN_WORKERS));
+			maxWorkerThreads = MIN_WORKERS;
 		}
-		log.info(String.format("Using %d minimum worker threads, %d max worker threads and %d bosses", minWorkerThreads, maxWorkerThreads, bosses));
-		workerExecutor = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads, WORKER_TIMEOUT_MINUTES, TimeUnit.MINUTES, queue, new NettyThreadFactory());
-		ThreadPoolExecutor bossExecutor = new ThreadPoolExecutor(1, bosses, WORKER_TIMEOUT_MINUTES, TimeUnit.MINUTES, queue, new NettyThreadFactory());
-		ThreadPoolExecutor clientBossExecutor = new ThreadPoolExecutor(1, bosses, WORKER_TIMEOUT_MINUTES, TimeUnit.MINUTES, queue, new NettyThreadFactory());
-		clientExecutor = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads, WORKER_TIMEOUT_MINUTES, TimeUnit.MINUTES, queue, new NettyThreadFactory());
+		int minWorkerThreads = maxWorkerThreads / 4;
+		log.info(String.format("Using %d minimum worker threads, %d max worker threads", minWorkerThreads, maxWorkerThreads));
 
 		clientBootstrap = new ClientBootstrap(
-				new NioClientSocketChannelFactory(
-						clientBossExecutor, clientExecutor, bosses, maxWorkerThreads));
-
+				new NioClientSocketChannelFactory(Executors.newSingleThreadExecutor(new NettyThreadFactory("ClientBoss")), newScalingThreadPool(minWorkerThreads, maxWorkerThreads, TimeUnit.MINUTES.toMillis(WORKER_TIMEOUT_MINUTES), new NettyThreadFactory("ServerWorker")), maxWorkerThreads));
 		clientBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 			public ChannelPipeline getPipeline() throws Exception {
 				ChannelPipeline pipeline = Channels.pipeline();
@@ -260,10 +254,12 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			}
 		});
 
-		// Configure the server.
+		// Configure the server.	
+		serverWorkerExecutor = newScalingThreadPool(minWorkerThreads, maxWorkerThreads, TimeUnit.MINUTES.toMillis(WORKER_TIMEOUT_MINUTES), new NettyThreadFactory("ServerWorker"));
+		
 		serverBootstrap = new ServerBootstrap(
 				new NioServerSocketChannelFactory(
-						bossExecutor, bosses, workerExecutor, maxWorkerThreads));
+						Executors.newSingleThreadExecutor(new NettyThreadFactory("ServerBoss")), serverWorkerExecutor));
 
 		// Set up the event pipeline factory.
 		serverBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
@@ -291,13 +287,12 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		httpChannels = new HashMap<HTTPInterfaceResource,Set<Channel>>();
 		httpsChannels = new HashMap<HTTPInterfaceResource,Set<Channel>>();
 
+
 		HTTPInterfaceResourceRepository interfaceRepository =
 				(HTTPInterfaceResourceRepository) getApplicationContext().getBean("HTTPInterfaceResourceRepositoryImpl");
-
 		if(interfaceRepository==null) {
 			throw new IOException("Cannot get interface configuration from application context!");
 		}
-
 		for(HTTPInterfaceResource resource : interfaceRepository.allInterfaces()) {
 			bindInterface(resource);
 		}
@@ -584,10 +579,16 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	static AtomicInteger threadId = new AtomicInteger();
 	
 	class NettyThreadFactory implements ThreadFactory {
+		
+		private String prefix;
+
+		NettyThreadFactory(String prefix) {
+			this.prefix = prefix;
+		}
 
 		@Override
 		public Thread newThread(Runnable run) {
-			Thread t = new Thread(run, "WebThread-" + threadId.incrementAndGet());
+			Thread t = new Thread(run, prefix + "-" + threadId.incrementAndGet());
 			t.setContextClassLoader(Main.getInstance().getClassLoader());
 			t.setDaemon(true);
 			return t;
@@ -641,7 +642,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	protected void processApplicationEvent(final SystemEvent event) {
 		if(event instanceof HTTPInterfaceResourceEvent) {
-			workerExecutor.execute(new Runnable() {
+			serverWorkerExecutor.execute(new Runnable() {
 				public void run() {
 					try {
 						HTTPInterfaceResource resource = (HTTPInterfaceResource) ((HTTPInterfaceResourceEvent) event).getResource();
@@ -752,6 +753,105 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 				&& configurationService.getBooleanValue("security.strictTransportSecurity")
 				&& "true".equals(System.getProperty("hypersocket.security.strictTransportSecurity","true"))) {
 			nettyResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubdomains");
+		}
+	}
+	
+	public static class ForceQueuePolicy implements RejectedExecutionHandler {
+	    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+	        try {
+	            executor.getQueue().put(r);
+	        } catch (InterruptedException e) {
+	            //should never happen since we never wait
+	            throw new RejectedExecutionException(e);
+	        }
+	    }
+	}
+
+	public static ExecutorService newScalingThreadPool(int min, int max, long keepAliveTime, ThreadFactory factory) {
+		ScalingQueue<Runnable> queue = new ScalingQueue<>();
+		ThreadPoolExecutor executor = new ScalingThreadPoolExecutor(min, max, keepAliveTime, TimeUnit.MILLISECONDS,
+				queue, factory);
+		executor.setRejectedExecutionHandler(new ForceQueuePolicy());
+		queue.setThreadPoolExecutor(executor);
+		return executor;
+	}
+	
+	@SuppressWarnings({ "serial" })
+	public static class ScalingQueue<E> extends LinkedBlockingQueue<E> {
+		/**
+		 * 
+		 * The executor this Queue belongs to
+		 */
+		private ThreadPoolExecutor executor;
+
+		/**
+		 * 
+		 * Creates a TaskQueue with a capacity of {@link Integer#MAX_VALUE}.
+		 */
+		public ScalingQueue() {
+			super();
+		}
+
+		/**
+		 * 
+		 * Creates a TaskQueue with the given (fixed) capacity.
+		 *
+		 * @param capacity the capacity of this queue.
+		 */
+		public ScalingQueue(int capacity) {
+			super(capacity);
+		}
+
+		/**
+		 * 
+		 * Sets the executor this queue belongs to.
+		 */
+		public void setThreadPoolExecutor(ThreadPoolExecutor executor) {
+			this.executor = executor;
+		}
+
+		/**
+		 * 
+		 * Inserts the specified element at the tail of this queue if there is at least
+		 * one available thread to run the current task. If all pool threads are
+		 * actively busy, it rejects the offer.
+		 *
+		 * @param o the element to add.
+		 * @return true if it was possible to add the element to this queue, else false
+		 * @see ThreadPoolExecutor#execute(Runnable)
+		 */
+		@Override
+		public boolean offer(E o) {
+			int allWorkingThreads = executor.getActiveCount() + super.size();
+			return allWorkingThreads < executor.getPoolSize() && super.offer(o);
+		}
+	}
+	
+	public static class ScalingThreadPoolExecutor extends ThreadPoolExecutor {
+		/**
+		 * 
+		 * number of threads that are actively executing tasks
+		 */
+		private final AtomicInteger activeCount = new AtomicInteger();
+
+		public ScalingThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit,
+				BlockingQueue<Runnable> workQueue, ThreadFactory factory) {
+			super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, factory);
+		}
+
+		@Override
+		public int getActiveCount() {
+			return activeCount.get();
+		}
+
+		@Override
+		protected void beforeExecute(Thread t, Runnable r) {
+			activeCount.incrementAndGet();
+		}
+
+		@Override
+		protected void afterExecute(Runnable r, Throwable t) {
+			activeCount.decrementAndGet();
 		}
 	}
 }
