@@ -392,12 +392,12 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 				
 				Boolean sync = synchronousEmail.get();
 				if(Boolean.TRUE.equals(sync)) {
+					mail.sendMail(email.buildEmail());
+					eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context));
+				} else {
 					AsyncResponse asyncResponse = mail.sendMail(email.buildEmail(), true);
 					asyncResponse.onSuccess(() -> eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context)));
 					asyncResponse.onException((e) -> eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail(), context)));
-				} else {
-					 mail.sendMail(email.buildEmail());
-					eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context));
 				}
 				
 			}

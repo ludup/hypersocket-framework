@@ -31,6 +31,7 @@ public class MailerServiceImpl implements MailerService {
 	public final static String SMTP_SESSION_TIMEOUT = "smtp.sessionTimeout";
 	public final static String SMTP_PASSWORD = "smtp.password";
 	public final static String SMTP_FROM_ADDRESS = "smtp.fromAddress";
+	public final static String SMTP_DEBUG = "smtp.debug";
 	public final static String SMTP_FROM_NAME = "smtp.fromName";
 	public final static String SMTP_REPLY_ADDRESS = "smtp.replyAddress";
 	public final static String SMTP_REPLY_NAME = "smtp.replyName";
@@ -97,6 +98,8 @@ public class MailerServiceImpl implements MailerService {
 				.withConnectionPoolCoreSize(getSMTPIntValue(realm, SMTP_CONNECTION_POOL_SIZE))
 				.withConnectionPoolExpireAfterMillis(getSMTPIntValue(realm, SMTP_CONNECTION_POOL_EXPIRY) * 1000)
 				.withConnectionPoolMaxSize(getSMTPIntValue(realm, SMTP_CONNECTION_POOL_MAX_SIZE))
+				.withProperties(props)
+				.withDebugLogging("true".equals(getSMTPValue(realm, SMTP_DEBUG)))
 			    .trustingAllHosts(true)
 			    .async()
 				.withSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000)
@@ -108,7 +111,9 @@ public class MailerServiceImpl implements MailerService {
 					.withConnectionPoolCoreSize(getSMTPIntValue(realm, SMTP_CONNECTION_POOL_SIZE))
 					.withConnectionPoolExpireAfterMillis(getSMTPIntValue(realm, SMTP_CONNECTION_POOL_EXPIRY) * 1000)
 					.withConnectionPoolMaxSize(getSMTPIntValue(realm, SMTP_CONNECTION_POOL_MAX_SIZE))
+					.withProperties(props)
 				    .trustingAllHosts(true)
+					.withDebugLogging("true".equals(getSMTPValue(realm, SMTP_DEBUG)))
 				    .async()
 					.withSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000)
 					.buildMailer();
