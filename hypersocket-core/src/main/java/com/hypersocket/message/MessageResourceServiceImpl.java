@@ -683,6 +683,11 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 				data.put("principalId", recipient.getPrincipalId());
 
 				if(recipient.hasPrincipal()) {
+					
+					if(realmService.getUserPropertyBoolean(recipient.getPrincipal(), "user.bannedEmail")) {
+						log.warn("User {} has email ban turned on. Ignoring", recipient.getPrincipal().getName());
+						continue;
+					}
 					/* 
 					 * #V1HT82 - Issue Title is not showing in outgoing email
 					 * 
