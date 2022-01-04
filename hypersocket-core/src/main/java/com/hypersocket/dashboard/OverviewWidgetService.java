@@ -12,6 +12,8 @@ public interface OverviewWidgetService {
 
 	List<OverviewWidget> getWidgets(String resourceKey) throws AccessDeniedException;
 
+	List<OverviewWidget> getAllWidgets(String resourceKey) throws AccessDeniedException;
+
 	Collection<Link> getLinks() throws ResourceException;
 	
 	Collection<Link> getVideos() throws ResourceException;
