@@ -10,6 +10,8 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -332,6 +334,29 @@ public class FileUploadServiceImpl extends
 			IOUtils.closeQuietly(in);
 		}
 	}
+	
+	@Override
+	public FileUpload createZipFile(File fileToZip, String filename, Realm realm, String type, boolean publicFile) throws ResourceException, AccessDeniedException, IOException {
+	
+		
+		File zipFile = new File(filename + ".zip");
+	    FileOutputStream fos = new FileOutputStream(zipFile);
+	    ZipOutputStream zipOut = new ZipOutputStream(fos);
+	    FileInputStream fis = new FileInputStream(fileToZip);
+	    ZipEntry zipEntry = new ZipEntry(filename);
+	    zipOut.putNextEntry(zipEntry);
+	    byte[] bytes = new byte[4096];
+	    int length;
+	    while((length = fis.read(bytes)) >= 0) {
+	        zipOut.write(bytes, 0, length);
+	    }
+	    zipOut.close();
+	    fis.close();
+	    fos.close();
+	    
+	    return createFile(zipFile, zipFile.getName(), realm, type, publicFile);
+	}
+	
 
 	class DefaultFileStore implements FileStore {
 		

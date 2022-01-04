@@ -73,4 +73,7 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 
 	FileUpload copyFile(String uuid)
 			throws ResourceNotFoundException, ResourceException, AccessDeniedException, IOException;
+
+	FileUpload createZipFile(File fileToZip, String filename, Realm realm, String type, boolean publicFile)
+			throws ResourceException, AccessDeniedException, IOException;
 }
