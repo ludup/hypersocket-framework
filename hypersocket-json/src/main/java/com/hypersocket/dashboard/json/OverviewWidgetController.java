@@ -45,6 +45,23 @@ public class OverviewWidgetController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+
+	@AuthenticationRequired
+	@RequestMapping(value = "overview/allWidgets/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	public ResourceList<OverviewWidget> getAllWidgets(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String resourceKey) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		setupAuthenticatedContext(sessionUtils.getSession(request),
+				sessionUtils.getLocale(request));
+		try {
+			return new ResourceList<OverviewWidget>(service.getAllWidgets(resourceKey));
+		} finally {
+			clearAuthenticatedContext();
+		}
+	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "overview/articles", method = RequestMethod.GET, produces = { "application/json" })
