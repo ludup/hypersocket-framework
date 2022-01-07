@@ -188,7 +188,7 @@ public class PasswordPolicyResourceServiceImpl extends AbstractAssignableResourc
 			
 			@Override
 			public boolean hasContent() {
-				return true;
+				return realmService.canChangePassword(getCurrentPrincipal());
 			}
 		});
 	}
