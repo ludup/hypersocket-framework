@@ -101,7 +101,6 @@ public class MailerServiceImpl implements MailerService {
 				.withProperties(props)
 				.withDebugLogging("true".equals(getSMTPValue(realm, SMTP_DEBUG)))
 			    .trustingAllHosts(true)
-			    .async()
 				.withSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000)
 				.buildMailer();
 		} else {
@@ -114,7 +113,6 @@ public class MailerServiceImpl implements MailerService {
 					.withProperties(props)
 				    .trustingAllHosts(true)
 					.withDebugLogging("true".equals(getSMTPValue(realm, SMTP_DEBUG)))
-				    .async()
 					.withSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000)
 					.buildMailer();
 		}
