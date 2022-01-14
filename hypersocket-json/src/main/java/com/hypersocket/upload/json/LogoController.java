@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -14,6 +15,7 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -266,6 +268,13 @@ public class LogoController extends ResourceController {
 				b.append(c);
 		}
 		return b.toString();
+	}
+
+
+	public void handleThumbnailPhoto(HttpServletResponse response, String profileImage) throws IOException {
+		response.setContentType("image/jpeg");
+		IOUtils.write(Base64.getUrlDecoder().decode(profileImage), response.getOutputStream());
+		response.flushBuffer();
 	}
 
 }
