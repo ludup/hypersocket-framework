@@ -101,6 +101,8 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	String getPrincipalDescription(Principal principal);
 
 	boolean supportsAccountDisable(Realm realm) throws ResourceException;
+	
+	boolean supportsThumbnailPhoto(Realm realm) throws ResourceException;
 
 	Principal disableAccount(Principal principal) throws ResourceException;
 

@@ -819,6 +819,11 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	}
 	
 	@Override
+	public boolean supportsThumbnailPhoto(Realm realm) throws ResourceException {
+		return false;
+	}
+	
+	@Override
 	public boolean isDisabled(Principal principal) {
 		return false;
 	}
