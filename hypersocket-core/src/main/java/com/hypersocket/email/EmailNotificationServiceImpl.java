@@ -79,7 +79,6 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	ThreadLocal<Boolean> synchronousEmail = new ThreadLocal<>();
 	
 	public final static String SMTP_DO_NOT_SEND_TO_NO_REPLY = "smtp.doNotSendToNoReply";
-	public final static String SMTP_ASYNC = "smtp.async";
 	
 	public static final String EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 	
@@ -392,13 +391,13 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			if("true".equals(System.getProperty("hypersocket.email", "true"))) {
 				
 				Boolean sync = synchronousEmail.get();
-				if(Boolean.TRUE.equals(sync) || !configurationService.getBooleanValue(realm, SMTP_ASYNC)) {
-					mail.sendMail(email.buildEmail());
-					eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context));
-				} else {
+				if(Boolean.TRUE.equals(sync)) {
 					AsyncResponse asyncResponse = mail.sendMail(email.buildEmail(), true);
 					asyncResponse.onSuccess(() -> eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context)));
 					asyncResponse.onException((e) -> eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail(), context)));
+				} else {
+					 mail.sendMail(email.buildEmail());
+					eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context));
 				}
 				
 			}

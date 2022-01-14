@@ -27,10 +27,7 @@
 			weight="800" defaultValue=""  visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.doNotSendToNoReply" inputType="switch"
 			weight="1000" defaultValue="true" visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
-		<property resourceKey="smtp.async" inputType="switch"
-			weight="1050" defaultValue="true" visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 		<property resourceKey="smtp.sessionTimeout" inputType="integer" weight="1100" defaultValue="60" visibilityDependsOn="smtp.enabled" visibilityDependsValue="true" minValue="30" maxValue="3600" />
-		<property resourceKey="smtp.debug" inputType="switch" weight="1200" defaultValue="false" visibilityDependsOn="smtp.enabled" visibilityDependsValue="true"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.emailConnections"
 		resourceBundle="EmailService" weight="650"  group="messages">
