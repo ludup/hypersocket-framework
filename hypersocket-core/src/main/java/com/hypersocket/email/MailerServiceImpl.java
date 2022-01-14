@@ -99,7 +99,6 @@ public class MailerServiceImpl implements MailerService {
 				.withConnectionPoolMaxSize(getSMTPIntValue(realm, SMTP_CONNECTION_POOL_MAX_SIZE))
 				.withProperties(props)
 			    .trustingAllHosts(true)
-			    .async()
 				.withSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000)
 				.buildMailer();
 		} else {
@@ -111,7 +110,6 @@ public class MailerServiceImpl implements MailerService {
 					.withConnectionPoolMaxSize(getSMTPIntValue(realm, SMTP_CONNECTION_POOL_MAX_SIZE))
 					.withProperties(props)
 				    .trustingAllHosts(true)
-				    .async()
 					.withSessionTimeout(getSMTPIntValue(realm, SMTP_SESSION_TIMEOUT) * 1000)
 					.buildMailer();
 		}

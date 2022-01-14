@@ -76,7 +76,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
-	ThreadLocal<Boolean> synchronousEmail = new ThreadLocal<>();
+//	ThreadLocal<Boolean> synchronousEmail = new ThreadLocal<>();
 	
 	public final static String SMTP_DO_NOT_SEND_TO_NO_REPLY = "smtp.doNotSendToNoReply";
 	
@@ -114,12 +114,12 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	@Override
 	public void enableSynchronousEmail() {
-		synchronousEmail.set(true);
+//		synchronousEmail.set(true);
 	}
 	
 	@Override
 	public void disableSynchronousEmail() {
-		synchronousEmail.remove();
+//		synchronousEmail.remove();
 	}
 
 	@Override
@@ -390,15 +390,18 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			
 			if("true".equals(System.getProperty("hypersocket.email", "true"))) {
 				
-				Boolean sync = synchronousEmail.get();
-				if(Boolean.TRUE.equals(sync)) {
-					AsyncResponse asyncResponse = mail.sendMail(email.buildEmail(), true);
-					asyncResponse.onSuccess(() -> eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context)));
-					asyncResponse.onException((e) -> eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail(), context)));
-				} else {
-					 mail.sendMail(email.buildEmail());
+//				Boolean sync = synchronousEmail.get();
+//				if(Boolean.TRUE.equals(sync)) {
+//					AsyncResponse asyncResponse = mail.sendMail(email.buildEmail(), true);
+//					asyncResponse.onSuccess(() -> eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context)));
+//					asyncResponse.onException((e) -> eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail(), context)));
+//				} else {
+				/**
+				 * sendMail actually sends async if you setup the Mailer to be async (the javadocs are wrong, look at the code).
+				 */
+					mail.sendMail(email.buildEmail());
 					eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context));
-				}
+//				}
 				
 			}
 			
