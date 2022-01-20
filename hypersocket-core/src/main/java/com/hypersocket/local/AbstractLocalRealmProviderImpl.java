@@ -357,10 +357,13 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	@Transactional
 	public void changePassword(Principal principal, char[] oldPassword,
-			char[] newPassword) throws ResourceException,
+			char[] newPassword, boolean checkCurrent) throws ResourceException,
 			ResourceCreationException {
-		if(!verifyPassword(principal, oldPassword)) {
-			throw new ResourceChangeException(getResourceBundle(), "invalid.password");
+		
+		if (checkCurrent) {
+			if(!verifyPassword(principal, oldPassword)) {
+				throw new ResourceChangeException(getResourceBundle(), "invalid.password");
+			}
 		}
 		
 		setPassword(principal, newPassword, false, false);

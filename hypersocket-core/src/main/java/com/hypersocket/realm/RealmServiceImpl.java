@@ -979,17 +979,21 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 				try {
 					
+					Boolean checkCurrent = configurationService.getBooleanValue(getCurrentRealm(), "password.onChangePromptCurrent");
+					
 					passwordOperations.add(principal);
 					
 					for (PrincipalProcessor proc : principalProcessors) {
 						proc.beforeChangePassword(principal, newPassword, oldPassword);
 					}
 
-					if (!verifyPassword(principal, oldPassword.toCharArray())) {
-						throw new ResourceChangeException(RESOURCE_BUNDLE, "error.invalidPassword");
+					if (checkCurrent) {
+						if (!verifyPassword(principal, oldPassword.toCharArray())) {
+							throw new ResourceChangeException(RESOURCE_BUNDLE, "error.invalidPassword");
+						}
 					}
 
-					provider.changePassword(principal, oldPassword.toCharArray(), newPassword.toCharArray());
+					provider.changePassword(principal, oldPassword.toCharArray(), newPassword.toCharArray(), checkCurrent);
 
 					setCurrentPassword(newPassword);
 

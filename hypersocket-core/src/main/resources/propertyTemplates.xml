@@ -96,6 +96,8 @@
 		<property resourceKey="password.encoding" inputType="select"
 		    		url="enum/com.hypersocket.auth.PasswordEncryptionType/"
 						defaultValue="PBKDF2_SHA256_50000" weight="0" nameAttr="name" valueAttr="name"/>	
+		<property resourceKey="password.onChangePromptCurrent" inputType="switch"
+		    	defaultValue="true" weight="0" />	
 	</propertyCategory>
 	<propertyCategory resourceKey="category.cors"
 		 resourceBundle="PermissionService" weight="999999" group="sessions">
