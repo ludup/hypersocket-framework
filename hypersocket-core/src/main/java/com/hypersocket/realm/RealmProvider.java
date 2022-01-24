@@ -116,7 +116,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Set<String> getGroupPropertyNames(Principal principal);
 
-	void changePassword(Principal principal, char[] oldPassword, char[] newPassword, boolean checkCurrent)
+	void changePassword(Principal principal, char[] oldPassword, char[] newPassword)
 			throws ResourceException, ResourceException;
 
 	Set<String> getUserVariableNames(Principal principal);
