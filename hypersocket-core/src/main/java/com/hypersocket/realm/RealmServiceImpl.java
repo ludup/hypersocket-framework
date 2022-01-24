@@ -992,8 +992,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 							throw new ResourceChangeException(RESOURCE_BUNDLE, "error.invalidPassword");
 						}
 					}
-
-					provider.changePassword(principal, oldPassword.toCharArray(), newPassword.toCharArray(), checkCurrent);
+					
+					if(checkCurrent) {
+					   provider.changePassword(principal, oldPassword.toCharArray(), newPassword.toCharArray());
+					} else {
+					   provider.setPassword(principal,newPassword.toCharArray(), false, false);
+					}
 
 					setCurrentPassword(newPassword);
 
