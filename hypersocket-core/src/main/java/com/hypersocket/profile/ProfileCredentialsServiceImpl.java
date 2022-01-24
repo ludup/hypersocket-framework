@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.lucene.analysis.th.ThaiWordFilterFactory;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	
 	@Autowired
 	private RealmService realmService; 
-	
+		
 	private ProfileValidator validator = null;
 	
 	private Map<String,ProfileCredentialsProvider> providers = new HashMap<String,ProfileCredentialsProvider>();
@@ -97,6 +98,23 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	}
 	
 	@Override
+	public boolean areCredentialsRequired(Principal principal, String module) throws AccessDeniedException  {
+		
+		Profile profile = getProfileForUser(principal);
+		if(Objects.isNull(profile)) {
+			profile = generateProfile(principal);
+		}
+		
+		for(ProfileCredentials creds : profile.getCredentials()) {
+			if(creds.getResourceKey().equals(module)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	@Override
 	public Collection<AuthenticationScheme> filterUserSchemes(Principal principal, Collection<AuthenticationScheme> schemes) throws AccessDeniedException {
 		
 		List<AuthenticationScheme> userSchemes = new ArrayList<AuthenticationScheme>();
@@ -116,9 +134,64 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		return userSchemes;
 	}
 	
-	protected List<ProfileCredentials> collectAuthenticatorStates(Profile profile, Principal principal, Map<String,ProfileCredentials> existingCredentials) throws AccessDeniedException {
+	protected boolean collectAuthenticatorStates(Profile profile, Principal principal, List<ProfileCredentials> states, Map<String,ProfileCredentials> existingCredentials) throws AccessDeniedException {
 		
-		List<ProfileCredentials> states = new ArrayList<ProfileCredentials>();
+		boolean is2FA = false;
+		if(Objects.nonNull(validator)) {
+			Set<String> modules = new HashSet<>(validator.getRequiredUserCredentials(principal));
+			is2FA = modules.contains("2faAuthenticationFlow");
+			if(!is2FA) {
+				for(String module : modules) {
+					ProfileCredentialsProvider provider = providers.get(module);
+					is2FA |= module.equals("2faAuthenticationFlow");
+					if(Objects.nonNull(provider)) {
+						ProfileCredentialsState currentState = provider.hasCredentials(principal);
+						if(currentState!=ProfileCredentialsState.NOT_REQUIRED) {
+							ProfileCredentials c;
+							if(!existingCredentials.containsKey(provider.getResourceKey())) {
+								c = new ProfileCredentials();
+								c.setResourceKey(provider.getResourceKey());
+							} else {
+								c = existingCredentials.get(provider.getResourceKey());
+							}
+							c.setState(currentState);
+							states.add(c);
+						}
+					}
+				}
+			} else {
+				iterate2FACredentials(principal, states, existingCredentials);
+			}
+		} else {
+			iterateAllCredentials(principal, states, existingCredentials);
+		}
+		
+		profile.setSelective(is2FA);
+		return is2FA;
+	}
+	
+	private void iterate2FACredentials(Principal principal, List<ProfileCredentials> states, Map<String,ProfileCredentials> existingCredentials) throws AccessDeniedException {
+		
+		for(String module : validator.getRequired2FACredentials(principal)) {
+			ProfileCredentialsProvider provider = providers.get(module);
+			if(Objects.nonNull(provider)) {
+				ProfileCredentialsState currentState = provider.hasCredentials(principal);
+				if(currentState!=ProfileCredentialsState.NOT_REQUIRED) {
+					ProfileCredentials c;
+					if(!existingCredentials.containsKey(provider.getResourceKey())) {
+						c = new ProfileCredentials();
+						c.setResourceKey(provider.getResourceKey());
+					} else {
+						c = existingCredentials.get(provider.getResourceKey());
+					}
+					c.setState(currentState);
+					states.add(c);
+				}
+			}
+		}
+	}
+	
+	private void iterateAllCredentials(Principal principal, List<ProfileCredentials> states, Map<String,ProfileCredentials> existingCredentials) throws AccessDeniedException {
 		
 		for(ProfileCredentialsProvider provider : providers.values()) {
 			ProfileCredentialsState currentState = provider.hasCredentials(principal);
@@ -134,7 +207,6 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 				states.add(c);
 			}
 		}
-		return states;
 	}
 
 	@Override
@@ -161,9 +233,11 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 			}
 		}
 		
+		boolean is2FA = profile.getSelective() != null && profile.getSelective();
 		
-		if(Objects.nonNull(validator) && validator.hasMaximumCompletedAuth(profile.getRealm())) {
-			if(complete >= validator.getMaximumCompletedAuths(profile.getRealm())) {
+		if(Objects.nonNull(validator)) {
+			int threshold = is2FA ? validator.getMaximumCompletedAuths(profile.getRealm()) : profile.getCredentials().size();
+			if(complete >= threshold) {
 				profile.setState(ProfileCredentialsState.COMPLETE);
 			} else if(complete > 0 || partial > 0) {
 				profile.setState(ProfileCredentialsState.PARTIALLY_COMPLETE);
@@ -216,7 +290,10 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		Profile profile = new Profile();
 		profile.setId(target);
 		profile.setRealm(target.getRealm());
-		profile.setCredentials(collectAuthenticatorStates(profile, target, new HashMap<String,ProfileCredentials>()));
+		
+		List<ProfileCredentials> creds = new ArrayList<>();
+		collectAuthenticatorStates(profile, target,creds,new HashMap<String,ProfileCredentials>());
+		profile.setCredentials(creds);
 		calculateCompleteness(profile);
 		return profile;
 	}
@@ -253,7 +330,10 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		for(ProfileCredentials c : profile.getCredentials()) {
 			creds.put(c.getResourceKey(), c);
 		}
-		List<ProfileCredentials> currentCreds = collectAuthenticatorStates(profile, target, creds);
+		
+		List<ProfileCredentials> currentCreds = new ArrayList<>();
+		collectAuthenticatorStates(profile, target, currentCreds, creds);
+		
 		profile.getCredentials().clear();
 		StringBuffer names = new StringBuffer();
 		for(ProfileCredentials c : currentCreds) {

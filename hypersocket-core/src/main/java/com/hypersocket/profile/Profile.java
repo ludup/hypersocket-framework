@@ -50,6 +50,9 @@ public class Profile extends AbstractEntity<Long>{
 	@Column(name="completed")
 	@Temporal(TemporalType.DATE)
 	private Date completed;
+
+	@Column(nullable = true)
+	private Boolean selective;
 	
 	@Override
 	public Long getId() {
@@ -96,6 +99,14 @@ public class Profile extends AbstractEntity<Long>{
 
 	public void setCompleted(Date completed) {
 		this.completed = completed;
+	}
+
+	public Boolean getSelective() {
+		return selective;
+	}
+
+	public void setSelective(Boolean selective) {
+		this.selective = selective;
 	}
 	
 	
