@@ -41,8 +41,6 @@ public interface ProfileCredentialsService {
 
 	Profile getProfileForUser(Principal target) throws AccessDeniedException;
 
-	boolean calculateCompleteness(Profile profile);
-
 	void resetProfile(Principal principal) throws AccessDeniedException, ResourceException;
 
 	void onUserUndeleted(UserUndeletedEvent event);
@@ -56,5 +54,9 @@ public interface ProfileCredentialsService {
 	void setValidator(ProfileValidator validator);
 
 	void onConfigurationChange(ConfigurationValueChangedEvent evt);
+
+	boolean calculateCompleteness(Profile profile);
+
+	boolean areCredentialsRequired(Principal principal, String module) throws AccessDeniedException;
 
 }
