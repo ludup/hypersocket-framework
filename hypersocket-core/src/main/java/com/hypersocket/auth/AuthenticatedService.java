@@ -8,6 +8,7 @@
 package com.hypersocket.auth;
 
 import java.util.Locale;
+import java.util.concurrent.Callable;
 
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.Role;
@@ -58,5 +59,25 @@ public interface AuthenticatedService {
 	void setupSystemContext(Principal principal);
 
 	Realm getCurrentRealm(Principal principal);
+	
+	default <T> T callAsSystemContext(Callable<T> callable) throws Exception {
+		setupSystemContext();
+		try {
+			return callable.call();
+		}
+		finally {
+			clearPrincipalContext();
+		}	
+	} 
+	
+	default void runAsSystemContext(Runnable r) {
+		setupSystemContext();
+		try {
+			r.run();
+		}
+		finally {
+			clearPrincipalContext();
+		}
+	}
 
 }
