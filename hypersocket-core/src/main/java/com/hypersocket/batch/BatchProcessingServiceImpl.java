@@ -71,7 +71,7 @@ public abstract class BatchProcessingServiceImpl<T extends AbstractEntity<Long>>
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@Transactional(rollbackFor = { LockAcquisitionException.class, IllegalStateException.class }, isolation = Isolation.SERIALIZABLE)
+	@Transactional(rollbackFor = { LockAcquisitionException.class, IllegalStateException.class }, isolation = Isolation.READ_UNCOMMITTED)
 	public void processBatchItems() {
 
 		synchronized (this) {
