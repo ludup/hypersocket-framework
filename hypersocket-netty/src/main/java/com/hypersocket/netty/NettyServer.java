@@ -242,7 +242,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 				maxWorkerThreads = MIN_WORKERS;
 			}
 			else {
-				maxWorkerThreads = MIN_WORKERS + ( Runtime.getRuntime().availableProcessors() * 100 );
+				maxWorkerThreads = MIN_WORKERS + ( Runtime.getRuntime().availableProcessors() * 20 );
 			}
 		}
 		if(maxWorkerThreads < MIN_WORKERS) {
