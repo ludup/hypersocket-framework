@@ -122,7 +122,7 @@ public class core_0_DOT_2_DOT_0 implements Runnable {
 		realm = realmRepository.saveRealm(realm, new HashMap<String,String>(), localRealmProvider);
 		realmRepository.flush();
 		
-		configurationRepository.setValue(realm, "realm.userEditableProperties",
+		configurationRepository.setValue(realm, "realm.userVisibleProperties",
 				ResourceUtils.implodeValues(Arrays.asList("email", "description", "mobile")));
 		
 		// Create a system user

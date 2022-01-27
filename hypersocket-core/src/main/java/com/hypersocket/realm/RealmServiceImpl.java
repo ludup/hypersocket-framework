@@ -1430,7 +1430,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 							try {
 
 								if (changedType) {
-									configurationService.setValue(realm, "realm.userEditableProperties",
+									configurationService.setValue(realm, "realm.userVisibleProperties",
 											ResourceUtils.implodeValues(realmProvider.getDefaultUserPropertyNames()));
 
 									realm.setReadOnly(realmProvider.isReadOnly(realm));
