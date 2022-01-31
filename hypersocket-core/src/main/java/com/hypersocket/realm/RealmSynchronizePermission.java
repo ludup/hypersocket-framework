@@ -9,17 +9,14 @@ package com.hypersocket.realm;
 
 import com.hypersocket.permissions.PermissionType;
 
-public enum RealmPermission implements PermissionType {
+public enum RealmSynchronizePermission implements PermissionType {
 
-	READ("realm.read"),
-	CREATE("realm.create", READ),
-	UPDATE("realm.update", READ),
-	DELETE("realm.delete", READ);
+	SYNCHRONIZE("realm.sync", RealmPermission.UPDATE);
 	private final String val;
 	
 	private PermissionType[] implies;
 	
-	private RealmPermission(final String val, PermissionType... implies) {
+	private RealmSynchronizePermission(final String val, PermissionType... implies) {
 		this.val = val;
 		this.implies = implies;
 	}
@@ -40,7 +37,7 @@ public enum RealmPermission implements PermissionType {
 	
 	@Override
 	public boolean isSystem() {
-		return true;
+		return false;
 	}
 
 	@Override
