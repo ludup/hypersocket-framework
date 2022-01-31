@@ -241,6 +241,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		for (RealmPermission p : RealmPermission.values()) {
 			permissionService.registerPermission(p, cat);
 		}
+		for (RealmSynchronizePermission p : RealmSynchronizePermission.values()) {
+			permissionService.registerPermission(p, cat);
+		}
 
 		cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE, "category.acl");
 
