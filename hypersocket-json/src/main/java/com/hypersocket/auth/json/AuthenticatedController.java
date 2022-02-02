@@ -35,6 +35,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AssignableResource;
+import com.hypersocket.servlet.request.Request;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.json.SessionTimeoutException;
