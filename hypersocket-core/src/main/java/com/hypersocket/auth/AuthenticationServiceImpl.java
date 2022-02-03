@@ -955,7 +955,7 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public Map<String, Authenticator> getAuthenticators(String schemeResourceKey) {
 		Map<String, Authenticator> tmp = new HashMap<String, Authenticator>();
-		AuthenticationScheme scheme = schemeRepository.getSchemeByResourceKey(
+		AuthenticationScheme scheme = schemeRepository.getSchemeByResourceKey2(
 				getCurrentRealm(), schemeResourceKey);
 
 		AuthenticationModuleType type = Objects.isNull(scheme) ? AuthenticationModuleType.HTML : scheme.getType(); 
