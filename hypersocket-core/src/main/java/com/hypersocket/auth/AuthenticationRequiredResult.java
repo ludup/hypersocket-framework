@@ -25,6 +25,7 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 	private String lastButtonResourceKey;
 	private Realm realm;
 	private Map<String, String[]> requestParameters;
+	private int page;
 	
 	public AuthenticationRequiredResult() {
 
@@ -34,15 +35,15 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 			boolean lastErrorIsResourceKey, FormTemplate formTemplate,
 			boolean showLocales, boolean isNew, boolean isFirst, boolean isLast,
 			boolean lastResultSuccessful, boolean inPostAuthentication,
-			String lastButtonResourceKey, Realm realm) {
-		this(bannerMsg, errorMsg, errorStyle, lastErrorIsResourceKey, formTemplate, showLocales, isNew, isFirst, isLast, lastResultSuccessful, inPostAuthentication, lastButtonResourceKey, realm, null);
+			String lastButtonResourceKey, Realm realm, int page) {
+		this(bannerMsg, errorMsg, errorStyle, lastErrorIsResourceKey, formTemplate, showLocales, isNew, isFirst, isLast, lastResultSuccessful, inPostAuthentication, lastButtonResourceKey, realm, page, null);
 	}
 
 	public AuthenticationRequiredResult(String bannerMsg, String errorMsg, String errorStyle,
 			boolean lastErrorIsResourceKey, FormTemplate formTemplate,
 			boolean showLocales, boolean isNew, boolean isFirst, boolean isLast,
 			boolean lastResultSuccessful, boolean inPostAuthentication,
-			String lastButtonResourceKey, Realm realm, Map<String, String[]> requestParameters) {
+			String lastButtonResourceKey, Realm realm, int page, Map<String, String[]> requestParameters) {
 		super(bannerMsg, errorMsg, errorStyle, showLocales);
 		this.formTemplate = formTemplate;
 		this.lastErrorIsResourceKey = lastErrorIsResourceKey;
@@ -54,8 +55,13 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 		this.lastButtonResourceKey = lastButtonResourceKey;
 		this.realm = realm;
 		this.requestParameters = requestParameters;
+		this.page = page;
 	}
 
+	public int getNonce() {
+		return page;
+	}
+	
 	public Map<String, String[]> getRequestParameters() {
 		return requestParameters;
 	}
