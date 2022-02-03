@@ -336,6 +336,7 @@ public class LogonController extends AuthenticatedController {
 						state.isAuthenticationComplete(),
 						state.getScheme().getLastButtonResourceKey(),
 						state.getRealm(),
+						getNonce(request),
 						state.getRequestParameters());
 				
 			}
@@ -377,10 +378,19 @@ public class LogonController extends AuthenticatedController {
 					!state.hasNextStep(), state.isNew(),
 					state.isAuthenticationComplete(),
 					state.getScheme().getLastButtonResourceKey(),
-					state.getRealm());
+					state.getRealm(),
+					getNonce(request));
 		} finally {
 			clearAuthenticatedContext();
 		}
+	}
+
+	private int getNonce(HttpServletRequest request) {
+		String nonce = request.getParameter("nonce");
+		if(Objects.isNull(nonce)) {
+			return 0;
+		}
+		return Integer.parseInt(nonce);
 	}
 
 	private FormTemplate getErrorTemplate(AuthenticationState state, String message) {

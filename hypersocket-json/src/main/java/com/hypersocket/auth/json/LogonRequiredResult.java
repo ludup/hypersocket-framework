@@ -18,16 +18,16 @@ public class LogonRequiredResult extends AuthenticationRequiredResult {
 
 	public LogonRequiredResult(String bannerMsg, String errorMsg, String errorStyle, boolean lastErrorIsResourceKey,
 			FormTemplate formTemplate, boolean showLocales, boolean isNew, boolean isFirst, boolean isLast,
-			boolean lastResultSuccessful, boolean inPostAuthentication, String lastButtonResourceKey, Realm realm,
+			boolean lastResultSuccessful, boolean inPostAuthentication, String lastButtonResourceKey, Realm realm, int page,
 			Map<String, String[]> requestParameters) {
 		super(bannerMsg, errorMsg, errorStyle, lastErrorIsResourceKey, formTemplate, showLocales, isNew, isFirst, isLast,
-				lastResultSuccessful, inPostAuthentication, lastButtonResourceKey, realm, requestParameters);
+				lastResultSuccessful, inPostAuthentication, lastButtonResourceKey, realm, page, requestParameters);
 	}
 
 	public LogonRequiredResult(String bannerMsg, String errorMsg, String errorStyle, boolean lastErrorIsResourceKey,
 			FormTemplate formTemplate, boolean showLocales, boolean isNew, boolean isFirst, boolean isLast,
-			boolean lastResultSuccessful, boolean inPostAuthentication, String lastButtonResourceKey, Realm realm) {
+			boolean lastResultSuccessful, boolean inPostAuthentication, String lastButtonResourceKey, Realm realm, int page) {
 		super(bannerMsg, errorMsg, errorStyle, lastErrorIsResourceKey, formTemplate, showLocales, isNew, isFirst, isLast,
-				lastResultSuccessful, inPostAuthentication, lastButtonResourceKey, realm);
+				lastResultSuccessful, inPostAuthentication, lastButtonResourceKey, realm, page);
 	}
 }
