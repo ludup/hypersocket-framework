@@ -17,4 +17,7 @@ public interface ContentFilter {
 
 	List<ITokenResolver> getResolvers(HttpServletRequest request);
 
+	InputStream getFilterStream(InputStream resourceStream, HttpServletRequest request,
+			ITokenResolver... additionalResolvers) throws RedirectException;
+
 }
