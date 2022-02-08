@@ -786,6 +786,11 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 	
 	@Override
+	public void setResourceProperty(T resource, String resourceKey, String value) {
+		getRepository().setValue(resource, resourceKey, value);
+	}
+	
+	@Override
 	public boolean getResourceBooleanProperty(T resource, String resourceKey) {
 		return getRepository().getBooleanValue(resource, resourceKey);
 	}

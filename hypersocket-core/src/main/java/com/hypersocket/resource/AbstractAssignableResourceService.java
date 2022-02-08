@@ -120,4 +120,6 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 
 	T getResourceByLegacyId(Long id) throws ResourceNotFoundException, AccessDeniedException;
 
+	void setResourceProperty(T resource, String resourceKey, String value);
+
 }
