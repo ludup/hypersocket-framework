@@ -67,7 +67,7 @@ public abstract class AbstractAccountTask extends AbstractTaskProvider {
 			if(p == null)
 				throw new ResourceNotFoundException(RealmServiceImpl.RESOURCE_BUNDLE, "accountTask.noSuchPrincipal", principalName);
 			return doExecute(p, task, currentRealm, events);
-		} catch (NumberFormatException | ResourceNotFoundException | AccessDeniedException e) {
+		} catch (NumberFormatException | ResourceNotFoundException e) {
 			return getFailedResult(task, currentRealm, events, e, principalName);
 		}
 	}

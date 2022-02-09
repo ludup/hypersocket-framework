@@ -1677,9 +1677,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Principal getPrincipalByEmail(Realm realm, String email)
-			throws AccessDeniedException, ResourceNotFoundException {
-
-		assertAnyPermission(UserPermission.READ, GroupPermission.READ, RealmPermission.READ);
+			throws ResourceNotFoundException {
 
 		Principal principal = getProviderForRealm(realm).getPrincipalByEmail(realm, email);
 		if (principal == null) {
