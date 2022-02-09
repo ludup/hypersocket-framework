@@ -30,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hypersocket.HypersocketVersion;
+import com.hypersocket.json.version.HypersocketVersion;
 import com.hypersocket.utils.FileUtils;
 import com.hypersocket.utils.HttpUtilsHolder;
 import com.hypersocket.utils.HypersocketUtils;

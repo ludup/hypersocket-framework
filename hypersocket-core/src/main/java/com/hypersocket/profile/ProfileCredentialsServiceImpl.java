@@ -12,7 +12,6 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.lucene.analysis.th.ThaiWordFilterFactory;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

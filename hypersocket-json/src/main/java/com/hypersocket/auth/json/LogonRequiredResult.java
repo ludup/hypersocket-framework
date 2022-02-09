@@ -3,7 +3,7 @@ package com.hypersocket.auth.json;
 import java.util.Map;
 
 import com.hypersocket.auth.AuthenticationRequiredResult;
-import com.hypersocket.input.FormTemplate;
+import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.json.version.HypersocketVersion;
 import com.hypersocket.realm.Realm;
 

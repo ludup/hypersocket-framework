@@ -1,6 +1,5 @@
 package com.hypersocket.scheduler;
 
-import java.io.File;
 import java.util.List;
 
 import org.hibernate.SQLQuery;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
-import com.hypersocket.utils.HypersocketUtils;
 
 @Service
 public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl implements 

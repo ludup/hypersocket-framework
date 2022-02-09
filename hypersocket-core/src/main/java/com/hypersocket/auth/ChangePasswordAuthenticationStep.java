@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hypersocket.input.FormTemplate;
+import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;

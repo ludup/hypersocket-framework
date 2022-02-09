@@ -10,7 +10,7 @@ package com.hypersocket.auth;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hypersocket.input.FormTemplate;
+import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AbstractResourceRepository;

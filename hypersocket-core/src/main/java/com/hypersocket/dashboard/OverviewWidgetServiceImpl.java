@@ -17,10 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hypersocket.HypersocketVersion;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.http.HttpUtilsImpl;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.json.version.HypersocketVersion;
 import com.hypersocket.resource.ResourceException;
 
 @Service

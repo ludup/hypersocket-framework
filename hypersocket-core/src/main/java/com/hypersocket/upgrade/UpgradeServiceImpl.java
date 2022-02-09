@@ -50,7 +50,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.hypersocket.Version;
+import com.hypersocket.json.version.Version;
 
 public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAware {
 

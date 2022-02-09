@@ -2,7 +2,7 @@ package com.hypersocket.auth;
 
 import java.util.Map;
 
-import com.hypersocket.input.FormTemplate;
+import com.hypersocket.json.input.FormTemplate;
 
 public class AuthenticationServiceAdapter implements AuthenticationServiceListener {
 

@@ -10,9 +10,9 @@ package com.hypersocket.auth;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hypersocket.i18n.I18N;
-import com.hypersocket.input.FormTemplate;
-import com.hypersocket.input.ParagraphField;
-import com.hypersocket.input.PasswordInputField;
+import com.hypersocket.json.input.FormTemplate;
+import com.hypersocket.json.input.ParagraphField;
+import com.hypersocket.json.input.PasswordInputField;
 
 public class ChangePasswordTemplate extends FormTemplate {
 

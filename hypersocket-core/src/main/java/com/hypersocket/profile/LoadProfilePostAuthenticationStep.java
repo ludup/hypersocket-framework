@@ -13,7 +13,7 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.AuthenticatorResult;
 import com.hypersocket.auth.PostAuthenticationStep;
-import com.hypersocket.input.FormTemplate;
+import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.RealmService;
 

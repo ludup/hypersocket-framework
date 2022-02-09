@@ -16,11 +16,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.i18n.I18N;
-import com.hypersocket.input.FormTemplate;
-import com.hypersocket.input.Option;
-import com.hypersocket.input.PasswordInputField;
-import com.hypersocket.input.SelectInputField;
-import com.hypersocket.input.TextInputField;
+import com.hypersocket.json.input.FormTemplate;
+import com.hypersocket.json.input.Option;
+import com.hypersocket.json.input.PasswordInputField;
+import com.hypersocket.json.input.SelectInputField;
+import com.hypersocket.json.input.TextInputField;
 import com.hypersocket.realm.Realm;
 
 @XmlRootElement(name = "form")

@@ -9,8 +9,8 @@ package com.hypersocket.auth;
 
 import java.util.Map;
 
-import com.hypersocket.input.FormTemplate;
 import com.hypersocket.json.AuthenticationResult;
+import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.realm.Realm;
 
 public class AuthenticationRequiredResult extends AuthenticationResult {
