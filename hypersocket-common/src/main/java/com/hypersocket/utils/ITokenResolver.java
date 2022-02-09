@@ -1,10 +1,11 @@
 package com.hypersocket.utils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public interface ITokenResolver {
 
     String resolveToken(String tokenName);
 
-	Map<String,Object> getData();
+	default Map<String,Object> getData() { return new HashMap<>(); };
 }
