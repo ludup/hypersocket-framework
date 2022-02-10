@@ -361,7 +361,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public String getRemoteAddr() {
-		return remoteAddress.getAddress().getHostAddress();
+		return remoteAddress.getAddress() != null ? remoteAddress.getAddress().getHostAddress() : remoteAddress.getHostName();
 	}
 
 	@Override

@@ -583,6 +583,10 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		t.start();
 
 	}
+	
+	public boolean isEnableXForwardedForDomainNameResolution() {
+		return configurationService.getBooleanValue("security.enableXForwardedForDomainNameResolution");
+	}
 
 	static AtomicInteger threadId = new AtomicInteger();
 	
