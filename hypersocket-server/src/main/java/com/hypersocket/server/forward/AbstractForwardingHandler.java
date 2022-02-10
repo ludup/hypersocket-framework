@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +77,11 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 		if (!sessionService.isLoggedOn(sessionUtils.getActiveSession(request),
 				true)) {
 			throw new UnauthorizedException();
+		}
+		
+		if (!sessionUtils.isValidWebsocketRequest(request)) {
+			callback.websocketRejected(new AccessDeniedException("Session creation failed."), HttpStatus.SC_FORBIDDEN);
+			return;
 		}
 
 		Session session = sessionUtils.getActiveSession(request);

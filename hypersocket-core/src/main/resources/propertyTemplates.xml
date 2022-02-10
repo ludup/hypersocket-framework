@@ -97,10 +97,17 @@
 		    	defaultValue="true" weight="0" />	
 	</propertyCategory>
 	<propertyCategory resourceKey="category.cors"
-		 resourceBundle="PermissionService" weight="999999" group="sessions">
+		 resourceBundle="PermissionService" weight="999998" group="sessions">
 		<property resourceKey="cors.enabled" inputType="switch"
 		    	defaultValue="false" weight="0" />	
 		<property resourceKey="cors.origins" inputType="multipleTextInput"
+		    	defaultValue="" weight="100" />	
+	</propertyCategory>
+	<propertyCategory resourceKey="category.websocket"
+		 resourceBundle="PermissionService"  weight="999999" group="sessions">
+		 <property resourceKey="websocket.enabled" inputType="switch"
+		    	defaultValue="false" weight="0" />	
+		<property resourceKey="websocket.origins" inputType="multipleTextInput"
 		    	defaultValue="" weight="100" />	
 	</propertyCategory>
 </propertyTemplates>
