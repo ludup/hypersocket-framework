@@ -187,14 +187,6 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		if (cookie.getSecure()) {
 			cookieHeader.append("; Secure");
 		}
-		
-		
-		if (cookie.isHttpOnly()) { 
-			cookieHeader.append("; HttpOnly"); 
-		}
-		
-		
-		cookieHeader.append("; SameSite=Strict");
 
 		/**
 		 * Make sure we are not adding duplicate cookies

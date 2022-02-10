@@ -354,6 +354,7 @@ public class SessionUtils {
 		cookie.setMaxAge((session.getTimeout() > 0 ? 60 * session.getTimeout() : Integer.MAX_VALUE));
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
 		cookie.setPath("/");
+		cookie.setHttpOnly(true);
 		cookie.setDomain(request.getServerName());
 		response.addCookie(cookie);
 	
