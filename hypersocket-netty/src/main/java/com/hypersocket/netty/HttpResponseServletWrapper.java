@@ -187,6 +187,18 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		if (cookie.getSecure()) {
 			cookieHeader.append("; Secure");
 		}
+		
+		/**
+		 * These are causing issues with our single page application
+		 * and state passing via session cookies and use of Request.getSession
+		 */
+		
+//		if (cookie.isHttpOnly()) { 
+//			cookieHeader.append("; HttpOnly"); 
+//		}
+		
+		
+		//cookieHeader.append("; SameSite=Strict");
 
 		/**
 		 * Make sure we are not adding duplicate cookies
