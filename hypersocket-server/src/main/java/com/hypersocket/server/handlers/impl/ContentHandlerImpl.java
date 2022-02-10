@@ -51,6 +51,73 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
     public static final int HTTP_CACHE_SECONDS = 60 * 60;
+    
+    /**
+     *
+     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy
+     *
+     * MDN: says....
+     *  
+     * Feature-Policy
+     *
+	 * Experimental: This is an experimental technology
+	 * Check the Browser compatibility table carefully before using this in production.
+     *
+	 *	Warning: The header has now been renamed to Permissions-Policy in the spec, and this article will eventually be updated to reflect that change.
+     *
+     * 
+     * accelerometer
+     * ambient-light-sensor
+     * battery
+     * camera
+     * display-capture
+     * geolocation
+     * gyroscope
+     * magnetometer
+     * microphone
+     * payment
+     * speaker-selection
+     * usb
+     * autoplay
+     * publickey-credentials-get - (Webauthn)
+     * 
+     * e.g.
+     * Permissions-Policy: geolocation=(self "https://example.com"), microphone=()
+     */
+    private static final String PERMISSIONS_POLICY_HEADER_OPTIONS = "accelerometer=(), "
+    		+ "ambient-light-sensor=(), "
+    		+ "battery=(), "
+    		+ "camera=(), "
+    		+ "display-capture=(), "
+    		+ "geolocation=(), "
+    		+ "gyroscope=(), "
+    		+ "magnetometer=(), "
+    		+ "microphone=(), "
+    		+ "payment=(), "
+    		+ "speaker-selection=(), "
+    		+ "usb=(), "
+    		+ "autoplay=(), "
+    		+ "publickey-credentials-get=(self)";
+    
+    /**
+     * e.g.
+     * Feature-Policy: geolocation 'self' https://example.com; microphone 'none'
+     */
+    private static final String FEATURE_POLICY_HEADER_OPTIONS = "accelerometer 'none'; "
+    		+ "ambient-light-sensor 'none'; "
+    		+ "battery 'none'; "
+    		+ "camera 'none'; "
+    		+ "display-capture 'none'; "
+    		+ "geolocation 'none'; "
+    		+ "gyroscope 'none'; "
+    		+ "magnetometer 'none'; "
+    		+ "microphone 'none'; "
+    		+ "payment 'none'; "
+    		+ "speaker-selection 'none'; "
+    		+ "usb 'none'; "
+    		+ "autoplay 'none'; "
+    		+ "publickey-credentials-get 'self'";
+    
 
     private ConfigurableMimeFileTypeMap mimeTypesMap = new ConfigurableMimeFileTypeMap();
     
@@ -74,6 +141,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			HttpServletResponse response, HttpResponseProcessor responseProcessor) throws IOException {
 		
 		try {
+			
 			if (request.getMethod() != HttpMethod.GET.toString()) {
 			    response.sendError(HttpStatus.SC_METHOD_NOT_ALLOWED);
 			    return;
@@ -179,6 +247,13 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			
 			setContentTypeHeader(response, path);
 			setDateAndCacheHeaders(response, path);
+			
+			if (request.getRequestURI().endsWith(".html")) {
+				response.addHeader("Referrer-Policy", "no-referrer");
+				
+				response.addHeader("Permissions-Policy", PERMISSIONS_POLICY_HEADER_OPTIONS);
+				response.addHeader("Feature-Policy", FEATURE_POLICY_HEADER_OPTIONS);
+			}
 			
 			response.setStatus(HttpStatus.SC_OK);
 		} catch (RedirectException e) {
