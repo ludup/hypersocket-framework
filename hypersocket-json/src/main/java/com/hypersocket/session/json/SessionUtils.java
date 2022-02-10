@@ -307,6 +307,37 @@ public class SessionUtils {
 		
 		return false;
 	}
+	
+	public boolean isValidWebsocketRequest(HttpServletRequest request) {
+		
+		Realm currentRealm = getCurrentRealmOrDefault(request);
+		String requestOrigin = request.getHeader("Origin");
+		
+		if (Objects.isNull(requestOrigin)) {
+			return false;
+		}
+		
+		if(log.isDebugEnabled()) {
+			log.debug("Websocket request for origin {}", requestOrigin);
+		}
+		
+		
+		if(configurationService.getBooleanValue(currentRealm, "websocket.enabled")) {
+		
+			Set<String> origins = new HashSet<>();
+			
+			origins.addAll(ResourceUtils.explodeCollectionValues(
+					configurationService.getValue(currentRealm, "websocket.origins")));
+			
+			return origins.contains(requestOrigin);
+			
+		}
+		
+		
+		return true;
+	}
+	
+	
 
 	public void addAPISession(HttpServletRequest request,
 			HttpServletResponse response, Session session) {
