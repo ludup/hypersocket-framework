@@ -162,7 +162,10 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 							HttpResponseStatus.OK),
 					ctx.getChannel(), nettyRequest);
 	
+			boolean resolve = server.isEnableXForwardedForDomainNameResolution();
 			InetSocketAddress remoteAddress = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
+			RemoteAddressResolver remoteAddressResolver = new RemoteAddressResolver( remoteAddress.getAddress().getHostAddress(), remoteAddress.getPort(), resolve);
+			
 			if(nettyRequest.containsHeader("X-Forwarded-For")) {
 				String[] ips = nettyRequest.getHeader("X-Forwarded-For").split(",");
 				
@@ -173,13 +176,13 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				 */
 				String[] ipAndPort = ips[0].split(":");
 				
-				remoteAddress = new InetSocketAddress(ips[0], ipAndPort.length > 1 ? Integer.parseInt(ipAndPort[1]) : remoteAddress.getPort());
+				remoteAddressResolver = new RemoteAddressResolver(ips[0], ipAndPort.length > 1 ? Integer.parseInt(ipAndPort[1]) : remoteAddress.getPort(), resolve);
 			} else if(nettyRequest.containsHeader("Forwarded")) {
 				StringTokenizer t = new StringTokenizer(nettyRequest.getHeader("Forwarded"), ";");
 				while(t.hasMoreTokens()) {
 					String[] pair = t.nextToken().split("=");
 					if(pair.length == 2 && pair[0].equalsIgnoreCase("for")) {
-						remoteAddress = new InetSocketAddress(pair[1], remoteAddress.getPort());
+						remoteAddressResolver = new RemoteAddressResolver(pair[1], remoteAddress.getPort(), resolve);
 					}
 				}
 			}
@@ -192,7 +195,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			
 			servletRequest = new HttpRequestServletWrapper(
 					nettyRequest, (InetSocketAddress) ctx.getChannel()
-							.getLocalAddress(), remoteAddress, 
+							.getLocalAddress(), remoteAddressResolver.getInetSocketAddress(), 
 							interfaceResource.getProtocol()==HTTPProtocol.HTTPS, 
 							server.getServletContext(), session);
 			
