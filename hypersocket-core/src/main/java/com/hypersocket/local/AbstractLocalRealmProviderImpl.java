@@ -71,7 +71,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	public final static String FIELD_PASSWORD_ENCODING = "password.encoding";
 
 	@Autowired
-	private LocalUserRepository userRepository;
+	protected LocalUserRepository userRepository;
 
 	@Autowired
 	private LocalGroupRepository groupRepository;
@@ -88,10 +88,10 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Autowired
 	private ConfigurationService configurationService;
 
-	private Set<String> defaultProperties = new HashSet<String>();
+	protected Set<String> defaultProperties = new HashSet<String>();
 	
 	@PostConstruct
-	private void registerProvider() throws Exception {
+	private final void registerProvider() throws Exception {
 
 		defaultProperties.add("fullname");
 		defaultProperties.add("email");
