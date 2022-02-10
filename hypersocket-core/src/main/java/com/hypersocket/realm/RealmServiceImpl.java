@@ -451,7 +451,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		if (log.isInfoEnabled()) {
 			log.info("Registering " + provider.getModule() + " realm provider");
 		}
-		providersByModule.put(provider.getModule(), provider);
+		if(providersByModule.put(provider.getModule(), provider) != null) {
+			throw new IllegalArgumentException(String.format("More than one provider registered with the name %s", provider.getModule()));
+		}
 	}
 
 	@Override

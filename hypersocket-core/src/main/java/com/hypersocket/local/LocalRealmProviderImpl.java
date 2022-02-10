@@ -10,10 +10,8 @@ package com.hypersocket.local;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -53,8 +51,6 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	public final static String FIELD_MOBILE = "mobile";
 	public final static String FIELD_PASSWORD_ENCODING = "password.encoding";
 
-	@Autowired
-	private LocalUserRepository userRepository;
 
 	@Autowired
 	private LocalGroupRepository groupRepository;
@@ -74,25 +70,12 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	@Autowired
 	private SessionService sessionService; 
 	
-	private Set<String> defaultProperties = new HashSet<String>();
-	
 	@PostConstruct
 	private void registerProvider() throws Exception {
 		i18nService.registerBundle(LocalRealmProviderImpl.RESOURCE_BUNDLE);
 
-		defaultProperties.add("fullname");
 		defaultProperties.add("description");
-		defaultProperties.add("email");
-		defaultProperties.add("mobile");
-		
-		realmService.registerRealmProvider(this);
 
-		loadPropertyTemplates("localRealmTemplate.xml");
-
-		userRepository.loadPropertyTemplates("localUserTemplate.xml");
-		userRepository.registerPropertyResolver(userAttributeService.getPropertyResolver());
-		groupRepository.loadPropertyTemplates("localGroupTemplate.xml");
-		
 		if(Boolean.getBoolean("logonbox.forceAdminPassword")) {
 			sessionService.executeInSystemContext(()->{
 				try {
