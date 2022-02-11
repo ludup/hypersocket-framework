@@ -193,12 +193,11 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		 * and state passing via session cookies and use of Request.getSession
 		 */
 		
-//		if (cookie.isHttpOnly()) { 
-//			cookieHeader.append("; HttpOnly"); 
-//		}
+		if (cookie.isHttpOnly()) { 
+			cookieHeader.append("; HttpOnly"); 
+		}
 		
-		
-		//cookieHeader.append("; SameSite=Strict");
+		cookieHeader.append("; SameSite=None");
 
 		/**
 		 * Make sure we are not adding duplicate cookies
