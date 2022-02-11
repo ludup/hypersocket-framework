@@ -546,7 +546,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		cookie.setMaxAge(60 * 15);
 		cookie.setPath("/");
 		cookie.setSecure(secure);
-		cookie.setHttpOnly(true);
+//		cookie.setHttpOnly(true);
 		cookie.setDomain(domain);
 		servletResponse.addCookie(cookie);
 

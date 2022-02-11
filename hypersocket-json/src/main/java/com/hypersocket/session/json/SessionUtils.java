@@ -345,7 +345,7 @@ public class SessionUtils {
 		Cookie cookie = new Cookie(HYPERSOCKET_API_SESSION, session.getId());
 		cookie.setMaxAge((session.getTimeout() > 0 ? 60 * session.getTimeout() : Integer.MAX_VALUE));
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
-		cookie.setHttpOnly(true);
+//		cookie.setHttpOnly(true);
 		cookie.setDomain(request.getServerName());
 		cookie.setPath("/");
 		response.addCookie(cookie);
@@ -354,6 +354,7 @@ public class SessionUtils {
 		cookie.setMaxAge((session.getTimeout() > 0 ? 60 * session.getTimeout() : Integer.MAX_VALUE));
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
 		cookie.setPath("/");
+//		cookie.setHttpOnly(true);
 		cookie.setDomain(request.getServerName());
 		response.addCookie(cookie);
 	
@@ -393,7 +394,7 @@ public class SessionUtils {
 		cookie.setPath("/");
 
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
-		cookie.setHttpOnly(true);
+//		cookie.setHttpOnly(true);
 		cookie.setDomain(request.getServerName());
 		response.addCookie(cookie);
 
