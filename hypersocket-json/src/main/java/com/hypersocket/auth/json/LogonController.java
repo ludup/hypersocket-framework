@@ -239,7 +239,7 @@ public class LogonController extends AuthenticatedController {
 					}
 				}
 				
-				if(state==null) {
+				if(state==null || !Objects.equals(scheme, state.getInitialSchemeResourceKey())) {
 					state = AuthenticationState.createAuthenticationState(scheme, request,
 						null, state, sessionUtils.getLocale(request));
 				}
