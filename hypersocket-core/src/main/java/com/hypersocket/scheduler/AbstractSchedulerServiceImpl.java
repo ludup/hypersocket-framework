@@ -26,6 +26,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.JobKey;
 import org.quartz.JobListener;
+import org.quartz.JobPersistenceException;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleScheduleBuilder;
@@ -513,6 +514,8 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 					}
 				} catch (NotScheduledException e) {
 					// Should not happen
+				} catch(JobPersistenceException jpe) {
+					log.warn("Failed to load persisted job. Skipping.", jpe);
 				}
 			}
 		}
