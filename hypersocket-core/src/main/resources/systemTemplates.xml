@@ -111,7 +111,7 @@
 	</propertyCategory>
 			
 	<propertyCategory resourceKey="category.dictionaryApiLogon"
-		resourceBundle="DictionaryResourceService" weight="1000" group="dictionary">
+		resourceBundle="DictionaryResourceService" weight="1000" group="dictionary" visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true">
 		<property resourceKey="dictionary.logonRequired" inputType="switch"
 			defaultValue="false" weight="100"  visibilityDependsOn="dictionary.blacklistApiCall" visibilityDependsValue="true"/>
 		<property resourceKey="dictionary.logonAuthentication" inputType="select" defaultValue="NONE" options="NONE,BASIC,NTLM"
