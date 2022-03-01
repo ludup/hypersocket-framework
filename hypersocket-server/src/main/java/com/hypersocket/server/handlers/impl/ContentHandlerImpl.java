@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -38,8 +39,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 
+import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.server.handlers.HttpResponseProcessor;
+import com.hypersocket.session.Session;
+import com.hypersocket.session.SessionService;
+import com.hypersocket.session.json.SessionUtils;
 import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class ContentHandlerImpl extends HttpRequestHandler implements ContentHandler {
@@ -140,6 +145,16 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	public void handleHttpRequest(HttpServletRequest request,
 			HttpServletResponse response, HttpResponseProcessor responseProcessor) throws IOException {
 		
+		SessionUtils sessionUtils = 
+				ApplicationContextServiceImpl.getInstance().getBean(SessionUtils.class);
+				
+		SessionService sessionService = ApplicationContextServiceImpl.getInstance().getBean(SessionService.class);
+		
+		Session session = sessionUtils.getActiveSession(request);
+		
+		if(Objects.nonNull(session)) {
+			sessionService.setCurrentSession(sessionUtils.getActiveSession(request), sessionUtils.getLocale(request));
+		}
 		try {
 			
 			if (request.getMethod() != HttpMethod.GET.toString()) {
@@ -275,6 +290,9 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			}
 		} finally {
 			responseProcessor.sendResponse(request, response, false);
+			if(Objects.nonNull(session)) {
+				sessionService.clearPrincipalContext();
+			}
 		}
 
     }
