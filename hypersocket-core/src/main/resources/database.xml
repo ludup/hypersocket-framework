@@ -52,7 +52,7 @@
 		</property>
 		<property name="regionFactory" ref="regionFactory" />
 		<property name="databaseInformation" ref="databaseInformation" />
-		<property name="packagesToScan" value="com.hypersocket.**" />
+		<property name="packagesToScan" value="com.hypersocket.**,com.logonbox.**" />
 		<property name="hibernateProperties">
 			<props>
 				<prop key="hibernate.dialect">${jdbc.hibernate.dialect}</prop>
