@@ -122,4 +122,10 @@ public interface AbstractAssignableResourceService<T> extends PasswordEnabledAut
 
 	void setResourceProperty(T resource, String resourceKey, String value);
 
+	T getResourceWithProperty(String propertyName, String propertyValue)
+			throws ResourceNotFoundException, AccessDeniedException;
+
+	Collection<T> getResourcesWithProperty(String propertyName, String propertyValue)
+			throws ResourceNotFoundException, AccessDeniedException;
+
 }
