@@ -34,6 +34,7 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.properties.DatabaseProperty;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -878,5 +879,26 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		assertPermission(getReadPermission());
 		
 		return getRepository().getResourcesByIds(ids);
+	}
+	
+	@Override
+	public Collection<T> getResourcesWithProperty(String propertyName, String propertyValue) throws ResourceNotFoundException, AccessDeniedException {
+		
+		List<DatabaseProperty> properties = getRepository().getPropertiesWithValue(propertyName, propertyValue);
+		List<T> tmp = new ArrayList<>();
+		for(DatabaseProperty property : properties) {
+			tmp.add(getResourceById(property.getResourceId()));
+		}
+		return tmp;
+	}
+	
+	@Override
+	public T getResourceWithProperty(String propertyName, String propertyValue) throws ResourceNotFoundException, AccessDeniedException {
+		
+		List<DatabaseProperty> properties = getRepository().getPropertiesWithValue(propertyName, propertyValue);
+		if(properties.size() != 1) {
+			throw new ResourceNotFoundException(RESOURCE_BUNDLE_DEFAULT, "error.notFound");
+		}
+		return getResourceById(properties.iterator().next().getResourceId());
 	}
 }
