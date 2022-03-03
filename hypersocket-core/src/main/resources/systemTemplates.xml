@@ -30,6 +30,8 @@
 			allowEmpty="false" weight="500" defaultValue="2000" />
 		<property resourceKey="security.minGeneratedGid" inputType="text" minValue="0" maxValue="2147483647"
 			allowEmpty="false" weight="600" defaultValue="1000" />
+		 <property resourceKey="userstack.accesskey" inputType="text"
+			restart="false" weight="0" allowEmpty="true" developmentValue="a9ef4f10d141655e9bbe4ba8cc34316f"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.databaseSettings"
 		resourceBundle="DatabaseService" weight="200">

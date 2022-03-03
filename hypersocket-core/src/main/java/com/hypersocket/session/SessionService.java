@@ -7,13 +7,12 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.decibel.uasparser.OnlineUpdater;
-import com.decibel.uasparser.UASparser;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -117,8 +116,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 
 	void executeInSystemContext(Runnable r);
 
-	void setUAParser(UASparser parser, OnlineUpdater updater);
-
 	Role switchRole(Session session, Long id) throws AccessDeniedException, ResourceNotFoundException;
 
 	void switchRole(Session currentSession, Role role) throws AccessDeniedException;
@@ -145,6 +142,8 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	
 	IStackLocation lookupGeoIP(Realm realm, String ipAddress);
 	
-	boolean isIpStackAPIKeySet(Realm realm); 
+	boolean isIpStackAPIKeySet(Realm realm);
+
+	UserstackAgent lookupUserAgent(String ua) throws IOException; 
 }
 

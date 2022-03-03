@@ -369,13 +369,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>me.atlis</groupId>
-			<artifactId>decibelinsight-uasparser</artifactId>
-			<version>1.0.12</version>
-		</dependency>
-
-
-		<dependency>
 			<groupId>net.sf.supercsv</groupId>
 			<artifactId>super-csv</artifactId>
 			<version>2.4.0</version>

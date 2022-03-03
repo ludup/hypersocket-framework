@@ -8,6 +8,7 @@
 package com.hypersocket.session;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,6 +28,7 @@ import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -36,9 +38,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
-import com.decibel.uasparser.OnlineUpdater;
-import com.decibel.uasparser.UASparser;
-import com.decibel.uasparser.UserAgentInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
@@ -107,15 +106,11 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	public static String TOKEN_PREFIX = "_TOK";
 
-	private UASparser parser;
 	private Map<Session, List<ResourceSession<?>>> resourceSessions = new HashMap<Session, List<ResourceSession<?>>>();
 	private Map<String, SessionResourceToken<?>> sessionTokens = new HashMap<String, SessionResourceToken<?>>();
 	private Map<String, Session> nonCookieSessions = new HashMap<String, Session>();
 	private Session systemSession;
 	private List<SessionReaperListener> listeners = new ArrayList<SessionReaperListener>();
-
-	/* BUG: This is contructed here, but never used? */
-	private OnlineUpdater updater;
 	
 	@Autowired
 	private HttpUtils httpUtils;
@@ -131,9 +126,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		if (log.isInfoEnabled()) {
 			log.info("Loading User Agent database");
 		}
-
-		parser = new UASparser();
-		updater = new OnlineUpdater(parser, "");
 
 		if (log.isInfoEnabled()) {
 			log.info("Loaded User Agent database");
@@ -156,16 +148,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		synchronized (listeners) {
 			listeners.add(listener);
 		}
-	}
-
-	@Override
-	public void setUAParser(UASparser parser, OnlineUpdater updater) {
-		if(this.updater != null) {
-			this.updater.interrupt();
-			this.updater = null;
-		}
-		this.parser = parser;
-		this.updater = updater;
 	}
 
 	private Session createSystemSession() {
@@ -249,16 +231,16 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			session = repository.createSession(remoteAddress, principal, completedScheme, "API_REST", "Unknown",
 					"Unknown", "Unknown", parameters, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
 		} else {
-			UserAgentInfo info;
+			UserstackAgent info;
 			try {
-				info = parser.parse(userAgent);
+				info = lookupUserAgent(userAgent);
 				if ("unknown".equals(info.getType())) {
 
 					session = repository.createSession(remoteAddress, principal, completedScheme, userAgent, userAgent,
 							userAgent, userAgent, parameters, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
 				} else {
-					session = repository.createSession(remoteAddress, principal, completedScheme, info.getUaFamily(),
-							info.getBrowserVersionInfo(), info.getOsFamily(), info.getOsName(),
+					session = repository.createSession(remoteAddress, principal, completedScheme, info.getBrowser().getName(),
+							info.getBrowser().getVersion(), info.getOs().getFamily(), info.getName(),
 							parameters, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
 					setCurrentRole(session, permissionService.getPersonalRole(principal));
 				}
@@ -274,6 +256,43 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		eventService.publishEvent(new SessionOpenEvent(this, session));
 		return session;
 	}
+	
+	@Override
+	public UserstackAgent lookupUserAgent(String ua) throws IOException {
+		
+		Cache<String,UserstackAgent> cached = cacheService.getCacheOrCreate(
+				"userAgents", String.class, UserstackAgent.class,  
+				CreatedExpiryPolicy.factoryOf(Duration.ETERNAL));
+		
+//		UserstackAgent loc = cached.get(ua);
+//		if(Objects.nonNull(loc)) {
+//			return loc;
+//		}
+		
+		try {
+			ObjectMapper o = new ObjectMapper();
+			String accessKey = systemConfigurationService.getValue("userstack.accesskey");
+			if(StringUtils.isBlank(accessKey)) {
+				throw new IOException("No userstack.com access key configured");
+			}
+			//a9ef4f10d141655e9bbe4ba8cc34316f
+			
+			String locationJson = httpUtils.doHttpGetContent(
+					String.format("http://api.userstack.com/detect?access_key=%s&ua=%s", 
+								 accessKey, URLEncoder.encode(ua, "UTF-8")),
+							false, 
+							new HashMap<String,String>());
+			
+			UserstackAgent location =  o.readValue(locationJson, UserstackAgent.class);
+			cached.put(ua, location);
+			return location;
+			
+		} catch(IllegalStateException e ) {
+			throw new IOException("No ipstack.com access key configured");
+		}
+		
+	}
+	
 
 	@Override
 	public Session getSession(String id) {
