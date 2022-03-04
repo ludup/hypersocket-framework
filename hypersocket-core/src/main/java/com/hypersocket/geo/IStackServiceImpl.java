@@ -3,6 +3,7 @@ package com.hypersocket.geo;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import javax.cache.Cache;
 import javax.cache.expiry.CreatedExpiryPolicy;
@@ -35,7 +36,7 @@ public class IStackServiceImpl implements IStackService {
 		
 		Cache<String,IStackLocation> cached = cacheService.getCacheOrCreate(
 				"geoIPs", String.class, IStackLocation.class,  
-				CreatedExpiryPolicy.factoryOf(Duration.ONE_DAY));
+				CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.DAYS, 7)));
 		
 		IStackLocation loc = cached.get(ipAddress);
 		if(Objects.nonNull(loc)) {
