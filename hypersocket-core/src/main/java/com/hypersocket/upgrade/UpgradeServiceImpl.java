@@ -128,6 +128,22 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 		if (log.isInfoEnabled()) {
 			log.info("Starting pre-upgrade");
 		}
+		
+		try (Connection connection = ds.getConnection()) {
+			String url = ds.getConnection().getMetaData().getURL();
+			if(url.startsWith("jdbc:h2:")) {
+				log.info("Compacting database, this may take a long time if it hasn't been done for a time!");
+				try(Statement statement = connection.createStatement()) {
+					statement.execute("SHUTDOWN COMPACT");
+				}
+				catch(Exception e) {
+				}
+				log.info("Compact completed.");
+			}
+		}
+		catch (SQLException  e) {
+			throw new IOException("Failed compact.", e);
+		}
 
 		try (Connection connection = ds.getConnection()) {
 
