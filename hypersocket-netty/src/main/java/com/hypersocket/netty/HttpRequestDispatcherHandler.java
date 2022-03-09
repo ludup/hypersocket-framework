@@ -13,6 +13,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -441,7 +443,23 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			url = (URL) servletRequest.getAttribute("404.html");
 		}
 		servletResponse.setContentType("text/html");
-		servletRequest.setAttribute(CONTENT_INPUTSTREAM, url.openStream());
+		URLConnection conx = url.openConnection();
+		servletResponse.setContentLength(conx.getContentLength());
+		setContentStream(servletRequest, conx.getInputStream());
+	}
+	
+	public static void setContentStream(HttpServletRequest request, InputStream stream) {
+		if (log.isDebugEnabled()) {
+			synchronized (log) {
+				log.debug(String.format("Setting request for %s as streamed response.", request.getRequestURI()));
+			}
+		}
+		InputStream was = (InputStream)request.getAttribute(CONTENT_INPUTSTREAM); 
+		if(was != null) {
+			log.warn("Stream set on request multiple times. This is not recommended. Closing previous stream to prevent file leaks.");
+			IOUtils.closeQuietly(was);
+		}
+		request.setAttribute(CONTENT_INPUTSTREAM, stream);
 	}
 	
 	@Override
@@ -466,8 +484,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		
 		TokenReplacementReader reader = new TokenReplacementReader(
 				new InputStreamReader(url.openStream()), Arrays.asList(resolver));
-		servletRequest.setAttribute(CONTENT_INPUTSTREAM, 
-				new ReaderInputStream(reader, Charset.forName("UTF-8")));
+		setContentStream(servletRequest, new ReaderInputStream(reader, Charset.forName("UTF-8")));
 	}
 	
 	private void processWebsocketFrame(WebSocketFrame msg, Channel channel) {
@@ -519,7 +536,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			
 			addStandardHeaders(servletRequest, servletResponse);
 
-			InputStream content = processContent(
+			InputStream stream = processContent(
 					servletRequest,
 					servletResponse,
 					servletResponse.getRequest().getHeader(
@@ -541,7 +558,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				}
 			}
 
-			if (content != null) {
+			if (stream != null) {
 
 				try {
 					servletResponse.getChannel().write(
@@ -549,24 +566,24 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 
 					if (log.isDebugEnabled()) {
 						try {
-							log.debug("Sending " + content.available() 
-									+ " bytes of HTTP content");
+							log.debug("Sending " + stream.available() 
+									+ " bytes of streamed HTTP content");
 						} catch (IOException e) {
 						}
 					}
 
 					servletResponse
 							.getChannel()
-							.write(new HttpChunkStream(content, servletRequest
+							.write(new HttpChunkStream(stream, servletRequest
 									.getRequestURI()))
 							.addListener(
 									new CheckCloseStateListener(servletResponse));
 				} catch (Exception e) {
-					log.error("Unexpected exception writing content stream", e);
+					log.error("Unexpected exception writing stream", e);
 				}
 			} else {
 				if (log.isDebugEnabled()) {
-					log.debug("Sending non-content response");
+					log.debug("Sending buffered response");
 				}
 				servletResponse
 						.getChannel()

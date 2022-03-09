@@ -57,13 +57,23 @@ public class SSLSwitchingHandler extends FrameDecoder {
 
 		HTTPInterfaceResource interfaceResource = (HTTPInterfaceResource) channel.getParent().getAttachment();
 		if (interfaceResource.getProtocol()==HTTPProtocol.HTTPS) {
+			if(log.isDebugEnabled()) {
+				log.debug("Channel is HTTPS, enabling SSL handlers");
+			}
 			enableSsl(interfaceResource, ctx);
 		} else {
+			if(log.isDebugEnabled()) {
+				log.debug("Channel is HTTP, enabling plain handlers");
+			}
 			enablePlainHttp(ctx);
 		} 
 
 		// Forward the current read buffer as is to the new handlers.
-		return buffer.readBytes(buffer.readableBytes());
+		int b = buffer.readableBytes();
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Forwarding %d bytes to handlers.", b));
+		}
+		return buffer.readBytes(b);
 	}
 
 
