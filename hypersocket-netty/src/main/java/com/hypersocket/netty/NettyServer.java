@@ -57,7 +57,6 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.jboss.netty.handler.execution.ChannelDownstreamEventRunnable;
 import org.jboss.netty.handler.execution.ChannelUpstreamEventRunnable;
 import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.jboss.netty.util.ObjectSizeEstimator;
@@ -151,8 +150,8 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		return executionHandler;
 	}
 	
-	public OrderedMemoryAwareThreadPoolExecutor getExecutionHandler() {
-		return (OrderedMemoryAwareThreadPoolExecutor) executionHandler.getExecutor();
+	public ScalingThreadPoolExecutor getExecutionHandler() {
+		return (ScalingThreadPoolExecutor) executionHandler.getExecutor();
 	}
 
 	@PostConstruct
