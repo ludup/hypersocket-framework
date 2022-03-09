@@ -607,7 +607,6 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			if(log.isDebugEnabled()) {
 				log.debug("Opening channel from " + addr.toString());
 			}
-			log.info("REMOVEME Opening channel from " + addr.toString());
 
 			synchronized (channelsByIPAddress) {
 				if(!channelsByIPAddress.containsKey(addr.getHostAddress())) {
@@ -626,7 +625,6 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			if(log.isDebugEnabled()) {
 				log.debug("Closing channel from " + addr.toString());
 			}
-			log.info("REMOVEME Closing channel from " + addr.toString());
 
 			synchronized (channelsByIPAddress) {
 				channelsByIPAddress.get(addr.getHostAddress()).remove(ctx.getChannel());
