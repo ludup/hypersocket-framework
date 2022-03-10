@@ -277,7 +277,7 @@ public class MiniHttpServer extends Thread implements Closeable {
 						socket.getOutputStream().flush();
 					}
 				} catch (Exception e) {
-					LOG.info("Failed handling connection.", e);
+					LOG.info("Failed handling connection. " + socket, e);
 				}
 			}
 		} finally {
