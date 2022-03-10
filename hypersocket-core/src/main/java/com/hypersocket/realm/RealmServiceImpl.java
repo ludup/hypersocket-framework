@@ -232,6 +232,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	Map<String, TableFilter> builtInPrincipalFilters = new HashMap<String, TableFilter>();
 
 	private Collection<Principal> passwordOperations = Collections.synchronizedCollection(new HashSet<>());
+	private LinkedAccountProvider linkedAccountProvider;
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -3167,5 +3168,17 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		} catch (AccessDeniedException e) {
 			throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
 		}
+	}
+
+	@Override
+	public void setLinkedAccountProvider(LinkedAccountProvider linkedAccountProvider) {
+		if(this.linkedAccountProvider != null && linkedAccountProvider != null)
+			log.warn("Attempt to set more than one linked account provider. Original provider replaced.");
+		this.linkedAccountProvider = linkedAccountProvider;
+	}
+
+	@Override
+	public LinkedAccountProvider getLinkedAccountProvider() {
+		return linkedAccountProvider;
 	}
 }
