@@ -139,4 +139,9 @@ public class UsernameAndPasswordAuthenticator extends
 	public boolean isEnabled() {
 		return true;
 	}
+
+	@Override
+	public String getCredentialsResourceKey() {
+		return "password";
+	}
 }

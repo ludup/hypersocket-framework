@@ -12,7 +12,6 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.lucene.analysis.th.ThaiWordFilterFactory;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +21,9 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationScheme;
+import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.auth.Authenticator;
+import com.hypersocket.auth.UsernameAndPasswordAuthenticator;
 import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -63,6 +65,9 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	@Autowired
 	private RealmService realmService; 
 		
+	@Autowired
+	private AuthenticationService authenticationService; 
+	
 	private ProfileValidator validator = null;
 	
 	private Map<String,ProfileCredentialsProvider> providers = new HashMap<String,ProfileCredentialsProvider>();
@@ -137,11 +142,19 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		
 		boolean is2FA = false;
 		if(Objects.nonNull(validator)) {
-			Set<String> modules = new HashSet<>(validator.getRequiredUserCredentials(principal));
-			is2FA = modules.contains("2faAuthenticationFlow");
-			if(!is2FA) {
-				for(String module : modules) {
-					ProfileCredentialsProvider provider = providers.get(module);
+			Set<String> nonSelectiveCredentials = new HashSet<>(validator.getRequiredUserCredentials(principal));
+			is2FA = nonSelectiveCredentials.contains("2faAuthenticationFlow");
+			
+			
+			if(is2FA) {
+				Set<String> selectiveCredentials = new HashSet<>(validator.getRequired2FACredentials(principal));
+				nonSelectiveCredentials.removeAll(selectiveCredentials);
+			}
+			
+			if(!nonSelectiveCredentials.isEmpty()) {
+				for(String module : nonSelectiveCredentials) {
+					Authenticator authenticator = authenticationService.getAuthenticator(module);
+					ProfileCredentialsProvider provider = providers.get(authenticator.getCredentialsResourceKey());
 					is2FA |= module.equals("2faAuthenticationFlow");
 					if(Objects.nonNull(provider)) {
 						ProfileCredentialsState currentState = provider.hasCredentials(principal);
@@ -158,7 +171,9 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 						}
 					}
 				}
-			} else {
+			} 
+			
+			if(is2FA) {
 				iterate2FACredentials(principal, states, existingCredentials);
 			}
 		} else {
@@ -172,7 +187,8 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	private void iterate2FACredentials(Principal principal, List<ProfileCredentials> states, Map<String,ProfileCredentials> existingCredentials) throws AccessDeniedException {
 		
 		for(String module : validator.getRequired2FACredentials(principal)) {
-			ProfileCredentialsProvider provider = providers.get(module);
+			Authenticator authenticator = authenticationService.getAuthenticator(module);
+			ProfileCredentialsProvider provider = providers.get(authenticator.getCredentialsResourceKey());
 			if(Objects.nonNull(provider)) {
 				ProfileCredentialsState currentState = provider.hasCredentials(principal);
 				if(currentState!=ProfileCredentialsState.NOT_REQUIRED) {
