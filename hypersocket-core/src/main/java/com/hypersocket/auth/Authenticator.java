@@ -49,4 +49,6 @@ public interface Authenticator {
 	boolean requiresUserInput(AuthenticationState state) throws AccessDeniedException;
 
 	boolean canAuthenticate(Principal principal) throws AccessDeniedException;
+
+	String getCredentialsResourceKey();
 }
