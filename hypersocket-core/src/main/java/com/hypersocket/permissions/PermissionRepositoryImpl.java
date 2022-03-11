@@ -838,5 +838,19 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		return get("resourceCategory", resourceCategory, Role.class, new DeletedCriteria(false));
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public Collection<Role> getAllPermissionsRoles(Realm realm) {
+		return new HashSet<Role>(allEntities(Role.class,
+				JOIN_PRINCIPALS_PERMISSIONS,
+				new RealmRestriction(realm),
+				new CriteriaConfiguration() {
+					@Override
+					public void configure(Criteria criteria) {
+						criteria.add(Restrictions.eq("allPermissions", true));
+					}
+		}));
+	}
+
 
 }
