@@ -50,5 +50,7 @@ public interface AuthenticationSchemeRepository extends AbstractResourceReposito
 
 	List<AuthenticationScheme> getSystemSchemes(Realm currentRealm);
 
+	AuthenticationSchemeRegistration getRegistration(String scheme);
+
 	
 }

@@ -1418,5 +1418,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public Set<Role> getAllUserRoles() {
 		return repository.getAllUserRoles(getCurrentRealm());
 	}
+
+	@Override
+	public void assertAdministrativeAccess() throws AccessDeniedException {
+		assertRole(getAllPermissionsRoles().toArray(new Role[0]));
+	}
+
+	private Collection<Role> getAllPermissionsRoles() {
+		return repository.getAllPermissionsRoles(getCurrentRealm());
+	}
 	
 }

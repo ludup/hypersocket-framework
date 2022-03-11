@@ -9,7 +9,9 @@ package com.hypersocket.auth;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
@@ -42,7 +44,12 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	@Autowired
 	private AuthenticationModuleRepository moduleRepository; 
 	
-	private List<AuthenticationSchemeRegistration> schemes = new ArrayList<>();
+	private Map<String,AuthenticationSchemeRegistration> schemes = new HashMap<>();
+	
+	@Override
+	public AuthenticationSchemeRegistration getRegistration(String scheme) {
+		return schemes.get(scheme);
+	}
 	
 	@Override
 	@Transactional
@@ -198,7 +205,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	
 	private Collection<String> getEnabledSchemes(Realm realm) {
 		List<String> results = new ArrayList<>();
-		for(AuthenticationSchemeRegistration r : schemes) {
+		for(AuthenticationSchemeRegistration r : schemes.values()) {
 			if(r.isEnabled()) {
 				results.add(r.getResourceKey());
 			}
@@ -242,12 +249,12 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 
 	@Override
 	public void registerAuthenticationScheme(String scheme) {
-		schemes.add(new DefaultRegistration(scheme));
+		schemes.put(scheme, new DefaultRegistration(scheme));
 	}
 	
 	@Override
 	public void registerAuthenticationScheme(AuthenticationSchemeRegistration scheme) {
-		schemes.add(scheme);
+		schemes.put(scheme.getResourceKey(), scheme);
 	}
 	
 	class DefaultRegistration implements AuthenticationSchemeRegistration {
@@ -272,7 +279,7 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 
 	@Override
 	public boolean isEnabled(String template) {
-		for(AuthenticationSchemeRegistration r : schemes) {
+		for(AuthenticationSchemeRegistration r : schemes.values()) {
 			if(r.getResourceKey().equals(template)) {
 				return r.isEnabled();
 			}
