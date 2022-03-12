@@ -12,5 +12,9 @@
 			defaultValue="0" weight="760" restart="true" />
 		<property resourceKey="netty.maxWorkerThreads" inputType="integer" minValue="0" maxValue="99999"
 			defaultValue="0" weight="700" restart="true" />
+		<property resourceKey="netty.maxChannelMemory" inputType="integer" minValue="0" maxValue="99999999999"
+			defaultValue="1048576" weight="800" restart="true" />
+		<property resourceKey="netty.maxTotalMemory" inputType="integer" minValue="0" maxValue="99999999999"
+			defaultValue="52428800" weight="900" restart="true" />
 	</propertyCategory>
 </propertyTemplates>
