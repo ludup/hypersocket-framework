@@ -57,6 +57,7 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.jboss.netty.handler.execution.ChannelDownstreamEventRunnable;
 import org.jboss.netty.handler.execution.ChannelUpstreamEventRunnable;
 import org.jboss.netty.handler.execution.ExecutionHandler;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.jboss.netty.util.ObjectSizeEstimator;
@@ -150,8 +151,8 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		return executionHandler;
 	}
 	
-	public ScalingThreadPoolExecutor getExecutionHandler() {
-		return (ScalingThreadPoolExecutor) executionHandler.getExecutor();
+	public ThreadPoolExecutor getExecutionHandler() {
+		return (ThreadPoolExecutor) executionHandler.getExecutor();
 	}
 
 	@PostConstruct
@@ -726,7 +727,6 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			}
 		}
 
-
 		return size;
 	}
 
@@ -750,19 +750,10 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			nettyResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubdomains");
 		}
 	}
-	
-	public static class ForceQueuePolicy implements RejectedExecutionHandler {
-	    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-	        try {
-	            executor.getQueue().put(r);
-	        } catch (InterruptedException e) {
-	            //should never happen since we never wait
-	            throw new RejectedExecutionException(e);
-	        }
-	    }
-	}
 
-	public static ExecutorService newScalingThreadPool(int min, int max, long keepAliveTime, ThreadFactory factory) {
-		return new ScalingThreadPoolExecutor(min, max, keepAliveTime, TimeUnit.MILLISECONDS, factory);
+	private ExecutorService newScalingThreadPool(int min, int max, long keepAliveTime, ThreadFactory factory) {
+		long maxMem = configurationService.getIntValue("netty.maxChannelMemory");
+		long maxTotal = configurationService.getIntValue("netty.maxTotalMemory");
+		return new OrderedMemoryAwareThreadPoolExecutor(max, maxMem, maxTotal, keepAliveTime, TimeUnit.MILLISECONDS, factory);
 	}
 }
