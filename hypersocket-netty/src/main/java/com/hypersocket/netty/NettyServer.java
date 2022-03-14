@@ -172,7 +172,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		}
 		
 		executionHandler = new ExecutionHandler(
-				newScalingThreadPool(minChannels, maxChannels, TimeUnit.MINUTES.toMillis(WORKER_TIMEOUT_MINUTES), nettyThreadFactory));
+				newThreadPool(minChannels, maxChannels, TimeUnit.MINUTES.toMillis(WORKER_TIMEOUT_MINUTES), nettyThreadFactory));
 		log.info(String.format("Using %d minimum execution threads, %d max execution  threads", 1, maxChannels));
 		
 		requestLog = new NCSARequestLog();
@@ -755,19 +755,16 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			nettyResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubdomains");
 		}
 	}
-	
-	public static class ForceQueuePolicy implements RejectedExecutionHandler {
-	    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-	        try {
-	            executor.getQueue().put(r);
-	        } catch (InterruptedException e) {
-	            //should never happen since we never wait
-	            throw new RejectedExecutionException(e);
-	        }
-	    }
+
+	private ExecutorService newScalingThreadPool(int min, int max, long keepAliveTime, ThreadFactory factory) {
+		return new ScalingThreadPoolExecutor(min, max, keepAliveTime, TimeUnit.MILLISECONDS, factory); 
 	}
 
-	public static ExecutorService newScalingThreadPool(int min, int max, long keepAliveTime, ThreadFactory factory) {
-		return new ScalingThreadPoolExecutor(min, max, keepAliveTime, TimeUnit.MILLISECONDS, factory);
+	private ExecutorService newThreadPool(int min, int max, long keepAliveTime, ThreadFactory factory) {
+		long maxMem = configurationService.getIntValue("netty.maxChannelMemory");
+		long maxTotal = configurationService.getIntValue("netty.maxTotalMemory");
+		OrderedMemoryAwareThreadPoolExecutor exec = new OrderedMemoryAwareThreadPoolExecutor(max, maxMem, maxTotal, keepAliveTime, TimeUnit.MILLISECONDS, factory);
+		exec.allowCoreThreadTimeOut(true);
+		return exec;
 	}
 }
