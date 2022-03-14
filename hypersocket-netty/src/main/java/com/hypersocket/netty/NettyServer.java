@@ -23,10 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -57,6 +54,7 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.jboss.netty.handler.execution.ChannelDownstreamEventRunnable;
 import org.jboss.netty.handler.execution.ChannelUpstreamEventRunnable;
 import org.jboss.netty.handler.execution.ExecutionHandler;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.jboss.netty.util.ObjectSizeEstimator;
