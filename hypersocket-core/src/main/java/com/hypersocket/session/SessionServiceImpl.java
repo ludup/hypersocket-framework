@@ -245,7 +245,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					setCurrentRole(session, permissionService.getPersonalRole(principal));
 				}
 			} catch (IOException e) {
-				session = repository.createSession(remoteAddress, principal, completedScheme, userAgent, "Unknown",
+				session = repository.createSession(remoteAddress, principal, completedScheme, 
+						StringUtils.defaultIfBlank(StringUtils.substringBefore(userAgent, "/"), "Unknown"),
+						StringUtils.defaultIfBlank(StringUtils.substringBefore(StringUtils.substringAfter(userAgent, "/"), " "), "Unknown"),
 						"Unknown", "Unknown", parameters, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
 			}
 
@@ -264,10 +266,10 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				"userAgents", String.class, UserstackAgent.class,  
 				CreatedExpiryPolicy.factoryOf(Duration.ETERNAL));
 		
-//		UserstackAgent loc = cached.get(ua);
-//		if(Objects.nonNull(loc)) {
-//			return loc;
-//		}
+		UserstackAgent loc = cached.get(ua);
+		if(Objects.nonNull(loc)) {
+			return loc;
+		}
 		
 		try {
 			ObjectMapper o = new ObjectMapper();
