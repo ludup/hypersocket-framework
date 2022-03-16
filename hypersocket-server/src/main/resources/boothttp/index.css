@@ -9,7 +9,7 @@ body {
 	position: absolute;
 	top: 0;
 	height: 4em;
-	background-color: #1e0c51;
+	background-color: #000033;
 	left: 0;
 	right: 0;
 	text-align: left;
@@ -40,7 +40,7 @@ body {
 }
 
 #progress-bar-inner {
-	background-color: #1e0c51;
+	background-color: #000033;
 	height: 24px;
 }
 
