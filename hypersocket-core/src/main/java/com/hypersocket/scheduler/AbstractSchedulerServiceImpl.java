@@ -346,7 +346,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		if (log.isInfoEnabled()) {
 			log.info("Rescheduling job with id " + id + " to start "
 					+ (start == null ? "now" : "at " + HypersocketUtils.formatDateTime(start)) + " with interval of "
-					+ interval + " and repeat " + (repeat >= 0 ? repeat : "indefinatley")
+					+ interval + " and repeat " + (repeat >= 0 ? repeat : "indefinitely")
 					+ (end != null ? " until " + HypersocketUtils.formatDateTime(end) : ""));
 		}
 
