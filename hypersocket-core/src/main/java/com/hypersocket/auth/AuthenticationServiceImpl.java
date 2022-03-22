@@ -960,7 +960,6 @@ public class AuthenticationServiceImpl extends
 		AuthenticationModuleType type = Objects.isNull(scheme) ? AuthenticationModuleType.HTML : scheme.getType(); 
 		
 		for (Authenticator a : authenticators.values()) {
-
 			if (a.isHidden() || !a.isEnabled()) {
 				continue;
 			}
