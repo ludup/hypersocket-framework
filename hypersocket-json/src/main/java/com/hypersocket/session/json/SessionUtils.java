@@ -301,7 +301,14 @@ public class SessionUtils {
 			}
 
 			if(origins.contains(requestOrigin)) {
+				if(log.isDebugEnabled()) {
+					log.debug("CORS request SUCCEEDED for origin {}", requestOrigin);
+				}
 				return true;
+			}
+			
+			if(log.isDebugEnabled()) {
+				log.debug("CORS request FAILED origin {}", requestOrigin);
 			}
 		}
 		
