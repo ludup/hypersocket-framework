@@ -8,10 +8,15 @@ import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -21,7 +26,9 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContextBuilder;
@@ -33,27 +40,39 @@ public class HttpUtilsApacheImpl implements HttpUtils {
 
 	@Override
 	public CloseableHttpClient createHttpClient(boolean allowSelfSigned) throws IOException {
-	
-		CloseableHttpClient httpclient = null;
+		HttpClientBuilder httpbuilder = null;
 		if (allowSelfSigned) {
 			try {
 				SSLContextBuilder builder = new SSLContextBuilder();
 				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
 				SSLConnectionSocketFactory cm = new SSLConnectionSocketFactory(builder.build(),
 						NoopHostnameVerifier.INSTANCE);
-				httpclient = HttpClients.custom()
+				httpbuilder = HttpClients.custom()
 						.setSSLSocketFactory(cm)
-			            .setDefaultCookieStore(cookieStore)
-						.build();
+						.useSystemProperties()
+			            .setDefaultCookieStore(cookieStore);
 			} catch (Exception e) {
 				throw new IOException(e.getMessage(), e);
 			}
 
 		} else {
-			httpclient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
+			httpbuilder = HttpClients.custom().useSystemProperties().setDefaultCookieStore(cookieStore);
 		}
-		return httpclient;
-	
+		String proxyUsername = System.getProperty("http.proxyUsername");
+		if(StringUtils.isNotBlank(proxyUsername)) {
+			Credentials credentials = new UsernamePasswordCredentials(proxyUsername,System.getProperty("http.proxyPassword"));
+			CredentialsProvider credsProvider = new BasicCredentialsProvider();
+			String httpProxy = System.getProperty("http.proxyHost");
+			if(StringUtils.isNotBlank(httpProxy)) {
+				credsProvider.setCredentials(new AuthScope(httpProxy, Integer.parseInt(System.getProperty("http.proxyProxy", "8080"))), credentials);
+			}
+			String httpsProxy = System.getProperty("https.proxyHost");
+			if(StringUtils.isNotBlank(httpsProxy)) {
+				credsProvider.setCredentials(new AuthScope(httpsProxy, Integer.parseInt(System.getProperty("https.proxyProxy", "8443"))), credentials);
+			}
+			httpbuilder.setDefaultCredentialsProvider(credsProvider);
+		}
+		return httpbuilder.build();
 	}
 
 	@Override

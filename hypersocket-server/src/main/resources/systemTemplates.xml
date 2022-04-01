@@ -59,6 +59,8 @@
 	   	    <property resourceKey="proxy.port" inputType="integer" minValue="1" maxValue="65535" defaultValue="3128" weight="300"/>
 	   	    <property resourceKey="proxy.type" inputType="select" defaultValue="HTTP" options="HTTP,SOCKS" weight="400"/>
 	   	    <property resourceKey="proxy.bypass" inputType="multipleTextInput" defaultValue="" weight="400"/>
+	   	    <property resourceKey="proxy.username" inputType="text" defaultValue="" weight="500"/>
+	   	    <property resourceKey="proxy.password" inputType="password" defaultValue="" weight="600"/>
 	</propertyCategory>
     <!-- Deprecated only for now so upgrade script  (in enhanced security) -->
 	<propertyCategory resourceKey="category.ipRestrictions" resourceBundle="HypersocketServer" weight="400" hidden="true">
