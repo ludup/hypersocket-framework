@@ -2,14 +2,15 @@ package com.hypersocket.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -19,7 +20,6 @@ import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +28,10 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -36,16 +40,18 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.ProxyAuthenticationStrategy;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpCoreContext;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.util.EntityUtils;
@@ -123,13 +129,48 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 			SSLContextBuilder builder = new SSLContextBuilder();
 			builder.loadTrustMaterial(null, this);
 			Registry<ConnectionSocketFactory> reg = RegistryBuilder.<ConnectionSocketFactory>create()
-					.register("http", new ProxiedSocketFactory())
-					.register("https", new ProxiedSSLSocketFactory(builder.build(), cb)).build();
+					.register("http", new PlainConnectionSocketFactory())
+					.register("https", new SSLConnectionSocketFactory(builder.build(), cb)).build();
 
 			PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(reg);
 			RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(requestTimeout)
 					.setSocketTimeout(requestTimeout).setConnectTimeout(requestTimeout).build();
-			httpclient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig)
+			HttpClientBuilder httpbuilder = HttpClients.custom().useSystemProperties();
+
+			if (systemConfigurationService
+					.getBooleanValue("proxy.enabled")) {
+				
+
+				String httpProxy = systemConfigurationService.getValue("proxy.host");
+				int httpProxyPort = systemConfigurationService.getIntValue("proxy.port");
+				httpbuilder.setProxy(new HttpHost(httpProxy, httpProxyPort));
+				httpbuilder.setRoutePlanner(new SystemDefaultRoutePlanner(new ProxySelector() {
+					
+					@Override
+					public List<Proxy> select(URI uri) {
+						return Collections.singletonList(checkProxyBypass(uri.getHost()) ? Proxy.NO_PROXY : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(httpProxy, httpProxyPort)));
+					}
+					
+					@Override
+					public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+						log.error(String.format("Http proxy route planner failed for %s on %s.", uri, sa), ioe);
+					}
+				}));
+				
+				String proxyUsername = System.getProperty("http.proxyUsername", systemConfigurationService.getValue("proxy.username"));
+				if(StringUtils.isNotBlank(proxyUsername)) {
+					httpbuilder.setProxyAuthenticationStrategy(new ProxyAuthenticationStrategy());
+					Credentials credentials = new UsernamePasswordCredentials(proxyUsername,System.getProperty("http.proxyPassword", systemConfigurationService.getValue("proxy.password")));
+					CredentialsProvider credsProvider = new BasicCredentialsProvider();
+					if(StringUtils.isNotBlank(httpProxy)) {
+						credsProvider.setCredentials(new AuthScope(httpProxy, systemConfigurationService.getIntValue("proxy.port")), credentials);
+					}
+					httpbuilder.setDefaultCredentialsProvider(credsProvider);
+				}
+			}
+					
+			
+			httpclient = httpbuilder.setConnectionManager(cm).setDefaultRequestConfig(requestConfig)
 					.setDefaultCookieStore(cookieStore).build();
 
 			return httpclient;
@@ -172,6 +213,9 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 			HttpEntity entity = response.getEntity();
 			return EntityUtils.toString(entity);
 
+		} catch(InternalError error) {
+			/* We get this if proxy authentication fails */
+			throw new IOException("Unexpected HTTP error.", error.getCause());
 		} finally {
 			try {
 				client.close();
@@ -186,8 +230,14 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 		CloseableHttpClient client = createHttpClient(allowSelfSigned);
 
 		HttpGet request = new HttpGet(uri);
-
-		return new ContentInputStream(client, client.execute(request).getEntity().getContent());
+		
+		try {
+			return new ContentInputStream(client, client.execute(request).getEntity().getContent());
+		}
+		catch(InternalError error) {
+			/* We get this if proxy authentication fails */
+			throw new IOException("Unexpected HTTP error.", error.getCause());
+		} 
 
 	}
 	
@@ -202,9 +252,13 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 				request.setHeader(key, headers.get(key));
 			}
 		}
-		
-		return new ContentInputStream(client, client.execute(request).getEntity().getContent());
-
+		try {
+			return new ContentInputStream(client, client.execute(request).getEntity().getContent());
+		}
+		catch(InternalError error) {
+			/* We get this if proxy authentication fails */
+			throw new IOException("Unexpected HTTP error.", error.getCause());
+		}
 	}
 
 	@Override
@@ -220,7 +274,13 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 			}
 		}
 
-		return client.execute(request);
+		try {
+			return client.execute(request);
+		}
+		catch(InternalError error) {
+			/* We get this if proxy authentication fails */
+			throw new IOException("Unexpected HTTP error.", error.getCause());
+		}
 
 	}
 
@@ -343,35 +403,6 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 		}
 	}
 
-	class ProxiedSSLSocketFactory extends SSLConnectionSocketFactory {
-
-		public ProxiedSSLSocketFactory(final SSLContext sslContext) {
-			super(sslContext);
-		}
-
-		public ProxiedSSLSocketFactory(final SSLContext sslContext, HostnameVerifier verifier) {
-			super(sslContext, verifier);
-		}
-
-		@Override
-		public Socket createSocket(final HttpContext context) throws IOException {
-
-			HttpHost currentHost = (HttpHost) context.getAttribute(HttpCoreContext.HTTP_TARGET_HOST);
-
-			if (systemConfigurationService.getBooleanValue("proxy.enabled")
-					&& !checkProxyBypass(currentHost.getHostName()) && !checkProxyBypass(currentHost.getAddress())) {
-				InetSocketAddress socksaddr = new InetSocketAddress(systemConfigurationService.getValue("proxy.host"),
-						systemConfigurationService.getIntValue("proxy.port"));
-				Proxy proxy = new Proxy(Proxy.Type.valueOf(systemConfigurationService.getValue("proxy.type")),
-						socksaddr);
-				return new Socket(proxy);
-			} else {
-				return new Socket();
-			}
-		}
-
-	}
-
 	protected boolean checkProxyBypass(String hostname) {
 
 		String[] bypass = systemConfigurationService.getValues("proxy.bypass");
@@ -389,55 +420,6 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 		}
 
 		return false;
-	}
-
-	protected boolean checkProxyBypass(InetAddress hostname) {
-
-		return false;
-	}
-
-	class ProxiedSocketFactory implements ConnectionSocketFactory {
-
-		public ProxiedSocketFactory() {
-		}
-
-		@Override
-		public Socket createSocket(final HttpContext context) throws IOException {
-
-			HttpHost currentHost = (HttpHost) context.getAttribute(HttpCoreContext.HTTP_TARGET_HOST);
-
-			if (systemConfigurationService.getBooleanValue("proxy.enabled")
-					&& !checkProxyBypass(currentHost.getHostName()) && !checkProxyBypass(currentHost.getAddress())) {
-				InetSocketAddress socksaddr = new InetSocketAddress(systemConfigurationService.getValue("proxy.host"),
-						systemConfigurationService.getIntValue("proxy.port"));
-				Proxy proxy = new Proxy(Proxy.Type.valueOf(systemConfigurationService.getValue("proxy.type")),
-						socksaddr);
-				return new Socket(proxy);
-			} else {
-				return new Socket();
-			}
-		}
-
-		@Override
-		public Socket connectSocket(int connectTimeout, Socket socket, HttpHost host, InetSocketAddress remoteAddress,
-				InetSocketAddress localAddress, HttpContext context) throws IOException {
-			Socket sock;
-			if (socket != null) {
-				sock = socket;
-			} else {
-				sock = createSocket(context);
-			}
-			if (localAddress != null) {
-				sock.bind(localAddress);
-			}
-			try {
-				sock.connect(remoteAddress, connectTimeout);
-			} catch (SocketTimeoutException ex) {
-				throw new ConnectTimeoutException(ex, host, remoteAddress.getAddress());
-			}
-			return sock;
-		}
-
 	}
 
 	@Override
