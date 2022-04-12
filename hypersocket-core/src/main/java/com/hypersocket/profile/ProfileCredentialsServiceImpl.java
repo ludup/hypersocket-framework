@@ -23,7 +23,6 @@ import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.Authenticator;
-import com.hypersocket.auth.UsernameAndPasswordAuthenticator;
 import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;

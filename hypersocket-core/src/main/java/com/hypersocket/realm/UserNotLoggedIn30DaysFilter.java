@@ -23,7 +23,6 @@ public class UserNotLoggedIn30DaysFilter extends DefaultTableFilter {
 		return "filter.user.not.logged.in.30.days";
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) {
