@@ -94,11 +94,16 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	private void ready(SystemEvent wce) throws SchedulerException {
 		/* Moved this here due to https://logonboxlimited.slack.com/archives/DJVSBK1PV/p1588258404017000 */
 		if(wce.getResourceKey().equals("event.webappCreated")) {
-			for (SchedulerResource res : doGetResources(realmService.getSystemRealm())) {
-				if(res.getRealmId() != null) {
-					if(realmRepository.getRealmById(res.getRealmId()) == null)
-						doDeleteResource(res);
+			try {
+				for (SchedulerResource res : doGetResources(realmService.getSystemRealm())) {
+					if(res.getRealmId() != null) {
+						if(realmRepository.getRealmById(res.getRealmId()) == null)
+							doDeleteResource(res);
+					}
 				}
+			}
+			catch(Throwable t) {
+				log.error("Failed to delete jobs that have no realm. This may indicate serialized jobs are corrupted. Recommended all QRTZ_ tables are deleted, and the server restarted.");
 			}
 		}
 	}
