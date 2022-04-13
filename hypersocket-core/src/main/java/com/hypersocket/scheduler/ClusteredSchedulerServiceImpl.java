@@ -1,15 +1,14 @@
 package com.hypersocket.scheduler;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
 import java.util.List;
 
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,70 +16,107 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
-import com.hypersocket.utils.HypersocketUtils;
 
 @Service
-public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl implements 
-		ClusteredSchedulerService {
-	
+public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl implements ClusteredSchedulerService {
+
 	final static Logger LOG = LoggerFactory.getLogger(ClusteredSchedulerServiceImpl.class);
 
 	@Autowired
 	private Scheduler clusteredScheduler;
-	
+
 	@Autowired
-	private UpgradeService upgradeService; 
-	
+	private UpgradeService upgradeService;
+
 	@Autowired
 	private SessionFactory sessionFactory;
-	
+
 	protected Scheduler configureScheduler() throws SchedulerException {
-		
+
 		upgradeService.registerListener(new UpgradeServiceListener() {
-			
+
 			@Override
 			public void onUpgradeComplete() {
-				
+
 				try {
 					clusteredScheduler.start();
-				} catch (SchedulerException e) {
+				} catch (Exception e) {
 					/**
-					 * Should we be throwing this? It kills the server entirely.
+					 * LDP - Should we be throwing this? It kills the server entirely.
+					 * 
+					 * BPS - Yes, because we want to know this and fix it. The server wont start any
+					 * way due to similar errors being thrown later, or it might start but with
+					 * broken jobs depending on exactly what is broken (jobs or triggers).
+					 * 
+					 * We first attempt to deleting the offending jobs / triggers in the code below.
+					 * If this doesn't work, the best option is manual intervention.
+					 * 
+					 * It's better the problem be known about, rather jobs simply not running and
+					 * nobody noticing. Serialization errors are most likely to occur after
+					 * upgrades, so a server not starting after an upgrade has a better chance of
+					 * being noticed.
 					 */
-					log.error("The clustered scheduler failed to start", e);
-//					throw new IllegalStateException(e.getMessage(), e);
+					throw new IllegalStateException(
+							"The clustered scheduler failed to start due to an unrecoverable error. Please correct this by removing all jobs at the database level and starting the server again. Contact support for assistence and quote this exact error.",
+							e);
 				}
 			}
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public void onUpgradeFinished() {
-				/* Clean up jobs and triggers that no longer exist */
 				Session session = sessionFactory.openSession();
 				try {
-					SQLQuery query = session.createSQLQuery("SELECT JOB_NAME, JOB_CLASS_NAME FROM QRTZ_JOB_DETAILS");			@SuppressWarnings("unchecked")
+					/* Clean up jobs and triggers that no longer exist */
+					SQLQuery query = session.createSQLQuery("SELECT JOB_NAME, JOB_CLASS_NAME FROM QRTZ_JOB_DETAILS");
 					List<Object[]> results = query.list();
-					for(Object[] row : results) {
+					for (Object[] row : results) {
 						try {
-							Class.forName((String)row[1]);
-						}
-						catch(Exception e) {
-							LOG.warn(String.format("Removing job %s as the class %s no longer exists.", row[0], row[1]), e);
-							for(Trigger key : clusteredScheduler.getTriggersOfJob(new JobKey((String)row[0]))) {
-								clusteredScheduler.unscheduleJob(key.getKey());
-							}
-							clusteredScheduler.deleteJob(new JobKey((String)row[0]));
+							Class.forName((String) row[1]);
+						} catch (Exception e) {
+							LOG.warn(String.format("Removing job %s as the class %s no longer exists.", row[0], row[1]),
+									e);
+							deleteJob(session, (String)row[0]);
 						}
 					}
-				}
-				catch(Exception e) {
-					throw new IllegalStateException("Failed to clean up missing jobs.", e);
-				}
-				finally {
+
+					/* Clean up triggers that cannot be deserialized */
+					query = session.createSQLQuery("SELECT JOB_NAME, JOB_DATA, TRIGGER_NAME FROM QRTZ_TRIGGERS");
+					results = query.list();
+					for (Object[] row : results) {
+						try {
+							byte[] arr = (byte[]) row[1];
+							if (arr.length > 0) {
+								ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(arr));
+								ois.readObject();
+							}
+						} catch (Exception e) {
+							LOG.warn(String.format("Removing job %s as it is no longer readable.", row[0]),
+									e);
+							deleteJob(session, (String)row[0]);
+						}
+					}
+				} catch (Exception e) {
+					throw new IllegalStateException("Failed to clean up missing jobs. This will have to be manually corrected. Please correct this by removing all jobs at the database level and starting the server again. Contact support for assistence and quote this exact error.", e);
+				} finally {
 					session.close();
 				}
-				
+
 			}
 		});
 		return clusteredScheduler;
+	}
+	
+	private void deleteJob(Session session, String jobName) {
+		SQLQuery innerQuery = session.createSQLQuery("SELECT TRIGGER_NAME FROM QRTZ_TRIGGERS WHERE JOB_NAME = '" + jobName + "'");
+		List<Object[]> innerRow = innerQuery.list();
+		if(innerRow.size() > 0) {							
+			innerQuery = session.createSQLQuery("DELETE FROM QRTZ_SIMPLE_TRIGGERS WHERE TRIGGER_NAME = '" + innerRow.get(0) + "'");
+			innerQuery.executeUpdate();
+		}
+		SQLQuery query = session.createSQLQuery("DELETE FROM QRTZ_TRIGGERS WHERE JOB_NAME = '" + jobName + "'");
+		query.executeUpdate();
+		query = session.createSQLQuery("DELETE FROM QRTZ_JOB_DETAILS WHERE JOB_NAME = '" + jobName + "'");
+		query.executeUpdate();
 	}
 }
