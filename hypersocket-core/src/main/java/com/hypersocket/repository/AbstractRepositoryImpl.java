@@ -271,14 +271,20 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 		return list(column, value, cls, false, configs);
 	}
 
+	@Transactional(readOnly = true)
+	protected <T> T get(String column, Object value, Class<T> cls, 
+			CriteriaConfiguration... configs) {
+		return get(column, value, cls, false, configs);
+	}
+
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly = true)
-	protected <T> T get(String column, Object value, Class<T> cls,
+	protected <T> T get(String column, Object value, Class<T> cls, boolean caseInsensitive,
 			CriteriaConfiguration... configs) {
 		Criteria criteria = createCriteria(cls);
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
 		if(StringUtils.isNotBlank(column)) {
-			if (HibernateUtils.isString(cls, column)) {
+			if (caseInsensitive && HibernateUtils.isString(cls, column)) {
 				criteria.add(Restrictions.eq(column,  StringUtils.defaultString((String)value)).ignoreCase());
 			} else {
 				criteria.add(Restrictions.eq(column, value));
@@ -303,7 +309,7 @@ public abstract class AbstractRepositoryImpl<K> implements AbstractRepository<K>
 	
 	@Transactional(readOnly = true)
 	protected <T> T get(Class<T> cls, CriteriaConfiguration... configs) {
-		return get("", "", cls, configs);
+		return get("", "", cls, false, configs);
 	}
 
 	@SuppressWarnings("unchecked")
