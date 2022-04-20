@@ -1,0 +1,5 @@
+EXIT IF FRESH;
+TRY;
+ALTER TABLE `properties` CHANGE `resourceKey` `resourceKey` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL;
+ALTER TABLE `properties` CHANGE `value` `value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL;
+CATCH;

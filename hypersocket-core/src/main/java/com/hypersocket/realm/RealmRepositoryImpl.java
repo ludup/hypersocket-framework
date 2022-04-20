@@ -150,7 +150,7 @@ public class RealmRepositoryImpl extends
 	}
 
 	protected Realm getRealm(String column, Object value, CriteriaConfiguration...configurations ) {
-		return get(column, value, Realm.class, configurations);
+		return get(column, value, Realm.class, true, configurations);
 	}
 
 	@Override
@@ -181,7 +181,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional(readOnly = true)
 	public Realm getRealmByName(String name, boolean deleted) {
-		return get("name", name, Realm.class, new DeletedCriteria(deleted), new PublicRealmCriteria());
+		return get("name", name, Realm.class, true, new DeletedCriteria(deleted), new PublicRealmCriteria());
 	}
 
 	@Override
@@ -230,7 +230,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional(readOnly = true)
 	public Realm getDefaultRealm() {
-		return get("defaultRealm", true, Realm.class);
+		return get("defaultRealm", true, Realm.class, false);
 	}
 
 	@Override
@@ -255,7 +255,7 @@ public class RealmRepositoryImpl extends
 	@Override
 	@Transactional(readOnly=true)
 	public Realm getSystemRealm() {
-		return get("system", true, Realm.class);
+		return get("system", true, Realm.class, false);
 	}
 
 	@SuppressWarnings("unchecked")
