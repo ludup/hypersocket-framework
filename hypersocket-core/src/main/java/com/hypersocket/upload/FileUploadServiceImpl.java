@@ -111,6 +111,14 @@ public class FileUploadServiceImpl extends
 			return contentType;
 		}
 	}
+	
+	@Override
+	public FileUpload createFile(InputStream file, String filename, Realm realm,
+			boolean publicFile, String contentType)
+			throws ResourceException, AccessDeniedException,
+			IOException {
+		return createFile(file, filename, realm, getDefaultStore(), publicFile, contentType);
+	}
 
 	@Override
 	public FileUpload createFile(InputStream in, String filename, String contentType, Realm realm, boolean publicFile)
@@ -454,4 +462,5 @@ public class FileUploadServiceImpl extends
 		}
 
 	}
+
 }

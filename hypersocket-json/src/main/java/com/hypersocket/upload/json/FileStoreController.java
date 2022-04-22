@@ -49,6 +49,7 @@ import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadColumn;
 import com.hypersocket.upload.FileUploadService;
 import com.hypersocket.upload.FileUploadServiceImpl;
+import com.hypersocket.upload.json.FaviconFetcher.ParseResult;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Controller
@@ -58,6 +59,9 @@ public class FileStoreController extends ResourceController {
 	
 	@Autowired
 	private FileUploadService resourceService;
+	
+	@Autowired
+	private FaviconFetcher faviconFetcher;
 
 	@AuthenticationRequired
 	@RequestMapping(value = "files/table", method = RequestMethod.GET, produces = { "application/json" })
@@ -171,14 +175,25 @@ public class FileStoreController extends ResourceController {
 
 			FileUpload fileUpload;
 
+			ParseResult parseResult = faviconFetcher.parseIcoFile(file.getBytes());
 			BufferedInputStream bin = new BufferedInputStream(file.getInputStream());
-			bin.mark((int) file.getSize()+1);
-			BufferedImage image = ImageIO.read(bin);
-			if(Objects.isNull(image)) {
-				throw new ResourceException(FileUploadServiceImpl.RESOURCE_BUNDLE, "error.notImage");
+			
+			// no need to process if ico or svg file
+			if (parseResult.result && (parseResult.isGIF() || parseResult.isPNG())) { 
+				bin.mark((int) file.getSize()+1);
+				BufferedImage image = ImageIO.read(bin);
+				if(Objects.isNull(image)) {
+					throw new ResourceException(FileUploadServiceImpl.RESOURCE_BUNDLE, "error.notImage");
+				}
+				bin.reset();
 			}
-			bin.reset();
-			fileUpload = resourceService.createFile(bin, file.getOriginalFilename(), getCurrentRealm(), publicFile!=null && publicFile);
+			
+			if (parseResult.result) {
+				fileUpload = resourceService.createFile(bin, file.getOriginalFilename(), getCurrentRealm(), 
+						publicFile!=null && publicFile, parseResult.type);
+			} else {
+				fileUpload = resourceService.createFile(bin, file.getOriginalFilename(), getCurrentRealm(), publicFile!=null && publicFile);
+			}
 
 			return new ResourceStatus<FileUpload>(fileUpload, I18N.getResource(
 					sessionUtils.getLocale(request),
@@ -445,4 +460,5 @@ public class FileStoreController extends ResourceController {
 			clearAuthenticatedContext();
 		}
 	}
+	
 }
