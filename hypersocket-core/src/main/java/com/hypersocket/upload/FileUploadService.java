@@ -31,6 +31,11 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 			IOException;
 	
 	FileUpload createFile(InputStream file, String filename, Realm realm,
+			boolean publicFile, String contentType)
+			throws ResourceException, AccessDeniedException,
+			IOException;
+	
+	FileUpload createFile(InputStream file, String filename, Realm realm,
 			FileStore uploadStore, boolean publicFile, String contentType)
 			throws ResourceException, AccessDeniedException,
 			IOException;
@@ -73,4 +78,5 @@ public interface FileUploadService extends AbstractResourceService<FileUpload> {
 
 	FileUpload copyFile(String uuid)
 			throws ResourceNotFoundException, ResourceException, AccessDeniedException, IOException;
+	
 }
