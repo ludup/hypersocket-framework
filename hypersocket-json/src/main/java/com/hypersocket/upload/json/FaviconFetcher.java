@@ -141,6 +141,7 @@ public class FaviconFetcher {
 	public static final String MIME_ICO_VND = "image/vnd.microsoft.icon";
 	public static final String MIME_ICO = "image/x-icon";
 	public static final String MIME_SVG = "image/svg+xml";
+	public static final String MIME_WEBP = "image/webp";
 	
 	@Autowired
 	private HttpUtilsImpl httpUtils; 
@@ -333,14 +334,18 @@ public class FaviconFetcher {
 			        TikaInputStream.get(fileStream), new Metadata());
 			
 			   
-			if (MIME_PNG.equals(mimetype.toString())) {
+			String type = mimetype.toString();
+			
+			if (MIME_PNG.equals(type)) {
 				return new ParseResult(true, MIME_PNG);	
-			} else if (MIME_GIF.equals(mimetype.toString())) {
+			} else if (MIME_GIF.equals(type)) {
 				return new ParseResult(true, MIME_GIF);
-			} else if (MIME_ICO_VND.equals(mimetype.toString())) {
+			} else if (MIME_ICO_VND.equals(type)) {
 				return new ParseResult(true, MIME_ICO_VND);
-			} else if (MIME_ICO.equals(mimetype.toString())) {
+			} else if (MIME_ICO.equals(type)) {
 				return new ParseResult(true, MIME_ICO);
+			} else if (MIME_WEBP.equals(type)) {
+				return new ParseResult(true, MIME_WEBP);
 			} else if (isSvgFile(file)) { 
 				return new ParseResult(true, MIME_SVG);
 			} else {
@@ -455,6 +460,10 @@ public class FaviconFetcher {
 		
 		public boolean isGIF() {
 			return MIME_GIF.equals(type);
+		}
+		
+		public boolean isWebP() {
+			return MIME_WEBP.equals(type);
 		}
 		
 	}

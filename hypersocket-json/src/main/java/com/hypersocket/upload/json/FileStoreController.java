@@ -181,8 +181,8 @@ public class FileStoreController extends ResourceController {
 			// skip old java image processing
 			boolean skip = false;
 			
-			// no need to process if ico or svg file
-			if (parseResult.result && (parseResult.isICO() || parseResult.isSVG())) {
+			// no need to process if ico or svg or webp file
+			if (parseResult.result && (parseResult.isICO() || parseResult.isSVG() || parseResult.isWebP())) {
 				skip = true;
 			} 
 			
