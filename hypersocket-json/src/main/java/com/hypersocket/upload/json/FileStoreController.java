@@ -178,8 +178,16 @@ public class FileStoreController extends ResourceController {
 			ParseResult parseResult = faviconFetcher.parseIcoFile(file.getBytes());
 			BufferedInputStream bin = new BufferedInputStream(file.getInputStream());
 			
+			// skip old java image processing
+			boolean skip = false;
+			
 			// no need to process if ico or svg file
-			if (parseResult.result && (parseResult.isGIF() || parseResult.isPNG())) { 
+			if (parseResult.result && (parseResult.isICO() || parseResult.isSVG())) {
+				skip = true;
+			} 
+			
+			
+			if (!skip) { 
 				bin.mark((int) file.getSize()+1);
 				BufferedImage image = ImageIO.read(bin);
 				if(Objects.isNull(image)) {
@@ -188,10 +196,11 @@ public class FileStoreController extends ResourceController {
 				bin.reset();
 			}
 			
+			// we have full knowledge of mime type as we have result, go with probed mime
 			if (parseResult.result) {
 				fileUpload = resourceService.createFile(bin, file.getOriginalFilename(), getCurrentRealm(), 
 						publicFile!=null && publicFile, parseResult.type);
-			} else {
+			} else { // else with default
 				fileUpload = resourceService.createFile(bin, file.getOriginalFilename(), getCurrentRealm(), publicFile!=null && publicFile);
 			}
 
