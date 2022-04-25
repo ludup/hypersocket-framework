@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.servlet;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ public class HypersocketSessionFactory {
 
 	static HypersocketSessionFactory instance = new HypersocketSessionFactory();
 	
-	private Map<String,HypersocketSession> sessions = new HashMap<String,HypersocketSession>();
+	private Map<String,HypersocketSession> sessions = Collections.synchronizedMap(new HashMap<String,HypersocketSession>());
 	
 	public static HypersocketSessionFactory getInstance() {
 		return instance;
@@ -27,7 +28,13 @@ public class HypersocketSessionFactory {
 	}
 	
 	public HypersocketSession createSession(ServletContext context) {
-		HypersocketSession session =  new HypersocketSession(context);
+		HypersocketSession session =  new HypersocketSession(context) {
+			@Override
+			public void invalidate() {
+				super.invalidate();
+				sessions.remove(getId());
+			}
+		};
 		sessions.put(session.getId(), session);
 		return session;
 	}
