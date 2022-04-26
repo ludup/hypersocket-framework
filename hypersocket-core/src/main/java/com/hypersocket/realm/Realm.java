@@ -119,6 +119,10 @@ public class Realm extends Resource {
 	public Boolean getPublicRealm() {
 		return publicRealm==null ? isPrimaryRealm() : publicRealm;
 	}
+	
+	public boolean isNonPublicRealm() {
+		return publicRealm != null && !publicRealm;
+	}
 
 	public void setPublicRealm(Boolean publicRealm) {
 		this.publicRealm = publicRealm;
