@@ -2,4 +2,8 @@ EXIT IF FRESH;
 TRY;
 ALTER TABLE `properties` CHANGE `resourceKey` `resourceKey` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL;
 ALTER TABLE `properties` CHANGE `value` `value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL;
+ALTER TABLE `principals` DROP FOREIGN KEY `principals_cascade_1`;
+ALTER TABLE `principals` ADD CONSTRAINT `principals_cascade_1` FOREIGN KEY (`realm_id`) REFERENCES `realms`(`resource_id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+ALTER TABLE `principals` DROP FOREIGN KEY `principals_cascade_2`;
+ALTER TABLE `principals` ADD CONSTRAINT `principals_cascade_2` FOREIGN KEY (`parent_principal`) REFERENCES `principals`(`resource_id`) ON DELETE SET NULL ON UPDATE RESTRICT; 
 CATCH;
