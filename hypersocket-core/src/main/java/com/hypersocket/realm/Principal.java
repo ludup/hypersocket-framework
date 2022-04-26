@@ -70,7 +70,7 @@ public abstract class Principal extends RealmResource {
 
 	@ManyToOne
 	@JoinColumn(name = "parent_principal", foreignKey = @ForeignKey(name = "principals_cascade_2"))
-	@OnDelete(action = OnDeleteAction.CASCADE)
+	@OnDelete(action = OnDeleteAction.NO_ACTION) // TODO no set null
 	private Principal parentPrincipal;
 
 	@Column(name = "principal_type")
