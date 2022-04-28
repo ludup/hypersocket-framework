@@ -5,10 +5,9 @@
 <div id="additionalActions"></div>
 <script type="text/javascript">
 	legacyjQueryReadyFix(function() {
-		
-				if(!$('#addMessageForm').length) {
-					$('#contentMessages').append('<div  id="addMessageForm" dialog-for="contentMessages"><div id="messageProperties"></div></div>');
-				}
+				
+				$('#addMessageForm').remove();
+				$('#contentMessages').append('<div  id="addMessageForm" dialog-for="contentMessages"><div id="messageProperties"></div></div>');
 				
 				$('#contentMessages').localize();
 				
@@ -81,6 +80,7 @@
 									return true;
 								},
 								clearDialog : function(create) {
+									$('#messageProperties').clearProperties();
 									
 									$('#resourceId').val('');
 									$('#resourceName').val('');
