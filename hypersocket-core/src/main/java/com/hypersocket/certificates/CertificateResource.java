@@ -58,6 +58,10 @@ public class CertificateResource extends RealmResource {
 	@Lob
 	private String bundle;
 
+	@Column(name = "san", nullable = true)
+	@Lob
+	private String san;
+
 	@Column(name = "signature_type")
 	private String signatureAlgorithm;
 
@@ -154,6 +158,14 @@ public class CertificateResource extends RealmResource {
 
 	public void setCountry(String country) {
 		this.country = country;
+	}
+
+	public String getSan() {
+		return san;
+	}
+
+	public void setSan(String san) {
+		this.san = san;
 	}
 
 	@JsonIgnore
