@@ -67,6 +67,7 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
@@ -491,7 +492,7 @@ public class CertificateResourceServiceImpl extends
 				pair.getPrivate(), pair.getPublic(), resource.getCommonName(),
 				resource.getOrganizationalUnit(), resource.getOrganization(),
 				resource.getLocation(), resource.getState(),
-				resource.getCountry()), "UTF-8");
+				resource.getCountry(), ResourceUtils.explodeValues(resource.getSan())), "UTF-8");
 	}
 
 	@Override

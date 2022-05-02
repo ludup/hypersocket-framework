@@ -11,5 +11,6 @@
 			<property resourceKey="location" inputType="text" weight="300" defaultValue="" />
 			<property resourceKey="state" inputType="text" weight="400" defaultValue="" />
 			<property resourceKey="country" inputType="countries" weight="500" defaultValue="US" />
+			<property resourceKey="san" inputType="multipleTextInput" weight="600" defaultValue="" />
 	</propertyCategory>
 </propertyTemplates>

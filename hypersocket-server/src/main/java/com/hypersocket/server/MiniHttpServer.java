@@ -174,7 +174,7 @@ public class MiniHttpServer extends Thread implements Closeable {
 					LOG.info(String.format("Generating keystore"));
 					KeyPair kp = X509CertificateUtils.generatePrivateKey("RSA", 2048);
 					X509Certificate cert = X509CertificateUtils.generateSelfSignedCertificate(
-							InetAddress.getLocalHost().getHostName(), "", "", "", "", "", kp, "SHA1WithRSAEncryption");
+							InetAddress.getLocalHost().getHostName(), "", "", "", "", "", kp, "SHA1WithRSAEncryption", new String[0]);
 					ks = X509CertificateUtils.createPKCS12Keystore(kp, new X509Certificate[] { cert }, "server",
 							KEYSTORE_PASSWORD.toCharArray());
 					if (keystoreFile != null) {
