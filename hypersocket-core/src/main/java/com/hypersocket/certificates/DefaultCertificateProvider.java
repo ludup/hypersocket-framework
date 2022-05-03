@@ -11,6 +11,7 @@ import java.util.Map;
 import com.hypersocket.certs.FileFormatException;
 import com.hypersocket.certs.InvalidPassphraseException;
 import com.hypersocket.certs.X509CertificateUtils;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.resource.ResourceCreationException;
 
 public class DefaultCertificateProvider extends AbstractCertificateProvider {
@@ -75,6 +76,6 @@ public class DefaultCertificateProvider extends AbstractCertificateProvider {
 	private X509Certificate populateCertificate(CertificateResource resource, KeyPair pair, String signatureType) {
 		return X509CertificateUtils.generateSelfSignedCertificate(resource.getCommonName(),
 				resource.getOrganizationalUnit(), resource.getOrganization(), resource.getLocation(),
-				resource.getState(), resource.getCountry(), pair, signatureType);
+				resource.getState(), resource.getCountry(), pair, signatureType, ResourceUtils.explodeValues(resource.getSan()));
 	}
 }

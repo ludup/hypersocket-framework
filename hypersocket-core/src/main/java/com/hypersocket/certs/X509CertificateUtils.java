@@ -364,9 +364,55 @@ public class X509CertificateUtils {
 			throw new CertificateException("Failed to generate private key", t);
 		}
 	}
+	
+	static GeneralNames generateNames(String cn, String[] san) {
+		List<GeneralName> names = new ArrayList<>();
+		GeneralName altName = new GeneralName(GeneralName.dNSName, cn);
+		names.add(altName);
+		for(String s : san) {
+			int idx = s.indexOf(':');
+			if(idx == -1)
+				log.warn("Invalid format SAN. " + s);
+			else {
+				names.add(new GeneralName(toSANType(s.substring(0, idx)), s.substring(idx + 1)));
+			}
+		}
+		return new GeneralNames(names.toArray(new GeneralName[0]));
+	}
+
+	static int toSANType(String name) {
+		// EMAIL, DNS, URI, IP, OID
+		if(name.equalsIgnoreCase("EMAIL")) {
+			return GeneralName.rfc822Name;
+		}
+		else if(name.equalsIgnoreCase("DNS")) {
+			return GeneralName.dNSName;
+		}
+		else if(name.equalsIgnoreCase("URI")) {
+			return GeneralName.uniformResourceIdentifier;
+		}
+		else if(name.equalsIgnoreCase("IP")) {
+			return GeneralName.iPAddress;
+		}
+		else if(name.equalsIgnoreCase("OID")) {
+			return GeneralName.registeredID;
+		}
+		else if(name.equalsIgnoreCase("OTHER")) {
+			return GeneralName.otherName;
+		}
+		else if(name.equalsIgnoreCase("X400")) {
+			return GeneralName.x400Address;
+		}
+		else if(name.equalsIgnoreCase("EDI")) {
+			return GeneralName.ediPartyName;
+		}
+		else {
+			return GeneralName.otherName;
+		}
+	}
 
 	public static X509Certificate generateSelfSignedCertificate(
-			String cn, String ou, String o, String l, String s, String c, KeyPair pair, String signatureType) {
+			String cn, String ou, String o, String l, String s, String c, KeyPair pair, String signatureType, String[] san) {
 		try {
 			// Generate self-signed certificate
 			X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
@@ -387,9 +433,7 @@ public class X509CertificateUtils {
 					builder.build(), serial, notBefore, notAfter,
 					builder.build(), pair.getPublic());
 			
-			GeneralName altName = new GeneralName(GeneralName.dNSName, cn);
-			GeneralNames subjectAltName = new GeneralNames(altName);
-			certGen.addExtension(Extension.subjectAlternativeName, false, subjectAltName); 
+			certGen.addExtension(Extension.subjectAlternativeName, false, generateNames(cn, san)); 
 			
 			ContentSigner sigGen = new JcaContentSignerBuilder(
 					signatureType).setProvider(BC).build(
@@ -438,7 +482,7 @@ public class X509CertificateUtils {
 
 	public static byte[] generatePKCS10(PrivateKey privateKey,
 			PublicKey publicKey, String CN, String OU, String O, String L,
-			String S, String C) throws Exception {
+			String S, String C, String[] SAN) throws Exception {
 
 		JcaContentSignerBuilder csb = new JcaContentSignerBuilder("SHA1withRSA");
 		ContentSigner cs = csb.build(privateKey);
@@ -449,9 +493,7 @@ public class X509CertificateUtils {
 				principal, publicKey);
 
 		ExtensionsGenerator extGen = new ExtensionsGenerator();
-		GeneralName altName = new GeneralName(GeneralName.dNSName, CN);
-		GeneralNames subjectAltName = new GeneralNames(altName);
-        extGen.addExtension(Extension.subjectAlternativeName, false, subjectAltName);
+        extGen.addExtension(Extension.subjectAlternativeName, false, generateNames(CN, SAN));
 		builder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extGen.generate());
 		
 		PKCS10CertificationRequest req = builder.build(cs);
