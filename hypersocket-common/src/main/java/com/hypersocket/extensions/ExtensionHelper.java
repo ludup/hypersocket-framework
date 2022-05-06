@@ -32,11 +32,11 @@ public class ExtensionHelper {
 	static Logger log = LoggerFactory.getLogger(ExtensionHelper.class);
 
 	public static Map<String, ExtensionVersion> resolveExtensions(boolean refresh, String updateUrl, String[] repos,
-			String ourVersion, String serial, String product, String customer, ExtensionPlace extensionPlace,
+			String ourVersion, String serial, Map<String, String> params, ExtensionPlace extensionPlace,
 			boolean resolveInstalled, PropertyCallback callback, ExtensionTarget... targets) throws IOException {
 
-		Map<String, ExtensionVersion> extsByName = ExtensionHelper.resolveRemoteDependencies(updateUrl, repos,
-				ourVersion, serial, product, customer, callback, targets);
+		Map<String, ExtensionVersion> extsByName = resolveRemoteDependencies(updateUrl, repos,
+				ourVersion, serial, params, callback, targets);
 
 		for (ExtensionVersion ext : extsByName.values()) {
 			ext.setState(ExtensionState.NOT_INSTALLED);
@@ -241,8 +241,8 @@ public class ExtensionHelper {
 		ext.setTarget("SERVER");
 	}
 
-	public static Map<String, ExtensionVersion> resolveRemoteDependencies(String url, String[] repos, String version,
-			String serial, String product, String customer, PropertyCallback callback, ExtensionTarget... targets) throws IOException {
+	static Map<String, ExtensionVersion> resolveRemoteDependencies(String url, String[] repos, String version,
+			String serial, Map<String, String> params, PropertyCallback callback, ExtensionTarget... targets) throws IOException {
 
 		Map<String, ExtensionVersion> extsByName = new HashMap<String, ExtensionVersion>();
 
@@ -272,9 +272,6 @@ public class ExtensionHelper {
 				log.info("Checking for updates from " + updateUrl);
 			}
 
-			Map<String, String> params = new HashMap<String, String>();
-			params.put("product", product);
-			params.put("customer", customer);
 			String output = HttpUtilsHolder.getInstance().doHttpPost(updateUrl, params, true);
 
 			if (log.isDebugEnabled()) {

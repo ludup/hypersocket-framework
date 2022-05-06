@@ -58,6 +58,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	@Autowired
 	private SessionService sessionService;  
+
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {
 		if(elevatedPermissions.get()==null) {

@@ -13,11 +13,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -28,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
@@ -48,11 +53,13 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
+import com.hypersocket.telemetry.TelemetryProducer;
+import com.hypersocket.telemetry.TelemetryService;
 
 @Service
 public class AuthenticationServiceImpl extends
 		PasswordEnabledAuthenticatedServiceImpl implements
-		AuthenticationService {
+		AuthenticationService, TelemetryProducer {
 
 	public static final String BASIC_AUTHENTICATION_SCHEME = "Basic";
 	public static final String BASIC_AUTHENTICATION_RESOURCE_KEY = "basic";
@@ -90,6 +97,9 @@ public class AuthenticationServiceImpl extends
 	private EventService eventService;
 
 	@Autowired
+	private TelemetryService telemetryService;
+
+	@Autowired
 	private I18NService i18nService;
 
 	@Autowired
@@ -107,6 +117,8 @@ public class AuthenticationServiceImpl extends
 		if (log.isInfoEnabled()) {
 			log.info("Configuring Authentication Service");
 		}
+		
+		telemetryService.registerProducer(this);
 
 		PermissionCategory authentication = permissionService
 				.registerPermissionCategory(RESOURCE_BUNDLE,
@@ -267,8 +279,36 @@ public class AuthenticationServiceImpl extends
 				return Integer.MIN_VALUE + 1001;
 			}
 		});
-		
-		
+	}
+
+	@Override
+	public void fill(JsonObject data) throws ResourceException, AccessDeniedException {
+		Set<String> modules = new LinkedHashSet<>();
+		JsonArray allModulesObj = new JsonArray();
+		for(Realm realm : realmService.allRealms()) {
+			for(AuthenticationScheme scheme : schemeRepository.allEnabledSchemes(realm)) {
+				modules.addAll(scheme.getModules().stream().map(s -> s.getTemplate()).collect(Collectors.toList()));
+			}
+		}
+		for(String m : modules)
+			allModulesObj.add(m);
+		data.add("allModules", allModulesObj);
+	}
+
+	@Override
+	public void fillRealm(Realm realm, JsonObject data) throws ResourceException, AccessDeniedException {
+		JsonArray schemesObj = new JsonArray();
+		for(AuthenticationScheme scheme : schemeRepository.allEnabledSchemes(realm)) {
+			JsonObject schemeObj = new JsonObject();
+			schemeObj.addProperty("name", scheme.getName());
+			JsonArray mods = new JsonArray();
+			for(AuthenticationModule mod : scheme.getModules())
+				mods.add(mod.getTemplate());
+			schemeObj.add("modules", mods);
+			schemesObj.add(schemeObj);
+		}
+		data.add("authenticationSchemes", schemesObj);
+		data.addProperty("authenticationSchemesTotal", schemesObj.size());
 	}
 
 	@Override
