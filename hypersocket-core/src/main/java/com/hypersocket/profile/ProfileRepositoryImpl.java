@@ -257,6 +257,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public boolean hasPartiallyCompletedProfile(Principal principal) {
 		return get("id", principal.getId(), Profile.class, new DeletedCriteria(false), new CriteriaConfiguration() {
 
@@ -269,6 +270,7 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public boolean isPrincipalActive(Principal principal) {
 		return get("id", principal.getId(), Profile.class, new DeletedCriteria(false), new CriteriaConfiguration() {
 
