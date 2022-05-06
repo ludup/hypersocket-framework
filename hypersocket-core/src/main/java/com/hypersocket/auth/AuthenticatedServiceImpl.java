@@ -17,7 +17,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 
-import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +58,6 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 	@Autowired
 	private SessionService sessionService;  
-	@Autowired
-	private SessionFactory sessionFactory;  
 
 	@Override
 	public void elevatePermissions(PermissionType... permissions) {

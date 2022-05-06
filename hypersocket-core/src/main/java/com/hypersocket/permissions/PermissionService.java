@@ -17,7 +17,6 @@ import com.hypersocket.auth.AuthenticatedService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
-import com.hypersocket.realm.RealmPermission;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AssignableResource;
 import com.hypersocket.resource.ResourceException;
