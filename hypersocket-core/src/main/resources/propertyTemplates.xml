@@ -48,8 +48,12 @@
 		<property resourceKey="email.externalHostname" inputType="text" weight="1000" defaultValue="localhost" />
 		<property resourceKey="email.blocked" inputType="multipleTextInput" weight="1100" defaultValue="" />
 	</propertyCategory>
+	<propertyCategory resourceKey="category.jobs"
+		resourceBundle="JobResourceService" weight="800"  group="messages">
+		<property resourceKey="jobs.check.linked.accounts" inputType="switch" weight="100" defaultValue="false" />
+	</propertyCategory>
 	<propertyCategory resourceKey="category.localization"
-		resourceBundle="I18NService" weight="800" group="sessions">
+		resourceBundle="I18NService" weight="900" group="sessions">
 		<property resourceKey="user.locales" inputType="switch"
 			defaultValue="true" weight="0" />
 		<property resourceKey="current.locale" inputType="select"
@@ -58,7 +62,7 @@
 					emptySelectionAllowed="true" emptySelectionTextDefaultValue="" weight="400"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.sessions"
-		resourceBundle="SessionService" weight="900" group="sessions">
+		resourceBundle="SessionService" weight="1000" group="sessions">
 		<property resourceKey="session.timeout" inputType="slider"
 			min="1" max="1440" defaultValue="15" weight="0" labelResourceKey="session.timeout.slider.label" />
 		<property resourceKey="session.closeOnShutdown" inputType="switch"
