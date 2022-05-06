@@ -7,6 +7,7 @@ import java.util.List;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
@@ -254,7 +255,33 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 			
 		}) != null;
 	}
+	
+	@Override
+	public boolean hasPartiallyCompletedProfile(Principal principal) {
+		return get("id", principal.getId(), Profile.class, new DeletedCriteria(false), new CriteriaConfiguration() {
 
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("state", ProfileCredentialsState.PARTIALLY_COMPLETE));
+			}
+			
+		}) != null;
+	}
+
+	@Override
+	public boolean isPrincipalActive(Principal principal) {
+		return get("id", principal.getId(), Profile.class, new DeletedCriteria(false), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				Disjunction dj = Restrictions.disjunction();
+				dj.add(Restrictions.eq("state", ProfileCredentialsState.COMPLETE));
+				dj.add(Restrictions.eq("state", ProfileCredentialsState.PARTIALLY_COMPLETE));
+				criteria.add(dj);
+			}
+			
+		}) != null;
+	}
 
 	@Override
 	@Transactional
