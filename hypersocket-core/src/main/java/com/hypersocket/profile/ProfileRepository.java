@@ -37,6 +37,10 @@ public interface ProfileRepository extends AbstractEntityRepository<Profile, Lon
 	Long searchNeverVisitedProfilesCount(Realm realm, String searchColumn, String searchPattern);
 
 	boolean hasCompletedProfile(Principal principal);
+	
+	boolean hasPartiallyCompletedProfile(Principal principal);
+	
+	boolean isPrincipalActive(Principal principal);
 
 	void deleteRealm(Realm realm);
 
