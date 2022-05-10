@@ -7,7 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -39,9 +39,9 @@ public class ExportServiceImpl implements ExportService {
 			String delimiter, CommonEndOfLineEnum terminate, String wrap, String escapex, String attributes,
 			OutputStream out, Locale locale)
 			throws AccessDeniedException, UnsupportedEncodingException {
-		List<String> headers = new ArrayList<String>(provider.getHeaders());
+		Set<String> headers = new LinkedHashSet<String>(provider.getHeaders());
 		Cache<String, String> i18n = i18nService.getResourceMap(locale);
-		Set<String> includeAttributes = new HashSet<String>();
+		Set<String> includeAttributes = new LinkedHashSet<String>();
 		if(StringUtils.isNotBlank(attributes))
 			includeAttributes.addAll(Arrays.asList(attributes.split(",")));
 		for (String attributeName : includeAttributes) {
