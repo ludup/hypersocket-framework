@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.auth.AuthenticationServiceImpl;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.AuthenticatorResult;
 import com.hypersocket.auth.PostAuthenticationStep;
@@ -60,6 +61,9 @@ public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthe
 	
 	@Override
 	public boolean requiresProcessing(AuthenticationState state) throws AccessDeniedException {
+		if(state.getInitialSchemeResourceKey().equals(AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY)) {
+			return false;
+		}
 		Collection<PropertyCategory> propertyCategories = realmService.getUserPropertyTemplates(state.getPrincipal());
 		for (PropertyCategory propertyCategory : propertyCategories) {
 			String filter = propertyCategory.getFilter();
