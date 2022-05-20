@@ -24,7 +24,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -53,7 +52,6 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -487,8 +485,16 @@ public class X509CertificateUtils {
 		JcaContentSignerBuilder csb = new JcaContentSignerBuilder("SHA1withRSA");
 		ContentSigner cs = csb.build(privateKey);
 
-		X500Principal principal = new X500Principal("CN=" + CN + ", OU=" + OU
-				+ ", O=" + O + ", L=" + L + ", S=" + S + ", C=" + C);
+		X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
+		nameBuilder.addRDN(BCStyle.OU, OU);
+		nameBuilder.addRDN(BCStyle.O, O);
+		nameBuilder.addRDN(BCStyle.L, L);
+		nameBuilder.addRDN(BCStyle.C, C);
+		nameBuilder.addRDN(BCStyle.ST, S);
+		nameBuilder.addRDN(BCStyle.CN, CN);
+		
+		X500Principal principal = new X500Principal(nameBuilder.build().getEncoded());
+		
 		PKCS10CertificationRequestBuilder builder = new JcaPKCS10CertificationRequestBuilder(
 				principal, publicKey);
 
@@ -509,32 +515,6 @@ public class X509CertificateUtils {
 		}
 		return bout.toByteArray();
 
-	}
-
-	public static void main(String[] args) throws Exception {
-
-		Security.addProvider(new BouncyCastleProvider());
-
-		// X509CertificateUtils.validateChain(X509CertificateUtils
-		// .loadCertificateChainFromPEM(new FileInputStream(
-		// "/Users/lee/gd_bundle.crt")), X509CertificateUtils
-		// .loadCertificateFromPEM(new FileInputStream(
-		// "/Users/lee/javassh.com.crt")));
-		//
-		// X509CertificateUtils.loadKeyPairFromPFX(new
-		// FileInputStream("/home/lee//Dropbox/Company Files/Nervepoint Technologies Limited/Certificates/Domain Wildcard/nervepoint-www-wildcard.pfx"),
-		// "bluemars73".toCharArray());
-		
-//		X509CertificateUtils.generatePrivateKey("RSA", 1024);
-//		X509CertificateUtils.generatePrivateKey("RSA", 2048);
-//		X509CertificateUtils.generatePrivateKey("RSA", 4096);
-//		X509CertificateUtils.generatePrivateKey("RSA", 8192);
-
-//		X509CertificateUtils.generatePrivateKey("DSA", 1024);
-//		X509CertificateUtils.generatePrivateKey("DSA", 2048);
-//		X509CertificateUtils.generatePrivateKey("DSA", 4096);
-//		X509CertificateUtils.generatePrivateKey("DSA", 8192);
-		
 	}
 
 }
