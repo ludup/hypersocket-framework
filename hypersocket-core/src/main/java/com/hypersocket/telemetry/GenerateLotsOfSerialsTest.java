@@ -18,7 +18,6 @@ import com.google.gson.JsonObject;
 import com.hypersocket.extensions.ExtensionHelper;
 import com.hypersocket.extensions.ExtensionPlace;
 import com.hypersocket.extensions.ExtensionTarget;
-import com.hypersocket.extensions.ExtensionVersion;
 import com.hypersocket.extensions.PropertyCallback;
 import com.hypersocket.utils.FileUtils;
 
