@@ -84,7 +84,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	private Set<String> interrupting = Collections.synchronizedSet(new LinkedHashSet<>());
 	private Set<JobKey> running = Collections.synchronizedSet(new LinkedHashSet<>());
 	private Map<JobKey, Throwable> exceptions = new HashMap<>();
-	private Map<JobKey, Timer> timers = new HashMap<>();
+	private Map<JobKey, Timer> timers = Collections.synchronizedMap(new HashMap<>());
 
 	@PostConstruct
 	private void postConstruct() throws SchedulerException, AccessDeniedException {
@@ -93,7 +93,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		scheduler.getListenerManager().addJobListener(this);
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
-	
+
 	@EventListener
 	private void ready(SystemEvent wce) throws SchedulerException {
 		/* Moved this here due to https://logonboxlimited.slack.com/archives/DJVSBK1PV/p1588258404017000 */
@@ -278,7 +278,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 			log.info("Scheduling job " + clz.getSimpleName() + " with id " + scheduleId + " to start "
 					+ (start == null ? "now" : "at " + HypersocketUtils.formatDateTime(start)) + " with interval of "
 					+ (interval / 60000) + " minutes and repeat "
-					+ (repeat >= 0 ? (repeat / 60000) + " time(s)" : "indefinately")
+					+ (repeat != SimpleTrigger.REPEAT_INDEFINITELY ? repeat + " time(s)" : "indefinitely")
 					+ (end != null ? " until " + HypersocketUtils.formatDateTime(end) : ""));
 		}
 		JobDetail job = JobBuilder.newJob(clz).withIdentity(scheduleId).build();
@@ -288,7 +288,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		/*
 		 * BUG?: This properties map is not getting set anywhere? I presume it should be
 		 */
-		Map<String, String> properties = new HashMap<String, String>();
+		Map<String, String> properties = new HashMap<>();
 		properties.put("started", (start == null ? HypersocketUtils.formatDate(new Date(), "yyyy/MM/dd HH:mm")
 				: HypersocketUtils.formatDate(start, "yyyy/MM/dd HH:mm")));
 		properties.put("intervals", String.valueOf((interval / 60000)));
@@ -388,6 +388,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		}
 	}
 
+	@Override
 	public void interrupt(String id) throws SchedulerException, NotScheduledException {
 		if (interrupting.contains(id))
 			throw new SchedulerException("Already interrupting.");
@@ -474,7 +475,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 					else if (v2 == null && v1 != null)
 						i = 1;
 					else if (v2 != null && v1 != null) {
-						i = (((Comparable<Object>) v1).compareTo((Comparable<Object>) v2));
+						i = (((Comparable<Object>) v1).compareTo(v2));
 					}
 					if (i != 0) {
 						return s.getSort() == Sort.ASC ? i * -1 : i;
@@ -635,11 +636,13 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	}
 
 	public void doDeleteResource(SchedulerResource resource) throws SchedulerException {
-		scheduler.deleteJob(resource.getJobKey());
-		exceptions.remove(resource.getJobKey());
-		timers.remove(resource.getJobKey());
-		running.remove(resource.getJobKey());
-		interrupting.remove(resource.getJobKey().toString());
+		synchronized(timers) {
+			scheduler.deleteJob(resource.getJobKey());
+			exceptions.remove(resource.getJobKey());
+			timers.remove(resource.getJobKey());
+			running.remove(resource.getJobKey());
+			interrupting.remove(resource.getJobKey().toString());
+		}
 	}
 
 	@Override
@@ -787,36 +790,49 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 
 	}
 
+	@Override
 	public String getName() {
 		return getClass().getName();
 	}
 
+	@Override
 	public void jobToBeExecuted(JobExecutionContext context) {
-		JobKey jk = context.getTrigger().getJobKey();
-		timers.put(jk, new Timer());
-		running.add(jk);
-		exceptions.remove(jk);
-	}
-
-	public void jobExecutionVetoed(JobExecutionContext context) {
-		JobKey jk = context.getTrigger().getJobKey();
-		running.remove(jk);
-		timers.get(jk).ended = System.currentTimeMillis();
-		exceptions.remove(jk);
-	}
-
-	public void jobWasExecuted(JobExecutionContext context, JobExecutionException jobException) {
-		JobKey jk = context.getTrigger().getJobKey();
-		if (jobException != null) {
-			Throwable e = jobException;
-			if (jobException.getCause() != null)
-				e = jobException.getCause();
-			exceptions.put(jk, e);
-		} else {
+		synchronized(timers) {
+			JobKey jk = context.getTrigger().getJobKey();
+			timers.put(jk, new Timer());
+			running.add(jk);
 			exceptions.remove(jk);
 		}
-		timers.get(jk).ended = System.currentTimeMillis();
-		running.remove(jk);
-		interrupting.remove(context.getTrigger().getJobKey().toString());
+	}
+
+	@Override
+	public void jobExecutionVetoed(JobExecutionContext context) {
+		synchronized(timers) {
+			JobKey jk = context.getTrigger().getJobKey();
+			running.remove(jk);
+			timers.get(jk).ended = System.currentTimeMillis();
+			exceptions.remove(jk);
+		}
+	}
+
+	@Override
+	public void jobWasExecuted(JobExecutionContext context, JobExecutionException jobException) {
+		synchronized(timers) {
+			JobKey jk = context.getTrigger().getJobKey();
+			if (jobException != null) {
+				Throwable e = jobException;
+				if (jobException.getCause() != null)
+					e = jobException.getCause();
+				exceptions.put(jk, e);
+			} else {
+				exceptions.remove(jk);
+			}
+			if(timers.containsKey(jk))
+				timers.get(jk).ended = System.currentTimeMillis();
+			else
+				log.warn("Job {} was removed while it was running.", jk);
+			running.remove(jk);
+			interrupting.remove(context.getTrigger().getJobKey().toString());
+		}
 	}
 }
