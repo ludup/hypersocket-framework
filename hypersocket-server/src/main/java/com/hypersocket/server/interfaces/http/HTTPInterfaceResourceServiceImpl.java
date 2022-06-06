@@ -1,6 +1,8 @@
 package com.hypersocket.server.interfaces.http;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,6 +22,7 @@ import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
@@ -226,17 +229,28 @@ public class HTTPInterfaceResourceServiceImpl extends
 			throws ResourceException, AccessDeniedException {
 
 		resource.setName(name);
-
-		/**
-		 * Set any additional fields on your resource here before calling
-		 * updateResource.
-		 * 
-		 * Remember to fill in the fire*Event methods to ensure events are fired
-		 * for all operations.
-		 */
+		
+		checkForPortAddressConflicts(resource, properties);
+		
 		updateResource(resource, properties);
 
 		return resource;
+	}
+
+	protected void checkForPortAddressConflicts(HTTPInterfaceResource resource, Map<String, String> properties) throws ResourceChangeException {
+		/* Check no conflicts */
+		String newAddresses =  properties.containsKey("interfaces") ? properties.get("interfaces") : resource.getInterfaces();
+		Integer newPort = properties.containsKey("port") ? Integer.parseInt(properties.get("port")) : resource.getPort();
+				
+		for(HTTPInterfaceResource res : allRealmsResources()) {
+			if(!res.equals(resource)) {
+				boolean addrMatch = Boolean.TRUE.equals(res.getAllInterfaces()) || Boolean.TRUE.equals(resource.getAllInterfaces()) ||
+							anyMatch(ResourceUtils.explodeValues(res.getInterfaces()), ResourceUtils.explodeValues(newAddresses));
+				boolean portMatch = Objects.equals(res.getPort(), newPort);
+				if(addrMatch && portMatch)
+					throw new ResourceChangeException(RESOURCE_BUNDLE, "error.conflictingBind", res.getName());
+			}
+		}
 	}
 	
 	@Override
@@ -271,7 +285,8 @@ public class HTTPInterfaceResourceServiceImpl extends
 					if(Objects.isNull(resource.getCertificate())) {
 						throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noCertificate");
 					}
-				}
+				}		
+				checkForPortAddressConflicts(resource, properties);
 			}
 			
 		});
@@ -295,6 +310,20 @@ public class HTTPInterfaceResourceServiceImpl extends
 		assertPermission(SystemPermission.SYSTEM_ADMINISTRATION);
 
 		return repository.getPropertyCategories(resource);
+	}
+	
+	static boolean anyMatch(String[] list1, String[] list2) {
+		List<String> l1= Arrays.asList(list1);
+		List<String> l2= Arrays.asList(list2);
+		for(String s1 : l1) {
+			if(l2.contains(s1))
+				return true;
+		}
+		for(String s2 : l2) {
+			if(l1.contains(s2))
+				return true;
+		}
+		return false;
 	}
 
 }
