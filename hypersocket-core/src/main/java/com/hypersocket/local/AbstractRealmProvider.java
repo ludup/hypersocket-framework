@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,6 +20,7 @@ import com.hypersocket.attributes.user.UserAttributeService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceTemplateRepositoryImpl;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.resource.Resource;
 
@@ -32,6 +34,11 @@ public abstract class AbstractRealmProvider extends ResourceTemplateRepositoryIm
 		return false;
 	}
 	
+	@Override
+	public Set<String> getCustomPropertyNames(Realm realm) {
+		return Collections.emptySet();
+	}
+
 	@JsonIgnore
 	public ResourceTemplateRepository getTemplateRepository() {
 		throw new UnsupportedOperationException();

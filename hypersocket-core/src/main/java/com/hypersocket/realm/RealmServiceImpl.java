@@ -507,12 +507,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public int getRealmPropertyInt(Realm realm, String resourceKey) {
-		return Integer.parseInt(getRealmProperty(realm, resourceKey));
+		return Integer.parseInt(defaultIfNull(getRealmProperty(realm, resourceKey), "0"));
+	}
+	
+	static <O> O defaultIfNull(O val, O defVal) {
+		return val == null ? defVal : val;
 	}
 
 	@Override
 	public boolean getRealmPropertyBoolean(Realm realm, String resourceKey) {
-		return Boolean.parseBoolean(getRealmProperty(realm, resourceKey));
+		return Boolean.parseBoolean(defaultIfNull(getRealmProperty(realm, resourceKey), "false"));
 	}
 
 	@Override
@@ -2613,6 +2617,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 		}
 		names.addAll(provider.getDefaultUserPropertyNames());
+		names.addAll(provider.getCustomPropertyNames(realm));
 		names.addAll(DEFAULT_PRINCIPAL_ATTRIBUTE_NAMES);
 		return names;
 	}
