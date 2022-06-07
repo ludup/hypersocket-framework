@@ -125,6 +125,8 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	Set<String> getDefaultUserPropertyNames();
 
+	Set<String> getCustomPropertyNames(Realm realm);
+
 	boolean hasPropertyValueSet(Principal principal, String string);
 
 	String getDecryptedValue(Realm realm, String resourceKey);
