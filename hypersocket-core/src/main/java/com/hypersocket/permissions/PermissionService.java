@@ -176,5 +176,7 @@ public interface PermissionService extends AuthenticatedService {
 	Set<Role> getAllUserRoles();
 
 	void assertAdministrativeAccess() throws AccessDeniedException;
+	
+	Set<Role> getPersonalRoles(Realm realm);
 
 }
