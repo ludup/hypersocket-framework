@@ -1427,5 +1427,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	private Collection<Role> getAllPermissionsRoles() {
 		return repository.getAllPermissionsRoles(getCurrentRealm());
 	}
+
+	@Override
+	public Set<Role> getPersonalRoles(Realm realm) {
+		return repository.getPersonalRoles(realm);
+	}
 	
 }

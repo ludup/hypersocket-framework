@@ -604,6 +604,22 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Transactional(readOnly = true)
+	public Set<Role> getPersonalRoles(Realm realm) {
+
+		Criteria crit = createCriteria(Role.class)
+				.setResultTransformer(
+						CriteriaSpecification.DISTINCT_ROOT_ENTITY)
+				.add(Restrictions.eq("personalRole", true));
+		
+		crit.createCriteria("realms").add(Restrictions.in("id", Arrays.asList(realm.getId())));
+		
+
+		return new HashSet<Role>(crit.list());
+	}
+	
 	@Override
 	public long getAssignableResourceCount(final Principal principal) {
 		
