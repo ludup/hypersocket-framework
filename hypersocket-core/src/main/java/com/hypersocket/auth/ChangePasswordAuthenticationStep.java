@@ -7,13 +7,15 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.input.FormTemplate;
 import com.hypersocket.local.LocalUser;
@@ -22,6 +24,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.transactions.TransactionService;
 
 @Component
 public class ChangePasswordAuthenticationStep implements PostAuthenticationStep {
@@ -40,6 +43,9 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	@Autowired
 	private AuthenticationService authenticationService;
 	
+	@Autowired
+	private TransactionService transactionService;
+	
 	@PostConstruct
 	private void postConstruct() {
 		authenticationService.registerPostAuthenticationStep(this);
@@ -48,8 +54,10 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	@Override
 	public boolean requiresProcessing(AuthenticationState state) {
 		
-		if (state.hasEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED) 
-				&& (Boolean) state.getEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED)) {
+		boolean haveIBeenPwnedHasFlaggedTheCurrentPasswordForChange = state.hasEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED) 
+				&& (Boolean) state.getEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED);
+		
+		if (haveIBeenPwnedHasFlaggedTheCurrentPasswordForChange) {
 			return true;
 		}
 		
@@ -148,18 +156,38 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 		return false;
 	}
 	
-	private void resetHIBPState(AuthenticationState state) throws ResourceException {
+	private void resetHIBPState(AuthenticationState state) throws ResourceException, AccessDeniedException {
 
-		Map<String, String> properties = new HashMap<String, String>();
-		properties.put(HAVE_I_BEEN_PWNED_USER_PASSWORD_HASH, null);
-		properties.put(HAVE_I_BEEN_PWNED_USER_PASSWORD_HASH_SALT, null);
-		properties.put(HAVE_I_BEEN_PWNED_USER_PASSWORD_RESULT, null);
-		
-		RealmProvider realmProvider = getProviderForPrincipal(state.getPrincipal());
-		
-		realmProvider.updateUserProperties(state.getPrincipal(), properties);
-		
-		state.removeEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED);
+		if (state.hasEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED)) {
+			
+			Principal principal = state.getPrincipal();
+			
+			RealmProvider realmProvider = getProviderForPrincipal(principal);
+			
+			String passwordHash = realmProvider.getUserProperty(principal, HAVE_I_BEEN_PWNED_USER_PASSWORD_HASH);
+			
+			// check if this was marked earlier hence we need to clear it for new password changed
+			if (StringUtils.isNotBlank(passwordHash)) { 
+				
+				transactionService.doInTransaction(new TransactionCallback<Void>() {
+
+					@Override
+					public Void doInTransaction(TransactionStatus status) {
+						
+						realmProvider.deleteProperties(principal, HAVE_I_BEEN_PWNED_USER_PASSWORD_HASH, 
+								HAVE_I_BEEN_PWNED_USER_PASSWORD_HASH_SALT, 
+								HAVE_I_BEEN_PWNED_USER_PASSWORD_RESULT);
+						
+						return null;
+					}
+				});
+				
+				
+			
+			}
+			
+			state.removeEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED);
+		}
 	}
 	
 	private RealmProvider getProviderForPrincipal(Principal principal) {
