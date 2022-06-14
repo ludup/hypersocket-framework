@@ -322,8 +322,8 @@ public class LogonController extends AuthenticatedController {
 				request.getSession().setAttribute("lastFormTemplate", template);
 				
 				return new LogonRequiredResult(
-						configurationService.getValue(state.getRealm(),
-								"logon.banner"),
+						LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state.getRealm(),
+								"logon.banner")),
 						flash!=null ? flash : state.getLastErrorMsg(),
 						flashStyle!=null ? flashStyle : state.getLastErrorType(),
 						state.getLastErrorIsResourceKey(),
@@ -350,8 +350,8 @@ public class LogonController extends AuthenticatedController {
 			throw e;
 		} catch(JsonRedirectException e) {
 			return new LogonRedirectResult(
-					configurationService.getValue(state==null ? sessionUtils.getCurrentRealmOrDefault(request) : state.getRealm(),
-							"logon.banner"),
+					LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state==null ? sessionUtils.getCurrentRealmOrDefault(request) : state.getRealm(),
+							"logon.banner")),
 					flash!=null ? flash : state==null ? "" : state.getLastErrorMsg(),
 					flashStyle!=null ? flashStyle : state==null ? "" : state.getLastErrorType(),
 					configurationService.hasUserLocales(), e.getMessage());
@@ -365,8 +365,8 @@ public class LogonController extends AuthenticatedController {
 			state.setLastErrorIsResourceKey(false);
 			
 			return new LogonRequiredResult(
-					configurationService.getValue(state.getRealm(),
-							"logon.banner"),
+					LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state.getRealm(),
+							"logon.banner")),
 					state.getLastErrorMsg(),
 					state.getLastErrorType(),
 					state.getLastErrorIsResourceKey(),
