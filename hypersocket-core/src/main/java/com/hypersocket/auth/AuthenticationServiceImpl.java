@@ -771,6 +771,7 @@ public class AuthenticationServiceImpl extends
 							}
 						} catch(IllegalStateException e) { 
 							
+							log.error("Encountereed error in authenticator", e);
 							state.setLastErrorMsg(e.getMessage());
 							state.setLastErrorIsResourceKey(false);
 							state.revertModule();
