@@ -119,14 +119,14 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	}
 	
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional /** LDP it's possible extended versions of this class could need write transaction **/
 	public Collection<T> getAssignedResources(List<Principal> principals, CriteriaConfiguration... configs) {
 		return getAssignedResources("", principals, configs);
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional /** LDP it's possible extended versions of this class could need write transaction **/
 	public Collection<T> getAssignedResources(String name, List<Principal> principals, CriteriaConfiguration... configs) {
 
 		
@@ -222,7 +222,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional /** LDP it's possible extended versions of this class could need write transaction **/
 	public Collection<T> searchAssignedResources(List<Principal> principals,
 			final String searchPattern, final String searchColumn, final int start, final int length,
 			final ColumnSort[] sorting, CriteriaConfiguration... configs) {
@@ -332,7 +332,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 		
 	@SuppressWarnings("unchecked")
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional /** LDP it's possible extended versions of this class could need write transaction **/
 	public Long getAssignedResourceCount(Collection<Principal> principals,
 			final String searchPattern, final String searchColumn, CriteriaConfiguration... configs) {
 
@@ -395,7 +395,7 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 
 
 	@Override
-	@Transactional(readOnly=true)
+	@Transactional /** LDP it's possible extended versions of this class could need write transaction **/
 	public Long getAssignableResourceCount(Collection<Principal> principals) {
 		return getAssignedResourceCount(principals, "", "");
 	}
