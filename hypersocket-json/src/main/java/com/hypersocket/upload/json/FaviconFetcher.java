@@ -293,7 +293,9 @@ public class FaviconFetcher {
 				iconStream.close();
 			}
 			try {
-				response.close();
+				if (response != null) {
+					response.close();
+				}
 			} catch (IOException e) {
 			}
 		}
