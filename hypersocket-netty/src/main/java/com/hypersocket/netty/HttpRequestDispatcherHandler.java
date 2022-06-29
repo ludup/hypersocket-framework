@@ -11,6 +11,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
@@ -64,8 +66,8 @@ import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.json.RestApi;
 import com.hypersocket.netty.forwarding.NettyWebsocketClient;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.server.handlers.HttpRequestHandler;
-import com.hypersocket.server.handlers.HttpResponseProcessor;
 import com.hypersocket.server.handlers.WebsocketHandler;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.server.interfaces.http.HTTPProtocol;
@@ -78,12 +80,8 @@ import com.hypersocket.utils.ITokenResolver;
 import com.hypersocket.utils.TokenAdapter;
 import com.hypersocket.utils.TokenReplacementReader;
 
-public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
-		implements HttpResponseProcessor {
+public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 
-	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
-	public static final String BROWSER_URI = "browserRequestUri";
-	
 	private static Logger log = LoggerFactory
 			.getLogger(HttpRequestDispatcherHandler.class);
 
@@ -275,7 +273,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 					if(matcher.matches()) {
 						String uri = processReplacements(rewrites.get(regex));
 						uri = matcher.replaceAll(uri);
-						servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
+						servletRequest.setAttribute(HypersocketServer.BROWSER_URI, nettyRequest.getUri());
 						servletRequest.parseUri(uri);
 						reverseUri = servletRequest.getRequestURI();
 						reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
@@ -303,7 +301,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 						if(log.isDebugEnabled()) {
 							log.debug("Using alias " + path + " for path " + reverseUri);
 						}
-						servletRequest.setAttribute(BROWSER_URI, nettyRequest.getUri());
+						servletRequest.setAttribute(HypersocketServer.BROWSER_URI, nettyRequest.getUri());
 						servletRequest.parseUri(path);
 						reverseUri = path;
 						reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
@@ -369,8 +367,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 							try {
 								handler.acceptWebsocket(servletRequest, nettyResponse,
 										new WebsocketConnectCallback(ctx.getChannel(),
-												servletRequest, nettyResponse, handler), 
-										HttpRequestDispatcherHandler.this);
+												servletRequest, nettyResponse, handler));
 							} catch (AccessDeniedException ex) {
 								log.error("Failed to open tunnel", ex);
 								nettyResponse.setStatus(HttpStatus.SC_FORBIDDEN);
@@ -396,15 +393,19 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 								log.debug(String.format("%s is processing HTTP request for %s", handler.getName(), reverseUri));
 							}
 							server.processDefaultResponse(servletRequest, nettyResponse, handler.getDisableCache());
-							handler.handleHttpRequest(servletRequest, nettyResponse,
-									HttpRequestDispatcherHandler.this);
+							try {
+								handler.handleHttpRequest(servletRequest, nettyResponse);
+							}
+							finally {
+								sendResponse(servletRequest, nettyResponse, false);
+							}
 							return;
 						}
 					}
 				}
 		
 				server.processDefaultResponse(servletRequest, nettyResponse, true);
-				send404(servletRequest, nettyResponse);
+				nettyResponse.setStatus(HttpStatus.SC_NOT_FOUND);
 				sendResponse(servletRequest, nettyResponse, false);
 		
 				if (log.isDebugEnabled()) {
@@ -434,7 +435,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		return path.replace("${basePath}", server.getBasePath());
 	}
 
-	@Override
 	public void send404(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
 		servletResponse.sendError(HttpStatus.SC_NOT_FOUND);
 		URL url = getClass().getResource("/404.html");
@@ -453,20 +453,17 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 				log.debug(String.format("Setting request for %s as streamed response.", request.getRequestURI()));
 			}
 		}
-		InputStream was = (InputStream)request.getAttribute(CONTENT_INPUTSTREAM); 
+		StringWriter traceStr = new StringWriter();
+		new Exception().printStackTrace(new PrintWriter(traceStr));
+		InputStream was = (InputStream)request.getAttribute(HypersocketServer.CONTENT_INPUTSTREAM); 
 		if(was != null) {
-			log.warn("Stream set on request multiple times. This is not recommended. Closing previous stream to prevent file leaks.");
+			log.warn("Stream set on request multiple times. This is not recommended. Closing previous stream to prevent file leaks. This trace\n\n{}. Original trace {}\n\n", traceStr.toString(), request.getAttribute(HypersocketServer.CONTENT_INPUTSTREAM + ".trace"));
 			IOUtils.closeQuietly(was);
 		}
-		request.setAttribute(CONTENT_INPUTSTREAM, stream);
+		request.setAttribute(HypersocketServer.CONTENT_INPUTSTREAM, stream);
+		request.setAttribute(HypersocketServer.CONTENT_INPUTSTREAM + ".trace", traceStr.toString());
 	}
 	
-	@Override
-	public void send401(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException {
-		servletResponse.sendError(HttpStatus.SC_UNAUTHORIZED);
-	}
-	
-	@Override
 	public void send500(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse) throws IOException {
 		servletResponse.sendError(HttpStatus.SC_NOT_FOUND);
 		URL url = getClass().getResource("/500.html");
@@ -503,13 +500,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 		NettyWebsocketClient nettyClient = (NettyWebsocketClient) channel.getAttachment();
 		nettyClient.frameReceived(msg);
 		
-	}
-
-	@Override
-	public void sendResponse(HttpServletRequest request,
-			HttpServletResponse response, boolean chunked) {
-		sendResponse((HttpRequestServletWrapper)request,
-				(HttpResponseServletWrapper) response, chunked);
 	}
 
 	public void sendResponse(final HttpRequestServletWrapper servletRequest,
@@ -644,7 +634,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler
 			HttpResponseServletWrapper servletResponse, String acceptEncodings) {
 
 		InputStream writer = (InputStream) servletRequest
-				.getAttribute(CONTENT_INPUTSTREAM);
+				.getAttribute(HypersocketServer.CONTENT_INPUTSTREAM);
 
 		if (writer != null) {
 			if (log.isDebugEnabled()) {

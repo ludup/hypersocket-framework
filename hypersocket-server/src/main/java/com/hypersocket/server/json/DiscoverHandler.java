@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.server.handlers.HttpRequestHandler;
-import com.hypersocket.server.handlers.HttpResponseProcessor;
 
 @Component
 public class DiscoverHandler extends HttpRequestHandler {
@@ -40,10 +39,8 @@ public class DiscoverHandler extends HttpRequestHandler {
 	}
 
 	@Override
-	public void handleHttpRequest(HttpServletRequest request, HttpServletResponse response,
-			HttpResponseProcessor responseProcessor) throws IOException {
+	public void handleHttpRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		response.sendRedirect(server.resolvePath("api/server/discover"));
-		responseProcessor.sendResponse(request, response, false);
 	}
 
 }

@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.netty.NettyServer;
+import com.hypersocket.server.IPRestrictionConsumer;
+import com.hypersocket.server.IPRestrictionService;
 
 @Component
 public class ExtendedIpFilterRuleHandler extends IpFilteringHandlerImpl {

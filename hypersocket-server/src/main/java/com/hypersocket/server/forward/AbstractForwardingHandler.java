@@ -26,7 +26,6 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.server.HypersocketServer;
-import com.hypersocket.server.handlers.HttpResponseProcessor;
 import com.hypersocket.server.handlers.WebsocketHandler;
 import com.hypersocket.server.websocket.TCPForwardingClientCallback;
 import com.hypersocket.server.websocket.WebsocketClient;
@@ -70,8 +69,7 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 
 	@Override
 	public void acceptWebsocket(HttpServletRequest request,
-			HttpServletResponse response, WebsocketClientCallback callback,
-			HttpResponseProcessor processor) throws UnauthorizedException,
+			HttpServletResponse response, WebsocketClientCallback callback) throws UnauthorizedException,
 			AccessDeniedException {
 
 		if (!sessionService.isLoggedOn(sessionUtils.getActiveSession(request),

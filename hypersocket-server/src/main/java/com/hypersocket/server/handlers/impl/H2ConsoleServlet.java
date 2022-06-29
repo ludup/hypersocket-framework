@@ -1,17 +1,16 @@
 package com.hypersocket.server.handlers.impl;
 
-import java.io.IOException;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpStatus;
+
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.PermissionService;
-import com.hypersocket.server.handlers.HttpResponseProcessor;
 import com.hypersocket.servlet.HypersocketServletConfig;
 import com.hypersocket.session.json.SessionUtils;
 
@@ -53,15 +52,14 @@ public class H2ConsoleServlet extends ServletRequestHandler {
 
 	
 	@Override
-	public void handleHttpRequest(HttpServletRequest request, HttpServletResponse response,
-			HttpResponseProcessor responseProcessor) {
+	public void handleHttpRequest(HttpServletRequest request, HttpServletResponse response) {
 		
 		try {
 			if(sessionUtils.hasActiveSession(request)) {
 				permissionService.setCurrentSession(sessionUtils.getActiveSession(request), sessionUtils.getLocale(request));
 				try {
 					if(permissionService.hasSystemPermission(sessionUtils.getPrincipal(request))) {
-						super.handleHttpRequest(request, response, responseProcessor);
+						super.handleHttpRequest(request, response);
 						return;
 					}
 				} finally {
@@ -71,12 +69,7 @@ public class H2ConsoleServlet extends ServletRequestHandler {
 		} catch (UnauthorizedException e) {
 		}
 		
-		try {
-			responseProcessor.send404(request, response);
-			responseProcessor.sendResponse(request, response, false);
-		} catch (IOException e) {
-			log.error("Failed to send response", e);
-		}
+		response.setStatus(HttpStatus.SC_NOT_FOUND);
 	}
 	
 	@Override
