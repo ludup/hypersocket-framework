@@ -393,8 +393,12 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 								log.debug(String.format("%s is processing HTTP request for %s", handler.getName(), reverseUri));
 							}
 							server.processDefaultResponse(servletRequest, nettyResponse, handler.getDisableCache());
-							handler.handleHttpRequest(servletRequest, nettyResponse);
-							sendResponse(servletRequest, nettyResponse, false);
+							try {
+								handler.handleHttpRequest(servletRequest, nettyResponse);
+							}
+							finally {
+								sendResponse(servletRequest, nettyResponse, false);
+							}
 							return;
 						}
 					}
