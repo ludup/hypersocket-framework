@@ -978,7 +978,7 @@ public class AuthenticationServiceImpl extends
 					@Override
 					public int compare(PostAuthenticationStep o1,
 							PostAuthenticationStep o2) {
-						return new Integer(o1.getOrderPriority()).compareTo(o2
+						return ((Integer) o1.getOrderPriority()).compareTo(o2
 								.getOrderPriority());
 					}
 				});
