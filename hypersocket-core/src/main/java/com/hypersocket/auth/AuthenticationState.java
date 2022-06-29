@@ -46,7 +46,7 @@ public class AuthenticationState {
 	private AuthenticationScheme scheme;
 	private AuthenticationScheme initialScheme;
 	private String remoteAddress;
-	private Integer currentIndex = new Integer(0);
+	private Integer currentIndex = 0;
 	private List<AuthenticationModule> modules;
 	private List<PostAuthenticationStep> sessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
 	private List<PostAuthenticationStep> nonSessionPostAuthenticationSteps = new ArrayList<PostAuthenticationStep>();
