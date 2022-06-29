@@ -1,17 +1,26 @@
 package com.hypersocket.scheduler;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.lang.reflect.Proxy;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.List;
 
+import org.h2.jdbc.JdbcBlob;
+import org.hibernate.LobHelper;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.engine.jdbc.SerializableBlobProxy;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.upgrade.UpgradeService;
@@ -79,19 +88,18 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 								LOG.warn(String.format("Removing job %s as the class %s no longer exists.", row[0], row[1]),
 										e);
 								deleteJob(session, (String)row[0]);
-							}
+							} 
 						}
 	
 						/* Clean up triggers that cannot be deserialized */
 						query = session.createSQLQuery("SELECT JOB_NAME, JOB_DATA, TRIGGER_NAME FROM QRTZ_TRIGGERS");
 						results = query.list();
-						for (Object[] row : results) {
+						for (Object[] row : results) { 
 							try {
-								byte[] arr = (byte[]) row[1];
-								if (arr.length > 0) {
-									ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(arr));
-									ois.readObject();
-								}
+								ObjectInputStream ois = new ObjectInputStream(toStream(row[1]));
+								ois.readObject();
+							} catch(EOFException e) {
+								// Ignore
 							} catch (Exception e) {
 								LOG.warn(String.format("Removing job %s as it is no longer readable.", row[0]),
 										e);
@@ -105,6 +113,20 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 					}
 				}
 
+			}
+			
+			InputStream toStream(Object o) throws SQLException, EOFException {
+				if(o instanceof Blob) {
+					return ((Blob)o).getBinaryStream();
+				}
+				else if(o.getClass().isArray()) {
+					byte[] o2 = (byte[])o;
+					if(o2.length == 0)
+						throw new EOFException();
+					return new ByteArrayInputStream(o2);
+				}
+				else
+					throw new UnsupportedOperationException("Cannot deserialize job data. This may be due to the database in use returning a different type for the serialised data that is expected. As a temporary work around, you can try disabling the clean up job by setting the system property 'hypersocket.enableJobCleanup' to true.");
 			}
 		});
 		return clusteredScheduler;
