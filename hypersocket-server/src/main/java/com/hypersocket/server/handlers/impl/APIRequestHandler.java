@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.json.utils.HypersocketUtils;
 import com.hypersocket.server.HypersocketServerImpl;
-import com.hypersocket.server.handlers.HttpResponseProcessor;
 import com.hypersocket.session.json.SessionUtils;
 
 public class APIRequestHandler extends ServletRequestHandler {
@@ -29,8 +28,7 @@ public class APIRequestHandler extends ServletRequestHandler {
 	private SessionUtils sessionUtils; 
 	
 	@Override
-	public void handleHttpRequest(HttpServletRequest request, HttpServletResponse response,
-		HttpResponseProcessor responseProcessor) {
+	public void handleHttpRequest(HttpServletRequest request, HttpServletResponse response) {
 		if(Objects.isNull(sessionUtils)) {
 			sessionUtils = ApplicationContextServiceImpl.getInstance().getBean(SessionUtils.class);
 		}
@@ -59,7 +57,7 @@ public class APIRequestHandler extends ServletRequestHandler {
 				response.addHeader("Access-Control-Allow-Headers", requestHeaders);
 			}
 		}
-		super.handleHttpRequest(request, response, responseProcessor);
+		super.handleHttpRequest(request, response);
 		
 	}
 

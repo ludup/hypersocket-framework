@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,10 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.netty.NettyServer;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.server.IPRestrictionConsumer;
+import com.hypersocket.server.IPRestrictionProvider;
+import com.hypersocket.server.IPRestrictionService;
+import com.hypersocket.server.MutableIPRestrictionProvider;
 
 @Service
 public class IPRestrictionServiceImpl implements IPRestrictionService {
@@ -25,12 +30,22 @@ public class IPRestrictionServiceImpl implements IPRestrictionService {
 
 	private List<IPRestrictionProvider> providers = new ArrayList<>();
 	private Map<String, IPRestrictionConsumer> services = new HashMap<>();
+
+	private MutableIPRestrictionProvider mutableProvider;
 	
 	static boolean globalDisabled = "true".equals(System.getProperty("hypersocket.disableIpRestrictions", "false"));
 
 	@Override
 	public void registerProvider(IPRestrictionProvider provider) {
 		providers.add(provider);
+		Collections.sort(providers, (p1, p2) -> Integer.valueOf(p1.getWeight()).compareTo(p2.getWeight()) );
+		mutableProvider = null;
+		for(var p : providers) {
+			if(mutableProvider  == null && p instanceof MutableIPRestrictionProvider) {
+				mutableProvider = (MutableIPRestrictionProvider) p;
+				break;
+			}
+		}
 	}
 
 	@Override
@@ -88,6 +103,11 @@ public class IPRestrictionServiceImpl implements IPRestrictionService {
 	private void setup() {
 		registerService(new IPRestrictionConsumer(NettyServer.RESOURCE_BUNDLE,
 				IPRestrictionService.DEFAULT_SERVICE));
+	}
+
+	@Override
+	public MutableIPRestrictionProvider getMutableProvider() {
+		return mutableProvider;
 	}
 
 }

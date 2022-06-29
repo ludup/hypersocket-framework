@@ -41,7 +41,6 @@ import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.server.handlers.HttpRequestHandler;
-import com.hypersocket.server.handlers.HttpResponseProcessor;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.session.json.SessionUtils;
@@ -143,7 +142,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 
 	@Override
 	public void handleHttpRequest(HttpServletRequest request,
-			HttpServletResponse response, HttpResponseProcessor responseProcessor) throws IOException {
+			HttpServletResponse response) throws IOException {
 		
 		SessionUtils sessionUtils = 
 				ApplicationContextServiceImpl.getInstance().getBean(SessionUtils.class);
@@ -181,15 +180,9 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 
 			if(status!=HttpStatus.SC_OK) {
 				if(log.isDebugEnabled()) {
-					log.debug("Resource not found in " + basePath + " [" + status + "]: " + request.getRequestURI());
+					log.debug("Resource error in " + basePath + " [" + status + "]: " + request.getRequestURI());
 				}
-				if(status==HttpStatus.SC_NOT_FOUND) {
-					responseProcessor.send404(request, response);
-				} else if(status==HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-					responseProcessor.send500(request, response);
-				} else {
-					response.sendError(status);
-				}
+				response.sendError(status);
 				return;
 			}
 			
@@ -289,7 +282,6 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				}
 			}
 		} finally {
-			responseProcessor.sendResponse(request, response, false);
 			if(Objects.nonNull(session)) {
 				sessionService.clearPrincipalContext();
 			}

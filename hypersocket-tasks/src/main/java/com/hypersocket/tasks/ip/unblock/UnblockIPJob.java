@@ -8,10 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hypersocket.ip.DefaultIPRestrictionProvider;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.scheduler.PermissionsAwareJob;
+import com.hypersocket.server.IPRestrictionService;
 import com.hypersocket.tasks.ip.block.BlockIPTask;
 
 public class UnblockIPJob extends PermissionsAwareJob {
@@ -19,7 +19,7 @@ public class UnblockIPJob extends PermissionsAwareJob {
 	static Logger log = LoggerFactory.getLogger(UnblockIPJob.class);
 	
 	@Autowired
-	private DefaultIPRestrictionProvider ipRestrictionProvider;
+	private IPRestrictionService ipRestrictionService;
 	
 	@Autowired
 	private RealmRepository realmRepository; 
@@ -45,9 +45,9 @@ public class UnblockIPJob extends PermissionsAwareJob {
 				log.info("Unblocking IP address " + addr.toString());
 			}
 			
-			ipRestrictionProvider.unblockIPAddress(addr);
-			
 			Realm currentRealm = realmRepository.getRealmById(context.getTrigger().getJobDataMap().getLong("realm"));
+			
+			ipRestrictionService.getMutableProvider().undenyIPAddress(currentRealm, addr);
 			
 			blockIPTask.notifyUnblock(currentRealm.getName() + "_" + addr, true);
 			

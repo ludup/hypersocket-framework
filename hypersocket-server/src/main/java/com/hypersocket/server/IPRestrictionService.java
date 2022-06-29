@@ -1,4 +1,4 @@
-package com.hypersocket.ip;
+package com.hypersocket.server;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -21,6 +21,8 @@ public interface IPRestrictionService {
 	void registerService(IPRestrictionConsumer console);
 
 	void registerProvider(IPRestrictionProvider provider);
+	
+	MutableIPRestrictionProvider getMutableProvider();
 	
 	Collection<IPRestrictionConsumer> getServices();
 

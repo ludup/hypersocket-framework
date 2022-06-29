@@ -28,8 +28,7 @@ public abstract class HttpRequestHandler implements Comparable<HttpRequestHandle
 	public abstract boolean handlesRequest(HttpServletRequest request);
 	
 	public abstract void handleHttpRequest(HttpServletRequest request, 
-			HttpServletResponse response, 
-			HttpResponseProcessor responseProcessor) throws IOException;
+			HttpServletResponse response) throws IOException;
 	
 	public int getPriority() {
 		return priority;
