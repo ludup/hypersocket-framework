@@ -1,7 +1,11 @@
 package com.hypersocket.scheduler;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.hibernate.SQLQuery;
@@ -65,43 +69,59 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 			@SuppressWarnings("unchecked")
 			@Override
 			public void onUpgradeFinished() {
-				Session session = sessionFactory.openSession();
-				try {
-					/* Clean up jobs and triggers that no longer exist */
-					SQLQuery query = session.createSQLQuery("SELECT JOB_NAME, JOB_CLASS_NAME FROM QRTZ_JOB_DETAILS");
-					List<Object[]> results = query.list();
-					for (Object[] row : results) {
-						try {
-							Class.forName((String) row[1]);
-						} catch (Exception e) {
-							LOG.warn(String.format("Removing job %s as the class %s no longer exists.", row[0], row[1]),
-									e);
-							deleteJob(session, (String)row[0]);
+				
+				if("true".equals(System.getProperty("hypersocket.enableJobCleanup", "true"))) {
+					Session session = sessionFactory.openSession();
+					try {
+						/* Clean up jobs and triggers that no longer exist */
+						SQLQuery query = session.createSQLQuery("SELECT JOB_NAME, JOB_CLASS_NAME FROM QRTZ_JOB_DETAILS");
+						List<Object[]> results = query.list();
+						for (Object[] row : results) {
+							try {
+								Class.forName((String) row[1]);
+							} catch (Exception e) {
+								LOG.warn(String.format("Removing job %s as the class %s no longer exists.", row[0], row[1]),
+										e);
+								deleteJob(session, (String)row[0]);
+							} 
 						}
-					}
-
-					/* Clean up triggers that cannot be deserialized */
-					query = session.createSQLQuery("SELECT JOB_NAME, JOB_DATA, TRIGGER_NAME FROM QRTZ_TRIGGERS");
-					results = query.list();
-					for (Object[] row : results) {
-						try {
-							byte[] arr = (byte[]) row[1];
-							if (arr.length > 0) {
-								ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(arr));
+	
+						/* Clean up triggers that cannot be deserialized */
+						query = session.createSQLQuery("SELECT JOB_NAME, JOB_DATA, TRIGGER_NAME FROM QRTZ_TRIGGERS");
+						results = query.list();
+						for (Object[] row : results) { 
+							try {
+								ObjectInputStream ois = new ObjectInputStream(toStream(row[1]));
 								ois.readObject();
+							} catch(EOFException e) {
+								// Ignore
+							} catch (Exception e) {
+								LOG.warn(String.format("Removing job %s as it is no longer readable.", row[0]),
+										e);
+								deleteJob(session, (String)row[0]);
 							}
-						} catch (Exception e) {
-							LOG.warn(String.format("Removing job %s as it is no longer readable.", row[0]),
-									e);
-							deleteJob(session, (String)row[0]);
 						}
+					} catch (Exception e) {
+						throw new IllegalStateException("Failed to clean up missing jobs. This will have to be manually corrected. Please correct this by removing all jobs at the database level and starting the server again. Contact support for assistence and quote this exact error.", e);
+					} finally {
+						session.close();
 					}
-				} catch (Exception e) {
-					throw new IllegalStateException("Failed to clean up missing jobs. This will have to be manually corrected. Please correct this by removing all jobs at the database level and starting the server again. Contact support for assistence and quote this exact error.", e);
-				} finally {
-					session.close();
 				}
 
+			}
+			
+			InputStream toStream(Object o) throws SQLException, EOFException {
+				if(o instanceof Blob) {
+					return ((Blob)o).getBinaryStream();
+				}
+				else if(o.getClass().isArray()) {
+					byte[] o2 = (byte[])o;
+					if(o2.length == 0)
+						throw new EOFException();
+					return new ByteArrayInputStream(o2);
+				}
+				else
+					throw new UnsupportedOperationException("Cannot deserialize job data. This may be due to the database in use returning a different type for the serialised data that is expected. As a temporary work around, you can try disabling the clean up job by setting the system property 'hypersocket.enableJobCleanup' to true.");
 			}
 		});
 		return clusteredScheduler;
