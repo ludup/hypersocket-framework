@@ -24,9 +24,11 @@ import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.server.IPRestrictionService;
+import com.hypersocket.server.MutableIPRestrictionProvider;
 
 @Component
-public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
+public class DefaultIPRestrictionProvider implements MutableIPRestrictionProvider {
 
 	static Logger log = LoggerFactory.getLogger(IPRestrictionServiceImpl.class);
 
@@ -46,6 +48,7 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 		ipRestrictionService.registerProvider(this);
 	}
 
+	@Override
 	public boolean isAllowedAddress(InetAddress addr, String service, Realm realm) {
 
 		synchronized(deny) {
@@ -54,7 +57,7 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 					return false;
 				}
 			}
-	
+
 			return true;
 		}
 	}
@@ -68,7 +71,8 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 		deny.add(rule);
 	}
 
-	public synchronized void blockIPAddress(String addr, boolean permanent) throws UnknownHostException {
+	@Override
+	public synchronized void denyIPAddress(Realm realm, String addr, boolean permanent) throws UnknownHostException {
 
 		if (permanent) {
 			String[] oldValues = configurationService.getValues("server.blockIPs");
@@ -83,7 +87,8 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 
 	}
 
-	public synchronized void unblockIPAddress(String addr) throws UnknownHostException {
+	@Override
+	public synchronized void undenyIPAddress(Realm realm, String addr) throws UnknownHostException {
 
 		if (log.isInfoEnabled()) {
 			log.info("Unblocking " + addr);
@@ -144,7 +149,7 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 				}
 				if (!found) {
 					try {
-						unblockIPAddress(ip);
+						undenyIPAddress(c.getCurrentRealm(), ip);
 					} catch (UnknownHostException e) {
 						log.error("Failed to unblock ip no longer listed in permanent ip restrictions " + ip);
 					}
@@ -168,5 +173,33 @@ public class DefaultIPRestrictionProvider implements IPRestrictionProvider {
 			}
 		}
 
+	}
+
+	@Override
+	public void clearRules(Realm realm, boolean allow, boolean block) {
+		if(block) {
+			try {
+				configurationService.setValues("server.blockIPs", new String[0]);
+			} catch (ResourceException | AccessDeniedException e) {
+				throw new IllegalStateException("Failed to clear rules.", e);
+			}
+		}
+		if(allow)
+			throw new UnsupportedOperationException("This IP restriction provider does not support allow rules. Please try the Enhanced Security extension.");
+	}
+
+	@Override
+	public void allowIPAddress(Realm realm, String ipAddress, boolean permanent) throws UnknownHostException {
+		throw new UnsupportedOperationException("This IP restriction provider does not support allow rules. Please try the Enhanced Security extension.");
+	}
+
+	@Override
+	public void disallowIPAddress(Realm realm, String ipAddress, boolean permanent) throws UnknownHostException {
+		throw new UnsupportedOperationException("This IP restriction provider does not support allow rules. Please try the Enhanced Security extension.");
+	}
+
+	@Override
+	public int getWeight() {
+		return 1000;
 	}
 }

@@ -8,6 +8,7 @@
 package com.hypersocket.netty;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -23,8 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -73,10 +72,12 @@ import com.hypersocket.i18n.I18NService;
 import com.hypersocket.ip.ExtendedIpFilterRuleHandler;
 import com.hypersocket.netty.forwarding.SocketForwardingWebsocketClientHandler;
 import com.hypersocket.netty.log.NCSARequestLog;
+import com.hypersocket.netty.log.UIAppender;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.server.ClientConnector;
 import com.hypersocket.server.HypersocketServerImpl;
+import com.hypersocket.server.LoggingOutputListener;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceRepository;
 import com.hypersocket.server.interfaces.http.HTTPProtocol;
@@ -147,6 +148,26 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	}
 
 	
+	@Override
+	public HttpServletRequest getCurrentRequest() {
+		return HttpRequestDispatcherHandler.getRequest();
+	}
+
+	@Override
+	public void setContentStream(HttpServletRequest request, InputStream stream) {
+		HttpRequestDispatcherHandler.setContentStream(request, stream);
+	}
+
+	@Override
+	public int getActiveCount() {
+		return getExecutionHandler().getActiveCount();
+	}
+
+	@Override
+	public int getPoolSize() {
+		return getExecutionHandler().getPoolSize();
+	}
+
 	public ExecutionHandler getHandler() {
 		return executionHandler;
 	}
@@ -761,5 +782,15 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		OrderedMemoryAwareThreadPoolExecutor exec = new OrderedMemoryAwareThreadPoolExecutor(max, maxMem, maxTotal, keepAliveTime, TimeUnit.MILLISECONDS, factory);
 		exec.allowCoreThreadTimeOut(true);
 		return exec;
+	}
+
+	@Override
+	public void addLoggingOutputListener(LoggingOutputListener listener) {
+		UIAppender.getInstance().addListener((e) -> listener.logEvent(e));
+	}
+
+	@Override
+	public void removeLoggingOutputListener(LoggingOutputListener listener) {
+		UIAppender.getInstance().removeListener(listener);
 	}
 }

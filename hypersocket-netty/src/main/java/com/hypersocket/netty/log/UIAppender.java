@@ -12,24 +12,12 @@ import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LoggingEvent;
 import org.slf4j.event.Level;
 
+import com.hypersocket.server.LoggingOutputListener;
+import com.hypersocket.server.LoggingOutputListener.LoggingOutputEvent;
+
 public class UIAppender extends AppenderSkeleton {
 	
-	public interface Listener {
-		void logEvent(UILogEvent event);
-	}
-
-	public static class UILogEvent {
-		private long timestamp;
-		private String text;
-		private Level level;
-		private int syslogLevel;
-		private String logger;
-		private String className;
-		private String fileName;
-		private String methodName;
-		private String lineNumber;
-		private String rawText;
-
+	public static class UILogEvent extends LoggingOutputEvent {
 		public UILogEvent(String text, LoggingEvent evt) {
 			this.text = text;
 			rawText = evt.getRenderedMessage();
@@ -61,63 +49,23 @@ public class UIAppender extends AppenderSkeleton {
 			methodName = evt.getLocationInformation().getMethodName();
 			lineNumber = evt.getLocationInformation().getLineNumber();
 		}
-		
-		public int getSyslogLevel() {
-			return syslogLevel;
-		}
-
-		public String getLogger() {
-			return logger;
-		}
-
-		public String getClassName() {
-			return className;
-		}
-
-		public String getFileName() {
-			return fileName;
-		}
-
-		public String getMethodName() {
-			return methodName;
-		}
-
-		public String getLineNumber() {
-			return lineNumber;
-		}
-
-		public Level getLevel() {
-			return level;
-		}
-
-		public String getText() {
-			return text;
-		}
-
-		public String getRawText() {
-			return rawText;
-		}
-
-		public long getTimestamp() {
-			return timestamp;
-		}
 	}
 
 	private static final int MAX_BUFFER_SIZE = 100;
 	private static List<UILogEvent> buffer = Collections.synchronizedList(new LinkedList<>());
 	private ExecutorService queue = Executors.newSingleThreadExecutor();
 	private static UIAppender instance;
-	private List<Listener> listeners=  new ArrayList<>();
+	private List<LoggingOutputListener> listeners=  new ArrayList<>();
 
 	public UIAppender() {
 		instance = this;
 	}
 	
-	public void addListener(Listener listener) {
+	public void addListener(LoggingOutputListener listener) {
 		listeners.add(listener);
 	}
 	
-	public void removeListener(Listener listener) {
+	public void removeListener(LoggingOutputListener listener) {
 		listeners.remove(listener);
 	}
 	

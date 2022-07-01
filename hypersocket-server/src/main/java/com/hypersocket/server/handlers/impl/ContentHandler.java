@@ -7,14 +7,11 @@ import java.io.InputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.hypersocket.server.handlers.HttpResponseProcessor;
-
 public interface ContentHandler {
 
 	boolean handlesRequest(HttpServletRequest request);
 
-	void handleHttpRequest(HttpServletRequest request, HttpServletResponse response,
-			HttpResponseProcessor responseProcessor) throws IOException;
+	void handleHttpRequest(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
 	String getResourceName();
 

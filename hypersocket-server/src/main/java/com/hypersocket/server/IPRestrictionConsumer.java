@@ -1,4 +1,4 @@
-package com.hypersocket.ip;
+package com.hypersocket.server;
 
 public class IPRestrictionConsumer {
 

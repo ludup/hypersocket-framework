@@ -8,6 +8,7 @@
 package com.hypersocket.server;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -29,6 +30,8 @@ import com.hypersocket.server.websocket.TCPForwardingClientCallback;
 public interface HypersocketServer {
 
 	final static String RESOURCE_BUNDLE = "HypersocketServer";
+	String CONTENT_INPUTSTREAM = "ContentInputStream";
+	String BROWSER_URI = "browserRequestUri";
 
 	List<HttpRequestHandler> getHttpHandlers();
 
@@ -129,4 +132,16 @@ public interface HypersocketServer {
 	void protectPage(String page);
 
 	boolean isProtectedPage(String page);
+
+	int getActiveCount();
+
+	int getPoolSize();
+	
+	HttpServletRequest getCurrentRequest();
+
+	void setContentStream(HttpServletRequest request, InputStream stream);
+	
+	void addLoggingOutputListener(LoggingOutputListener listener);
+	
+	void removeLoggingOutputListener(LoggingOutputListener listener);
 }

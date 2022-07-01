@@ -13,11 +13,11 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hypersocket.server.handlers.HttpRequestHandler;
-import com.hypersocket.server.handlers.HttpResponseProcessor;
 
 public abstract class ServletRequestHandler extends HttpRequestHandler {
 
@@ -32,15 +32,14 @@ public abstract class ServletRequestHandler extends HttpRequestHandler {
     
 	@Override
 	public void handleHttpRequest(HttpServletRequest request,
-			HttpServletResponse response, HttpResponseProcessor responseProcessor) {
+			HttpServletResponse response) {
 		try {
 			servlet.service(request, response);	
-			responseProcessor.sendResponse(request, response, false);
 		}
 		catch (Throwable e) {
 			log.error("Servlet error", e);
 			try {
-				responseProcessor.send500(request, response);
+				response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 			} catch (IOException ex) {
 				log.error("IO error", ex);
 			}

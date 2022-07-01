@@ -20,6 +20,5 @@ public interface WebsocketHandler {
 	
 	void acceptWebsocket(HttpServletRequest request, 
 			HttpServletResponse nettyResponse, 
-			WebsocketClientCallback callback, 
-			HttpResponseProcessor processor) throws UnauthorizedException, AccessDeniedException;
+			WebsocketClientCallback callback) throws UnauthorizedException, AccessDeniedException;
 }
