@@ -810,7 +810,9 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		synchronized(timers) {
 			JobKey jk = context.getTrigger().getJobKey();
 			running.remove(jk);
-			timers.get(jk).ended = System.currentTimeMillis();
+			if (timers.get(jk) != null) {
+				timers.get(jk).ended = System.currentTimeMillis();
+			}
 			exceptions.remove(jk);
 		}
 	}

@@ -4,25 +4,21 @@ import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.lang.reflect.Proxy;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.h2.jdbc.JdbcBlob;
-import org.hibernate.LobHelper;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.jdbc.SerializableBlobProxy;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.scheduler.listener.AppJobTriggerListener;
 import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
 
@@ -48,6 +44,7 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 			public void onUpgradeComplete() {
 
 				try {
+					clusteredScheduler.getListenerManager().addTriggerListener(new AppJobTriggerListener());
 					clusteredScheduler.start();
 				} catch (Exception e) {
 					/**
@@ -132,6 +129,7 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 		return clusteredScheduler;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void deleteJob(Session session, String jobName) {
 		SQLQuery innerQuery = session.createSQLQuery("SELECT TRIGGER_NAME FROM QRTZ_TRIGGERS WHERE JOB_NAME = '" + jobName + "'");
 		List<Object[]> innerRow = innerQuery.list();
