@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.scheduler.listener.AppJobTriggerListener;
 import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
 
@@ -55,6 +56,7 @@ public class LocalSchedulerServiceImpl extends AbstractSchedulerServiceImpl impl
 			@Override
 			public void onUpgradeComplete() {
 				try {
+					scheduler.getListenerManager().addTriggerListener(new AppJobTriggerListener());
 					scheduler.start();
 				} catch (SchedulerException e) {
 					throw new IllegalStateException(e.getMessage(), e);
