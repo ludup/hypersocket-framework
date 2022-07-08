@@ -118,6 +118,10 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new DeletedCriteria(deleted), new PrincipalTypeRestriction(type));
 	}
 	
+	protected LocalUser getUser(String column, Object value, Realm realm, boolean deleted) {
+		return get(column, value, LocalUser.class, JOIN_GROUPS, new RealmRestriction(realm), new DeletedCriteria(deleted));
+	}
+	
 	@Transactional(readOnly=true)
 	public LocalUser getUserByName(String username, Realm realm) {
 		return getUser("name", username, realm, PrincipalType.USER, false);
@@ -238,7 +242,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	@Override
 	@Transactional(readOnly=true)
 	public Principal getUserById(Long id, Realm realm, boolean deleted) {
-		return getUser("id", id, realm, PrincipalType.USER, deleted);
+		return getUser("id", id, realm, deleted);
 	}
 
 	@Override

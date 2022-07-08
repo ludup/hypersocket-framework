@@ -239,10 +239,13 @@ public class LogonController extends AuthenticatedController {
 					}
 				}
 				
-				if(state==null) {
+				/* BPS 2022/07/07 - This is whats preventing switching URL (e.g. /app/ui to /app/admin). 
+				 * If the previous state is non-null (which it will be when switching), 
+				 * createAuthenticationState() should merge them. */
+//				if(state==null) {
 					state = AuthenticationState.createAuthenticationState(scheme, request,
 						null, state, sessionUtils.getLocale(request));
-				}
+//				}
 			}
 
 			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
@@ -321,23 +324,35 @@ public class LogonController extends AuthenticatedController {
 				
 				request.getSession().setAttribute("lastFormTemplate", template);
 				
-				return new LogonRequiredResult(
-						LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state.getRealm(),
-								"logon.banner")),
-						flash!=null ? flash : state.getLastErrorMsg(),
-						flashStyle!=null ? flashStyle : state.getLastErrorType(),
-						state.getLastErrorIsResourceKey(),
-						template,
-						false,
-//						configurationService.hasUserLocales(), 
-						state.isNew(),
-						state.getCurrentIndex()==0,
-						!state.hasNextStep(), success || state.isNew(),
-						state.isAuthenticationComplete(),
-						state.getScheme().getLastButtonResourceKey(),
-						state.getRealm(),
-						getNonce(request),
-						state.getRequestParameters());
+				try {
+					return new LogonRequiredResult(
+							LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state.getRealm(),
+									"logon.banner")),
+							flash!=null ? flash : state.getLastErrorMsg(),
+							flashStyle!=null ? flashStyle : state.getLastErrorType(),
+							state.getLastErrorIsResourceKey(),
+							template,
+							false,
+	//						configurationService.hasUserLocales(), 
+							state.isNew(),
+							state.getCurrentIndex()==0,
+							!state.hasNextStep(), success || state.isNew(),
+							state.isAuthenticationComplete(),
+							state.getScheme().getLastButtonResourceKey(),
+							state.getRealm(),
+							getNonce(request),
+							state.getRequestParameters());
+				}
+				finally {
+					if(!success && state.isAuthenticationComplete() && !state.hasNextStep())
+						/* BPS - 2022/07/07 - If there is an error at the end of authentication (licensing?), then
+						 * clear the state after we have returned the response. This allows
+						 * the user to escape the error by refreshing the page - something that
+						 * is otherwise impossible (well, you can NOW also switch schemes and
+						 * it will work properly)
+						 */
+						state.clean();
+				}
 				
 			}
 		} catch(FallbackAuthenticationRequired e) {
