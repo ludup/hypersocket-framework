@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.scheduler.listener.AppJobTriggerListener;
 import com.hypersocket.upgrade.UpgradeService;
 import com.hypersocket.upgrade.UpgradeServiceListener;
 
@@ -43,6 +44,7 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 			public void onUpgradeComplete() {
 
 				try {
+					clusteredScheduler.getListenerManager().addTriggerListener(new AppJobTriggerListener());
 					clusteredScheduler.start();
 				} catch (Exception e) {
 					/**
@@ -127,6 +129,7 @@ public class ClusteredSchedulerServiceImpl extends AbstractSchedulerServiceImpl 
 		return clusteredScheduler;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void deleteJob(Session session, String jobName) {
 		SQLQuery innerQuery = session.createSQLQuery("SELECT TRIGGER_NAME FROM QRTZ_TRIGGERS WHERE JOB_NAME = '" + jobName + "'");
 		List<Object[]> innerRow = innerQuery.list();
