@@ -54,9 +54,12 @@ public class LastAdminLoginTelemetryProducer implements TelemetryProducer {
 	protected void iterateAndAdd(JsonObject data, Iterator<Principal> it) {
 		Date lastAdminLogin = null;
 		while(it.hasNext()) {
-			UserPrincipal<?> p = (UserPrincipal<?>) it.next();
-			if(p.getLastSignOn() != null && (lastAdminLogin == null || p.getLastSignOn().after(lastAdminLogin))) {
-				lastAdminLogin = p.getLastSignOn();
+			Principal i = it.next();
+			if(i instanceof UserPrincipal) {
+				UserPrincipal<?> p = (UserPrincipal<?>) i;
+				if(p.getLastSignOn() != null && (lastAdminLogin == null || p.getLastSignOn().after(lastAdminLogin))) {
+					lastAdminLogin = p.getLastSignOn();
+				}
 			}
 		}
 		if(lastAdminLogin != null) {
