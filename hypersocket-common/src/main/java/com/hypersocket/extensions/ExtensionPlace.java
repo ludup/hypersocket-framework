@@ -110,6 +110,14 @@ public class ExtensionPlace implements Serializable {
 		}
 		throw new FileNotFoundException();
 	}
+
+	public File resolveRemovedDir() {
+		return new File(getDir().getParentFile(), "removed");
+	}
+
+	public File resolveRemovedFile(ExtensionVersion def) {
+		return new File(resolveRemovedDir(), def.getExtensionId());
+	}
 	
 
 }
