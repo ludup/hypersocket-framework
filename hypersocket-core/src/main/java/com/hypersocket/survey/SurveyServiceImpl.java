@@ -98,7 +98,13 @@ public class SurveyServiceImpl implements SurveyService {
 			getSurveyConfiguration();
 			scheduler = Executors.newSingleThreadScheduledExecutor();
 			scheduler.scheduleAtFixedRate(() -> {
-				getSurveyConfiguration();
+				realmService.setupSystemContext();
+				try {
+					getSurveyConfiguration();
+				}
+				finally {
+					realmService.clearPrincipalContext();
+				}
 			}, 1, 1, TimeUnit.DAYS);
 		} finally {
 			realmService.clearPrincipalContext();
