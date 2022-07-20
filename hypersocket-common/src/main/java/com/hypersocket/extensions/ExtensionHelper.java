@@ -88,7 +88,7 @@ public class ExtensionHelper {
 								Version localVersion = new Version(HypersocketVersion.getVersion());
 								log.warn("Faking existence of extension for purposes of update testing of " + extensionId + " in " + extensionsPlace.getApp() + ". Using version " + localVersion);
 
-								if (remoteVersion.compareTo(localVersion) >= 0) {
+								if (remoteVersion.compareTo(localVersion) > 0) {
 
 									if (log.isInfoEnabled()) {
 										log.info(extensionId + " is installed but an update is available ["
@@ -156,7 +156,7 @@ public class ExtensionHelper {
 									Version remoteVersion = new Version(remote.getVersion());
 									Version localVersion = new Version(HypersocketVersion.getVersion());
 
-									if (remoteVersion.compareTo(localVersion) >= 0) {
+									if (remoteVersion.compareTo(localVersion) > 0) {
 
 										if (log.isInfoEnabled()) {
 											log.info(extensionId + " is installed but an update is available hash=\""
