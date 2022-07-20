@@ -35,7 +35,7 @@ public class ExtensionHelper {
 			String ourVersion, String serial, Map<String, String> params, ExtensionPlace extensionPlace,
 			boolean resolveInstalled, PropertyCallback callback, ExtensionTarget... targets) throws IOException {
 
-		Map<String, ExtensionVersion> extsByName = resolveRemoteDependencies(updateUrl, repos,
+		Map<String, ExtensionVersion> extsByName = resolveRemoteDependencies(extensionPlace, updateUrl, repos,
 				ourVersion, serial, params, callback, targets);
 
 		for (ExtensionVersion ext : extsByName.values()) {
@@ -114,7 +114,7 @@ public class ExtensionHelper {
 
 							if("true".equals(System.getProperty("hypersocket.development", "false"))) {
 								ExtensionVersion local = new ExtensionVersion();
-								loadLocalExtension(local, props, currentArchive);
+								loadLocalExtension(extensionsPlace, local, props, currentArchive);
 								local.setDescription("You are running in development mode. "
 										+ "The extension is not available from the remote repository, but it "
 										+ "is already available on your classpath.");
@@ -123,7 +123,7 @@ public class ExtensionHelper {
 							}
 							else {
 								ExtensionVersion local = new ExtensionVersion();
-								loadLocalExtension(local, props, currentArchive);
+								loadLocalExtension(extensionsPlace, local, props, currentArchive);
 								local.setState(ExtensionState.INSTALLED);
 								extsByName.put(extensionId, local);
 							}
@@ -147,7 +147,7 @@ public class ExtensionHelper {
 							if (extsByName.containsKey(extensionId)) {
 
 								ExtensionVersion remote = extsByName.get(extensionId);
-								loadBootstrapExtension(local, remote, props, currentArchive);
+								loadBootstrapExtension(extensionsPlace, local, remote, props, currentArchive);
 
 								remote.setState(ExtensionState.INSTALLED);
 
@@ -202,7 +202,7 @@ public class ExtensionHelper {
 		}
 	}
 
-	private static void loadBootstrapExtension(ExtensionVersion ext, ExtensionVersion remote, Properties props,
+	private static void loadBootstrapExtension(ExtensionPlace place, ExtensionVersion ext, ExtensionVersion remote, Properties props,
 			File currentArchive) {
 
 		ext.setDescription(remote.getDescription());
@@ -222,7 +222,7 @@ public class ExtensionHelper {
 		ext.setTarget(remote.getTarget());
 	}
 
-	private static void loadLocalExtension(ExtensionVersion ext, Properties props, File currentArchive) {
+	private static void loadLocalExtension(ExtensionPlace place, ExtensionVersion ext, Properties props, File currentArchive) {
 
 		ext.setDescription("This extension is not available on the remote extension store.");
 		ext.setExtensionId(props.getProperty("extension.id"));
@@ -241,7 +241,33 @@ public class ExtensionHelper {
 		ext.setTarget("SERVER");
 	}
 
-	static Map<String, ExtensionVersion> resolveRemoteDependencies(String url, String[] repos, String version,
+	public static void setDisabled(ExtensionPlace place, ExtensionVersion ext, boolean disabled) throws IOException {
+		var extFile = resolveDisabledExtension(place, ext);
+		if(disabled && !extFile.exists()) {
+			var dir = extFile.getParentFile();
+			if(!dir.exists() && !dir.mkdirs())
+				throw new IOException("Failed to create directory " + dir + ".");
+			if(!extFile.createNewFile())
+				throw new IOException("Failed to create disabled file " + extFile + ".");
+		}
+		else if(!disabled && extFile.exists()) {
+			extFile.delete();
+		}
+	}
+
+	public static boolean isDisabled(ExtensionPlace place, ExtensionVersion ext) {
+		return resolveDisabledExtension(place, ext).exists();
+	}
+
+	protected static File resolveDisabledExtension(ExtensionPlace place, ExtensionVersion ext) {
+		return new File(resolveDisabledDir(place), ext.getExtensionId());
+	}
+
+	protected static File resolveDisabledDir(ExtensionPlace place) {
+		return new File(place.getDir().getParent(), "disabled");
+	}
+
+	static Map<String, ExtensionVersion> resolveRemoteDependencies(ExtensionPlace place, String url, String[] repos, String version,
 			String serial, Map<String, String> params, PropertyCallback callback, ExtensionTarget... targets) throws IOException {
 
 		Map<String, ExtensionVersion> extsByName = new HashMap<String, ExtensionVersion>();
