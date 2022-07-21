@@ -63,7 +63,7 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.sessions"
 		resourceBundle="SessionService" weight="1000" group="sessions">
-		<property resourceKey="session.timeout" inputType="slider"
+		<property resourceKey="session.timeout" inputType="spinner"
 			min="1" max="1440" defaultValue="15" weight="0" labelResourceKey="session.timeout.slider.label" />
 		<property resourceKey="session.closeOnShutdown" inputType="switch"
 			defaultValue="false" weight="100" />
