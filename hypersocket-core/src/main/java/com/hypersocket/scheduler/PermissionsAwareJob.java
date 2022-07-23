@@ -98,6 +98,8 @@ public abstract class PermissionsAwareJob extends TransactionalJob implements Ru
 				authenticationService.clearPrincipalContext();
 			}
 
+		} catch(RuntimeException re) {
+			throw re;
 		} catch (Exception e) {
 			throw new IllegalStateException(e.getMessage(), e);
 		}
