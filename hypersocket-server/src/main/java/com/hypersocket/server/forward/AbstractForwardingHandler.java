@@ -84,10 +84,7 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 
 		Session session = sessionUtils.getActiveSession(request);
 
-		getService().setCurrentSession(session,
-				sessionUtils.getLocale(request));
-
-		try {
+		try(var c = getService().tryAs(session,sessionUtils.getLocale(request))) {
 			Long resourceId = Long
 					.parseLong(request.getParameter("resourceId"));
 
@@ -120,9 +117,7 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 			// TODO Log event
 			log.error("Cannot connect to resource", e);
 			throw new AccessDeniedException("Resource not found");
-		} finally {
-			getService().clearPrincipalContext();
-		}
+		} 
 	}
 	
 	protected abstract void fireResourceOpenSuccessEvent(Session session, T resource,

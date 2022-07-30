@@ -20,21 +20,17 @@ import com.hypersocket.session.SessionService;
 
 public class core_2_DOT_1_DOT_3 implements Runnable {
 
-	static Logger log = LoggerFactory.getLogger(core_2_DOT_1_DOT_3.class);
+	private final static Logger log = LoggerFactory.getLogger(core_2_DOT_1_DOT_3.class);
 
 	@Autowired
-	PermissionRepository permissionRepository;
+	private PermissionRepository permissionRepository;
 	
 	@Autowired
-	SessionService sessionService; 
+	private SessionService sessionService; 
 	
 	@Override
 	public void run() {
-		sessionService.executeInSystemContext(new Runnable() {
-			public void run() {
-				doit();
-			}
-		});
+		sessionService.runAsSystemContext(() -> doit());
 	}
 	
 	public void doit() {

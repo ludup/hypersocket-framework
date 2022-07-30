@@ -10,7 +10,6 @@ package com.hypersocket.auth;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -34,13 +33,11 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 			String remoteAddress, Map<String, Object> environment, Realm realm, Locale locale)
 			throws AccessDeniedException;
 
-	@SuppressWarnings("rawtypes")
-	boolean logon(AuthenticationState state, Map parameterMap)
+	boolean logon(AuthenticationState state, Map<String, String[]> parameterMap)
 			throws AccessDeniedException, FallbackAuthenticationRequired;
 
-	@SuppressWarnings("rawtypes")
 	FormTemplate nextAuthenticationTemplate(AuthenticationState state,
-			Map params);
+			Map<String, String[]> params);
 
 	Session completeLogon(AuthenticationState state)
 			throws AccessDeniedException;
@@ -62,11 +59,6 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	
 	AuthenticationScheme getSchemeByResourceKey(Realm realm, String resourceKey, boolean allowFallback) throws AccessDeniedException;
 
-	Session logonAnonymous(String remoteAddress,
-			String userAgent, 
-			Map<String, String> parameters, 
-			String serverName) throws AccessDeniedException;
-
 	Authenticator getAuthenticator(String resourceKey);
 
 	Collection<PostAuthenticationStep> getPostAuthenticationSteps();
@@ -82,11 +74,5 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	void registerAuthenticatorSelector(AuthenticatorSelector selector);
 
 	Authenticator nextAuthenticator(AuthenticationState state);
-
-	<T> T callAs(Callable<T> callable, Principal principal);
-
-	<T> T callAsSystemContext(Callable<T> callable, Realm realm)  throws Exception ;
-
-	void runAsSystemContext(Runnable runnable, Realm realm);
 
 }

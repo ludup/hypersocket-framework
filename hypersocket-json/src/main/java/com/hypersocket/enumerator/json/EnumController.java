@@ -19,6 +19,7 @@ import org.springframework.web.context.request.WebRequest;
 import com.hypersocket.annotation.EnumDisplayName;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.NameValuePair;
@@ -32,12 +33,12 @@ public class EnumController extends AuthenticatedController {
 	
 	@RequestMapping(value = "enum/{className}/", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
+	@AuthenticatedContext(system = true)
 	public ResourceList<NameValuePair> getStates(
 			WebRequest request, HttpServletResponse response,
 			@PathVariable("className") String className)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupSystemContext();
 		try {
 			if(request.checkNotModified(lastModified)) {
 				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
@@ -72,20 +73,18 @@ public class EnumController extends AuthenticatedController {
 			return new ResourceList<NameValuePair>(results);
 		} catch(Exception e) { 
 			return new ResourceList<NameValuePair>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 	
 	@RequestMapping(value = "enum/{className}/{ignore}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
+	@AuthenticatedContext(system = true)
 	public ResourceList<NameValuePair> getStates(
 			WebRequest request, HttpServletResponse response,
 			@PathVariable("className") String className,
 			@PathVariable("ignore") String ignored)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupSystemContext();
 		try {
 			if(request.checkNotModified(lastModified)) {
 				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
@@ -107,19 +106,17 @@ public class EnumController extends AuthenticatedController {
 			return new ResourceList<NameValuePair>(results);
 		} catch(Exception e) { 
 			return new ResourceList<NameValuePair>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 
 	@RequestMapping(value = "enum/displayable/{className}/", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
+	@AuthenticatedContext(system = true)
 	public ResourceList<Displayable<?>> getDisplayableEnums(
 			WebRequest request, HttpServletResponse response,
 			@PathVariable("className") String className)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupSystemContext();
 		try {
 			if(request.checkNotModified(lastModified)) {
 				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);

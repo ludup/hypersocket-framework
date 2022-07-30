@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,7 +20,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -480,80 +480,23 @@ public class AuthenticationServiceImpl extends
 		return null;
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
-	public boolean logon(AuthenticationState state, Map parameterMap)
+	public boolean logon(AuthenticationState state, Map<String, String[]> parameterMap)
 			throws AccessDeniedException, FallbackAuthenticationRequired {
 
 		boolean success = false;
 
 		if (state.isAuthenticationComplete()) {
-
-			boolean clearContext = false;
 			if (state.getSession() != null) {
-				setCurrentSession(state.getSession(), state.getLocale());
-				clearContext = true;
-			}
-
-			try {
-				if (state.getCurrentPostAuthenticationStep() != null) {
-
-					preProcess(state.getCurrentPostAuthenticationStep(), state, parameterMap);
-					
-					AuthenticatorResult result = state.getCurrentPostAuthenticationStep().process(state, parameterMap);
-					
-					postProcess(state.getCurrentPostAuthenticationStep(), result, state, parameterMap);
-					
-					switch (result) {
-					case INSUFFICIENT_DATA: {
-						if (state.getLastErrorMsg() == null) {
-							state.setLastErrorMsg("error.insufficentData");
-							state.setLastErrorIsResourceKey(true);
-						}
-						break;
-					}
-					case INSUFFICIENT_DATA_NO_ERROR: {
-						state.setLastErrorMsg(null);
-						state.setLastErrorIsResourceKey(false);
-						break;
-					}
-					case AUTHENTICATION_FAILURE_DISPALY_ERROR: 
-					{
-						break;
-					}
-					case AUTHENTICATION_SUCCESS: {
-
-						
-						success = true;
-						state.nextPostAuthenticationStep();
-
-						if (state.canCreateSession()) {
-							state.setSession(completeLogon(state));
-						}
-
-						if (state.hasPostAuthenticationStep()) {
-							PostAuthenticationStep step = state
-									.getCurrentPostAuthenticationStep();
-							if (!step.requiresUserInput(state)) {
-								success = logon(state, parameterMap);
-							}
-						}
-						
-						break;
-					}
-					
-					default: {
-						state.setLastErrorMsg("error.genericLogonError");
-						state.setLastErrorIsResourceKey(true);
-						break;
-					}
-					}
+				try(var c = tryAs(state.getSession(), state.getLocale())) {
+					success = doCompleteLogon(state, parameterMap, success);
 				}
-			} finally {
-				if(clearContext) {
-					clearPrincipalContext();
+				catch(IOException ioe) {
+					throw new IllegalStateException("Failed to logon.", ioe);
 				}
 			}
+			else
+				success = doCompleteLogon(state, parameterMap, success);
 		} else {
 			Authenticator authenticator = nextAuthenticator(state);
 			Realm currentRealm = state.getRealm(); // The default realm
@@ -738,9 +681,7 @@ public class AuthenticationServiceImpl extends
 								eventService.publishEvent(new AuthenticationAttemptEvent(
 												this, state, authenticator));
 
-								setupSystemContext(state.getPrincipal());
-								
-								try {
+								try(var c = tryAs(state.getPrincipal())) {
 									for (PostAuthenticationStep proc : postAuthenticationSteps) {
 										if (proc.requiresProcessing(state)) {
 											state.addPostAuthenticationStep(proc);
@@ -758,8 +699,6 @@ public class AuthenticationServiceImpl extends
 											success = logon(state, parameterMap);
 										}
 									}
-								} finally {
-									clearPrincipalContext();
 								}
 								
 							} else {
@@ -789,6 +728,8 @@ public class AuthenticationServiceImpl extends
 							state.setLastErrorIsResourceKey(true);
 							state.revertModule();
 							success = false;
+						} catch(IOException ioe) {
+							throw new IllegalStateException("Failed to clear context.", ioe);
 						}
 						break;
 					}
@@ -803,8 +744,65 @@ public class AuthenticationServiceImpl extends
 
 	}
 
+	protected boolean doCompleteLogon(AuthenticationState state, Map<String, String[]> parameterMap, boolean success) throws AccessDeniedException, FallbackAuthenticationRequired {
+		if (state.getCurrentPostAuthenticationStep() != null) {
+
+			preProcess(state.getCurrentPostAuthenticationStep(), state, parameterMap);
+			
+			AuthenticatorResult result = state.getCurrentPostAuthenticationStep().process(state, parameterMap);
+			
+			postProcess(state.getCurrentPostAuthenticationStep(), result, state, parameterMap);
+			
+			switch (result) {
+			case INSUFFICIENT_DATA: {
+				if (state.getLastErrorMsg() == null) {
+					state.setLastErrorMsg("error.insufficentData");
+					state.setLastErrorIsResourceKey(true);
+				}
+				break;
+			}
+			case INSUFFICIENT_DATA_NO_ERROR: {
+				state.setLastErrorMsg(null);
+				state.setLastErrorIsResourceKey(false);
+				break;
+			}
+			case AUTHENTICATION_FAILURE_DISPALY_ERROR: 
+			{
+				break;
+			}
+			case AUTHENTICATION_SUCCESS: {
+
+				
+				success = true;
+				state.nextPostAuthenticationStep();
+
+				if (state.canCreateSession()) {
+					state.setSession(completeLogon(state));
+				}
+
+				if (state.hasPostAuthenticationStep()) {
+					PostAuthenticationStep step = state
+							.getCurrentPostAuthenticationStep();
+					if (!step.requiresUserInput(state)) {
+						success = logon(state, parameterMap);
+					}
+				}
+				
+				break;
+			}
+			
+			default: {
+				state.setLastErrorMsg("error.genericLogonError");
+				state.setLastErrorIsResourceKey(true);
+				break;
+			}
+			}
+		}
+		return success;
+	}
+
 	private void postProcess(Authenticator authenticator, AuthenticatorResult result, AuthenticationState state,
-			@SuppressWarnings("rawtypes") Map parameterMap) {
+			Map<String, String[]> parameterMap) {
 		for(AuthenticationServiceListener listener : listeners) {
 			try {
 				listener.postProcess(authenticator, result, state, parameterMap);
@@ -814,7 +812,7 @@ public class AuthenticationServiceImpl extends
 		}
 	}
 
-	private void preProcess(Authenticator authenticator, AuthenticationState state, @SuppressWarnings("rawtypes") Map parameterMap) {
+	private void preProcess(Authenticator authenticator, AuthenticationState state, Map<String, String[]> parameterMap) {
 		for(AuthenticationServiceListener listener : listeners) {
 			try {
 				listener.preProcess(authenticator, state, parameterMap);
@@ -825,7 +823,7 @@ public class AuthenticationServiceImpl extends
 	}
 
 	private void preProcess(PostAuthenticationStep currentPostAuthenticationStep, AuthenticationState state,
-			@SuppressWarnings("rawtypes") Map parameterMap) {
+			Map<String, String[]> parameterMap) {
 		for(AuthenticationServiceListener listener : listeners) {
 			try {
 				listener.preProcess(currentPostAuthenticationStep, state, parameterMap);
@@ -836,7 +834,7 @@ public class AuthenticationServiceImpl extends
 	}
 
 	private void postProcess(PostAuthenticationStep currentPostAuthenticationStep, AuthenticatorResult result,
-			AuthenticationState state, @SuppressWarnings("rawtypes") Map parameterMap) {
+			AuthenticationState state, Map<String, String[]> parameterMap) {
 		for(AuthenticationServiceListener listener : listeners) {
 			try {
 				listener.postProcess(currentPostAuthenticationStep, result, state, parameterMap);
@@ -866,9 +864,8 @@ public class AuthenticationServiceImpl extends
 		return auth;
 	}
 	@Override
-	@SuppressWarnings("rawtypes")
 	public FormTemplate nextAuthenticationTemplate(AuthenticationState state,
-			Map params) {
+			Map<String, String[]> params) {
 		
 		Authenticator nextAuthenticator = nextAuthenticator(state);
 		FormTemplate template = nextAuthenticator.createTemplate(state, params);
@@ -918,34 +915,38 @@ public class AuthenticationServiceImpl extends
 				state.getPrincipal(), state.getScheme(), state.getUserAgent(),
 				state.getParameters());
 
-		setCurrentSession(session, state.getLocale());
+		try(var c = tryAs(session, state.getLocale())) {
 
-		state.complete(session);
-		
-		if (state.hasParameter("password")) {
-			sessionService.setCurrentPassword(session,
-					state.getParameter("password"));
+			state.complete(session);
+			
+			if (state.hasParameter("password")) {
+				sessionService.setCurrentPassword(session,
+						state.getParameter("password"));
+			}
+	
+			if (permissionService.hasSystemPermission(getCurrentPrincipal())) {
+				if (!realmService.getDefaultRealm().equals(
+						getCurrentPrincipal().getRealm())) {
+					sessionService.switchRealm(session,
+							realmService.getDefaultRealm());
+				}
+			} 
+			
+			String altHomePage = configurationService.getValue(state.getRealm(), "session.altHomePage");
+			if(StringUtils.isNotBlank(altHomePage)) {
+				
+				List<String> schemes = Arrays.asList(
+						configurationService.getValues(state.getRealm(), "session.altHomePage.onSchemes"));
+				
+				if(schemes.contains(state.getScheme().getResourceKey())) {
+					altHomePage = variableReplacement.replaceVariables(getCurrentPrincipal(), altHomePage);
+					state.setHomePage(altHomePage);
+				}
+			} 
 		}
-
-		if (permissionService.hasSystemPermission(getCurrentPrincipal())) {
-			if (!realmService.getDefaultRealm().equals(
-					getCurrentPrincipal().getRealm())) {
-				sessionService.switchRealm(session,
-						realmService.getDefaultRealm());
-			}
-		} 
-		
-		String altHomePage = configurationService.getValue(state.getRealm(), "session.altHomePage");
-		if(StringUtils.isNotBlank(altHomePage)) {
-			
-			List<String> schemes = Arrays.asList(
-					configurationService.getValues(state.getRealm(), "session.altHomePage.onSchemes"));
-			
-			if(schemes.contains(state.getScheme().getResourceKey())) {
-				altHomePage = variableReplacement.replaceVariables(getCurrentPrincipal(), altHomePage);
-				state.setHomePage(altHomePage);
-			}
-		} 
+		catch(IOException ioe) {
+			throw new IllegalStateException(ioe);
+		}
 		
 		return session;
 	}
@@ -1083,19 +1084,6 @@ public class AuthenticationServiceImpl extends
 	}
 
 	@Override
-	public Session logonAnonymous(String remoteAddress, String userAgent,
-			Map<String, String> parameters, String serverName)
-			throws AccessDeniedException {
-
-		Session session = sessionService.openSession(remoteAddress,
-				realmService.getSystemPrincipal(), schemeRepository
-						.getSchemeByResourceKey2(realmService.getSystemRealm(),
-								ANONYMOUS_AUTHENTICATION_RESOURCE_KEY),
-				userAgent, parameters, realmService.getRealmByHost(serverName));
-		return session;
-	}
-
-	@Override
 	public Collection<PostAuthenticationStep> getPostAuthenticationSteps() {
 		return new ArrayList<PostAuthenticationStep>(postAuthenticationSteps);
 	}
@@ -1103,49 +1091,5 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public boolean isAuthenticatorInUse(Realm realm, String resourceKey) {
 		return repository.isAuthenticatorInUse(realm, resourceKey);
-	}
-
-	@Override
-	public <T> T callAs(Callable<T> callable, Principal principal) {
-		setupSystemContext(principal);
-		try {
-			try {
-				return callable.call();
-			} catch(RuntimeException re) {
-				throw re;
-			}catch (Exception e) {
-				throw new IllegalStateException(String.format("Call as %s failed.", principal.getName()), e);
-			}
-		}
-		finally {
-			clearPrincipalContext();
-		}
-	}
-
-	@Override
-	public <T> T callAsSystemContext(Callable<T> callable, Realm realm) {
-		setupSystemContext(realm);
-		try {
-			try {
-				return callable.call();
-			} catch(RuntimeException re) {
-				throw re;
-			}catch (Exception e) {
-				throw new IllegalStateException(String.format("Call as %s failed.", realm.getName()), e);
-			}
-		}
-		finally {
-			clearPrincipalContext();
-		}
-	}
-
-	@Override
-	public void runAsSystemContext(Runnable runnable, Realm realm) {
-		setupSystemContext(realm);
-		try {
-			runnable.run();
-		} finally {
-			clearPrincipalContext();
-		}
 	}
 }

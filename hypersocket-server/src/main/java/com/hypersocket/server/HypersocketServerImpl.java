@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -80,7 +79,6 @@ import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 import com.hypersocket.session.Session;
-import com.hypersocket.session.SessionService;
 
 public abstract class HypersocketServerImpl implements HypersocketServer, 
 				ApplicationListener<SystemEvent> {
@@ -89,9 +87,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	@Autowired
 	private EventService eventService;
-	
-	@Autowired
-	private SessionService sessionService;
 	
 	@Autowired
 	private SystemConfigurationService configurationService;
@@ -572,9 +567,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		CertificateResourceService certificateService = (CertificateResourceService) applicationContext
 				.getBean("certificateResourceServiceImpl");
 		
-		certificateService.setCurrentSession(sessionService.getSystemSession(), Locale.getDefault());
-		
-		try {
+		try(var c = certificateService.tryWithSystemContext()) {
 
 			if (log.isInfoEnabled()) {
 				log.info("Initializing SSL contexts");
@@ -630,8 +623,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 			log.error("SSL initalization failed", ex);
 			throw new IOException("SSL initialization failed: "
 					+ ex.getMessage());
-		} finally {
-			certificateService.clearPrincipalContext();
 		}
 	}
 	

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.PropertyItem;
 import com.hypersocket.json.ResourceList;
@@ -50,132 +51,103 @@ public class HTTPInterfaceResourceController extends ResourceController {
 	@RequestMapping(value = "httpInterfaces/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<HTTPInterfaceResource> getResources(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<HTTPInterfaceResource>(
-					resourceService.getResources(sessionUtils
-							.getCurrentRealm(request)));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<HTTPInterfaceResource>(
+				resourceService.getResources(sessionUtils
+						.getCurrentRealm(request)));
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "httpInterfaces/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableResources(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return HTTPInterfaceResourceColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return HTTPInterfaceResourceColumns.valueOf(col.toUpperCase());
-						}
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.searchResources(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern, start, length, sorting);
+					}
 
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.searchResources(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern, start, length, sorting);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getResourceCount(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.getResourceCount(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern);
+					}
+				});
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "httpInterfaces/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getResourceTemplate(
 			HttpServletRequest request) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "httpInterfaces/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getActionTemplate(
 			HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			HTTPInterfaceResource resource = resourceService.getResourceById(id);
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		HTTPInterfaceResource resource = resourceService.getResourceById(id);
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "httpInterfaces/httpInterface/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public HTTPInterfaceResource getResource(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			ResourceNotFoundException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return resourceService.getResourceById(id);
-		} finally {
-			clearAuthenticatedContext();
-		}
-
+		return resourceService.getResourceById(id);
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "httpInterfaces/httpInterface", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<HTTPInterfaceResource> createOrUpdateResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody ResourceUpdate resource)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			HTTPInterfaceResource newResource;
@@ -207,8 +179,6 @@ public class HTTPInterfaceResourceController extends ResourceController {
 		} catch (ResourceException e) {
 			return new ResourceStatus<HTTPInterfaceResource>(false,
 					e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -217,13 +187,12 @@ public class HTTPInterfaceResourceController extends ResourceController {
 	@RequestMapping(value = "httpInterfaces/httpInterface/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<HTTPInterfaceResource> deleteResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			HTTPInterfaceResource resource = resourceService.getResourceById(id);
@@ -245,8 +214,6 @@ public class HTTPInterfaceResourceController extends ResourceController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<HTTPInterfaceResource>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 }

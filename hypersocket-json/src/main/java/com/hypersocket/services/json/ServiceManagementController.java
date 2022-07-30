@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.service.ManageableService;
@@ -34,24 +35,18 @@ public class ServiceManagementController extends AuthenticatedController {
 	@RequestMapping(value = "services/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<ServiceStatus> listServices(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			List<ServiceStatus> result = new ArrayList<ServiceStatus>();
-			for(ManageableService m : managementService.getServices(getCurrentRealm())) {
-				for(ServiceStatus s : m.getStatus()) {
-					result.add(new StatusView(s));
-				}
+		List<ServiceStatus> result = new ArrayList<ServiceStatus>();
+		for(ManageableService m : managementService.getServices(getCurrentRealm())) {
+			for(ServiceStatus s : m.getStatus()) {
+				result.add(new StatusView(s));
 			}
-			return new ResourceList<ServiceStatus>(result);
-		} finally {
-			clearAuthenticatedContext();
 		}
+		return new ResourceList<ServiceStatus>(result);
 
 	}
 	

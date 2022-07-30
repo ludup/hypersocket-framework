@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.PropertyItem;
@@ -54,49 +55,38 @@ public class MessageResourceController extends ResourceController {
 	@RequestMapping(value = "messages/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<MessageResource> getResources(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<MessageResource>(
-					resourceService.getResources(sessionUtils
-							.getCurrentRealm(request)));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<MessageResource>(
+				resourceService.getResources(sessionUtils
+						.getCurrentRealm(request)));
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "messages/variables/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<String> getVariables(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException, ResourceNotFoundException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<String>(resourceService.getMessageVariables(
-					resourceService.getResourceById(id)));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<String>(resourceService.getMessageVariables(
+				resourceService.getResourceById(id)));
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "messages/test/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<MessageResource> test(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable Long id, @RequestParam String email) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException, ResourceNotFoundException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			MessageResource resource = resourceService.getResourceById(id);
 			resourceService.test(resource, email);
@@ -106,8 +96,6 @@ public class MessageResourceController extends ResourceController {
 							"resource.messageSent.info", resource.getName(), StringUtils.isBlank(email) ? getCurrentPrincipal().getName(): email));
 		} catch(Throwable e) { 
 			return new ResourceStatus<MessageResource>(false, e.getMessage());
-		}finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -115,98 +103,76 @@ public class MessageResourceController extends ResourceController {
 	@RequestMapping(value = "messages/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableResources(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return MessageResourceColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return MessageResourceColumns.valueOf(col.toUpperCase());
-						}
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.searchResources(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern, start, length, sorting);
+					}
 
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.searchResources(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern, start, length, sorting);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getResourceCount(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.getResourceCount(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern);
+					}
+				});
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "messages/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getResourceTemplate(
 			HttpServletRequest request) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "messages/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getActionTemplate(
 			HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			MessageResource resource = resourceService.getResourceById(id);
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		MessageResource resource = resourceService.getResourceById(id);
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "messages/message/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public MessageResource getResource(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			ResourceNotFoundException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return resourceService.getResourceById(id);
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return resourceService.getResourceById(id);
 
 	}
 
@@ -214,14 +180,13 @@ public class MessageResourceController extends ResourceController {
 	@RequestMapping(value = "messages/message", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<MessageResource> createOrUpdateResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody ResourceUpdate resource)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			MessageResource newResource;
@@ -253,9 +218,7 @@ public class MessageResourceController extends ResourceController {
 		} catch (ResourceException e) {
 			return new ResourceStatus<MessageResource>(false,
 					e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 
 	@SuppressWarnings("unchecked")
@@ -263,13 +226,12 @@ public class MessageResourceController extends ResourceController {
 	@RequestMapping(value = "messages/message/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<MessageResource> deleteResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			MessageResource resource = resourceService.getResourceById(id);
@@ -291,8 +253,6 @@ public class MessageResourceController extends ResourceController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<MessageResource>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -301,13 +261,12 @@ public class MessageResourceController extends ResourceController {
 	@RequestMapping(value = "messages/bulk", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus deleteResources(HttpServletRequest request,
 												HttpServletResponse response,
 												@RequestBody Long[] ids)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			
 			if(ids == null) {
@@ -331,8 +290,6 @@ public class MessageResourceController extends ResourceController {
 			
 		} catch (Exception e) {
 			return new RequestStatus(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 }

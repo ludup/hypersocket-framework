@@ -22,6 +22,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.util.ArrayValueHashMap;
 
 @Component
 public class ChangePasswordAuthenticationStep implements PostAuthenticationStep {
@@ -63,11 +64,11 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	}
 
 	@Override
-	public AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters)
+	public AuthenticatorResult process(AuthenticationState state, Map<String, String[]> parameters)
 			throws AccessDeniedException {
 		
-		String password = AuthenticationUtils.getRequestParameter(parameters, ChangePasswordTemplate.PASSWORD_FIELD);
-		String confirmPassword = AuthenticationUtils.getRequestParameter(parameters, ChangePasswordTemplate.CONFIRM_PASSWORD_FIELD);
+		String password = ArrayValueHashMap.getSingle(parameters, ChangePasswordTemplate.PASSWORD_FIELD);
+		String confirmPassword = ArrayValueHashMap.getSingle(parameters, ChangePasswordTemplate.CONFIRM_PASSWORD_FIELD);
 		
 		if(password==null || password.trim().equals("")) { 
 			state.setLastErrorMsg("error.emptyPassword");
@@ -81,9 +82,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 			return AuthenticatorResult.INSUFFICIENT_DATA;
 		}
 		
-		authenticationService.setupSystemContext(state.getPrincipal());
-		
-		try {
+		try(var c = authenticationService.tryAs(state.getPrincipal())) {
 			doPasswordChange(state, password);
 			/**
 			 * LDP - This is important for reset flow so it can pass
@@ -99,9 +98,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 			state.setLastErrorIsResourceKey(false);
 			
 			return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPALY_ERROR;
-		} finally {
-			authenticationService.clearPrincipalContext();
-		}
+		} 
 		
 		
 	}

@@ -1,5 +1,7 @@
 package com.hypersocket.session;
 
+import java.io.IOException;
+
 import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,21 +13,17 @@ import com.hypersocket.scheduler.PermissionsAwareJob;
 
 public class SessionCleanUpJob extends PermissionsAwareJob {
 
-	static Logger log = LoggerFactory.getLogger(SessionCleanUpJob.class);
+	private final static Logger log = LoggerFactory.getLogger(SessionCleanUpJob.class);
 	
 	@Autowired
 	private SessionService sessionService; 
 	
 	@Override
 	protected void executeJob(JobExecutionContext context) {
-
-		sessionService.elevatePermissions(SystemPermission.SYSTEM);
-		try {
+		try(var c = sessionService.tryWithElevatedPermissions(SystemPermission.SYSTEM)) {
 			sessionService.cleanUp();
-		} catch (AccessDeniedException e) {
+		} catch (IOException | AccessDeniedException e) {
 			log.error("Access Denied", e);
-		} finally {
-			sessionService.clearElevatedPermissions();
 		}
 	}
 

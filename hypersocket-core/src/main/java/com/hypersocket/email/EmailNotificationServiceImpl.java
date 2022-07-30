@@ -1,5 +1,6 @@
 package com.hypersocket.email;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -144,9 +145,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			return;
 		}
 		
-		elevatePermissions(SystemPermission.SYSTEM);
-		
-		try {
+		try(var c = tryWithElevatedPermissions(SystemPermission.SYSTEM)) {
 
 			Mailer mail = mailerService.getMailer(realm);
 			
@@ -236,11 +235,12 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 					}
 				}
 			}
+		} catch(IOException ioe) {
+			log.error("Mail failed", ioe);
+			throw new IllegalStateException("Mail failed.", ioe);
 		} catch(Throwable e) { 
 			log.error("Mail failed", e);
 			throw e;
-		}finally {
-			clearElevatedPermissions();
 		}
 	}
 	

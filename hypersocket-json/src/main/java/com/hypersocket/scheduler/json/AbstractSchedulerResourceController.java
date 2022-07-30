@@ -39,106 +39,67 @@ public class AbstractSchedulerResourceController extends ResourceController {
 			HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, SchedulerException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<SchedulerResource>(
-					resourceService.getResources(sessionUtils.getCurrentRealm(request)));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<SchedulerResource>(
+				resourceService.getResources(sessionUtils.getCurrentRealm(request)));
 	}
 
 	public BootstrapTableResult<?> tableResources(SchedulerService resourceService, final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+		return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
+			@Override
+			public Column getColumn(String col) {
+				return SchedulerResourceColumns.valueOf(col.toUpperCase());
+			}
 
-				@Override
-				public Column getColumn(String col) {
-					return SchedulerResourceColumns.valueOf(col.toUpperCase());
-				}
+			@Override
+			public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
+					ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
+				return resourceService.searchResources(sessionUtils.getCurrentRealm(request), searchColumn,
+						searchPattern, start, length, sorting);
+			}
 
-				@Override
-				public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
-						ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
-					return resourceService.searchResources(sessionUtils.getCurrentRealm(request), searchColumn,
-							searchPattern, start, length, sorting);
-				}
-
-				@Override
-				public Long getTotalCount(String searchColumn, String searchPattern)
-						throws UnauthorizedException, AccessDeniedException {
-					return resourceService.getResourceCount(sessionUtils.getCurrentRealm(request), searchColumn,
-							searchPattern);
-				}
-			});
-		} finally {
-			clearAuthenticatedContext();
-		}
+			@Override
+			public Long getTotalCount(String searchColumn, String searchPattern)
+					throws UnauthorizedException, AccessDeniedException {
+				return resourceService.getResourceCount(sessionUtils.getCurrentRealm(request), searchColumn,
+						searchPattern);
+			}
+		});
 	}
 
 	public ResourceList<PropertyCategory> getResourceTemplate(SchedulerService resourceService,
 			HttpServletRequest request) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
 	}
 
 	public ResourceList<PropertyCategory> getActionTemplate(SchedulerService resourceService,
 			HttpServletRequest request, String id) throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException, SchedulerException, NotScheduledException, IOException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			SchedulerResource resource = resourceService.getResourceById(HypersocketUtils.base64DecodeToString(id));
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		SchedulerResource resource = resourceService.getResourceById(HypersocketUtils.base64DecodeToString(id));
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
 	}
 
 	public SchedulerResource getResource(SchedulerService resourceService, HttpServletRequest request,
 			HttpServletResponse response, String id) throws AccessDeniedException, UnauthorizedException,
 			ResourceNotFoundException, SessionTimeoutException, SchedulerException, NotScheduledException, IOException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			return resourceService.getResourceById(HypersocketUtils.base64DecodeToString(id));
-		} finally {
-			clearAuthenticatedContext();
-		}
-
+		return resourceService.getResourceById(HypersocketUtils.base64DecodeToString(id));
 	}
 	
 	public void fireJob(SchedulerService resourceService, HttpServletRequest request,
 			HttpServletResponse response, String id) throws AccessDeniedException, UnauthorizedException,
 			ResourceNotFoundException, SessionTimeoutException, SchedulerException, NotScheduledException, IOException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			resourceService.fireJob(resourceService.getResourceById(HypersocketUtils.base64DecodeToString(id)).getName());
-		} finally {
-			clearAuthenticatedContext();
-		}
-
+		resourceService.fireJob(resourceService.getResourceById(HypersocketUtils.base64DecodeToString(id)).getName());
 	}
 	
 	public void interruptJob(SchedulerService resourceService, HttpServletRequest request,
 			HttpServletResponse response, String id) throws AccessDeniedException, UnauthorizedException,
 			ResourceNotFoundException, SessionTimeoutException, SchedulerException, NotScheduledException, IOException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			resourceService.interrupt(resourceService.getResourceById(HypersocketUtils.base64DecodeToString(id)).getName());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		resourceService.interrupt(resourceService.getResourceById(HypersocketUtils.base64DecodeToString(id)).getName());
 
 	}
 
@@ -146,7 +107,6 @@ public class AbstractSchedulerResourceController extends ResourceController {
 			HttpServletRequest request, HttpServletResponse response, String id)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, IOException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
 
 			SchedulerResource resource = resourceService.getResourceById(id = HypersocketUtils.base64DecodeToString(id));
@@ -164,15 +124,12 @@ public class AbstractSchedulerResourceController extends ResourceController {
 
 		} catch (SchedulerException | NotScheduledException e) {
 			return new ResourceStatus<SchedulerResource>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 
 	public RequestStatus deleteResources(SchedulerService resourceService, HttpServletRequest request,
 			HttpServletResponse response, String[] ids)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
 
 			if (ids == null) {
@@ -197,8 +154,6 @@ public class AbstractSchedulerResourceController extends ResourceController {
 
 		} catch (Exception e) {
 			return new RequestStatus(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 }

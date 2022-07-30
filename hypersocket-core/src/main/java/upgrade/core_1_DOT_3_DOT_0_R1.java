@@ -7,7 +7,6 @@
  ******************************************************************************/
 package upgrade;
 
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -26,84 +25,69 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceCreationException;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.session.SessionService;
-
 
 public class core_1_DOT_3_DOT_0_R1 implements Runnable {
 
-	static Logger log = LoggerFactory.getLogger(core_1_DOT_3_DOT_0_R1.class);
+	private final static Logger log = LoggerFactory.getLogger(core_1_DOT_3_DOT_0_R1.class);
 
 	@Autowired
-	ClusteredSchedulerService schedulerService;
-	
+	private SessionService sessionService;
+
 	@Autowired
-	SessionService sessionService;
-	
+	private RealmService realmService;
+
 	@Autowired
-	RealmService realmService; 
-	
-	@Autowired
-	PermissionService permissionService;
-	
+	private PermissionService permissionService;
+
 	@Override
 	public void run() {
 
 		if (log.isInfoEnabled()) {
 			log.info("Creating principal roles");
 		}
-		
-		sessionService.executeInSystemContext(new Runnable() {
-			public void run() {
-				try {
-					for(Realm realm : realmService.allRealms()) {
-						
-						try {
-							permissionService.updateRole(permissionService.getRole(PermissionService.OLD_ROLE_ADMINISTRATOR, realm), 
-										PermissionService.ROLE_REALM_ADMINISTRATOR, 
-										null, 
-										null, 
-										null,
-										null,
-										false,
-										true,
-										false);
-						} catch (ResourceNotFoundException e1) {
-						}
-						
-						for(Iterator<Principal> userIt = realmService.iterateUsers(realm); userIt.hasNext(); ) {
-							Principal user = userIt.next();
-							if(user.isHidden()) {
-								continue;
-							}
-							try {
-								permissionService.createRole(user.getDescription(), realm, 
-										Arrays.asList(user), 
-										Collections.<Permission>emptyList(), Collections.<Realm>emptyList(), null, true, true, RoleType.USER, false, false, false);
-							} catch (ResourceCreationException e) {
-								log.error("Could not create principal role", e);
-							}
-						}
-						for(Iterator<Principal> userIt = realmService.iterateGroups(realm); userIt.hasNext(); ) {
-							Principal group = userIt.next();
-							try { 
-								permissionService.createRole(group.getPrincipalName(), realm, 
-										Arrays.asList(group), 
-										Collections.<Permission>emptyList(), null, null, true, true, RoleType.GROUP, false, false, false);
-							} catch (ResourceCreationException e) {
-								log.error("Could not create principal role", e);
-							}
-						}
+
+		sessionService.runAsSystemContext(() -> {
+			try {
+				for (Realm realm : realmService.allRealms()) {
+
+					try {
+						permissionService.updateRole(
+								permissionService.getRole(PermissionService.OLD_ROLE_ADMINISTRATOR, realm),
+								PermissionService.ROLE_REALM_ADMINISTRATOR, null, null, null, null, false, true, false);
+					} catch (ResourceNotFoundException e1) {
 					}
 
-				} catch (ResourceException | AccessDeniedException e) {
-					log.error("Failed to schedule session reaper job", e);
-				} 
+					for (Iterator<Principal> userIt = realmService.iterateUsers(realm); userIt.hasNext();) {
+						Principal user = userIt.next();
+						if (user.isHidden()) {
+							continue;
+						}
+						try {
+							permissionService.createRole(user.getDescription(), realm, Arrays.asList(user),
+									Collections.<Permission>emptyList(), Collections.<Realm>emptyList(), null, true,
+									true, RoleType.USER, false, false, false);
+						} catch (ResourceCreationException e) {
+							log.error("Could not create principal role", e);
+						}
+					}
+					for (Iterator<Principal> userIt = realmService.iterateGroups(realm); userIt.hasNext();) {
+						Principal group = userIt.next();
+						try {
+							permissionService.createRole(group.getPrincipalName(), realm, Arrays.asList(group),
+									Collections.<Permission>emptyList(), null, null, true, true, RoleType.GROUP, false,
+									false, false);
+						} catch (ResourceCreationException e) {
+							log.error("Could not create principal role", e);
+						}
+					}
+				}
+
+			} catch (ResourceException | AccessDeniedException e) {
+				log.error("Failed to schedule session reaper job", e);
 			}
 		});
-		
-		
-	}
 
+	}
 
 }

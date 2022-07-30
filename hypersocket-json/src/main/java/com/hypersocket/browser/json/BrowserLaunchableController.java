@@ -21,6 +21,7 @@ import com.hypersocket.browser.BrowserLaunchable;
 import com.hypersocket.browser.BrowserLaunchableColumns;
 import com.hypersocket.browser.BrowserLaunchableService;
 import com.hypersocket.browser.BrowserLaunchableServiceImpl;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
@@ -47,102 +48,83 @@ public class BrowserLaunchableController extends BootstrapTableController<Void> 
 	@RequestMapping(value = "browser/fingerprint", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<String> getFingerprint(
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceStatus<String>(true, resourceService.getFingerprint());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceStatus<String>(true, resourceService.getFingerprint());
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "browser/myResources", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<BrowserLaunchable> myBrowserResources(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			ResourceList<BrowserLaunchable> list = new ResourceList<BrowserLaunchable>(
-					new HashMap<String,String>(),
-					resourceService.getPersonalResources(sessionUtils
-							.getPrincipal(request)));
-			list.getProperties().put(
-					"authCode",
-					sessionService.createSessionToken(
-							sessionUtils.getSession(request)).getShortCode());
-			return list;
-		} finally {
-			clearAuthenticatedContext();
-		}
+		ResourceList<BrowserLaunchable> list = new ResourceList<BrowserLaunchable>(
+				new HashMap<String,String>(),
+				resourceService.getPersonalResources(sessionUtils
+						.getPrincipal(request)));
+		list.getProperties().put(
+				"authCode",
+				sessionService.createSessionToken(
+						sessionUtils.getSession(request)).getShortCode());
+		return list;
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "browser/personal", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableNetworkResources(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
-			SessionTimeoutException {
+		SessionTimeoutException {
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+					@Override
+					public Column getColumn(String col) {
+						return BrowserLaunchableColumns.valueOf(col.toUpperCase());
+					}
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.searchPersonalResources(
+								sessionUtils.getPrincipal(request),
+								searchPattern, start, length, sorting);
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return BrowserLaunchableColumns.valueOf(col.toUpperCase());
-						}
-
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.searchPersonalResources(
-									sessionUtils.getPrincipal(request),
-									searchPattern, start, length, sorting);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getPersonalResourceCount(
-									sessionUtils.getPrincipal(request),
-									searchPattern);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.getPersonalResourceCount(
+								sessionUtils.getPrincipal(request),
+								searchPattern);
+					}
+				});
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "browser/browser/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<BrowserLaunchable> deleteResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			resourceService.deleteResource(id);
@@ -152,8 +134,6 @@ public class BrowserLaunchableController extends BootstrapTableController<Void> 
 					"resource.deleted.info"));
 		} catch (ResourceException e) {
 			return new ResourceStatus<BrowserLaunchable>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 }

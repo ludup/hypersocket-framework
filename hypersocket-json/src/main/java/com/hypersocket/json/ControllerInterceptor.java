@@ -22,6 +22,9 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.AuthenticationRequiredButDontTouchSession;
+import com.hypersocket.context.AuthenticatedContext;
+import com.hypersocket.realm.RealmService;
+import com.hypersocket.session.json.SessionUtils;
 
 @Component
 public class ControllerInterceptor implements HandlerInterceptor {
@@ -30,7 +33,12 @@ public class ControllerInterceptor implements HandlerInterceptor {
 	
 	@Autowired
 	private AuthenticationService authenticationService;
+	@Autowired
+	private SessionUtils sessionUtils;
+	@Autowired
+	private RealmService realmService;
 	
+	@SuppressWarnings({ "deprecation", "removal" })
 	@Override
 	public boolean preHandle(HttpServletRequest request,
 			HttpServletResponse response, Object handler) throws Exception {
@@ -56,21 +64,68 @@ public class ControllerInterceptor implements HandlerInterceptor {
 					contrl.getSessionUtils().touchSession(request, response);
 				}
 			}
+			
+			var acAnnotation = method.getMethodAnnotation(AuthenticatedContext.class); 
+			if(acAnnotation !=null) {
+				
+				if(!(method.getBean() instanceof AuthenticatedController)) {
+					if(log.isErrorEnabled()) {
+						log.error("Use of @AuthenticatedContext annotation is restricted to subclass of AuthenticatedController");
+					}
+					throw new IllegalArgumentException("Use of @AuthenticatedContext annotation is restricted to subclass of AuthenticatedController");
+				}
+				AuthenticatedController contrl = (AuthenticatedController) method.getBean();
+
+				if(acAnnotation.preferActive() && sessionUtils.hasActiveSession(request)) {
+					if(acAnnotation.system())
+						contrl.setupSystemContext(sessionUtils.getActiveSession(request).getCurrentRealm());
+					else
+						contrl.setCurrentSession(sessionUtils.getActiveSession(request), sessionUtils.getLocale(request));
+				}
+				else if(acAnnotation.currentRealmOrDefault()) {
+					contrl.setupSystemContext(sessionUtils.getCurrentRealmOrDefault(request));
+				}
+				else if(acAnnotation.system()) {
+					contrl.setupSystemContext();
+				} 
+				else if(acAnnotation.realmHost()) {
+					contrl.setupSystemContext(realmService.getRealmByHost(request.getServerName()));					
+				}
+				else {
+					contrl.setCurrentSession(sessionUtils.getSession(request), sessionUtils.getCurrentRealm(request), sessionUtils.getPrincipal(request), sessionUtils.getLocale(request));
+				}
+			}
 		} 
 		
 		return true;
 		
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void postHandle(HttpServletRequest request,
 			HttpServletResponse response, Object handler,
 			ModelAndView modelAndView) throws Exception {
 		
-		if(authenticationService.hasAuthenticatedContext() || authenticationService.hasSessionContext()) {
-			if(log.isInfoEnabled()) {
-				log.info(String.format("%s %s still has authenticated/session context. Will remove", request.getMethod(), request.getRequestURI()));
+		var clearContext = false;
+		if (handler instanceof HandlerMethod) {
+			HandlerMethod method = (HandlerMethod) handler;
+			clearContext = method.getMethodAnnotation(AuthenticatedContext.class) != null;
+		}
+
+		if (clearContext) {
+			if (authenticationService.hasAuthenticatedContext() || authenticationService.hasSessionContext()) {
+				authenticationService.clearPrincipalContext();
+			} else {
+				if (log.isInfoEnabled()) {
+					log.info(String.format(
+							"%s %s was expecting to have a context to clear, but there was none. This suggests a coding error.",
+							request.getMethod(), request.getRequestURI()));
+				}
 			}
+		} else if (authenticationService.hasAuthenticatedContext() || authenticationService.hasSessionContext()) {
+			log.warn(String.format("%s %s still has authenticated/session context. Will remove", request.getMethod(),
+					request.getRequestURI()));
 			authenticationService.clearPrincipalContext();
 		}
 	}

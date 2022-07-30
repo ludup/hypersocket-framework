@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.html.HtmlTemplateResource;
 import com.hypersocket.html.HtmlTemplateResourceColumns;
 import com.hypersocket.html.HtmlTemplateResourceService;
@@ -50,132 +51,103 @@ public class HtmlTemplateResourceController extends ResourceController {
 	@RequestMapping(value = "htmlTemplates/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<HtmlTemplateResource> getResources(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<HtmlTemplateResource>(
-					resourceService.getResources(sessionUtils
-							.getCurrentRealm(request)));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<HtmlTemplateResource>(
+				resourceService.getResources(sessionUtils
+						.getCurrentRealm(request)));
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "htmlTemplates/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableResources(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return HtmlTemplateResourceColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return HtmlTemplateResourceColumns.valueOf(col.toUpperCase());
-						}
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.searchResources(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern, start, length, sorting);
+					}
 
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.searchResources(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern, start, length, sorting);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getResourceCount(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.getResourceCount(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern);
+					}
+				});
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "htmlTemplates/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getResourceTemplate(
 			HttpServletRequest request) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "htmlTemplates/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getActionTemplate(
 			HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			HtmlTemplateResource resource = resourceService.getResourceById(id);
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		HtmlTemplateResource resource = resourceService.getResourceById(id);
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "htmlTemplates/htmlTemplate/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public HtmlTemplateResource getResource(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			ResourceNotFoundException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return resourceService.getResourceById(id);
-		} finally {
-			clearAuthenticatedContext();
-		}
-
+		return resourceService.getResourceById(id);
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "htmlTemplates/htmlTemplate", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<HtmlTemplateResource> createOrUpdateResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody ResourceUpdate resource)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			HtmlTemplateResource newResource;
@@ -207,8 +179,6 @@ public class HtmlTemplateResourceController extends ResourceController {
 		} catch (ResourceException e) {
 			return new ResourceStatus<HtmlTemplateResource>(false,
 					e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -217,13 +187,12 @@ public class HtmlTemplateResourceController extends ResourceController {
 	@RequestMapping(value = "htmlTemplates/htmlTemplate/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<HtmlTemplateResource> deleteResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			HtmlTemplateResource resource = resourceService.getResourceById(id);
@@ -245,8 +214,6 @@ public class HtmlTemplateResourceController extends ResourceController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<HtmlTemplateResource>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 }

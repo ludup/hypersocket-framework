@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.AuthenticationRequiredButDontTouchSession;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;
@@ -75,282 +76,211 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableTriggers(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return TriggerResourceColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return TriggerResourceColumns.valueOf(col.toUpperCase());
-						}
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.searchResources(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern, start, length, sorting);
+					}
 
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.searchResources(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern, start, length, sorting);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getResourceCount(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.getResourceCount(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern);
+					}
+				});
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getResourceTemplate(
 			HttpServletRequest request) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<PropertyCategory>(
+		return new ResourceList<PropertyCategory>(
 					resourceService.getResourceTemplate());
-		} finally {
-			clearAuthenticatedContext();
-		}
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getResourceProperties(
 			HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			TriggerResource resource = resourceService.getResourceById(id);
-			return new ResourceList<PropertyCategory>(taskService
-					.getTaskProvider(resource.getResourceKey())
-					.getPropertyTemplate(resource));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		TriggerResource resource = resourceService.getResourceById(id);
+		return new ResourceList<PropertyCategory>(taskService
+				.getTaskProvider(resource.getResourceKey())
+				.getPropertyTemplate(resource));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/events", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<EventDefinition> getEvents(HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<EventDefinition>(
-					resourceService.getTriggerEvents());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<EventDefinition>(
+				resourceService.getTriggerEvents());
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/event/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<EventDefinition> getEventDefinition(
 			HttpServletRequest request, @PathVariable String resourceKey)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceStatus<EventDefinition>(
-					eventService.getEventDefinition(resourceKey));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceStatus<EventDefinition>(
+				eventService.getEventDefinition(resourceKey));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/parentEvents/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<EventDefinition> getParentEventDefinitions(
 			HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
 
-			List<TriggerResource> triggers = resourceService.getParentTriggers(id);
-			List<EventDefinition> events = new ArrayList<EventDefinition>();
-			for (TriggerResource trigger : triggers) {
-				if(trigger.getId()!=id) {
-					EventDefinition evtDef = eventService.getEventDefinition(trigger.getEvent());
-					if(evtDef == null)
-						throw new IllegalStateException(String.format("No event definition for %s. It is possible the extension that provided this task is no longer installed.", trigger.getEvent()));
-					events.add(evtDef);
-				}
+		List<TriggerResource> triggers = resourceService.getParentTriggers(id);
+		List<EventDefinition> events = new ArrayList<EventDefinition>();
+		for (TriggerResource trigger : triggers) {
+			if(trigger.getId()!=id) {
+				EventDefinition evtDef = eventService.getEventDefinition(trigger.getEvent());
+				if(evtDef == null)
+					throw new IllegalStateException(String.format("No event definition for %s. It is possible the extension that provided this task is no longer installed.", trigger.getEvent()));
+				events.add(evtDef);
 			}
-			return new ResourceList<EventDefinition>(events);
-
-		} finally {
-			clearAuthenticatedContext();
 		}
+		return new ResourceList<EventDefinition>(events);
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/taskResults/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<EventDefinition> getPostTriggerEvents(
 			HttpServletRequest request, @PathVariable String resourceKey)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
 
-			List<EventDefinition> events = new ArrayList<EventDefinition>();
+		List<EventDefinition> events = new ArrayList<EventDefinition>();
 
-			if(eventService.isDynamicEvent(resourceKey)) {
-				events.add(eventService.getEventDefinition(resourceKey));
-			} else {
-				final TaskProvider taskProvider = taskService.getTaskProvider(resourceKey);
-				if(taskProvider == null)
-					throw new ResourceNotFoundException(TriggerResourceServiceImpl.RESOURCE_BUNDLE, "error.notfound", resourceKey);
-				events.add(eventService.getEventDefinition(taskProvider.getResultResourceKey()));
-			}
-			return new ResourceList<EventDefinition>(events);
-
-		} finally {
-			clearAuthenticatedContext();
+		if(eventService.isDynamicEvent(resourceKey)) {
+			events.add(eventService.getEventDefinition(resourceKey));
+		} else {
+			final TaskProvider taskProvider = taskService.getTaskProvider(resourceKey);
+			if(taskProvider == null)
+				throw new ResourceNotFoundException(TriggerResourceServiceImpl.RESOURCE_BUNDLE, "error.notfound", resourceKey);
+			events.add(eventService.getEventDefinition(taskProvider.getResultResourceKey()));
 		}
+		return new ResourceList<EventDefinition>(events);
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/eventAttributes/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<String> getEventAttributes(HttpServletRequest request,
 			@PathVariable String resourceKey) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<String>(
-					resourceService.getEventAttributes(resourceKey));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<String>(
+				resourceService.getEventAttributes(resourceKey));
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/defaultAttributes", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<String> getEventAttributes(HttpServletRequest request) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<String>(
-					resourceService.getDefaultVariableNames());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<String>(
+				resourceService.getDefaultVariableNames());
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/tasks", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<TaskDefinition> getTasks(HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			List<TaskDefinition> result = new ArrayList<>();
-			for (TaskDefinition task : resourceService.getTasks()) {
-				result.add(task);
-			}
-			return new ResourceList<>(result);
-		} finally {
-			clearAuthenticatedContext();
+		List<TaskDefinition> result = new ArrayList<>();
+		for (TaskDefinition task : resourceService.getTasks()) {
+			result.add(task);
 		}
+		return new ResourceList<>(result);
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/task/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getTaskTemplate(
 			HttpServletRequest request, @PathVariable String resourceKey)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<PropertyCategory>(taskService
-					.getTaskProvider(resourceKey).getPropertyTemplate(null));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<PropertyCategory>(taskService
+				.getTaskProvider(resourceKey).getPropertyTemplate(null));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/conditions", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<String> getConditions(HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-
-			return new ResourceList<String>(resourceService.getConditions());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<String>(resourceService.getConditions());
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/trigger/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public TriggerResource getResource(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			ResourceNotFoundException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return resourceService.getResourceById(id);
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return resourceService.getResourceById(id);
 
 	}
 
@@ -359,14 +289,13 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/trigger", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<TriggerResource> createOrUpdateTriggerResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody TriggerResourceUpdate resource)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			TriggerResource newResource;
@@ -423,8 +352,6 @@ public class TriggerResourceController extends AbstractTriggerController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<TriggerResource>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -432,13 +359,12 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/trigger/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<TriggerResource> deleteResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			TriggerResource resource = resourceService.getResourceById(id);
@@ -478,8 +404,6 @@ public class TriggerResourceController extends AbstractTriggerController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<TriggerResource>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -504,26 +428,21 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/export/{id}", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
+	@AuthenticatedContext
 	public String exportResource(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException,
 			ResourceExportException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			Thread.sleep(1000);
 		} catch (Exception e) {
 		}
-		try {
-			response.setHeader("Content-Disposition", "attachment; filename=\""
-					+ resourceService.getResourceCategory() + "-"
-					+ resourceService.getResourceById(id).getName() + ".json\"");
-			return resourceService.exportResoure(id);
-		} finally {
-			clearAuthenticatedContext();
-		}
+		response.setHeader("Content-Disposition", "attachment; filename=\""
+				+ resourceService.getResourceCategory() + "-"
+				+ resourceService.getResourceById(id).getName() + ".json\"");
+		return resourceService.exportResoure(id);
 
 	}
 
@@ -531,24 +450,19 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/export", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
+	@AuthenticatedContext
 	public String exportAll(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException,
 			ResourceNotFoundException, ResourceExportException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			Thread.sleep(1000);
 		} catch (Exception e) {
 		}
-		try {
-			response.setHeader("Content-Disposition", "attachment; filename=\""
-					+ resourceService.getResourceCategory() + ".json\"");
-			return resourceService.exportAllResoures();
-		} finally {
-			clearAuthenticatedContext();
-		}
+		response.setHeader("Content-Disposition", "attachment; filename=\""
+				+ resourceService.getResourceCategory() + ".json\"");
+		return resourceService.exportAllResoures();
 
 	}
 
@@ -556,14 +470,13 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/import", method = { RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<TriggerResource> importAll(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "file") MultipartFile jsonFile,
 			@RequestParam(required = false) boolean dropExisting)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			Thread.sleep(2000);
 		} catch (Exception e) {
@@ -588,27 +501,18 @@ public class TriggerResourceController extends AbstractTriggerController {
 					sessionUtils.getLocale(request),
 					I18NServiceImpl.USER_INTERFACE_BUNDLE,
 					"resource.import.failure", e.getMessage()));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 
 	@AuthenticationRequiredButDontTouchSession
 	@RequestMapping(value = "triggers/image/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
+	@AuthenticatedContext
 	public void downloadTemplateImage(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-
-			resourceService.downloadTemplateImage(uuid, request, response);
-
-		} finally {
-			clearAuthenticatedContext();
-		}
+		resourceService.downloadTemplateImage(uuid, request, response);
 	}
 
 	@AuthenticationRequired
@@ -616,39 +520,31 @@ public class TriggerResourceController extends AbstractTriggerController {
 			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> search(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException,
 			NumberFormatException, IOException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		String json = resourceService.searchTemplates(
+				request.getParameter("sSearch"),
+				Integer.parseInt(request.getParameter("iDisplayStart")),
+				Integer.parseInt(request.getParameter("iDisplayLength")));
+		ObjectMapper mapper = new ObjectMapper();
 
-		try {
-			String json = resourceService.searchTemplates(
-					request.getParameter("sSearch"),
-					Integer.parseInt(request.getParameter("iDisplayStart")),
-					Integer.parseInt(request.getParameter("iDisplayLength")));
-			ObjectMapper mapper = new ObjectMapper();
-
-			return mapper.readValue(json, BootstrapTableResult.class);
-
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return mapper.readValue(json, BootstrapTableResult.class);
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "triggers/script", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<TriggerResource> createFromScript(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestParam String script) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			TriggerResource newResource = resourceService
@@ -663,8 +559,6 @@ public class TriggerResourceController extends AbstractTriggerController {
 		} catch (ResourceException e) {
 			return new ResourceStatus<TriggerResource>(false,
 					e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -672,40 +566,34 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/eventsTable", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableEvents(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return TriggerResourceColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return TriggerResourceColumns.valueOf(col.toUpperCase());
-						}
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.getTriggerEvents(searchPattern, sessionUtils.getLocale(request));
+					}
 
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getTriggerEvents(searchPattern, sessionUtils.getLocale(request));
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getTriggerEventCount(searchPattern, sessionUtils.getLocale(request));
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.getTriggerEventCount(searchPattern, sessionUtils.getLocale(request));
+					}
+				});
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -713,13 +601,12 @@ public class TriggerResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "triggers/bulk", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus deleteResources(HttpServletRequest request,
 												HttpServletResponse response,
 												@RequestBody Long[] ids)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			
 			if(ids == null) {
@@ -743,8 +630,6 @@ public class TriggerResourceController extends AbstractTriggerController {
 			
 		} catch (Exception e) {
 			return new RequestStatus(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 }

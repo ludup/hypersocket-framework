@@ -40,7 +40,7 @@ public abstract class PermissionsAwareJobNonTransactional implements Job, Runnab
 	@Override
 	public void execute(JobExecutionContext context) {
 		this.context = context;
-		sessionService.executeInSystemContext(this);
+		sessionService.runAsSystemContext(this);
 	}
 	
 	public void run() {
@@ -75,14 +75,9 @@ public abstract class PermissionsAwareJobNonTransactional implements Job, Runnab
 						+ realm.getName() + "/" + principal.getName());
 			}
 
-			authenticationService.setCurrentSession(session, realm, principal, locale);
-
-			try {
+			try(var c = authenticationService.tryAs(session, realm, principal, locale)) {
 				executeJob(context);
-			} finally {
-				authenticationService.clearPrincipalContext();
-			}
-
+			} 
 		} catch (Throwable e) {
 			log.error("Error in job", e);
 			throw new IllegalStateException(e.getMessage(), e);

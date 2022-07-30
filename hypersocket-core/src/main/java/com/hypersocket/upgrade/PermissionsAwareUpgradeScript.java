@@ -11,12 +11,7 @@ public abstract class PermissionsAwareUpgradeScript implements Runnable {
 	
 	@Override
 	public void run() {
-	
-		sessionService.executeInSystemContext(new Runnable(){ 
-			public void run() {
-				doUpgrade();
-			}
-		});
+		sessionService.runAsSystemContext(() -> doUpgrade());
 	}
 	
 	protected abstract void doUpgrade();

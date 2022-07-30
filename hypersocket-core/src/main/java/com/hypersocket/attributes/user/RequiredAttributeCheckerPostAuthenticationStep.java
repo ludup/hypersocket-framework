@@ -1,5 +1,6 @@
 package com.hypersocket.attributes.user;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.util.ArrayValueHashMap;
 
 @Component
 public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthenticationStep{
@@ -133,13 +135,12 @@ public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthe
 	 * Idea is to maintain state parameters as source of truth for processing and tracking.
 	 * Hence we keep it up to date from data source and parameters and execute logic
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public AuthenticatorResult process(AuthenticationState state, Map parameters) throws AccessDeniedException {
+	public AuthenticatorResult process(AuthenticationState state, Map<String, String[]> parameters) throws AccessDeniedException {
 		
-		authenticationService.setupSystemContext(state.getPrincipal());
+		;
 		boolean missing = false;
-		try {
+		try(var c = authenticationService.tryAs(state.getPrincipal())) {
 			
 			// move any custom attributes from parameters to state
 			// any user updates would be moved from parameters to state
@@ -171,11 +172,9 @@ public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthe
 
 			
 			
-		} finally {
-			authenticationService.clearPrincipalContext();
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
 		}
-		
-		
 	}
 
 	@Override
@@ -224,11 +223,11 @@ public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthe
 		return key + CUSTOM_ATTRIBUTE_MISSING_NAME_TAG;
 	}
 	
-	private void moveCustomAttributesFromParametersToState(AuthenticationState state, Map<String, ?> parameters) {
+	private void moveCustomAttributesFromParametersToState(AuthenticationState state, Map<String, String[]> parameters) {
 		Set<String> keys = parameters.keySet();
 		for (String key : keys) {
 			if (key.startsWith(CUSTOM_ATTRIBUTE)) {
-				state.addParameter(key + CUSTOM_ATTRIBUTE_MISSING_VALUE_TAG, (String) parameters.get(key));
+				state.addParameter(key + CUSTOM_ATTRIBUTE_MISSING_VALUE_TAG, ArrayValueHashMap.getSingle(parameters, key));
 			}
 		}
 	}

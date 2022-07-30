@@ -31,6 +31,7 @@ import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.AuthenticationRequiredButDontTouchSession;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.ResourceStatus;
@@ -67,57 +68,49 @@ public class FileStoreController extends ResourceController {
 	@RequestMapping(value = "files/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableNetworkResources(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+					@Override
+					public Column getColumn(String col) {
+						return FileUploadColumn.valueOf(col.toUpperCase());
+					}
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.searchResources(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern, start, length, sorting);
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return FileUploadColumn.valueOf(col.toUpperCase());
-						}
-
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.searchResources(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern, start, length, sorting);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getResourceCount(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.getResourceCount(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern);
+					}
+				});
 	}
 	@AuthenticationRequired
 	@RequestMapping(value = "files/file/{uuid}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<FileUpload> getFile(final HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String uuid)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			FileUpload fileUpload = null;
 			if(!StringUtils.isNumeric(uuid)) {
@@ -129,8 +122,6 @@ public class FileStoreController extends ResourceController {
 
 		} catch(ResourceException ex) { 
 			return new ResourceStatus<FileUpload>(false, ex.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -162,6 +153,7 @@ public class FileStoreController extends ResourceController {
 	@RequestMapping(value = "files/image/{publicFile}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<FileUpload> createImageWithPublicOption(HttpServletRequest request,
 			HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file,
@@ -169,8 +161,6 @@ public class FileStoreController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 		
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			FileUpload fileUpload;
@@ -219,8 +209,6 @@ public class FileStoreController extends ResourceController {
 					FileUploadServiceImpl.RESOURCE_BUNDLE, "fileUpload.error" ,
 					e.getMessage()));
 
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -228,6 +216,7 @@ public class FileStoreController extends ResourceController {
 	@RequestMapping(value = "files/public", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<FileUpload> createPublicFile(HttpServletRequest request,
 			HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file)
@@ -240,14 +229,13 @@ public class FileStoreController extends ResourceController {
 	@RequestMapping(value = "files/file/{publicFile}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<FileUpload> createFile(HttpServletRequest request,
 			HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file, @PathVariable Boolean publicFile)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			FileUpload fileUpload;
@@ -270,9 +258,7 @@ public class FileStoreController extends ResourceController {
 					FileUploadServiceImpl.RESOURCE_BUNDLE, "fileUpload.error",
 					e.getMessage()));
 
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 
 	@AuthenticationRequired
@@ -290,13 +276,12 @@ public class FileStoreController extends ResourceController {
 	@RequestMapping(value = "files/file/{uuid}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<FileUpload> deleteFile(
 			final HttpServletRequest request, HttpServletResponse response,
 			@PathVariable String uuid) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			FileUpload fileUpload = null;
@@ -330,8 +315,6 @@ public class FileStoreController extends ResourceController {
 					FileUploadServiceImpl.RESOURCE_BUNDLE, "fileUpload.error",
 					e.getMessage()));
 
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -381,62 +364,50 @@ public class FileStoreController extends ResourceController {
 	@RequestMapping(value = "files/export/{id}", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
+	@AuthenticatedContext
 	public String export(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException,
 			ResourceExportException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			response.setHeader("Content-Disposition", "attachment; filename=\""
-					+ resourceService.getResourceCategory() + "-"
-					+ resourceService.getResourceById(id).getName() + ".json\"");
-			return resourceService.exportResoure(id);
-		} finally {
-			clearAuthenticatedContext();
-		}
+		response.setHeader("Content-Disposition", "attachment; filename=\""
+				+ resourceService.getResourceCategory() + "-"
+				+ resourceService.getResourceById(id).getName() + ".json\"");
+		return resourceService.exportResoure(id);
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "files/export", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
+	@AuthenticatedContext
 	public String exportAll(HttpServletRequest request,
 			HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException,
 			ResourceExportException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			Thread.sleep(1000);
 		} catch (Exception e) {
 		}
-		try {
-			response.setHeader("Content-Disposition", "attachment; filename=\""
-					+ resourceService.getResourceCategory() + "-all" + ".json\"");
-			return resourceService.exportResources(resourceService.allResources());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		response.setHeader("Content-Disposition", "attachment; filename=\""
+				+ resourceService.getResourceCategory() + "-all" + ".json\"");
+		return resourceService.exportResources(resourceService.allResources());
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "files/import", method = { RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<FileUpload> importLaunchers(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "file") MultipartFile jsonFile,
 			@RequestParam(required=false) boolean dropExisting)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			Thread.sleep(2000);
 		} catch (Exception e) {
@@ -465,8 +436,6 @@ public class FileStoreController extends ResourceController {
 							I18NServiceImpl.USER_INTERFACE_BUNDLE,
 							"resource.import.failure",
 							e.getMessage()));
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	

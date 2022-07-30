@@ -27,27 +27,23 @@ import com.hypersocket.session.SessionService;
 
 public class core_2_DOT_1_DOT_0 implements Runnable {
 
-	static Logger log = LoggerFactory.getLogger(core_2_DOT_1_DOT_0.class);
+	private final static Logger log = LoggerFactory.getLogger(core_2_DOT_1_DOT_0.class);
 
 	@Autowired
-	PermissionService permissionService;
+	private PermissionService permissionService;
 	
 	@Autowired
-	RealmService realmService; 
+	private RealmService realmService; 
 	
 	@Autowired
-	PermissionRepository repository; 
+	private PermissionRepository repository; 
 	
 	@Autowired
-	SessionService sessionService; 
+	private SessionService sessionService; 
 	
 	@Override
 	public void run() {
-		sessionService.executeInSystemContext(new Runnable() {
-			public void run() {
-				doit();
-			}
-		});
+		sessionService.runAsSystemContext(() -> doit());
 	}
 	
 	public void doit() {

@@ -114,8 +114,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 
 	Map<String, Long> getPrincipalUsage(Date from, Date now) throws AccessDeniedException;
 
-	void executeInSystemContext(Runnable r);
-
 	Role switchRole(Session session, Long id) throws AccessDeniedException, ResourceNotFoundException;
 
 	void switchRole(Session currentSession, Role role) throws AccessDeniedException;
@@ -129,10 +127,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	void registerReaperListener(SessionReaperListener listener);
 
 	void deleteRealm(Realm realm);
-
-	void executeInSystemContext(Runnable r, Realm currentRealm);
-	
-	void executeInSystemContext(Runnable r, Realm currentRealm, Principal principal);
 	
 	void cleanUp() throws AccessDeniedException;
 	

@@ -56,7 +56,7 @@ public class RestApiInterceptor extends HandlerInterceptorAdapter {
 	private PasswordEncryptionService encryptionService;
 
 	@Override
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		request.setAttribute(RestApi.API_REST, RestApi.API_REST);
 		String authorizationHeader = request.getHeader(RestApi.HTTP_HEADER_AUTH);
@@ -102,6 +102,7 @@ public class RestApiInterceptor extends HandlerInterceptorAdapter {
 		return false;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
 		authenticationService.clearPrincipalContext();

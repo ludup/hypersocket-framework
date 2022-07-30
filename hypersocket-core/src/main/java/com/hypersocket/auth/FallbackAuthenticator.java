@@ -29,7 +29,7 @@ public class FallbackAuthenticator extends UsernameAndPasswordAuthenticator {
 	
 	@Override
 	protected AuthenticatorResult verifyCredentials(AuthenticationState state,
-			Principal principal, @SuppressWarnings("rawtypes") Map parameters) {
+			Principal principal, Map<String, String[]> parameters) {
 		
 		/**
 		 * This is fallback for when authentication is broken. Only allow the 

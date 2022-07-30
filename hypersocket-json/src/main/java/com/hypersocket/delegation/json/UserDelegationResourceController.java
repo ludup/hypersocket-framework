@@ -26,6 +26,7 @@ import com.hypersocket.delegation.UserDelegationResourceServiceImpl;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
@@ -54,84 +55,68 @@ public class UserDelegationResourceController extends ResourceController {
 	@RequestMapping(value = "userDelegations/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<UserDelegationResource> getResources(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<UserDelegationResource>(
-					resourceService.getResources(sessionUtils
-							.getCurrentRealm(request)));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<UserDelegationResource>(
+				resourceService.getResources(sessionUtils
+						.getCurrentRealm(request)));
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "userDelegations/myUserDelegations", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<UserDelegationResource> getResourcesByCurrentPrincipal(
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<UserDelegationResource>(
-					resourceService.getResources(sessionUtils
-							.getPrincipal(request)));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<UserDelegationResource>(
+				resourceService.getResources(sessionUtils
+						.getPrincipal(request)));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "userDelegations/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableResources(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return UserDelegationResourceColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return UserDelegationResourceColumns.valueOf(col.toUpperCase());
-						}
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.searchResources(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern, start, length, sorting);
+					}
 
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.searchResources(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern, start, length, sorting);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getResourceCount(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.getResourceCount(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern);
+					}
+				});
 	}
 
 	
@@ -139,68 +124,50 @@ public class UserDelegationResourceController extends ResourceController {
 	@RequestMapping(value = "userDelegations/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getResourceTemplate(
 			HttpServletRequest request) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "userDelegations/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getActionTemplate(
 			HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			UserDelegationResource resource = resourceService.getResourceById(id);
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		UserDelegationResource resource = resourceService.getResourceById(id);
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "userDelegations/userDelegation/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public UserDelegationResource getResource(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			ResourceNotFoundException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return resourceService.getResourceById(id);
-		} finally {
-			clearAuthenticatedContext();
-		}
-
+		return resourceService.getResourceById(id);
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "userDelegations/userDelegation", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<UserDelegationResource> createOrUpdateResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody AssignableResourceUpdate resource)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			UserDelegationResource newResource;
@@ -233,8 +200,6 @@ public class UserDelegationResourceController extends ResourceController {
 		} catch (ResourceException e) {
 			return new ResourceStatus<UserDelegationResource>(false,
 					e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -243,13 +208,12 @@ public class UserDelegationResourceController extends ResourceController {
 	@RequestMapping(value = "userDelegations/userDelegation/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<UserDelegationResource> deleteResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			UserDelegationResource resource = resourceService.getResourceById(id);
@@ -271,8 +235,6 @@ public class UserDelegationResourceController extends ResourceController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<UserDelegationResource>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -280,38 +242,32 @@ public class UserDelegationResourceController extends ResourceController {
 	@RequestMapping(value = "userDelegations/personal", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> personalResources(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return UserDelegationResourceColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return UserDelegationResourceColumns.valueOf(col.toUpperCase());
-						}
-
-						@Override
-						public Collection<?> getPage(String searchColumn, String searchPattern, int start, int length,
-								ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
-							return resourceService.searchPersonalResources(sessionUtils.getPrincipal(request),
-									searchColumn, searchPattern, start, length, sorting);
-						}
-						
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern) throws UnauthorizedException, AccessDeniedException {
-							return resourceService.getPersonalResourceCount(
-									sessionUtils.getPrincipal(request),
-									searchColumn, searchPattern);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Collection<?> getPage(String searchColumn, String searchPattern, int start, int length,
+							ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
+						return resourceService.searchPersonalResources(sessionUtils.getPrincipal(request),
+								searchColumn, searchPattern, start, length, sorting);
+					}
+					
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern) throws UnauthorizedException, AccessDeniedException {
+						return resourceService.getPersonalResourceCount(
+								sessionUtils.getPrincipal(request),
+								searchColumn, searchPattern);
+					}
+				});
 	}
 }

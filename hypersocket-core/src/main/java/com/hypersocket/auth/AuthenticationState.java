@@ -67,7 +67,6 @@ public class AuthenticationState {
 	private Locale locale;
 	private Map<String, String> parameters = new HashMap<String, String>();
 	private Map<String, Object> environment = new HashMap<String, Object>();
-	private Map<String, String[]> requestParameters = new HashMap<String, String[]>();
 	private PrincipalType principalType = PrincipalType.USER;
 	
 	
@@ -349,8 +348,9 @@ public class AuthenticationState {
 		return environment.containsKey(key);
 	}
 	
-	public Object getEnvironmentVariable(String key){ 
-		return environment.get(key);
+	@SuppressWarnings("unchecked")
+	public <V> V getEnvironmentVariable(String key){ 
+		return (V)environment.get(key);
 	}
 
 	public void fakeCredentials() {
@@ -382,10 +382,6 @@ public class AuthenticationState {
 
 	public Map<String,String> getParameters() {
 		return parameters;
-	}
-
-	public Map<String,String[]> getRequestParameters() {
-		return requestParameters;
 	}
 	
 	public boolean isHTTP() {
@@ -486,8 +482,6 @@ public class AuthenticationState {
 				.createAuthenticationState(logonScheme, 
 						request.getRemoteAddr(), 
 						environment, realm, locale);
-		
-		state.getRequestParameters().putAll(request.getParameterMap());
 		
 		List<AuthenticationModule> modules = state.getModules();
 		for(AuthenticationModule module : modules) {

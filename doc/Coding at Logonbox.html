@@ -1,0 +1,92 @@
+<h1 id="caret">LogonBox Coding Conventions</h1>
+<h2>Language And API</h2>
+<p>General rules for the source as a whole, and 3rd party frameworks we may use.</p>
+<h4>All Languages</h4>
+<ul>
+<li>All sources to start with copyright header (LogonBox does not yet do automated license headers?)</li>
+<li><strong>Insert spaces for tabs</strong> OFF</li>
+<li><strong>Displayed tab width</strong> of 4</li>
+<li>Treat compiler warnings as errors. If you see them, fix them where possible. Or add annotations to ignore them where appropriate.</li>
+</ul>
+<h3>Java</h3>
+<p>Java has been on a mission to reduce verbosity. Less code, fewer bugs. So learn and make use of new language features (that are not really new any more!).</p>
+<ul>
+<li>Use Java 11 syntax wherever possible.</li>
+<li>Use <code>var</code> keyword everywhere it makes sense. It will save you a lot of typing.</li>
+<li>Make use of <code>Collection.stream()</code>. Especially useful for transforming the contents of one collection into another, or filtering lists, or finding distinct objects, or a how of other operations.</li>
+<li>Try to use <code>Path</code> and <code>Files</code> instead of <code>File</code>.</li>
+<li>Use <code>try-with-resource</code> instead of closing streams in a <code>finally</code>.</li>
+<li>Use the diamond operator <code>&lt;&gt;</code> in generics if the type can be inferred another way. E.g. <code>List&lt;String&gt; l = new ArrayList&lt;&gt;()</code> rather than <code>List&lt;String&gt; l = new ArrayList&lt;String&gt;()</code>.</li>
+<li>Make use of <code>default</code> methods in interfaces. This is often preferable to <code>abstract</code> classes. Good for event listeners.</li>
+<li>If <code>null</code> has meaning to a variables value, consider using <code>Optional&lt;SomeType&gt;</code> instead. This can help reduce <code>NullPointerException</code>.</li>
+<li>Use Lamba syntax. The most obvious places are with <code>Runnable</code> or <code>Callable</code> usages and a good way to get used to them.</li>
+<li>Avoid reflection, especially with non-public classes, methods and fields. From Java 16 encapsulation becomes stronger and it is much harder to access these if you are not in control of the modules.</li>
+<li>Use <code>public</code>, <code>private</code> and <code>protected</code> (and lack of) visibility keywords correctly. Only completely omit the prefix if the member is <em>genuinely</em> used by other classes in it's package.</li>
+</ul>
+<h4>Java Exceptions</h4>
+<p>When re-throwing and wrapping exceptions, you should nearly always add additional contextual information, and always provide the original as the causal exception.</p>
+<pre><code class="language-java">     try {
+     	// some code
+     } catch(ResourceException re) {
+     	throw new IOExcetpion(&quot;A bad thing happened.&quot;, re);
+     }
+</code></pre>
+<p>Try to use multi-catch ...</p>
+<pre><code class="language-java">	try {
+		// some code
+	}
+	catch(ResourceException | IOException e) {
+	 	// handle generically
+	}
+</code></pre>
+<p>Don't wrap exceptions if you can-rethrow a super type.</p>
+<pre><code class="language-java">	try {
+		// some code
+	}
+	catch(FileNotFoundException fe) {
+		// special handling
+		throw fe;
+	}	
+	catch(IOException ioe) {
+		// generic io exception handling
+		throw ioe;
+	}
+	catch(Exception e) {
+		// all other
+		throw new IOException(&quot;A bad thing happened.&quot;, e);
+	}
+</code></pre>
+<p>Always log exceptions to the logging framework, don't just dump them to System.out.</p>
+<pre><code class="language-java">	try {
+		// some code
+	}
+	catch(IOException ioe) {
+		LOG.error(&quot;A bad thing happened.&quot;, ioe); // do this
+		//ioe.printStackTrace(); // don't do this
+	}
+</code></pre>
+<h4>Java Source Format</h4>
+<p>Up for discussion, but I would like to say use the Eclipse default. If this is not acceptable to others, we can decide on a format and create a formatter profile for it.</p>
+<p>I believe there is a way of importing of these can be stored in a source tree and automated.</p>
+<h4>Logging</h4>
+<ul>
+<li>Wherever possible do not use string concatenation or <code>String.format()</code> in log statements. The logging framework now in use supports patterns. So instead use <code>LOG.error(&quot;A bad thing happened to the user '{}'.&quot;, username);</code></li>
+<li>The static variable name of the <code>Logger</code> instance should be capitalised, it's a constant. It should also nearly always be <code>private</code> and <code>final</code>.</li>
+<li>Always use <code>LOG.isDebugEnabled()</code> for debug logging (and lower levels). Use discretion for higher log levels based on performance impact (i.e. how much processing time does it take to build the logging string), and the context in which it is used (is it a performance sensitive area).</li>
+</ul>
+<h3>JavaScript</h3>
+<ul>
+<li>Prefer single quotes for strings</li>
+</ul>
+<h3>LogonBox Framework</h3>
+<p>Some guidelines on using the LogonBox/Hypersocket framework specifically.</p>
+<ul>
+<li>Take care to not <code>@Autowire</code> stuff you don't need, it has a cost. Never leave as package protected so IDE has a change of noticing.</li>
+<li>Do not use <code>Collection&lt;SomeResource&gt; SomeResourceService.allResources()</code> methods in service layers, unless you are absolutely <em>sure</em> the table will <em>always</em> be small. Prefer <code>Iterator&lt;SomeResource&gt; iterate()</code> methods.</li>
+</ul>
+<h3>Projects</h3>
+<ul>
+<li>If you are starting a new Java project (a library or an application), strongly consider writing it using Java modules (JPMS). If a dependency that you wish to use doesn't have it (at least an <code>Automatic-Module-Name</code>), consider finding an alternative. At this stage the lack of module information in a library suggests lack of maintenance, or technical debt that cannot be overcome (such as heavy use of reflection or other less than ideal techniques being used).</li>
+<li>If you do use JPMS, make use of public and private packages to hide implementation code from consumers where appropriate.</li>
+<li>Ensure all packages within a module are unique across the application. If you are writing a public module, it should be <em>globally unique</em>.</li>
+</ul>

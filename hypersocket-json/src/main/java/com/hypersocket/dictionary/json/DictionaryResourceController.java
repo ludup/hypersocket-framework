@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.dictionary.DictionaryResourceColumns;
 import com.hypersocket.dictionary.DictionaryResourceService;
 import com.hypersocket.dictionary.DictionaryResourceServiceImpl;
@@ -60,81 +61,63 @@ public class DictionaryResourceController extends ResourceController {
 	@RequestMapping(value = "dictionary/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableResources(final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+		return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
+			@Override
+			public Column getColumn(String col) {
+				return DictionaryResourceColumns.valueOf(col.toUpperCase());
+			}
 
-				@Override
-				public Column getColumn(String col) {
-					return DictionaryResourceColumns.valueOf(col.toUpperCase());
-				}
+			@Override
+			public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
+					ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
+				return resourceService.searchResources(null, searchColumn, searchPattern,
+						start, length, sorting);
+			}
 
-				@Override
-				public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
-						ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
-					return resourceService.searchResources(null, searchColumn, searchPattern,
-							start, length, sorting);
-				}
-
-				@Override
-				public Long getTotalCount(String searchColumn, String searchPattern)
-						throws UnauthorizedException, AccessDeniedException {
-					return resourceService.getResourceCount(null, searchColumn,
-							searchPattern);
-				}
-			});
-		} finally {
-			clearAuthenticatedContext();
-		}
+			@Override
+			public Long getTotalCount(String searchColumn, String searchPattern)
+					throws UnauthorizedException, AccessDeniedException {
+				return resourceService.getResourceCount(null, searchColumn,
+						searchPattern);
+			}
+		});
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "dictionary/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getResourceTemplate(HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate());
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "dictionary/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getActionTemplate(HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, ResourceNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			Word resource = resourceService.getResourceById(id);
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		Word resource = resourceService.getResourceById(id);
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "dictionary/word/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public Word getResource(HttpServletRequest request, HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException, ResourceNotFoundException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			return resourceService.getResourceById(id);
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return resourceService.getResourceById(id);
 
 	}
 
@@ -142,11 +125,11 @@ public class DictionaryResourceController extends ResourceController {
 	@RequestMapping(value = "dictionary/properties", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<Word> createOrUpdateResource(HttpServletRequest request, HttpServletResponse response,
 			@RequestBody ResourceUpdate resource)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
 			Word newResource;
 			Map<String, String> properties = new HashMap<String, String>();
@@ -170,8 +153,6 @@ public class DictionaryResourceController extends ResourceController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<Word>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -179,13 +160,12 @@ public class DictionaryResourceController extends ResourceController {
 	@RequestMapping(value = "dictionary/upload", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<Long> upload(HttpServletRequest request, HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file,
 			@RequestParam String locale,
 			@RequestParam(required = false) boolean ignoreDuplicates)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 
 		try {
 			String characterEncoding = request.getCharacterEncoding();
@@ -206,9 +186,7 @@ public class DictionaryResourceController extends ResourceController {
 			LOG.error("Unexpected error", e);
 			return new ResourceStatus<Long>(false, I18N.getResource(sessionUtils.getLocale(request),
 					DictionaryResourceServiceImpl.RESOURCE_BUNDLE, "error.unexpectedError", e.getMessage()));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 
 	@AuthenticationRequired
@@ -216,10 +194,10 @@ public class DictionaryResourceController extends ResourceController {
 			"application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<Word> deleteResource(HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
 
 			Word resource = resourceService.getResourceById(id);
@@ -237,8 +215,6 @@ public class DictionaryResourceController extends ResourceController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<Word>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 

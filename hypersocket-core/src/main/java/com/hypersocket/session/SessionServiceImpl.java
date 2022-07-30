@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -437,15 +436,12 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Role switchRole(Session session, Long id) throws AccessDeniedException, ResourceNotFoundException {
-
-		elevatePermissions(RolePermission.READ);
-
-		try {
+		try(var c = tryWithElevatedPermissions(RolePermission.READ)) {
 			Role role = permissionService.getRoleById(id, getCurrentRealm());
 			switchRole(session, role);
 			return role;
-		} finally {
-			clearElevatedPermissions();
+		} catch(IOException ioe){
+			throw new IllegalStateException(ioe);
 		}
 	}
 
@@ -693,7 +689,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void onApplicationEvent(ContextStartedEvent event) {
 
-		executeInSystemContext(() -> {
+		runAsSystemContext(() -> {
 			if (log.isInfoEnabled()) {
 				log.info("Scheduling session reaper job");
 			}
@@ -784,30 +780,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		assertAnyPermission(SystemPermission.SYSTEM_ADMINISTRATION, SessionPermission.READ);
 
 		return repository.getResourceCount(realm, searchPattern);
-	}
-
-	@Override
-	public void executeInSystemContext(Runnable r) {
-		executeInSystemContext(r, realmService.getSystemRealm(), realmService.getSystemPrincipal());
-	}
-
-	@Override
-	public void executeInSystemContext(Runnable r, Realm realm) {
-		executeInSystemContext(r, realm, realmService.getSystemPrincipal());
-	}
-
-	@Override
-	public void executeInSystemContext(Runnable r, Realm currentRealm, Principal principal) {
-
-		setCurrentSession(getSystemSession(), currentRealm, principal, Locale.getDefault());
-		elevatePermissions(SystemPermission.SYSTEM);
-		try {
-			r.run();
-		} finally {
-			clearElevatedPermissions();
-			clearPrincipalContext();
-		}
-
 	}
 
 	@Override

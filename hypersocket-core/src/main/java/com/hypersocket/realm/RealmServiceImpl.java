@@ -352,18 +352,15 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public void onUpgradeFinished() {
-
-		sessionService.executeInSystemContext(new Runnable() {
-			public void run() {
-				sortRealmListeners();
-				for (Realm realm : realmRepository.allRealms()) {
-					for (RealmListener listener : realmListeners) {
-						if (!listener.hasCreatedDefaultResources(realm)) {
-							try {
-								listener.onCreateRealm(realm);
-							} catch (ResourceException | AccessDeniedException e) {
-								log.error("Failed to create default resources in realm", e);
-							}
+		sessionService.runAsSystemContext(() -> {
+			sortRealmListeners();
+			for (Realm realm : realmRepository.allRealms()) {
+				for (RealmListener listener : realmListeners) {
+					if (!listener.hasCreatedDefaultResources(realm)) {
+						try {
+							listener.onCreateRealm(realm);
+						} catch (ResourceException | AccessDeniedException e) {
+							log.error("Failed to create default resources in realm", e);
 						}
 					}
 				}
@@ -885,8 +882,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		 * external service.
 		 */
 
-		setupSystemContext(principal.getRealm());
-		try {
+		try(var c = tryAs(principal.getRealm())) {
 			String pwd = new String(password);
 			if (pwd.startsWith(SessionServiceImpl.TOKEN_PREFIX)) {
 				Principal tokenPrincipal = sessionService.getSessionTokenResource(pwd, Principal.class);
@@ -899,8 +895,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				throw e;
 			}
 			return false;
-		} finally {
-			clearPrincipalContext();
 		}
 	}
 
@@ -1210,13 +1204,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				 * the new authorized details (this is currently being used
 				 * to create service accounts for LogonBox directory connector).
 				 */
-				setupSystemContext(originalPrincipal);
 				allDefaultProperties.putAll(updatedProperties);
-				try {
+				try(var c = tryAs(originalPrincipal)) {
 					createRealm(name, module, parent, owner, allDefaultProperties);
-				}
-				finally {
-					clearPrincipalContext();
 				}
 			});
 
@@ -1379,8 +1369,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			 * Switch to system context in the updated realm so that updates from system
 			 * realm will be be able to correctly route through a secure node.
 			 */
-			setupSystemContext(realm);
-			try {
+			try(var co = tryAs(realm)) {
 				Map<String, String> existingProperties = getRealmProperties(realm);
 				
 				boolean reconfigured = false;
@@ -1407,13 +1396,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					 * the new authorized details (this is currently being used
 					 * to create service accounts for LogonBox directory connector).
 					 */
-					setupSystemContext(originalPrincipal);
+					;
 					existingProperties.putAll(updatedProperties);
-					try {
+					try(var c = tryAs(originalPrincipal)) {
 						updateRealm(realm, name, type, existingProperties);
-					}
-					finally {
-						clearPrincipalContext();
 					}
 				});
 
@@ -1422,9 +1408,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					realmProvider.setValue(realm, "realm.reconcileRebuildCache", "true");
 					realmProvider.setValue(realm, "realm.upToDate", "false");
 				}
-			} finally {
-				clearPrincipalContext();
-			}
+			} 
 
 			String oldName = realm.getName();
 

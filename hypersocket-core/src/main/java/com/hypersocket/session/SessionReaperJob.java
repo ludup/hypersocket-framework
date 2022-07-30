@@ -1,5 +1,6 @@
 package com.hypersocket.session;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.quartz.JobExecutionContext;
@@ -13,16 +14,14 @@ import com.hypersocket.scheduler.PermissionsAwareJob;
 
 public class SessionReaperJob extends PermissionsAwareJob {
 
-	static Logger log = LoggerFactory.getLogger(SessionReaperJob.class);
+	private final static Logger log = LoggerFactory.getLogger(SessionReaperJob.class);
 	
 	@Autowired
 	private SessionService sessionService; 
 	
 	@Override
 	protected void executeJob(JobExecutionContext context) {
-
-		sessionService.elevatePermissions(SystemPermission.SYSTEM);
-		try {
+		try(var c = sessionService.tryWithElevatedPermissions(SystemPermission.SYSTEM)) {
 			List<Session> activeSessions = sessionService.getActiveSessions();
 			
 			if(log.isDebugEnabled()) {
@@ -36,11 +35,9 @@ public class SessionReaperJob extends PermissionsAwareJob {
 					}
 				}
 			}
-		} catch (AccessDeniedException e) {
+		} catch (IOException | AccessDeniedException e) {
 			log.error("Access Denied", e);
-		} finally {
-			sessionService.clearElevatedPermissions();
-		}
+		} 
 	}
 
 	@Override

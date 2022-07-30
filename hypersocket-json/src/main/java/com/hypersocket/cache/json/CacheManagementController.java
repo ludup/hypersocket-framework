@@ -26,6 +26,7 @@ import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.cache.CacheService;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -48,98 +49,78 @@ public class CacheManagementController extends AuthenticatedController {
 	@AuthenticationRequired
 	@RequestMapping(value = "cache/clear/{name}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus clear(HttpServletRequest request, HttpServletResponse response, @PathVariable String name)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, FileNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			checkAccess();
-			getCache(name).clear();
-			return new RequestStatus(true, I18N.getResource(sessionUtils.getLocale(request),
-					RealmServiceImpl.RESOURCE_BUNDLE, "resource.deleted"));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		checkAccess();
+		getCache(name).clear();
+		return new RequestStatus(true, I18N.getResource(sessionUtils.getLocale(request),
+				RealmServiceImpl.RESOURCE_BUNDLE, "resource.deleted"));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "cache/{name}/{key}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus delete(HttpServletRequest request, HttpServletResponse response, @PathVariable String name,
 			@PathVariable String key)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, FileNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			checkAccess();
-			getCache(name).remove(key);
-			return new RequestStatus(true, I18N.getResource(sessionUtils.getLocale(request),
-					RealmServiceImpl.RESOURCE_BUNDLE, "resource.deleted"));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		checkAccess();
+		getCache(name).remove(key);
+		return new RequestStatus(true, I18N.getResource(sessionUtils.getLocale(request),
+				RealmServiceImpl.RESOURCE_BUNDLE, "resource.deleted"));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "cache/get/{name}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public Map<String, String> get(HttpServletRequest request, HttpServletResponse response,
 			@PathVariable String name)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, FileNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			checkAccess();
-			Cache<Object, Object> cache = getCache(name);
-			
-			/* We can't really just dump out the objects as is, as this results in infinite 
-			 * recursions. So just dump string representation which should be enough for the 
-			 * simple cases.
-			 */
-			Map<String, String> str = new HashMap<>();
-			for(Iterator<Entry<Object, Object>> it = cache.iterator(); it.hasNext(); ) {
-				Entry<Object, Object> en = it.next();
-				str.put(String.valueOf(en.getKey()), String.valueOf(en.getValue()));
-			}
-			return str;
-		} finally {
-			clearAuthenticatedContext();
+		checkAccess();
+		Cache<Object, Object> cache = getCache(name);
+		
+		/* We can't really just dump out the objects as is, as this results in infinite 
+		 * recursions. So just dump string representation which should be enough for the 
+		 * simple cases.
+		 */
+		Map<String, String> str = new HashMap<>();
+		for(Iterator<Entry<Object, Object>> it = cache.iterator(); it.hasNext(); ) {
+			Entry<Object, Object> en = it.next();
+			str.put(String.valueOf(en.getKey()), String.valueOf(en.getValue()));
 		}
+		return str;
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "cache/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public List<String> listNames(HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			checkAccess();
-			List<String> names = new ArrayList<>();
-			for (String n : cacheService.getCacheManager().getCacheNames())
-				names.add(n);
-			return names;
-		} finally {
-			clearAuthenticatedContext();
-		}
+		checkAccess();
+		List<String> names = new ArrayList<>();
+		for (String n : cacheService.getCacheManager().getCacheNames())
+			names.add(n);
+		return names;
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "cache/{name}", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus set(HttpServletRequest request, @PathVariable String name, @RequestBody NameValuePair[] items)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException, ResourceException,
 			FileNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			checkAccess();
-			for (NameValuePair nvp : items)
-				getCache(name).put(nvp.getName(), nvp.getValue());
-			return new RequestStatus(true, I18N.getResource(sessionUtils.getLocale(request),
-					RealmServiceImpl.RESOURCE_BUNDLE, "resource.saved"));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		checkAccess();
+		for (NameValuePair nvp : items)
+			getCache(name).put(nvp.getName(), nvp.getValue());
+		return new RequestStatus(true, I18N.getResource(sessionUtils.getLocale(request),
+				RealmServiceImpl.RESOURCE_BUNDLE, "resource.saved"));
 	}
 
 	private void checkAccess() throws AccessDeniedException {

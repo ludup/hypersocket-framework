@@ -39,39 +39,32 @@ public abstract class AbstractAttributeCategoryController<A extends AbstractAttr
 
 	protected BootstrapTableResult<?> tableAttributeCategories(final HttpServletRequest request)
 			throws UnauthorizedException, SessionTimeoutException, AccessDeniedException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
+		return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
 
-				@Override
-				public Column getColumn(String col) {
-					return AbstractAttributeCategoryController.this.getColumn(col);
-				}
+			@Override
+			public Column getColumn(String col) {
+				return AbstractAttributeCategoryController.this.getColumn(col);
+			}
 
-				@Override
-				public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
-						ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
-					return service.searchResources(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern,
-							start, length, sorting);
+			@Override
+			public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
+					ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
+				return service.searchResources(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern,
+						start, length, sorting);
 
-				}
+			}
 
-				@Override
-				public Long getTotalCount(String searchColumn, String searchPattern)
-						throws UnauthorizedException, AccessDeniedException {
-					return service.getResourceCount(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern);
-				}
-			});
-		} finally {
-			clearAuthenticatedContext();
-		}
+			@Override
+			public Long getTotalCount(String searchColumn, String searchPattern)
+					throws UnauthorizedException, AccessDeniedException {
+				return service.getResourceCount(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern);
+			}
+		});
 	}
 
 	protected ResourceStatus<T> createOrUpdateAttributeCategory(HttpServletRequest request,
 			AbstractCategoryUpdate attributeCategory)
 			throws UnauthorizedException, SessionTimeoutException, AccessDeniedException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-
 		try {
 
 			T newAttributeCategory;
@@ -92,14 +85,11 @@ public abstract class AbstractAttributeCategoryController<A extends AbstractAttr
 							attributeCategory.getName()));
 		} catch (ResourceException e) {
 			return new ResourceStatus<T>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 
 	protected ResourceStatus<T> deleteAttributeCategory(HttpServletRequest request, Long id)
 			throws UnauthorizedException, SessionTimeoutException, AccessDeniedException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
 
 			T category = service.getResourceById(id);
@@ -122,23 +112,16 @@ public abstract class AbstractAttributeCategoryController<A extends AbstractAttr
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<T>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 
 	protected ResourceList<SelectOption> getCategories(HttpServletRequest request)
-			throws UnauthorizedException, SessionTimeoutException, AccessDeniedException {
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			List<SelectOption> result = new ArrayList<SelectOption>();
-			for (T category : service.getResources(sessionUtils.getCurrentRealm(request))) {
-				result.add(new SelectOption(Long.toString(category.getId()), category.getName()));
-			}
-			return new ResourceList<SelectOption>(result);
-		} finally {
-			clearAuthenticatedContext();
+		throws UnauthorizedException, SessionTimeoutException, AccessDeniedException {
+		List<SelectOption> result = new ArrayList<SelectOption>();
+		for (T category : service.getResources(sessionUtils.getCurrentRealm(request))) {
+			result.add(new SelectOption(Long.toString(category.getId()), category.getName()));
 		}
+		return new ResourceList<SelectOption>(result);
 	}
 
 	protected abstract Column getColumn(String col);

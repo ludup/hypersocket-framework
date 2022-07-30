@@ -25,6 +25,7 @@ import com.hypersocket.auth.PrincipalNotFoundException;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.PropertyItem;
@@ -61,90 +62,64 @@ public class RoleController extends ResourceController {
 	@RequestMapping(value = "roles/role/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public Role getRole(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			ResourceNotFoundException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return permissionService.getRoleById(id,
-					sessionUtils.getCurrentRealm(request));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return permissionService.getRoleById(id,
+				sessionUtils.getCurrentRealm(request));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/byName/{name}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public Role getRole(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("name") String name)
 			throws AccessDeniedException, UnauthorizedException,
 			ResourceNotFoundException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return permissionService.getRole(name,
-					sessionUtils.getCurrentRealm(request));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return permissionService.getRole(name,
+				sessionUtils.getCurrentRealm(request));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/template", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getRoleTemplate(
 			HttpServletRequest request) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<PropertyCategory>(
-					permissionService.getRoleTemplate());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<PropertyCategory>(
+				permissionService.getRoleTemplate());
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getRoleProperties(
 			HttpServletRequest request, @PathVariable Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException, ResourceNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<PropertyCategory>(
-					permissionService.getRoleProperties(permissionService.getRoleById(id, getCurrentRealm())));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<PropertyCategory>(
+				permissionService.getRoleProperties(permissionService.getRoleById(id, getCurrentRealm())));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/role/{id}", method = RequestMethod.DELETE)
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<Role> deleteRole(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			ResourceChangeException, ResourceNotFoundException,
 			SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 
 		try {
 
@@ -159,8 +134,6 @@ public class RoleController extends ResourceController {
 					role.getName()));
 		} catch (ResourceException e) {
 			return new ResourceStatus<Role>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -168,80 +141,60 @@ public class RoleController extends ResourceController {
 	@RequestMapping(value = "roles/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<Role> listRoles(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<Role>(
-					permissionService.allRoles(sessionUtils
-							.getCurrentRealm(request)));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<Role>(
+				permissionService.allRoles(sessionUtils
+						.getCurrentRealm(request)));
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/personal", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<Role> listPersonalRoles(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<Role>(
-					permissionService.getPrincipalRoles(getCurrentPrincipal()));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<Role>(
+				permissionService.getPrincipalRoles(getCurrentPrincipal()));
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/permissions/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<Permission> listRolePermissions(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 
 		try {
 			return new ResourceList<Permission>(
 					permissionService.getRoleById(id, getCurrentRealm()).getPermissions());
 		} catch (ResourceNotFoundException e) {
 			return new ResourceList<Permission>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/realms/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<Realm> listRoleRealms(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 
 		try {
 			return new ResourceList<Realm>(
 					permissionService.getRoleById(id, getCurrentRealm()).getPermissionRealms());
 		} catch (ResourceNotFoundException e) {
 			return new ResourceList<Realm>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -249,20 +202,16 @@ public class RoleController extends ResourceController {
 	@RequestMapping(value = "roles/principals/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<Principal> listRoleUsers(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 
 		try {
 			return new ResourceList<Principal>(
 					permissionService.getRoleById(id, getCurrentRealm()).getPrincipals());
 		} catch (ResourceNotFoundException e) {
 			return new ResourceList<Principal>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -270,181 +219,155 @@ public class RoleController extends ResourceController {
 	@RequestMapping(value = "roles/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableRoles(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return RoleColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return RoleColumns.valueOf(col.toUpperCase());
-						}
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return permissionService.getRoles(searchPattern, searchColumn,
+								start, length, sorting, false, RoleType.BUILTIN, RoleType.CUSTOM);
+					}
 
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return permissionService.getRoles(searchPattern, searchColumn,
-									start, length, sorting, false, RoleType.BUILTIN, RoleType.CUSTOM);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return permissionService
-									.getRoleCount(searchPattern, searchColumn, false, RoleType.BUILTIN, RoleType.CUSTOM);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return permissionService
+								.getRoleCount(searchPattern, searchColumn, false, RoleType.BUILTIN, RoleType.CUSTOM);
+					}
+				});
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/delegatable", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> delegatableRoles(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return RoleColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return RoleColumns.valueOf(col.toUpperCase());
-						}
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return permissionService.getRoles(searchPattern, searchColumn,
+								start, length, sorting, true, RoleType.BUILTIN, RoleType.CUSTOM);
+					}
 
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return permissionService.getRoles(searchPattern, searchColumn,
-									start, length, sorting, true, RoleType.BUILTIN, RoleType.CUSTOM);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return permissionService
-									.getRoleCount(searchPattern, searchColumn, true, RoleType.BUILTIN, RoleType.CUSTOM);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return permissionService
+								.getRoleCount(searchPattern, searchColumn, true, RoleType.BUILTIN, RoleType.CUSTOM);
+					}
+				});
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/tableWithUsers", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableRolesWithUsers(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+					@Override
+					public Column getColumn(String col) {
+						return RoleColumns.valueOf(col.toUpperCase());
+					}
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return permissionService.getRoles(searchPattern, searchColumn,
+								start, length, sorting, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER);
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return RoleColumns.valueOf(col.toUpperCase());
-						}
-
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return permissionService.getRoles(searchPattern, searchColumn,
-									start, length, sorting, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return permissionService
-									.getRoleCount(searchPattern, searchColumn, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return permissionService
+								.getRoleCount(searchPattern, searchColumn, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER);
+					}
+				});
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/tableAllRoles", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableAllRoles(final HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return RoleColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return RoleColumns.valueOf(col.toUpperCase());
-						}
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return permissionService.getRoles(searchPattern, searchColumn,
+								start, length, sorting, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER, RoleType.GROUP);
+					}
 
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return permissionService.getRoles(searchPattern, searchColumn,
-									start, length, sorting, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER, RoleType.GROUP);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return permissionService
-									.getRoleCount(searchPattern, searchColumn, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER, RoleType.GROUP);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return permissionService
+								.getRoleCount(searchPattern, searchColumn, false, RoleType.BUILTIN, RoleType.CUSTOM, RoleType.USER, RoleType.GROUP);
+					}
+				});
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/role", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<Role> createOrUpdateRole(HttpServletRequest request,
 			HttpServletResponse response, @RequestBody RoleUpdate role)
 			throws UnauthorizedException, AccessDeniedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			Role newRole;
@@ -495,8 +418,6 @@ public class RoleController extends ResourceController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<Role>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -505,14 +426,12 @@ public class RoleController extends ResourceController {
 			produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<Boolean> addRoleToUser(HttpServletRequest request,
 												   HttpServletResponse response, @PathVariable("roleId") Long roleId,
 											  @PathVariable("userId") Long userId)
 			throws UnauthorizedException, AccessDeniedException,
 			SessionTimeoutException, PrincipalNotFoundException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			Realm realm = sessionUtils.getCurrentRealm(request);
 			Role role = permissionService.getRoleById(roleId, realm);
@@ -530,8 +449,6 @@ public class RoleController extends ResourceController {
 					"role.add.to.user"));
 		} catch (ResourceNotFoundException e) {
 			return new ResourceStatus<>(false, e.getMessage());
-		}finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -541,14 +458,13 @@ public class RoleController extends ResourceController {
 			produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<Boolean> deleteRoleFromUser(HttpServletRequest request,
 											  HttpServletResponse response,  @PathVariable("roleId") Long roleId,
 													  @PathVariable("userId") Long userId)
 			throws UnauthorizedException, AccessDeniedException,
 			SessionTimeoutException, PrincipalNotFoundException, ResourceException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 				Realm realm = sessionUtils.getCurrentRealm(request);
 				Role role = permissionService.getRoleById(roleId, realm);
@@ -567,8 +483,6 @@ public class RoleController extends ResourceController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -576,70 +490,63 @@ public class RoleController extends ResourceController {
 	@RequestMapping(value = "roles/filter/user/{userId}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableRolesFilterByUser(final HttpServletRequest request,
 											  HttpServletResponse response,
 											@PathVariable("userId") final Long userId) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return RoleColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return RoleColumns.valueOf(col.toUpperCase());
-						}
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+										   int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						List<?> roles = permissionService.getNoPersonalNoAllUsersRoles(searchPattern,
+								start, length, sorting);
 
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-											   int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							List<?> roles = permissionService.getNoPersonalNoAllUsersRoles(searchPattern,
-									start, length, sorting);
+						Principal principal = realmService.getPrincipalById(userId);
 
-							Principal principal = realmService.getPrincipalById(userId);
+						final Set<Role> principalRoles = permissionService.getPrincipalNonPersonalNonAllUserRoles(principal);
 
-							final Set<Role> principalRoles = permissionService.getPrincipalNonPersonalNonAllUserRoles(principal);
+						CollectionUtils.filter(roles, new Predicate() {
+							@Override
+							public boolean evaluate(Object o) {
+								return !principalRoles.contains(o);
+							}
+						});
 
-							CollectionUtils.filter(roles, new Predicate() {
-								@Override
-								public boolean evaluate(Object o) {
-									return !principalRoles.contains(o);
-								}
-							});
+						return roles;
+					}
 
-							return roles;
-						}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
 
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-
-							//no op
-							return 0l;
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+						//no op
+						return 0l;
+					}
+				});
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "roles/bulk", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus deleteResources(HttpServletRequest request,
 												HttpServletResponse response,
 												@RequestBody Long[] ids)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			
 			if(ids == null) {
@@ -663,8 +570,6 @@ public class RoleController extends ResourceController {
 			
 		} catch (Exception e) {
 			return new RequestStatus(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 }

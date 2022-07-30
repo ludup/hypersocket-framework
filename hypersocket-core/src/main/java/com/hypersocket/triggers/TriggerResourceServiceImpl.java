@@ -456,17 +456,12 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 
 	@Override
 	public void onApplicationEvent(final SystemEvent event) {
-		sessionService.executeInSystemContext(new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					processEventTriggers(event);
-				} catch (Throwable t) {
-					log.error("Failed to process triggers", t);
-				}
+		sessionService.runAsSystemContext(() -> {
+			try {
+				processEventTriggers(event);
+			} catch (Throwable t) {
+				log.error("Failed to process triggers", t);
 			}
-
 		});
 
 	}

@@ -1,5 +1,7 @@
 package com.hypersocket.server.handlers.impl;
 
+import java.io.IOException;
+
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -53,22 +55,17 @@ public class H2ConsoleServlet extends ServletRequestHandler {
 	
 	@Override
 	public void handleHttpRequest(HttpServletRequest request, HttpServletResponse response) {
-		
 		try {
 			if(sessionUtils.hasActiveSession(request)) {
-				permissionService.setCurrentSession(sessionUtils.getActiveSession(request), sessionUtils.getLocale(request));
-				try {
+				try(var c = permissionService.tryAs(sessionUtils.getActiveSession(request), sessionUtils.getLocale(request))) {
 					if(permissionService.hasSystemPermission(sessionUtils.getPrincipal(request))) {
 						super.handleHttpRequest(request, response);
 						return;
 					}
-				} finally {
-					permissionService.clearPrincipalContext();
 				}
 			}
-		} catch (UnauthorizedException e) {
+		} catch (UnauthorizedException | IOException e) {
 		}
-		
 		response.setStatus(HttpStatus.SC_NOT_FOUND);
 	}
 	

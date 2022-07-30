@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.interfaceState.UserInterfaceState;
 import com.hypersocket.interfaceState.UserInterfaceStateService;
 import com.hypersocket.json.ResourceList;
@@ -33,34 +34,28 @@ public class UserInterfaceStateController extends ResourceController {
 	@RequestMapping(value = "interfaceState/state/{specific}/{resources}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<UserInterfaceState> getStates(
 			HttpServletRequest request,
 			@PathVariable("specific") boolean specific,
 			@PathVariable("resources") String[] resources)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<UserInterfaceState>(service.getStates(
-					resources, specific));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<UserInterfaceState>(service.getStates(
+				resources, specific));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "interfaceState/state", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<UserInterfaceState> saveState(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody UserInterfaceStateUpdate userInterfaceState)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			UserInterfaceState newState;
 			if (userInterfaceState.getResourceId() != null) {
@@ -88,8 +83,6 @@ public class UserInterfaceStateController extends ResourceController {
 		} catch (Exception e) {
 			return new ResourceStatus<UserInterfaceState>(false, e.getMessage());
 
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 }

@@ -31,9 +31,7 @@
 			<aop:around pointcut-ref="profiledMethods" method="process" />
 		</aop:aspect>
 		<aop:aspect ref="contextAnnotationService">
-			<aop:pointcut id="systemContextAnnotation"
-				expression="@annotation(com.hypersocket.context.SystemContextRequired)" />
-			<aop:around pointcut-ref="systemContextAnnotation" method="process" />
+			<aop:around pointcut="@annotation(com.hypersocket.context.AuthenticatedContext)" method="process" />
 		</aop:aspect>
 	</aop:config>
 

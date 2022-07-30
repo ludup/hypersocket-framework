@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
-import com.hypersocket.context.SystemContextRequired;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
@@ -89,7 +89,7 @@ public abstract class AbstractReconcileServiceImpl<T extends Resource> implement
 	protected abstract boolean isReconciledResource(T resource);
 	
 	@Override
-	@SystemContextRequired
+	@AuthenticatedContext(system = true)
 	public synchronized void onApplicationEvent(final SystemEvent event) {
 
 		if (!isTriggerEvent(event)

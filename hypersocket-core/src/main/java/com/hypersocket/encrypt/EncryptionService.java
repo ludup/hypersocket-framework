@@ -9,7 +9,7 @@ public interface EncryptionService extends Encryptor {
 	void setEncryptor(Encryptor encryptor);
 
 	Encryptor getEncryptor();
-
+	
 	void onContextStartedEvent(ContextStartedEvent event);
 
 }

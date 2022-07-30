@@ -60,6 +60,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	private SessionService sessionService;  
 
 	@Override
+	@Deprecated
 	public void elevatePermissions(PermissionType... permissions) {
 		if(elevatedPermissions.get()==null) {
 			throw new IllegalStateException("No session in context to elevate permissions on");
@@ -69,6 +70,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	}
 	
 	@Override
+	@Deprecated
 	public void clearElevatedPermissions() {
 		if(elevatedPermissions.get()==null) {
 			throw new IllegalStateException("No session in context to elevate permissions on");
@@ -92,16 +94,19 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	}
 	
 	@Override
+	@Deprecated
 	public void setupSystemContext() {
 		setCurrentSession(sessionService.getSystemSession(), Locale.getDefault());
 	}
 	
 	@Override
+	@Deprecated
 	public void setupSystemContext(Realm realm) {
 		setCurrentSession(sessionService.getSystemSession(), realm, Locale.getDefault());
 	}
 	
 	@Override
+	@Deprecated
 	public void setupSystemContext(Principal principal) {
 		if(Objects.isNull(principal)) {
 			throw new IllegalStateException("Principal object cannot be null when starting a System context");
@@ -110,16 +115,19 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	}
 	
 	@Override
+	@Deprecated
 	public void setCurrentSession(Session session, Locale locale) {
 		setCurrentSession(session, session.getCurrentRealm(), locale);
 	}
 	
 	@Override
+	@Deprecated
 	public void setCurrentSession(Session session, Realm realm, Locale locale) {
 		setCurrentSession(session, realm, session.getCurrentPrincipal(), locale);
 	}
 	
 	@Override
+	@Deprecated
 	public void setCurrentSession(Session session, Realm realm, Principal principal, Locale locale) {
 		if(log.isDebugEnabled()) {
 			log.debug("Setting current session context " + session.getId());
@@ -226,6 +234,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	}
 
 	@Override
+	@Deprecated
 	public void clearPrincipalContext() {
 		
 		if(currentSession.get() != null) {

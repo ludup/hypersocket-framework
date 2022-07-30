@@ -20,6 +20,7 @@ import com.hypersocket.attributes.role.RoleAttributeCategoryColumns;
 import com.hypersocket.attributes.role.RoleAttributeCategoryService;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.json.ResourceList;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.json.SelectOption;
@@ -48,6 +49,7 @@ public class RoleAttributeCategoryController extends AbstractAttributeCategoryCo
 			"application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableAttributeCategories(final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return super.tableAttributeCategories(request);
@@ -58,6 +60,7 @@ public class RoleAttributeCategoryController extends AbstractAttributeCategoryCo
 			"application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<RoleAttributeCategory> createOrUpdateAttributeCategory(HttpServletRequest request,
 			HttpServletResponse response, @RequestBody AbstractCategoryUpdate attributeCategory)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
@@ -69,6 +72,7 @@ public class RoleAttributeCategoryController extends AbstractAttributeCategoryCo
 			"application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<RoleAttributeCategory> deleteAttributeCategory(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
@@ -80,6 +84,7 @@ public class RoleAttributeCategoryController extends AbstractAttributeCategoryCo
 			"application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<SelectOption> getCategories(HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return super.getCategories(request);

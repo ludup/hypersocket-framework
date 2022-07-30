@@ -15,6 +15,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRepository;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.util.ArrayValueHashMap;
 
 
 public abstract class AbstractUsernameAuthenticator implements Authenticator {
@@ -36,10 +37,10 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 	
 	@Override
 	public AuthenticatorResult authenticate(AuthenticationState state,
-			@SuppressWarnings("rawtypes") Map parameters)
+			Map<String, String[]> parameters)
 			throws AccessDeniedException {
 
-		String username = AuthenticationUtils.getRequestParameter(parameters,
+		String username = ArrayValueHashMap.getSingle(parameters,
 				UsernameAndPasswordTemplate.USERNAME_FIELD);
 
 		if (username == null || username.equals("")) {
@@ -52,7 +53,7 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 		
 		Realm selectedRealm = null;
 		if(parameters.containsKey("realm")) {
-			String name = (String)parameters.get("realm");
+			String name =  ArrayValueHashMap.getSingle(parameters, "realm");
 			if(systemConfigurationService.getBooleanValue("auth.enforceSelectRealm")) {
 				if(StringUtils.isBlank(name)) {
 					state.setLastErrorIsResourceKey(true);
@@ -114,11 +115,11 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 	}
 	
 	protected abstract boolean processFields(AuthenticationState state,
-			@SuppressWarnings("rawtypes") Map parameters);
+			Map<String, String[]> parameters);
 
 	protected abstract AuthenticatorResult verifyCredentials(AuthenticationState state,
 			Principal principal, 
-			@SuppressWarnings("rawtypes") Map parameters);
+			Map<String, String[]> parameters);
 	
 	public boolean isHidden() {
 		return false;

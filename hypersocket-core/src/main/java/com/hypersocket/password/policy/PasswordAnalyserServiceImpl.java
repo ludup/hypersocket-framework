@@ -121,42 +121,38 @@ public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Ser
 
 		// Check the password doesn't contain any dictionary words
 		if (!characteristics.getContainDictionaryWord()) {
-			systemConfigurationService.setupSystemContext();
-			int minWordLength;
-			boolean matchAlphaOnly;
-			try {
+			try(var c = systemConfigurationService.tryWithSystemContext()) {
+				int minWordLength;
+				boolean matchAlphaOnly;
 				minWordLength = systemConfigurationService.getIntValue("dictionary.minWordLength");
 				matchAlphaOnly = systemConfigurationService.getBooleanValue("dictionary.matchAlphaOnly");
-			}
-			finally {
-				systemConfigurationService.clearPrincipalContext();
-			}
-			
-			// Break up the passphrase into what look like words
-			StringBuilder bui = new StringBuilder();
-			List<String> words = new ArrayList<String>();
-			for (char ch : password) {
-				if ((matchAlphaOnly && Character.isLetter(ch)) || (!matchAlphaOnly && !Character.isWhitespace(ch))) {
-					bui.append(ch);
- 				} else {
-					if (bui.length() > 0) {
-						words.add(bui.toString());
-						bui.setLength(0);
+				
+				// Break up the passphrase into what look like words
+				StringBuilder bui = new StringBuilder();
+				List<String> words = new ArrayList<String>();
+				for (char ch : password) {
+					if ((matchAlphaOnly && Character.isLetter(ch)) || (!matchAlphaOnly && !Character.isWhitespace(ch))) {
+						bui.append(ch);
+	 				} else {
+						if (bui.length() > 0) {
+							words.add(bui.toString());
+							bui.setLength(0);
+						}
 					}
 				}
-			}
-			if (bui.length() > 0) {
-				words.add(bui.toString());
-				bui.setLength(0);
-			}
-
-			// Now look for those words
-			for (String word : words) {
-				// Minimum of 4 letter words
-				if (word.length() >= minWordLength) {
-					if (dictionaryService.containsWord(locale, word)) {
-						throw new PasswordPolicyException(PasswordPolicyException.Type.containsDictionaryWords, 
-								strength, i18nService.getResource("password.policy.contains.dictionary.word", locale));
+				if (bui.length() > 0) {
+					words.add(bui.toString());
+					bui.setLength(0);
+				}
+	
+				// Now look for those words
+				for (String word : words) {
+					// Minimum of 4 letter words
+					if (word.length() >= minWordLength) {
+						if (dictionaryService.containsWord(locale, word)) {
+							throw new PasswordPolicyException(PasswordPolicyException.Type.containsDictionaryWords, 
+									strength, i18nService.getResource("password.policy.contains.dictionary.word", locale));
+						}
 					}
 				}
 			}

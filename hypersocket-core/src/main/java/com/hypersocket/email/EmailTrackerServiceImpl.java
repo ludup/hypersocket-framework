@@ -1,5 +1,6 @@
 package com.hypersocket.email;
 
+import java.io.IOException;
 import java.util.Date;
 
 import javax.annotation.PostConstruct;
@@ -28,7 +29,7 @@ import com.hypersocket.utils.FileUtils;
 @Service
 public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl implements EmailTrackerService {
 
-	static Logger log = LoggerFactory.getLogger(EmailTrackerServiceImpl.class);
+	private final static Logger log = LoggerFactory.getLogger(EmailTrackerServiceImpl.class);
 	
 	@Autowired
 	private EmailTrackerRepository repository;
@@ -46,7 +47,7 @@ public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl im
 	private SystemConfigurationService systemConfigurationService; 
 	
 	@Autowired
-	FileUploadService fileService;
+	private FileUploadService fileService;
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -56,9 +57,7 @@ public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl im
 	@Override
 	public String generateNonTrackingUri(String uuid, Realm realm) throws AccessDeniedException {
 		
-		elevatePermissions(SystemPermission.SYSTEM);
-		
-		try {
+		try(var c = tryWithElevatedPermissions(SystemPermission.SYSTEM)) {
 			String externalHostname = realmService.getRealmHostname(realm);
 			if(StringUtils.isBlank(externalHostname)) {
 				externalHostname = configurationService.getValue(realm,"email.externalHostname");
@@ -84,8 +83,9 @@ public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl im
 			} catch (ResourceNotFoundException  e) {
 				return "#";
 			}
-		} finally {
-			clearElevatedPermissions();
+		}
+		catch(IOException ioe) {
+			return "#";
 		}
 		
 	}
@@ -93,9 +93,7 @@ public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl im
 	@Override
 	public String generateTrackingUri(String uuid, String subject, String name, String emailAddress, Realm realm) throws AccessDeniedException{
 		
-		elevatePermissions(SystemPermission.SYSTEM);
-		
-		try {
+		try(var c = tryWithElevatedPermissions(SystemPermission.SYSTEM)) {
 			Principal principal = null;
 			try {
 				principal = realmService.getPrincipalByEmail(realm, emailAddress);
@@ -124,11 +122,9 @@ public class EmailTrackerServiceImpl extends AbstractAuthenticatedServiceImpl im
 						receipt.getId(),
 						upload.getFileName());
 			}
-		} catch (ResourceNotFoundException e) {
+		} catch (IOException | ResourceNotFoundException e) {
 			return "#";
-		} finally {
-			clearElevatedPermissions();
-		}
+		} 
 		
 	}
 	

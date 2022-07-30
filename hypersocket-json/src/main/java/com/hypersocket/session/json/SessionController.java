@@ -21,6 +21,7 @@ import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.AuthenticationSuccessResult;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.RequestStatus;
@@ -52,75 +53,56 @@ public class SessionController extends ResourceController {
 	@RequestMapping(value = "session/touch", method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public AuthenticationResult touch(HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-
-		try {
-			return getSuccessfulResult(sessionUtils.touchSession(request, response));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return getSuccessfulResult(sessionUtils.touchSession(request, response));
 	}
 
 	@RequestMapping(value = "session/peek", method = { RequestMethod.GET }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public AuthenticationResult peek(HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		Session session = sessionUtils.getSession(request);
-		setupAuthenticatedContext(session, sessionUtils.getLocale(request));
-		try {
-			return getSuccessfulResult(session);
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return getSuccessfulResult(session);
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "session/switchRealm/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public AuthenticationResult switchRealm(HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws UnauthorizedException, AccessDeniedException, ResourceNotFoundException,
 					SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+		Session session = sessionUtils.getActiveSession(request);
 
-		try {
-			Session session = sessionUtils.getActiveSession(request);
+		Realm realm = realmService.getRealmById(id);
 
-			Realm realm = realmService.getRealmById(id);
-
-			if (realm == null) {
-				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidRealm", id);
-			}
-
-			sessionService.switchRealm(session, realm);
-
-			return getSuccessfulResult(session, "info=" + I18N.getResource(sessionUtils.getLocale(request),
-					AuthenticationService.RESOURCE_BUNDLE, "info.inRealm", realm.getName()), "");
-		} finally {
-			clearAuthenticatedContext();
+		if (realm == null) {
+			throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidRealm", id);
 		}
+
+		sessionService.switchRealm(session, realm);
+
+		return getSuccessfulResult(session, "info=" + I18N.getResource(sessionUtils.getLocale(request),
+				AuthenticationService.RESOURCE_BUNDLE, "info.inRealm", realm.getName()), "");
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "session/switchRole/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<Role> switchRole(HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws UnauthorizedException, AccessDeniedException, ResourceNotFoundException,
 					SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceStatus<Role>(sessionService.switchRole(getCurrentSession(), id));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceStatus<Role>(sessionService.switchRole(getCurrentSession(), id));
 	}
 
 	@RequestMapping(value = "session/switchLanguage/{lang}", method = RequestMethod.GET, produces = {
@@ -160,116 +142,96 @@ public class SessionController extends ResourceController {
 	@RequestMapping(value = "session/impersonate/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus impersonateUser(HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws UnauthorizedException, AccessDeniedException, ResourceNotFoundException,
 					SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+		Session session = sessionUtils.getActiveSession(request);
 
-		try {
-			Session session = sessionUtils.getActiveSession(request);
+		Principal principal = realmService.getPrincipalById(getCurrentRealm(), id);
 
-			Principal principal = realmService.getPrincipalById(getCurrentRealm(), id);
-
-			if (principal == null) {
-				throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidPrincipal",
-						id);
-			}
-
-			sessionService.switchPrincipal(session, principal);
-
-			request.getSession().setAttribute("flash", "success=" + I18N.getResource(sessionUtils.getLocale(request),
-					SessionService.RESOURCE_BUNDLE, "info.impersonatingPrincipal", principal.getName()));
-
-			return new RequestStatus();
-		} finally {
-			clearAuthenticatedContext();
+		if (principal == null) {
+			throw new ResourceNotFoundException(AuthenticationService.RESOURCE_BUNDLE, "error.invalidPrincipal",
+					id);
 		}
+
+		sessionService.switchPrincipal(session, principal);
+
+		request.getSession().setAttribute("flash", "success=" + I18N.getResource(sessionUtils.getLocale(request),
+				SessionService.RESOURCE_BUNDLE, "info.impersonatingPrincipal", principal.getName()));
+
+		return new RequestStatus();
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "session/logoff/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus logoffUser(HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") String id) throws UnauthorizedException, AccessDeniedException,
 					ResourceNotFoundException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-
-		try {
-			Session currentSession = sessionUtils.getActiveSession(request);
-			Session logoffSession = sessionService.getSession(id);
-			if (currentSession.equals(logoffSession)) {
-				return new RequestStatus(false, "error.cannotRemoveCurrentSession");
-			}
-
-			sessionService.closeSession(logoffSession);
-
-			return new RequestStatus(true,
-					I18N.getResource(sessionUtils.getLocale(request), SessionServiceImpl.RESOURCE_BUNDLE,
-							"info.sessionClosed", logoffSession.getCurrentPrincipal().getName()));
-		} finally {
-			clearAuthenticatedContext();
+		Session currentSession = sessionUtils.getActiveSession(request);
+		Session logoffSession = sessionService.getSession(id);
+		if (currentSession.equals(logoffSession)) {
+			return new RequestStatus(false, "error.cannotRemoveCurrentSession");
 		}
+
+		sessionService.closeSession(logoffSession);
+
+		return new RequestStatus(true,
+				I18N.getResource(sessionUtils.getLocale(request), SessionServiceImpl.RESOURCE_BUNDLE,
+						"info.sessionClosed", logoffSession.getCurrentPrincipal().getName()));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "session/revert", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus impersonateEnd(HttpServletRequest request, HttpServletResponse response)
 			throws UnauthorizedException, AccessDeniedException, ResourceNotFoundException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+		Session session = sessionUtils.getActiveSession(request);
 
-		try {
-			Session session = sessionUtils.getActiveSession(request);
+		sessionService.revertPrincipal(session);
 
-			sessionService.revertPrincipal(session);
+		request.getSession().setAttribute("flash", "success=" + I18N.getResource(sessionUtils.getLocale(request),
+				SessionService.RESOURCE_BUNDLE, "info.revertedPrincipal", session.getCurrentPrincipal().getName()));
 
-			request.getSession().setAttribute("flash", "success=" + I18N.getResource(sessionUtils.getLocale(request),
-					SessionService.RESOURCE_BUNDLE, "info.revertedPrincipal", session.getCurrentPrincipal().getName()));
-
-			return new RequestStatus();
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new RequestStatus();
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "session/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableResources(final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
+		return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
+			@Override
+			public Column getColumn(String col) {
+				return SessionColumns.valueOf(col.toUpperCase());
+			}
 
-				@Override
-				public Column getColumn(String col) {
-					return SessionColumns.valueOf(col.toUpperCase());
-				}
+			@Override
+			public List<?> getPage(String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting)
+					throws UnauthorizedException, AccessDeniedException {
+				
+				return sessionService.searchResourcesWithStateParameters(sessionUtils.getCurrentRealm(request), searchPattern, start,
+						length, sorting, sessionStateParams);
+			}
 
-				@Override
-				public List<?> getPage(String searchColumn, String searchPattern, int start, int length, ColumnSort[] sorting)
-						throws UnauthorizedException, AccessDeniedException {
-					
-					return sessionService.searchResourcesWithStateParameters(sessionUtils.getCurrentRealm(request), searchPattern, start,
-							length, sorting, sessionStateParams);
-				}
-
-				@Override
-				public Long getTotalCount(String searchColumn, String searchPattern) throws UnauthorizedException, AccessDeniedException {
-					return sessionService.getResourceCount(sessionUtils.getCurrentRealm(request), searchPattern);
-				}
-			});
-		} finally {
-			clearAuthenticatedContext();
-		}
+			@Override
+			public Long getTotalCount(String searchColumn, String searchPattern) throws UnauthorizedException, AccessDeniedException {
+				return sessionService.getResourceCount(sessionUtils.getCurrentRealm(request), searchPattern);
+			}
+		});
 	}
 	
 	
@@ -277,36 +239,22 @@ public class SessionController extends ResourceController {
 	@RequestMapping(value = "session/geoInfoByCountry", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<Map<String, Long>> geoInfoByCountry(final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-
-		try {
-			
-			return new ResourceStatus<Map<String, Long>>(sessionService.getSessionGeoInfoByCountryCount());
-			
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceStatus<Map<String, Long>>(sessionService.getSessionGeoInfoByCountryCount());
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "session/geoInfoByRegion/{countryCode}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<Map<String, Long>> geoInfoByRegion(final HttpServletRequest request, HttpServletResponse response, @PathVariable("countryCode") String countryCode)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-
-		try {
-			
-			return new ResourceStatus<Map<String, Long>>(sessionService.getSessionGeoInfoByRegionCount(countryCode));
-			
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceStatus<Map<String, Long>>(sessionService.getSessionGeoInfoByRegionCount(countryCode));
 	}
 
 }

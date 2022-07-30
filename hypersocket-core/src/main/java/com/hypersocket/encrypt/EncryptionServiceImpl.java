@@ -7,12 +7,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.ApplicationContextServiceImpl;
-import com.hypersocket.context.SystemContextRequired;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
@@ -43,7 +44,8 @@ public class EncryptionServiceImpl implements EncryptionService {
 	}
 
 	@Override
-	@SystemContextRequired
+	@AuthenticatedContext(system = true)
+	@EventListener
 	public void onContextStartedEvent(ContextStartedEvent event) {
 		
 		try {

@@ -48,7 +48,7 @@ import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class ContentHandlerImpl extends HttpRequestHandler implements ContentHandler {
 
-	private static Logger log = LoggerFactory.getLogger(ContentHandlerImpl.class);
+	private static Logger LOG = LoggerFactory.getLogger(ContentHandlerImpl.class);
 	
 	public static final String CONTENT_INPUTSTREAM = "ContentInputStream";
 	
@@ -150,10 +150,19 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 		SessionService sessionService = ApplicationContextServiceImpl.getInstance().getBean(SessionService.class);
 		
 		Session session = sessionUtils.getActiveSession(request);
-		
 		if(Objects.nonNull(session)) {
-			sessionService.setCurrentSession(sessionUtils.getActiveSession(request), sessionUtils.getLocale(request));
+			try(var c = sessionService.tryAs(sessionUtils.getActiveSession(request), sessionUtils.getLocale(request))) {
+				doHandleRequest(request, response, sessionService, session);
+			}
 		}
+		else {
+			doHandleRequest(request, response, sessionService, session);	
+		}
+
+    }
+
+	protected void doHandleRequest(HttpServletRequest request, HttpServletResponse response,
+			SessionService sessionService, Session session) throws IOException, FileNotFoundException {
 		try {
 			
 			if (request.getMethod() != HttpMethod.GET.toString()) {
@@ -172,22 +181,22 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			
 			String basePath = getBasePath();
 			
-			if(log.isDebugEnabled()) {
-				log.debug("Resolving " + getResourceName() + " resource in " + basePath + ": " + request.getRequestURI());
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Resolving " + getResourceName() + " resource in " + basePath + ": " + request.getRequestURI());
 			}
 			
 			int status = getResourceStatus(path);
 
 			if(status!=HttpStatus.SC_OK) {
-				if(log.isDebugEnabled()) {
-					log.debug("Resource error in " + basePath + " [" + status + "]: " + request.getRequestURI());
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("Resource error in " + basePath + " [" + status + "]: " + request.getRequestURI());
 				}
 				response.sendError(status);
 				return;
 			}
 			
-			if(log.isDebugEnabled()) {
-				log.debug("Resource found in " + basePath + ": " + request.getRequestURI());
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Resource found in " + basePath + ": " + request.getRequestURI());
 			}
 			
 			// Cache Validation
@@ -196,8 +205,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				if (etag != null && !etag.equals("")) {
 					String currentEtag = DigestUtils.sha256Hex(path + "|" + getLastModified(path));
 					if(currentEtag.equals(etag)) {
-						if(log.isDebugEnabled()) {
-							log.debug(path + " has not been modified");
+						if(LOG.isDebugEnabled()) {
+							LOG.debug(path + " has not been modified");
 						}
 						sendNotModified(response);
 						return;
@@ -215,8 +224,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 						long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
 						long fileLastModifiedSeconds = getLastModified(path) / 1000;
 						if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
-							if(log.isDebugEnabled()) {
-								log.debug(path + " has not been modified since " + HypersocketUtils.formatDateTime(ifModifiedSinceDate));
+							if(LOG.isDebugEnabled()) {
+								LOG.debug(path + " has not been modified since " + HypersocketUtils.formatDateTime(ifModifiedSinceDate));
 							}
 							sendNotModified(response);
 						    return;
@@ -281,13 +290,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 					response.sendRedirect(path);
 				}
 			}
-		} finally {
-			if(Objects.nonNull(session)) {
-				sessionService.clearPrincipalContext();
-			}
 		}
-
-    }
+	}
 	
 	protected String processReplacements(String path) {
 		path = path.replace("${apiPath}", server.getApiPath());

@@ -77,7 +77,7 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 		defaultProperties.add("description");
 
 		if(Boolean.getBoolean("logonbox.forceAdminPassword")) {
-			sessionService.executeInSystemContext(()->{
+			sessionService.runAsSystemContext(()->{
 				try {
 				
 					Principal principal = realmService.getPrincipalByName(realmService.getSystemRealm(), System.getProperty("logonbox.existingAdminUsername", "admin"), PrincipalType.USER);

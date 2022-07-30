@@ -26,6 +26,7 @@ import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.ConfigurationPermission;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.json.MultiselectElement;
 import com.hypersocket.json.RequestStatus;
@@ -104,168 +105,131 @@ public class ServerController extends AuthenticatedController {
 	@RequestMapping(value = "server/restart/{delay}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus restartServer(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable Long delay)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getActiveSession(request), 
-				sessionUtils.getLocale(request));
+		permissionService.verifyPermission(getCurrentPrincipal(),
+				PermissionStrategy.INCLUDE_IMPLIED,
+				SystemPermission.SYSTEM_ADMINISTRATION);
+
+		server.restart(delay);
 		
-		try {
-			permissionService.verifyPermission(getCurrentPrincipal(),
-					PermissionStrategy.INCLUDE_IMPLIED,
-					SystemPermission.SYSTEM_ADMINISTRATION);
-	
-			server.restart(delay);
-			
-			return new RequestStatus(true, I18N.getResource(
-					sessionUtils.getLocale(request),
-					HypersocketServer.RESOURCE_BUNDLE, "message.restartIn", delay));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new RequestStatus(true, I18N.getResource(
+				sessionUtils.getLocale(request),
+				HypersocketServer.RESOURCE_BUNDLE, "message.restartIn", delay));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "server/shutdown/{delay}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus shutdownServer(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable Long delay)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getActiveSession(request), 
-				sessionUtils.getLocale(request));
+		permissionService.verifyPermission(getCurrentPrincipal(),
+				PermissionStrategy.INCLUDE_IMPLIED,
+				SystemPermission.SYSTEM_ADMINISTRATION);
+
+		server.shutdown(delay);
 		
-		try {
-			permissionService.verifyPermission(getCurrentPrincipal(),
-					PermissionStrategy.INCLUDE_IMPLIED,
-					SystemPermission.SYSTEM_ADMINISTRATION);
-	
-			server.shutdown(delay);
-			
-			return new RequestStatus(true, I18N.getResource(
-					sessionUtils.getLocale(request),
-					HypersocketServer.RESOURCE_BUNDLE, "message.shutdownIn", delay));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new RequestStatus(true, I18N.getResource(
+				sessionUtils.getLocale(request),
+				HypersocketServer.RESOURCE_BUNDLE, "message.shutdownIn", delay));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "server/sslProtocols", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<MultiselectElement> getSslProtocols(
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException {
 
-		setupAuthenticatedContext(sessionUtils.getActiveSession(request), 
-				sessionUtils.getLocale(request));
-		
-		try {
-			permissionService.verifyPermission(
-					getCurrentPrincipal(),
-					PermissionStrategy.INCLUDE_IMPLIED,
-					ConfigurationPermission.READ);
-	
-			List<MultiselectElement> protocols = new ArrayList<MultiselectElement>();
-	
-			for (String proto : server.getSSLProtocols()) {
-				protocols.add(new MultiselectElement(proto, proto));
-			}
-			return new ResourceList<MultiselectElement>(protocols);
-		} finally {
-			clearAuthenticatedContext();
+		permissionService.verifyPermission(
+				getCurrentPrincipal(),
+				PermissionStrategy.INCLUDE_IMPLIED,
+				ConfigurationPermission.READ);
+
+		List<MultiselectElement> protocols = new ArrayList<MultiselectElement>();
+
+		for (String proto : server.getSSLProtocols()) {
+			protocols.add(new MultiselectElement(proto, proto));
 		}
+		return new ResourceList<MultiselectElement>(protocols);
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "server/timezones", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<MultiselectElement> getTimezones(
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException {
 
-		setupAuthenticatedContext(sessionUtils.getActiveSession(request), 
-				sessionUtils.getLocale(request));
-		
-		try {
-			List<MultiselectElement> protocols = new ArrayList<MultiselectElement>();
-			for (String id : TimeZone.getAvailableIDs()) {
-				protocols.add(new MultiselectElement(id, id));
-			}
-			return new ResourceList<MultiselectElement>(protocols);
-		} finally {
-			clearAuthenticatedContext();
+		List<MultiselectElement> protocols = new ArrayList<MultiselectElement>();
+		for (String id : TimeZone.getAvailableIDs()) {
+			protocols.add(new MultiselectElement(id, id));
 		}
+		return new ResourceList<MultiselectElement>(protocols);
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "server/sslCiphers", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<MultiselectElement> getSslCiphers(
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException {
 
-		setupAuthenticatedContext(sessionUtils.getActiveSession(request), 
-				sessionUtils.getLocale(request));
+		permissionService.verifyPermission(
+				getCurrentPrincipal(),
+				PermissionStrategy.INCLUDE_IMPLIED,
+				ConfigurationPermission.READ);
 		
-		try {
-			permissionService.verifyPermission(
-					getCurrentPrincipal(),
-					PermissionStrategy.INCLUDE_IMPLIED,
-					ConfigurationPermission.READ);
-			
-			List<MultiselectElement> ciphers = new ArrayList<MultiselectElement>();
-	
-			for (String proto : server.getSSLCiphers()) {
-				ciphers.add(new MultiselectElement(proto, proto));
-			}
-			return new ResourceList<MultiselectElement>(ciphers);
-		} finally {
-			clearAuthenticatedContext();
+		List<MultiselectElement> ciphers = new ArrayList<MultiselectElement>();
+
+		for (String proto : server.getSSLCiphers()) {
+			ciphers.add(new MultiselectElement(proto, proto));
 		}
+		return new ResourceList<MultiselectElement>(ciphers);
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "server/networkInterfaces", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<MultiselectElement> getCategories(
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException {
+		
+		permissionService.verifyPermission(
+				getCurrentPrincipal(),
+				PermissionStrategy.INCLUDE_IMPLIED,
+				ConfigurationPermission.READ);
+		
+		List<MultiselectElement> interfaces = new ArrayList<MultiselectElement>();
 
-		setupAuthenticatedContext(sessionUtils.getActiveSession(request), 
-				sessionUtils.getLocale(request));
-		
 		try {
-			permissionService.verifyPermission(
-					getCurrentPrincipal(),
-					PermissionStrategy.INCLUDE_IMPLIED,
-					ConfigurationPermission.READ);
-			
-			List<MultiselectElement> interfaces = new ArrayList<MultiselectElement>();
-	
-			try {
-				Enumeration<NetworkInterface> nets = NetworkInterface
-						.getNetworkInterfaces();
-				for (NetworkInterface netint : Collections.list(nets)) {
-					Enumeration<InetAddress> inetAddresses = netint
-							.getInetAddresses();
-					for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-						interfaces.add(new MultiselectElement(inetAddress
-								.getHostAddress(), inetAddress.getHostAddress()));
-					}
+			Enumeration<NetworkInterface> nets = NetworkInterface
+					.getNetworkInterfaces();
+			for (NetworkInterface netint : Collections.list(nets)) {
+				Enumeration<InetAddress> inetAddresses = netint
+						.getInetAddresses();
+				for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+					interfaces.add(new MultiselectElement(inetAddress
+							.getHostAddress(), inetAddress.getHostAddress()));
 				}
-			} catch (SocketException e) {
 			}
-			return new ResourceList<MultiselectElement>(interfaces);
-		
-		} finally {
-			clearAuthenticatedContext();
+		} catch (SocketException e) {
 		}
+		return new ResourceList<MultiselectElement>(interfaces);
 	}
 }

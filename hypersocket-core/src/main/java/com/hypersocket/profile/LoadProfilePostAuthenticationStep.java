@@ -53,7 +53,7 @@ public class LoadProfilePostAuthenticationStep implements
 	}
 
 	@Override
-	public AuthenticatorResult process(final AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters)
+	public AuthenticatorResult process(final AuthenticationState state, Map<String, String[]> parameters)
 			throws AccessDeniedException {
 		try {
 			

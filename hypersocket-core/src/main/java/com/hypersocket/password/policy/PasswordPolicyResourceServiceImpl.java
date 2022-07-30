@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AuthenticationService;
-import com.hypersocket.auth.AuthenticationServiceAdapter;
+import com.hypersocket.auth.AuthenticationServiceListener;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.ChangePasswordTemplate;
 import com.hypersocket.dashboard.OverviewWidget;
@@ -126,7 +126,7 @@ public class PasswordPolicyResourceServiceImpl extends AbstractAssignableResourc
 
 		EntityResourcePropertyStore.registerResourceService(PasswordPolicyResource.class, repository);
 
-		authenticationService.registerListener(new AuthenticationServiceAdapter() {
+		authenticationService.registerListener(new AuthenticationServiceListener() {
 			@Override
 			public void modifyTemplate(AuthenticationState state, FormTemplate template, boolean authenticated) {
 				if (template instanceof ChangePasswordTemplate) {

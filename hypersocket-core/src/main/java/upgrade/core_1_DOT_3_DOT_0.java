@@ -9,7 +9,6 @@ package upgrade;
 
 
 import org.quartz.JobDataMap;
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +21,13 @@ import com.hypersocket.session.SessionService;
 
 public class core_1_DOT_3_DOT_0 implements Runnable {
 
-	static Logger log = LoggerFactory.getLogger(core_1_DOT_3_DOT_0.class);
+	private final static Logger log = LoggerFactory.getLogger(core_1_DOT_3_DOT_0.class);
 
 	@Autowired
-	ClusteredSchedulerService schedulerService;
+	private ClusteredSchedulerService schedulerService;
 	
 	@Autowired
-	SessionService sessionService;
+	private SessionService sessionService;
 	
 	@Override
 	public void run() {
@@ -44,11 +43,12 @@ public class core_1_DOT_3_DOT_0 implements Runnable {
 				data.put("firstRun", true);
 				
 				Session session = sessionService.getSystemSession();
-				sessionService.setCurrentSession(session, session.getCurrentRealm(), session.getCurrentPrincipal(), null);
-				schedulerService.scheduleNow(SessionReaperJob.class, "firstRunSessionReaperJob", data);
+				try(var c = sessionService.tryAs(session, session.getCurrentRealm(), session.getCurrentPrincipal(), null)) {
+					schedulerService.scheduleNow(SessionReaperJob.class, "firstRunSessionReaperJob", data);
+				}
 			}
 
-		} catch (SchedulerException e) {
+		} catch (Exception e) {
 			log.error("Failed to schedule session reaper job", e);
 		} 
 		

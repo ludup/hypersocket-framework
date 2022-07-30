@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -39,47 +40,28 @@ public class PermissionsController extends ResourceController {
 	@Autowired
 	private PermissionService permissionService;
 
-	
 	@AuthenticationRequired
 	@RequestMapping(value = "permissions/permission/{resourceKey}/", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<Permission> getPermission(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String resourceKey)
 			throws AccessDeniedException, UnauthorizedException {
-
-		permissionService.setCurrentSession(
-				sessionUtils.getActiveSession(request),
-				sessionUtils.getLocale(request));
-		try {
-		
-			return new ResourceStatus<Permission>(
-					permissionService.getPermission(resourceKey));
-		
-		} finally {
-			permissionService.clearPrincipalContext();
-		}
-		
+		return new ResourceStatus<Permission>(
+				permissionService.getPermission(resourceKey));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "permissions/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public PermissionList listPermissions(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException {
 		
-		permissionService.setCurrentSession(
-				sessionUtils.getActiveSession(request),
-				sessionUtils.getLocale(request));
-		try {
-		
-			return new PermissionList(permissionService.allPermissions());
-		
-		} finally {
-			permissionService.clearPrincipalContext();
-		}
+		return new PermissionList(permissionService.allPermissions());
 	}
 	
 	
@@ -88,36 +70,29 @@ public class PermissionsController extends ResourceController {
 			produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus verifyPermissions(HttpServletRequest request,
 											  HttpServletResponse response,
 											  @PathVariable String[] permissions) throws AccessDeniedException,
 			UnauthorizedException, IOException {
 
-		permissionService.setCurrentSession(
-				sessionUtils.getActiveSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			String mode = request.getParameter("mode");
-			if(StringUtils.isBlank(mode)) {
-				mode = "any";
-			}
-			List<Permission> perms = permissionService.getPermissions(permissions);
-			if(perms == null) {
-				throw new IOException("Unexpected permission resource key" + Arrays.toString(permissions));
-			}
+		String mode = request.getParameter("mode");
+		if(StringUtils.isBlank(mode)) {
+			mode = "any";
+		}
+		List<Permission> perms = permissionService.getPermissions(permissions);
+		if(perms == null) {
+			throw new IOException("Unexpected permission resource key" + Arrays.toString(permissions));
+		}
 
-			if("any".equals(mode)) {
-				return new RequestStatus(permissionService.hasAnyPermission(getCurrentPrincipal(),
-						perms.toArray(new Permission[0])));
-			}else if ("all".equals(mode)){
-				return new RequestStatus(permissionService.hasAllPermissions(getCurrentPrincipal(),
-						perms.toArray(new Permission[0])));
-			} else{
-				return new RequestStatus(false);
-			}
-
-		} finally {
-			permissionService.clearPrincipalContext();
+		if("any".equals(mode)) {
+			return new RequestStatus(permissionService.hasAnyPermission(getCurrentPrincipal(),
+					perms.toArray(new Permission[0])));
+		}else if ("all".equals(mode)){
+			return new RequestStatus(permissionService.hasAllPermissions(getCurrentPrincipal(),
+					perms.toArray(new Permission[0])));
+		} else{
+			return new RequestStatus(false);
 		}
 	}
 }

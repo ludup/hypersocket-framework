@@ -380,11 +380,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 			log.info("Scheduling one time only or repetitive automation resources");
 		}
 
-		sessionService.executeInSystemContext(new Runnable() {
-
-			@Override
-			public void run() {
-			
+		sessionService.runAsSystemContext(() ->  {
 				for (Realm realm : realmRepository.allRealms()) {
 					for (AutomationResource resource : repository.getResources(realm)) {
 						if (!resource.isDailyJob()) {
@@ -392,10 +388,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 						}
 					}
 				}
-		
 				scheduleDailyJobs();
-			}
-			
 		});
 	}
 

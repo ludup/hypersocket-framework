@@ -23,17 +23,14 @@ public class core_2_DOT_1_DOT_2 implements Runnable {
 	static Logger log = LoggerFactory.getLogger(core_2_DOT_1_DOT_2.class);
 
 	@Autowired
-	LocalUserRepository userRepository;
+	private LocalUserRepository userRepository;
 	
 	@Autowired
-	SessionService sessionService; 
+	private SessionService sessionService;
+	
 	@Override
 	public void run() {
-		sessionService.executeInSystemContext(new Runnable() {
-			public void run() {
-				doit();
-			}
-		});
+		sessionService.runAsSystemContext(() -> doit());
 	}
 	
 	public void doit() {

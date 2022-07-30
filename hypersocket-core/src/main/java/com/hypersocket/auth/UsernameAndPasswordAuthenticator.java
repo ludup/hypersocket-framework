@@ -20,6 +20,7 @@ import com.hypersocket.realm.LogonException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractResourceRepository;
+import com.hypersocket.util.ArrayValueHashMap;
 
 @Component
 public class UsernameAndPasswordAuthenticator extends
@@ -39,8 +40,7 @@ public class UsernameAndPasswordAuthenticator extends
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
-	public FormTemplate createTemplate(AuthenticationState state, Map params) {
+	public FormTemplate createTemplate(AuthenticationState state, Map<String, String[]> params) {
 		return new UsernameAndPasswordTemplate(state, params, getLogonRealms(state),
 				realmService.getDefaultRealm());
 	}
@@ -77,8 +77,8 @@ public class UsernameAndPasswordAuthenticator extends
 
 	@Override
 	protected boolean processFields(AuthenticationState state,
-			@SuppressWarnings("rawtypes") Map parameters) {
-		String password = AuthenticationUtils.getRequestParameter(parameters,
+			Map<String, String[]> parameters) {
+		String password = ArrayValueHashMap.getSingle(parameters,
 				UsernameAndPasswordTemplate.PASSWORD_FIELD);
 
 		if (password == null || password.equals("")) {
@@ -95,9 +95,9 @@ public class UsernameAndPasswordAuthenticator extends
 
 	@Override
 	protected AuthenticatorResult verifyCredentials(AuthenticationState state,
-			Principal principal, @SuppressWarnings("rawtypes") Map parameters) {
+			Principal principal, Map<String, String[]> parameters) {
 
-		String password = AuthenticationUtils.getRequestParameter(parameters,
+		String password = ArrayValueHashMap.getSingle(parameters,
 				UsernameAndPasswordTemplate.PASSWORD_FIELD);
 
 		if (password == null || password.equals("")) {

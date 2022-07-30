@@ -20,11 +20,10 @@ public interface Authenticator {
 	String getResourceKey();
 
 	AuthenticatorResult authenticate(AuthenticationState state,
-			@SuppressWarnings("rawtypes") Map parameters)
+			Map<String, String[]> parameters)
 			throws AccessDeniedException;
 
-	@SuppressWarnings("rawtypes")
-	FormTemplate createTemplate(AuthenticationState state, Map params) ;
+	FormTemplate createTemplate(AuthenticationState state, Map<String, String[]> params) ;
 
 	String getResourceBundle();
 

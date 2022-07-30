@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -425,12 +426,19 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			idx = path.lastIndexOf(".");
 			path = path.substring(0, idx).replace("/", ".");
 			try {
-				@SuppressWarnings("unchecked")
-				Class<? extends Runnable> clazz = (Class<? extends Runnable>) getClass().getClassLoader()
-						.loadClass(path);
-				Runnable r = clazz.getConstructor().newInstance();
-				springContext.getAutowireCapableBeanFactory().autowireBean(r);
-				r.run();
+				Class<?> clazz = (Class<?>) getClass().getClassLoader().loadClass(path);
+				if(Callable.class.isAssignableFrom(clazz)) {
+					@SuppressWarnings("unchecked")
+					Callable<?> r = ((Class<Callable<?>>)clazz).getConstructor().newInstance();
+					springContext.getAutowireCapableBeanFactory().autowireBean(r);
+					r.call();
+				}
+				else {
+					@SuppressWarnings("unchecked")
+					Runnable r = ((Class<Runnable>)clazz).getConstructor().newInstance();
+					springContext.getAutowireCapableBeanFactory().autowireBean(r);
+					r.run();
+				}
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}

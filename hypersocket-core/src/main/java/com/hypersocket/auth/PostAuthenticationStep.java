@@ -20,7 +20,7 @@ public interface PostAuthenticationStep {
 	
 	String getResourceKey();
 	
-	AuthenticatorResult process(AuthenticationState state, @SuppressWarnings("rawtypes") Map parameters) throws AccessDeniedException;
+	AuthenticatorResult process(AuthenticationState state, Map<String, String[]> parameters) throws AccessDeniedException;
 	
 	FormTemplate createTemplate(AuthenticationState state) throws AccessDeniedException;
 

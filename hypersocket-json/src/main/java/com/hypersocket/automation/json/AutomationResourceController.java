@@ -30,6 +30,7 @@ import com.hypersocket.automation.AutomationResource;
 import com.hypersocket.automation.AutomationResourceColumns;
 import com.hypersocket.automation.AutomationResourceService;
 import com.hypersocket.automation.AutomationResourceServiceImpl;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NServiceImpl;
 import com.hypersocket.json.PropertyItem;
@@ -74,114 +75,91 @@ public class AutomationResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "automations/list", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<AutomationResource> getResources(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<AutomationResource>(
-					resourceService.getResources(sessionUtils
-							.getCurrentRealm(request)));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<AutomationResource>(
+				resourceService.getResources(sessionUtils
+						.getCurrentRealm(request)));
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableNetworkResources(
 			final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
+		return processDataTablesRequest(request,
+				new BootstrapTablePageProcessor() {
 
-		try {
-			return processDataTablesRequest(request,
-					new BootstrapTablePageProcessor() {
+					@Override
+					public Column getColumn(String col) {
+						return AutomationResourceColumns.valueOf(col.toUpperCase());
+					}
 
-						@Override
-						public Column getColumn(String col) {
-							return AutomationResourceColumns.valueOf(col.toUpperCase());
-						}
+					@Override
+					public List<?> getPage(String searchColumn, String searchPattern, int start,
+							int length, ColumnSort[] sorting)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.searchResources(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern, start, length, sorting);
+					}
 
-						@Override
-						public List<?> getPage(String searchColumn, String searchPattern, int start,
-								int length, ColumnSort[] sorting)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.searchResources(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern, start, length, sorting);
-						}
-
-						@Override
-						public Long getTotalCount(String searchColumn, String searchPattern)
-								throws UnauthorizedException,
-								AccessDeniedException {
-							return resourceService.getResourceCount(
-									sessionUtils.getCurrentRealm(request),
-									searchColumn, searchPattern);
-						}
-					});
-		} finally {
-			clearAuthenticatedContext();
-		}
+					@Override
+					public Long getTotalCount(String searchColumn, String searchPattern)
+							throws UnauthorizedException,
+							AccessDeniedException {
+						return resourceService.getResourceCount(
+								sessionUtils.getCurrentRealm(request),
+								searchColumn, searchPattern);
+					}
+				});
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/tasks", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<TaskDefinition> getActions(HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			List<TaskDefinition> result = new ArrayList<>();
-			for(TaskDefinition task : resourceService.getTasks()) {
-				result.add(task);
-			}
-			return new ResourceList<>(result);
-		} finally {
-			clearAuthenticatedContext();
+		List<TaskDefinition> result = new ArrayList<>();
+		for(TaskDefinition task : resourceService.getTasks()) {
+			result.add(task);
 		}
+		return new ResourceList<>(result);
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/template/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getResourceTemplate(
 			HttpServletRequest request,
 			@PathVariable String resourceKey) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resourceKey));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resourceKey));
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/run/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus runResource(
 			HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			AutomationResource resource = resourceService.getResourceById(id);
 			resourceService.runNow(resource);
@@ -193,59 +171,44 @@ public class AutomationResourceController extends AbstractTriggerController {
 			return new RequestStatus(false, I18N.getResource(sessionUtils.getLocale(request), 
 					AutomationResourceServiceImpl.RESOURCE_BUNDLE,
 					"error.failedToStartAutomation", ex.getMessage()));
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/properties/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<PropertyCategory> getActionTemplate(
 			HttpServletRequest request, @PathVariable Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			AutomationResource resource = resourceService.getResourceById(id);
-			return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		AutomationResource resource = resourceService.getResourceById(id);
+		return new ResourceList<PropertyCategory>(resourceService.getPropertyTemplate(resource));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/automation/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public AutomationResource getResource(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") Long id)
 			throws AccessDeniedException, UnauthorizedException,
 			ResourceNotFoundException, SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return resourceService.getResourceById(id);
-		} finally {
-			clearAuthenticatedContext();
-		}
-
+		return resourceService.getResourceById(id);
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/automation", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<AutomationResource> createOrUpdateResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody ResourceUpdate resource)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			AutomationResource newResource;
@@ -278,8 +241,6 @@ public class AutomationResourceController extends AbstractTriggerController {
 		} catch (ResourceException e) {
 			return new ResourceStatus<AutomationResource>(false,
 					e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -287,14 +248,13 @@ public class AutomationResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "automations/trigger", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<AutomationResource> createOrUpdateTriggerResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestBody TriggerResourceUpdate resource)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			AutomationResource parentResource = null;
@@ -348,8 +308,6 @@ public class AutomationResourceController extends AbstractTriggerController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<AutomationResource>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -358,13 +316,12 @@ public class AutomationResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "automations/automation/{id}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<AutomationResource> deleteResource(
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			AutomationResource resource = resourceService.getResourceById(id);
@@ -386,8 +343,6 @@ public class AutomationResourceController extends AbstractTriggerController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<AutomationResource>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
@@ -397,13 +352,12 @@ public class AutomationResourceController extends AbstractTriggerController {
 
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<TriggerResource> deleteTrigger(
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id, @PathVariable("triggerId") Long triggerId) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 			TriggerResource resource = triggerService.getResourceById(triggerId);
@@ -455,8 +409,6 @@ public class AutomationResourceController extends AbstractTriggerController {
 
 		} catch (ResourceException e) {
 			return new ResourceStatus<TriggerResource>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -465,13 +417,12 @@ public class AutomationResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "automations/bulk", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public RequestStatus deleteResources(HttpServletRequest request,
 												HttpServletResponse response,
 												@RequestBody Long[] ids)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			
 			if(ids == null) {
@@ -495,8 +446,6 @@ public class AutomationResourceController extends AbstractTriggerController {
 			
 		} catch (Exception e) {
 			return new RequestStatus(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -504,26 +453,21 @@ public class AutomationResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "automations/export/{id}", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
+	@AuthenticatedContext
 	public String exportResource(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable("id") long id)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, ResourceNotFoundException,
 			ResourceExportException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			Thread.sleep(1000);
 		} catch (Exception e) {
 		}
-		try {
-			response.setHeader("Content-Disposition", "attachment; filename=\""
-					+ resourceService.getResourceCategory() + "-"
-					+ resourceService.getResourceById(id).getName() + ".json\"");
-			return resourceService.exportResoure(id);
-		} finally {
-			clearAuthenticatedContext();
-		}
+		response.setHeader("Content-Disposition", "attachment; filename=\""
+				+ resourceService.getResourceCategory() + "-"
+				+ resourceService.getResourceById(id).getName() + ".json\"");
+		return resourceService.exportResoure(id);
 
 	}
 
@@ -531,24 +475,19 @@ public class AutomationResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "automations/export", method = RequestMethod.GET, produces = { "text/plain" })
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
+	@AuthenticatedContext
 	public String exportAll(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException,
 			ResourceNotFoundException, ResourceExportException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			Thread.sleep(1000);
 		} catch (Exception e) {
 		}
-		try {
-			response.setHeader("Content-Disposition", "attachment; filename=\""
-					+ resourceService.getResourceCategory() + ".json\"");
-			return resourceService.exportAllResoures();
-		} finally {
-			clearAuthenticatedContext();
-		}
+		response.setHeader("Content-Disposition", "attachment; filename=\""
+				+ resourceService.getResourceCategory() + ".json\"");
+		return resourceService.exportAllResoures();
 
 	}
 
@@ -556,15 +495,13 @@ public class AutomationResourceController extends AbstractTriggerController {
 	@RequestMapping(value = "automations/import", method = { RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<AutomationResource> importAll(
 			HttpServletRequest request, HttpServletResponse response,
 			@RequestParam(value = "file") MultipartFile jsonFile,
 			@RequestParam(required = false) boolean dropExisting)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-		
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 			Thread.sleep(2000);
 		} catch (Exception e) {
@@ -589,8 +526,6 @@ public class AutomationResourceController extends AbstractTriggerController {
 					sessionUtils.getLocale(request),
 					I18NServiceImpl.USER_INTERFACE_BUNDLE,
 					"resource.import.failure", e.getMessage()));
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 }

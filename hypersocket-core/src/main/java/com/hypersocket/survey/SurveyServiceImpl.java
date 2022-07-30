@@ -91,24 +91,15 @@ public class SurveyServiceImpl implements SurveyService {
 	@Override
 	@EventListener
 	public void contextStarted(ContextStartedEvent started) {
-		realmService.setupSystemContext();
-		try {
+		realmService.runAsSystemContext(() -> {
 			ready.addAll(Arrays.asList(ResourceUtils
 					.explodeValues(realmService.getRealmProperty(realmService.getSystemRealm(), SURVEYS_READY))));
 			getSurveyConfiguration();
 			scheduler = Executors.newSingleThreadScheduledExecutor();
 			scheduler.scheduleAtFixedRate(() -> {
-				realmService.setupSystemContext();
-				try {
-					getSurveyConfiguration();
-				}
-				finally {
-					realmService.clearPrincipalContext();
-				}
+				realmService.runAsSystemContext(() -> getSurveyConfiguration());
 			}, 1, 1, TimeUnit.DAYS);
-		} finally {
-			realmService.clearPrincipalContext();
-		}
+		});
 
 	}
 

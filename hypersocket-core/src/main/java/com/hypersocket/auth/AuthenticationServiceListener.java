@@ -6,17 +6,22 @@ import com.hypersocket.json.input.FormTemplate;
 
 public interface AuthenticationServiceListener {
 
-	void modifyTemplate(AuthenticationState state, FormTemplate template, boolean authenticated);
+	default void modifyTemplate(AuthenticationState state, FormTemplate template, boolean authenticated) {
+	}
 
-	void postProcess(Authenticator authenticator, AuthenticatorResult result, AuthenticationState state,
-			@SuppressWarnings("rawtypes") Map parameterMap);
+	default void postProcess(Authenticator authenticator, AuthenticatorResult result, AuthenticationState state,
+			Map<String, String[]> parameterMap) {
+	}
 
-	void preProcess(Authenticator authenticator, AuthenticationState state,
-			@SuppressWarnings("rawtypes") Map parameterMap);
+	default void preProcess(Authenticator authenticator, AuthenticationState state,
+			Map<String, String[]> parameterMap) {
+	}
 
-	void preProcess(PostAuthenticationStep currentPostAuthenticationStep, AuthenticationState state,
-			@SuppressWarnings("rawtypes") Map parameterMap);
+	default void preProcess(PostAuthenticationStep currentPostAuthenticationStep, AuthenticationState state,
+			Map<String, String[]> parameterMap) {
+	}
 
-	void postProcess(PostAuthenticationStep currentPostAuthenticationStep, AuthenticatorResult result,
-			AuthenticationState state, @SuppressWarnings("rawtypes") Map parameterMap);
+	default void postProcess(PostAuthenticationStep currentPostAuthenticationStep, AuthenticatorResult result,
+			AuthenticationState state, Map<String, String[]> parameterMap) {
+	}
 }

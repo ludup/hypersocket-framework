@@ -25,9 +25,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import com.hypersocket.auth.AuthenticationService;
-import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.servlet.request.Request;
-import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
 
 @Component
@@ -89,25 +87,16 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 		@Override
 		protected void writeInternal(Object object, Type type, HttpOutputMessage outputMessage)
 				throws IOException, HttpMessageNotWritableException {
-			
-			boolean invokedContext = false;
 			if(sessionUtils.hasActiveSession(Request.get())) {
-				try {
-					authenticationService.setCurrentSession(
-							sessionUtils.getSession(Request.get()),
-							sessionUtils.getLocale(Request.get()));
-					invokedContext = true;
-				} catch (UnauthorizedException | SessionTimeoutException e) {
+				try(var c = authenticationService.tryAs(sessionUtils.getSession(Request.get()),
+						sessionUtils.getLocale(Request.get()))) {
+					super.writeInternal(object, type, outputMessage);
+					return;
 				}
-				
-			}
-			try {
-				super.writeInternal(object, type, outputMessage);	
-			} finally {
-				if(invokedContext) {
-					authenticationService.clearPrincipalContext();
+				catch (Exception e) {
 				}
 			}
+			super.writeInternal(object, type, outputMessage);	
 		}
 		
 	}

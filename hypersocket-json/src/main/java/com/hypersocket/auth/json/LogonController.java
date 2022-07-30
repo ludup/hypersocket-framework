@@ -10,9 +10,7 @@ package com.hypersocket.auth.json;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +31,7 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationServiceImpl;
 import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.FallbackAuthenticationRequired;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.ResourceStatus;
@@ -148,17 +147,12 @@ public class LogonController extends AuthenticatedController {
 			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext(system = true)
 	public AuthenticationState switchLogonRealm(
 			HttpServletRequest request, HttpServletResponse response,
 			@PathVariable String scheme,
 			@PathVariable String realm) throws AccessDeniedException, UnsupportedEncodingException {
-		realmService.setupSystemContext(); 
-		try {
-			return resetAuthenticationState(request, response, scheme, realmService.getRealmByName(realm));
-		}
-		finally {
-			realmService.clearPrincipalContext();
-		}
+		return resetAuthenticationState(request, response, scheme, realmService.getRealmByName(realm));
 	}
 
 	@RequestMapping(value = "logon", method = { RequestMethod.GET,
@@ -175,11 +169,10 @@ public class LogonController extends AuthenticatedController {
 			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext(realmHost = true)
 	public AuthenticationResult logon(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String scheme)
 			throws AccessDeniedException, UnauthorizedException, IOException, RedirectException {
-
-		setupSystemContext(realmService.getRealmByHost(request.getServerName()));
 
 		AuthenticationState state = AuthenticationState.getCurrentState(request);
 
@@ -197,13 +190,9 @@ public class LogonController extends AuthenticatedController {
 			if(state==null) {
 				session = sessionUtils.touchSession(request, response);
 				if (session != null) {
-					try {
-						return getSuccessfulResult(session, flash, 
-								state!=null ? state.getHomePage() : "",
-								request, response);
-					} finally {
-						clearAuthenticatedContext();
-					}
+					return getSuccessfulResult(session, flash, 
+							state!=null ? state.getHomePage() : "",
+							request, response);
 				}
 			}
 		} catch (AccessDeniedException e) {
@@ -258,8 +247,7 @@ public class LogonController extends AuthenticatedController {
 			}
 
 			
-			boolean success = authenticationService.logon(state,
-					decodeParameters(request.getParameterMap()));
+			boolean success = authenticationService.logon(state, request.getParameterMap());
 			
 			if(state.getSession()!=null) {
 				attachSession(state.getSession(), request, response);
@@ -270,33 +258,30 @@ public class LogonController extends AuthenticatedController {
 
 				// We have authenticated!
 				AuthenticationState.clearCurrentState(request);
+
+				try(var c = tryAs(state.getSession(), sessionUtils.getLocale(request))) {
 				
-				setupAuthenticatedContext(state.getSession(), sessionUtils.getLocale(request));
+					List<String> schemes = Arrays.asList(
+							configurationService.getValues(state.getRealm(), "session.altHomePage.onSchemes"));
+					
+					boolean performRedirect =  state.getScheme().supportsHomeRedirect() 
+							|| (schemes.contains(state.getScheme().getResourceKey())
+									&& !permissionService.hasAdministrativePermission(state.getPrincipal()));
 				
-				List<String> schemes = Arrays.asList(
-						configurationService.getValues(state.getRealm(), "session.altHomePage.onSchemes"));
-				
-				boolean performRedirect =  state.getScheme().supportsHomeRedirect() 
-						|| (schemes.contains(state.getScheme().getResourceKey())
-								&& !permissionService.hasAdministrativePermission(state.getPrincipal()));
-			
-				if(requireRedirect && performRedirect && StringUtils.isNotBlank(state.getHomePage())) {
-					throw new RedirectException(state.getHomePage());
-				}
-				
-				checkRedirect(request,response);
+					if(requireRedirect && performRedirect && StringUtils.isNotBlank(state.getHomePage())) {
+						throw new RedirectException(state.getHomePage());
+					}
+					
+					checkRedirect(request,response);
 				 
 				
-				try {
 					return getSuccessfulResult(
 							state.getSession(),
 							flash,
 							performRedirect ? state.getHomePage() : "",
 							request, 
 							response);
-				} finally {
-					clearAuthenticatedContext();
-				}
+				} 
 			} else {
 
 				if(!success && requireRedirect) {
@@ -341,7 +326,7 @@ public class LogonController extends AuthenticatedController {
 							state.getScheme().getLastButtonResourceKey(),
 							state.getRealm(),
 							getNonce(request),
-							state.getRequestParameters());
+							request.getParameterMap());
 				}
 				finally {
 					if(!success && state.isAuthenticationComplete() && !state.hasNextStep())
@@ -425,54 +410,25 @@ public class LogonController extends AuthenticatedController {
 		}
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Map decodeParameters(Map parameterMap) throws UnsupportedEncodingException {
-		
-		Map params = new HashMap();
-		for(Object key : parameterMap.keySet()) {
-			Object val = parameterMap.get(key);
-			if(val instanceof String[]) {
-				String[] arr = (String[])val;
-				if(arr.length == 1) {
-					params.put(key, arr[0]);
-				} else {
-					for(int i=0;i<arr.length;i++) {
-						arr[i] = arr[i];
-					}
-					params.put(key, arr);
-				}
-			} else if(val instanceof String) {
-				params.put(key, (String)val);
-			}
-		}
-		return params;
-	}
-
 	@RequestMapping(value = "logoff", method = { RequestMethod.GET,
 			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<String> logoff(HttpServletRequest request, HttpServletResponse response)
 			throws UnauthorizedException, SessionTimeoutException, AccessDeniedException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			Session session = sessionUtils.touchSession(request, response);
-			if (session != null && sessionService.isLoggedOn(session, false)) {
-				sessionService.closeSession(session);
-				request.getSession().removeAttribute(
-						SessionUtils.AUTHENTICATED_SESSION);
-			}
-			
-			/**
-			 * Logoff will return to default page.
-			 */
-			return new ResourceStatus<String>("/");
-		} finally {
-			clearAuthenticatedContext();
+		Session session = sessionUtils.touchSession(request, response);
+		if (session != null && sessionService.isLoggedOn(session, false)) {
+			sessionService.closeSession(session);
+			request.getSession().removeAttribute(
+					SessionUtils.AUTHENTICATED_SESSION);
 		}
+		
+		/**
+		 * Logoff will return to default page.
+		 */
+		return new ResourceStatus<String>("/");
 	}
 
 	private void attachSession(Session session, HttpServletRequest request, HttpServletResponse response) {
@@ -490,7 +446,7 @@ public class LogonController extends AuthenticatedController {
 	public void attachSession(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String authCode,
 			@PathVariable String sessionId, @RequestParam String location)
-			throws UnauthorizedException, SessionTimeoutException, RedirectException {
+			throws UnauthorizedException, SessionTimeoutException, RedirectException, IOException {
 
 		Session session = sessionService.getSession(sessionId);
 		Session authSession = sessionService.getSessionTokenResource(authCode, Session.class);
@@ -499,10 +455,7 @@ public class LogonController extends AuthenticatedController {
 			throw new UnauthorizedException();
 		}
 		
-		setupAuthenticatedContext(session,
-				sessionUtils.getLocale(request));
-
-		try {
+		try(var c = tryAs(session, sessionUtils.getLocale(request))) {
 			attachSession(authSession, request, response);
 			
 			if(StringUtils.isEmpty(location)) {
@@ -511,35 +464,27 @@ public class LogonController extends AuthenticatedController {
 			} else {
 				throw new RedirectException(location);
 			}
-		} finally {
-			clearAuthenticatedContext();
-		}
+		} 
 	}
 	
 	@RequestMapping(value = "logoff/{id}", method = { RequestMethod.GET,
 			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<String> logoffSession(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String id)
 			throws UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-
-		try {
-			Session session = sessionService.getSession(id);
-			if (session != null && sessionService.isLoggedOn(session, false)) {
-				sessionService.closeSession(session);
-			}
-			
-			/**
-			 * Logoff will return to default page.
-			 */
-			return new ResourceStatus<String>("/");
-		} finally {
-			clearAuthenticatedContext();
+		Session session = sessionService.getSession(id);
+		if (session != null && sessionService.isLoggedOn(session, false)) {
+			sessionService.closeSession(session);
 		}
+		
+		/**
+		 * Logoff will return to default page.
+		 */
+		return new ResourceStatus<String>("/");
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session,

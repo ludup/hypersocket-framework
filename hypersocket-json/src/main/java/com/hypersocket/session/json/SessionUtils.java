@@ -377,11 +377,10 @@ public class SessionUtils {
 					return new Locale(c.getValue());
 				}
 			}
-			configurationService.setupSystemContext();
 			try {
-				return configurationService.getDefaultLocale();
-			} finally {
-				configurationService.clearPrincipalContext();
+				return configurationService.callAsSystemContext(() -> configurationService.getDefaultLocale());
+			} catch (Exception e) {
+				throw new IllegalStateException("Failed to get default locale.", e);
 			}
 		} else {
 			return new Locale((String) request.getSession().getAttribute(

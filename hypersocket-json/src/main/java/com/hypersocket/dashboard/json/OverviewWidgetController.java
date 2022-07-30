@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.dashboard.Link;
 import com.hypersocket.dashboard.OverviewWidget;
 import com.hypersocket.dashboard.OverviewWidgetService;
@@ -33,54 +34,41 @@ public class OverviewWidgetController extends ResourceController {
 	@RequestMapping(value = "overview/widgets/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<OverviewWidget> getWidgets(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String resourceKey) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<OverviewWidget>(service.getWidgets(resourceKey));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<OverviewWidget>(service.getWidgets(resourceKey));
 	}
 
 	@AuthenticationRequired
 	@RequestMapping(value = "overview/allWidgets/{resourceKey}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<OverviewWidget> getAllWidgets(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String resourceKey) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<OverviewWidget>(service.getAllWidgets(resourceKey));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<OverviewWidget>(service.getAllWidgets(resourceKey));
 	}
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "overview/articles", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<Link> getArticles(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
 
 				return new ResourceList<Link>(service.getLinks());
 			
 		} catch (ResourceException e) {
 			return new ResourceList<Link>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -88,20 +76,15 @@ public class OverviewWidgetController extends ResourceController {
 	@RequestMapping(value = "overview/videos", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<Link> getVideos(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
-
-				return new ResourceList<Link>(service.getVideos());
-			
+			return new ResourceList<Link>(service.getVideos());
 		} catch (ResourceException e) {
 			return new ResourceList<Link>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -109,20 +92,15 @@ public class OverviewWidgetController extends ResourceController {
 	@RequestMapping(value = "overview/documentation", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<Link> getDocumentation(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
-
-				return new ResourceList<Link>(service.getDocumentation());
-			
+			return new ResourceList<Link>(service.getDocumentation());
 		} catch (ResourceException e) {
 			return new ResourceList<Link>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 	
@@ -130,20 +108,14 @@ public class OverviewWidgetController extends ResourceController {
 	@RequestMapping(value = "overview/firstSteps", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceList<Link> getFirstSteps(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
 		try {
-
-				return new ResourceList<Link>(service.getFirstSteps());
-			
+			return new ResourceList<Link>(service.getFirstSteps());
 		} catch (ResourceException e) {
 			return new ResourceList<Link>(false, e.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 }

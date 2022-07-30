@@ -44,47 +44,35 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request),
-				sessionUtils.getLocale(request));
-		try {
-			return new ResourceList<A>(
-					service.getResources(sessionUtils
-							.getCurrentRealm(request)));
-		} finally {
-			clearAuthenticatedContext();
-		}
+		return new ResourceList<A>(
+				service.getResources(sessionUtils
+						.getCurrentRealm(request)));
 	}
 
 	public BootstrapTableResult<?> tableAttributes(final HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
-		try {
-			return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
+		return processDataTablesRequest(request, new BootstrapTablePageProcessor() {
 
-				@Override
-				public Column getColumn(String col) {
-					return AbstractAttributeController.this.getColumn(col);
-				}
+			@Override
+			public Column getColumn(String col) {
+				return AbstractAttributeController.this.getColumn(col);
+			}
 
-				@Override
-				public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
-						ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
-					return service.searchResources(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern,
-							start, length, sorting);
+			@Override
+			public List<?> getPage(String searchColumn, String searchPattern, int start, int length,
+					ColumnSort[] sorting) throws UnauthorizedException, AccessDeniedException {
+				return service.searchResources(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern,
+						start, length, sorting);
 
-				}
+			}
 
-				@Override
-				public Long getTotalCount(String searchColumn, String searchPattern)
-						throws UnauthorizedException, AccessDeniedException {
-					return service.getResourceCount(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern);
-				}
-			});
-		} finally {
-			clearAuthenticatedContext();
-		}
+			@Override
+			public Long getTotalCount(String searchColumn, String searchPattern)
+					throws UnauthorizedException, AccessDeniedException {
+				return service.getResourceCount(sessionUtils.getCurrentRealm(request), searchColumn, searchPattern);
+			}
+		});
 	}
 
 	protected abstract Column getColumn(String col);
@@ -93,7 +81,6 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 			AttributeUpdate attribute)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
 
 			A newAttribute;
@@ -118,15 +105,11 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 		} catch (ResourceException e) {
 			return new ResourceStatus<A>(false, e.getMessage());
 
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 
 	public ResourceStatus<A> deleteAttribute(HttpServletRequest request, HttpServletResponse response, Long id)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
-
-		setupAuthenticatedContext(sessionUtils.getSession(request), sessionUtils.getLocale(request));
 		try {
 
 			A attribute = service.getResourceById(id);
@@ -144,8 +127,6 @@ public abstract class AbstractAttributeController<A extends AbstractAttribute<C>
 
 		} catch (ResourceException ex) {
 			return new ResourceStatus<A>(false, ex.getMessage());
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 }

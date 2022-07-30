@@ -20,6 +20,7 @@ import com.hypersocket.attributes.role.RoleAttributeColumns;
 import com.hypersocket.attributes.role.RoleAttributeService;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.session.json.SessionTimeoutException;
@@ -45,6 +46,7 @@ public class RoleAttributeController extends AbstractAttributeController<RoleAtt
 	@RequestMapping(value = "roleAttributes/table", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public BootstrapTableResult<?> tableAttributes(final HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return super.tableAttributes(request);
@@ -55,6 +57,7 @@ public class RoleAttributeController extends AbstractAttributeController<RoleAtt
 			"application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<RoleAttribute> createOrUpdateAttribute(HttpServletRequest request,
 			HttpServletResponse response, @RequestBody AttributeUpdate attribute)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
@@ -66,6 +69,7 @@ public class RoleAttributeController extends AbstractAttributeController<RoleAtt
 			"application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<RoleAttribute> deleteAttribute(HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("id") Long id) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		return super.deleteAttribute(request, response, id);
