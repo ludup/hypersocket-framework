@@ -29,84 +29,80 @@ import com.hypersocket.session.json.SessionUtils;
 @Component
 public class ControllerInterceptor implements HandlerInterceptor {
 
-	private static Logger log = LoggerFactory.getLogger(ControllerInterceptor.class);
-	
+	private final static Logger log = LoggerFactory.getLogger(ControllerInterceptor.class);
+
 	@Autowired
 	private AuthenticationService authenticationService;
 	@Autowired
 	private SessionUtils sessionUtils;
 	@Autowired
 	private RealmService realmService;
-	
+
 	@SuppressWarnings({ "deprecation", "removal" })
 	@Override
-	public boolean preHandle(HttpServletRequest request,
-			HttpServletResponse response, Object handler) throws Exception {
-		if(handler instanceof HandlerMethod) {
-			
-			HandlerMethod method = (HandlerMethod) handler;
-			
-			if(method.getMethodAnnotation(AuthenticationRequired.class)!=null
-					|| method.getMethodAnnotation(AuthenticationRequiredButDontTouchSession.class)!=null) {
-				
-				if(!(method.getBean() instanceof AuthenticatedController)) {
-					if(log.isErrorEnabled()) {
-						log.error("Use of @AuthenticationRequired annotation is restricted to subclass of AuthenticatedController");
-					}
-					throw new IllegalArgumentException("Use of @AuthenticationRequired annotation is restricted to subclass of AuthenticatedController");
-				}
-				
-				AuthenticatedController contrl = (AuthenticatedController) method.getBean();
-				
-				if(method.getMethodAnnotation(AuthenticationRequiredButDontTouchSession.class)!=null) {
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+			throws Exception {
+		if (handler instanceof HandlerMethod) {
+
+			var method = (HandlerMethod) handler;
+
+			if (method.getMethodAnnotation(AuthenticationRequired.class) != null
+					|| method.getMethodAnnotation(AuthenticationRequiredButDontTouchSession.class) != null) {
+
+				checkMethod(method);
+
+				var contrl = (AuthenticatedController) method.getBean();
+				if (method.getMethodAnnotation(AuthenticationRequiredButDontTouchSession.class) != null) {
 					contrl.getSessionUtils().getSession(request);
 				} else {
 					contrl.getSessionUtils().touchSession(request, response);
 				}
 			}
-			
-			var acAnnotation = method.getMethodAnnotation(AuthenticatedContext.class); 
-			if(acAnnotation !=null) {
-				
-				if(!(method.getBean() instanceof AuthenticatedController)) {
-					if(log.isErrorEnabled()) {
-						log.error("Use of @AuthenticatedContext annotation is restricted to subclass of AuthenticatedController");
-					}
-					throw new IllegalArgumentException("Use of @AuthenticatedContext annotation is restricted to subclass of AuthenticatedController");
-				}
-				AuthenticatedController contrl = (AuthenticatedController) method.getBean();
 
-				if(acAnnotation.preferActive() && sessionUtils.hasActiveSession(request)) {
-					if(acAnnotation.system())
+			var acAnnotation = method.getMethodAnnotation(AuthenticatedContext.class);
+			if (acAnnotation != null) {
+				checkMethod(method);
+
+				var contrl = (AuthenticatedController) method.getBean();
+				if (acAnnotation.preferActive() && sessionUtils.hasActiveSession(request)) {
+					if (acAnnotation.system())
 						contrl.setupSystemContext(sessionUtils.getActiveSession(request).getCurrentRealm());
 					else
-						contrl.setCurrentSession(sessionUtils.getActiveSession(request), sessionUtils.getLocale(request));
-				}
-				else if(acAnnotation.currentRealmOrDefault()) {
+						contrl.setCurrentSession(sessionUtils.getActiveSession(request),
+								sessionUtils.getLocale(request));
+				} else if (acAnnotation.currentRealmOrDefault()) {
 					contrl.setupSystemContext(sessionUtils.getCurrentRealmOrDefault(request));
-				}
-				else if(acAnnotation.system()) {
+				} else if (acAnnotation.system()) {
 					contrl.setupSystemContext();
-				} 
-				else if(acAnnotation.realmHost()) {
-					contrl.setupSystemContext(realmService.getRealmByHost(request.getServerName()));					
-				}
-				else {
-					contrl.setCurrentSession(sessionUtils.getSession(request), sessionUtils.getCurrentRealm(request), sessionUtils.getPrincipal(request), sessionUtils.getLocale(request));
+				} else if (acAnnotation.realmHost()) {
+					contrl.setupSystemContext(realmService.getRealmByHost(request.getServerName()));
+				} else {
+					contrl.setCurrentSession(sessionUtils.getSession(request), sessionUtils.getCurrentRealm(request),
+							sessionUtils.getPrincipal(request), sessionUtils.getLocale(request));
 				}
 			}
-		} 
-		
+		}
+
 		return true;
-		
+
+	}
+
+	protected void checkMethod(HandlerMethod method) {
+		if (!(method.getBean() instanceof AuthenticatedController)) {
+			if (log.isErrorEnabled()) {
+				log.error(
+						"Use of @AuthenticationRequired annotation is restricted to subclass of AuthenticatedController");
+			}
+			throw new IllegalArgumentException(
+					"Use of @AuthenticationRequired annotation is restricted to subclass of AuthenticatedController");
+		}
 	}
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public void postHandle(HttpServletRequest request,
-			HttpServletResponse response, Object handler,
+	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
 			ModelAndView modelAndView) throws Exception {
-		
+
 		var clearContext = false;
 		if (handler instanceof HandlerMethod) {
 			HandlerMethod method = (HandlerMethod) handler;
@@ -118,21 +114,20 @@ public class ControllerInterceptor implements HandlerInterceptor {
 				authenticationService.clearPrincipalContext();
 			} else {
 				if (log.isInfoEnabled()) {
-					log.info(String.format(
-							"%s %s was expecting to have a context to clear, but there was none. This suggests a coding error.",
-							request.getMethod(), request.getRequestURI()));
+					log.info(
+							"{} {} was expecting to have a context to clear, but there was none. This suggests a coding error.",
+							request.getMethod(), request.getRequestURI());
 				}
 			}
 		} else if (authenticationService.hasAuthenticatedContext() || authenticationService.hasSessionContext()) {
-			log.warn(String.format("%s %s still has authenticated/session context. Will remove", request.getMethod(),
-					request.getRequestURI()));
+			log.warn("{} {} still has authenticated/session context. Will remove", request.getMethod(),
+					request.getRequestURI());
 			authenticationService.clearPrincipalContext();
 		}
 	}
 
 	@Override
-	public void afterCompletion(HttpServletRequest request,
-			HttpServletResponse response, Object handler, Exception ex)
+	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
 			throws Exception {
 
 	}
