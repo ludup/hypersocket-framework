@@ -3,8 +3,10 @@ package com.hypersocket.auth;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
+import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -57,6 +59,19 @@ public interface Elevatable {
 		}
 	}
 
+	default <T> T callAsAnonymousContext(Callable<T> callable, String remoteAddress,
+			String serverName, 
+			String userAgent, 
+			Map<String, String[]> parameters)
+			throws Exception {
+		setupAnonymousContext(remoteAddress, serverName, userAgent, parameters);
+		try {
+			return callable.call();
+		} finally {
+			clearPrincipalContext();
+		}
+	}
+
 	default <T> T callWithAuthenticatedContext(Callable<T> callable, Session session, Locale locale) throws Exception {
 		setCurrentSession(session, locale);
 		try {
@@ -88,6 +103,19 @@ public interface Elevatable {
 		setCurrentSession(session, locale);
 		try {
 			runnable.run();
+		} finally {
+			clearPrincipalContext();
+		}
+	}
+
+	default void runAsAnonymousContext(Runnable r, String remoteAddress,
+			String serverName, 
+			String userAgent, 
+			Map<String, String[]> parameters)
+			throws AccessDeniedException {
+		setupAnonymousContext(remoteAddress, serverName, userAgent, parameters);
+		try {
+			r.run();
 		} finally {
 			clearPrincipalContext();
 		}
@@ -156,6 +184,13 @@ public interface Elevatable {
 
 	@Deprecated
 	void setCurrentSession(Session session, Realm realm, Principal principal, Locale locale);
+	
+	@Deprecated
+	void setupAnonymousContext(String remoteAddress,
+			String serverName, 
+			String userAgent, 
+			Map<String, String[]> parameters)
+			throws AccessDeniedException; 
 
 	@Deprecated
 	void setupSystemContext();
@@ -208,6 +243,17 @@ public interface Elevatable {
 			}
 		} finally {
 			clearPrincipalContext();
+		}
+	}
+
+	default <T> T silentlyCallAsAnonymousContext(Callable<T> callable, String remoteAddress,
+			String serverName, 
+			String userAgent, 
+			Map<String, String[]> parameters) {
+		try {
+			return callAsAnonymousContext(callable, remoteAddress, serverName, userAgent, parameters);
+		} catch (Exception e) {
+			throw new IllegalStateException("Failed to run as system context.", e);
 		}
 	}
 
@@ -307,5 +353,20 @@ public interface Elevatable {
 				clearPrincipalContext();
 			}
 		};
+	}
+
+	default Closeable tryAsAnonymousContext(String remoteAddress,
+			String serverName, 
+			String userAgent, 
+			Map<String, String[]> parameters)
+			throws AccessDeniedException {
+		setupAnonymousContext(remoteAddress, serverName, userAgent, parameters);
+		return new Closeable() {
+			@Override
+			public void close() throws IOException {
+				clearPrincipalContext();
+			}
+		};
+
 	}
 }

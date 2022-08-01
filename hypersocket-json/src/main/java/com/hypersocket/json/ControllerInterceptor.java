@@ -10,6 +10,7 @@ package com.hypersocket.json;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +71,9 @@ public class ControllerInterceptor implements HandlerInterceptor {
 					else
 						contrl.setCurrentSession(sessionUtils.getActiveSession(request),
 								sessionUtils.getLocale(request));
+				} else if(acAnnotation.anonymous()) {
+					contrl.setupAnonymousContext(request.getRemoteAddr(), request.getServerName(),
+							request.getHeader(HttpHeaders.USER_AGENT), request.getParameterMap());
 				} else if (acAnnotation.currentRealmOrDefault()) {
 					contrl.setupSystemContext(sessionUtils.getCurrentRealmOrDefault(request));
 				} else if (acAnnotation.system()) {

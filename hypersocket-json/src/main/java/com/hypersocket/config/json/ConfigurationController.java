@@ -16,7 +16,6 @@ import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,26 +116,18 @@ public class ConfigurationController extends AuthenticatedController {
 			"application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext(anonymous = true)
 	public ResourceStatus<Map<String, String>> getPropertyValues(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String resourceKeys)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		setupAnonymousContext(request.getRemoteAddr(), request.getServerName(),
-				request.getHeader(HttpHeaders.USER_AGENT), request.getParameterMap());
-
-		try {
-			String[] resources = resourceKeys.split(",");
-			Map<String, String> results = new HashMap<String, String>();
-			for (String resourceKey : resources) {
-				results.put(resourceKey,
-						configurationService.getValue(sessionUtils.getCurrentRealm(request), resourceKey));
-			}
-
-			return new ResourceStatus<Map<String, String>>(results);
-
-		} finally {
-			clearAnonymousContext();
+		var results = new HashMap<String, String>();
+		for (var resourceKey : resourceKeys.split(",")) {
+			results.put(resourceKey,
+					configurationService.getValue(sessionUtils.getCurrentRealm(request), resourceKey));
 		}
+
+		return new ResourceStatus<Map<String, String>>(results);
 	}
 
 	@AuthenticationRequired

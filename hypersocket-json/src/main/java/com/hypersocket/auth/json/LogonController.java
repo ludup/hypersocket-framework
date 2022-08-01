@@ -380,8 +380,6 @@ public class LogonController extends AuthenticatedController {
 					state.getScheme().getLastButtonResourceKey(),
 					state.getRealm(),
 					getNonce(request));
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 

@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.cache.Cache;
 import javax.cache.Cache.Entry;
@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -38,6 +37,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18NGroup;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.json.ResourceList;
@@ -63,30 +63,22 @@ public class I18NController extends AuthenticatedController {
 	
 	@RequestMapping(value="i18n/group/{group}", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
+	@AuthenticatedContext(anonymous = true)
 	public Map<String,String> getResourcesWithGroup(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response, @PathVariable String group) throws IOException, AccessDeniedException {
-		
-		setupAnonymousContext(request.getRemoteAddr(), 
-				request.getServerName(), 
-				request.getHeader(HttpHeaders.USER_AGENT),
-				request.getParameterMap());
-		try {
-			Boolean rebuildI18N = (Boolean)request.getSession().getAttribute(SessionUtils.HYPERSOCKET_REBUILD_I18N);
-			/* If the locale has just been changed, never return SC_NOT_MODIFIED, we
-			 * need to send the map for the new locale */
-			if(!Boolean.TRUE.equals(rebuildI18N) && webRequest.checkNotModified(i18nService.getLastUpdate())) {
-				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-				return null;
-			}
-			else if(Boolean.TRUE.equals(rebuildI18N)) {
-				/* Don't rebuild next time, client will have new map */
-				request.getSession().removeAttribute(SessionUtils.HYPERSOCKET_REBUILD_I18N);
-			}
-			Cache<String,String> results = i18nService.getResourceMap(sessionUtils.getLocale(request), I18NGroup.fromTitle(group));
-			results.put("LANG", sessionUtils.getLocale(request).getLanguage());
-			return serializeCache(results);
-		} finally {
-			clearAuthenticatedContext();
+		var rebuildI18N = (Boolean)request.getSession().getAttribute(SessionUtils.HYPERSOCKET_REBUILD_I18N);
+		/* If the locale has just been changed, never return SC_NOT_MODIFIED, we
+		 * need to send the map for the new locale */
+		if(!Boolean.TRUE.equals(rebuildI18N) && webRequest.checkNotModified(i18nService.getLastUpdate())) {
+			response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+			return null;
 		}
+		else if(Boolean.TRUE.equals(rebuildI18N)) {
+			/* Don't rebuild next time, client will have new map */
+			request.getSession().removeAttribute(SessionUtils.HYPERSOCKET_REBUILD_I18N);
+		}
+		var results = i18nService.getResourceMap(sessionUtils.getLocale(request), I18NGroup.fromTitle(group));
+		results.put("LANG", sessionUtils.getLocale(request).getLanguage());
+		return serializeCache(results);
 	}
 	
 	@RequestMapping(value="i18n/{locale}", method = RequestMethod.GET, produces = {"application/json"})
@@ -100,77 +92,52 @@ public class I18NController extends AuthenticatedController {
 	@RequestMapping(value="i18n/locale/{locale}/group/{group}", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
 	@ResponseStatus(value=HttpStatus.OK)
+	@AuthenticatedContext(anonymous = true)
 	public Map<String,String> getResourcesWithGroupAndLocale(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("locale") String locale, @PathVariable("group") String group) throws IOException, AccessDeniedException {
 		
-		setupAnonymousContext(request.getRemoteAddr(), 
-				request.getServerName(), 
-				request.getHeader(HttpHeaders.USER_AGENT),
-				request.getParameterMap());
-		try {
-			if(webRequest.checkNotModified(i18nService.getLastUpdate())) {
-				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-				return null;
-			}
-			Cache<String,String> results = i18nService.getResourceMap(i18nService.getLocale(locale), I18NGroup.fromTitle(group));
-			results.put("LANG", locale);
-			return serializeCache(results);
-		} finally {
-			clearAuthenticatedContext();
+		if(webRequest.checkNotModified(i18nService.getLastUpdate())) {
+			response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+			return null;
 		}
+		var results = i18nService.getResourceMap(i18nService.getLocale(locale), I18NGroup.fromTitle(group));
+		results.put("LANG", locale);
+		return serializeCache(results);
 	}
 	
 	@RequestMapping(value = "i18n/allLanguageTags", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
+	@AuthenticatedContext(anonymous = true)
 	public ResourceList<SelectOption> getAllLanguageTags(
 			WebRequest webRequest, HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, IOException {
 
-		setupAnonymousContext(request.getRemoteAddr(), 
-				request.getServerName(), 
-				request.getHeader(HttpHeaders.USER_AGENT),
-				request.getParameterMap());
-		try {
-			List<SelectOption> locales = new ArrayList<SelectOption>();
-			for (Locale l : Locale.getAvailableLocales()) {
-				String n = l.getDisplayLanguage();
-				if(StringUtils.isNotBlank(l.getDisplayCountry()) && !Objects.equals(n, l.getDisplayCountry()))
-					n += " (" + l.getDisplayCountry() + ")";
-				if(StringUtils.isNotBlank(l.getVariant()))
-					n += " [" + l.getDisplayCountry() + "]";
-				locales.add(new SelectOption(l.toLanguageTag(), n));
-			}
-			Collections.sort(locales);
-			return new ResourceList<SelectOption>(locales);
-		} finally {
-			clearAuthenticatedContext();
+		var locales = new ArrayList<SelectOption>();
+		for (var l : Locale.getAvailableLocales()) {
+			var n = l.getDisplayLanguage();
+			if(StringUtils.isNotBlank(l.getDisplayCountry()) && !Objects.equals(n, l.getDisplayCountry()))
+				n += " (" + l.getDisplayCountry() + ")";
+			if(StringUtils.isNotBlank(l.getVariant()))
+				n += " [" + l.getDisplayCountry() + "]";
+			locales.add(new SelectOption(l.toLanguageTag(), n));
 		}
+		Collections.sort(locales);
+		return new ResourceList<>(locales);
 	}
 	
 	@RequestMapping(value = "i18n/locales", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
+	@AuthenticatedContext(anonymous = true)
 	public ResourceList<SelectOption> getLocales(
 			WebRequest webRequest, HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, IOException {
 
-		setupAnonymousContext(request.getRemoteAddr(), 
-				request.getServerName(), 
-				request.getHeader(HttpHeaders.USER_AGENT),
-				request.getParameterMap());
-		try {
-			if(webRequest.checkNotModified(i18nService.getLastUpdate())) {
-				response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-				return null;
-			}
-			List<SelectOption> locales = new ArrayList<SelectOption>();
-	
-			for (Locale l : i18nService.getSupportedLocales()) {
-				locales.add(new SelectOption(l.getLanguage(), l.getDisplayLanguage()));
-			}
-			return new ResourceList<SelectOption>(locales);
-		} finally {
-			clearAuthenticatedContext();
+		if(webRequest.checkNotModified(i18nService.getLastUpdate())) {
+			response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+			return null;
 		}
+		return new ResourceList<>(i18nService.getSupportedLocales().stream()
+				.map(l -> new SelectOption(l.getLanguage(), l.getDisplayLanguage())).collect(Collectors.toList()));
 	}
 	
 	private Map<String,String> serializeCache(Cache<String,String> cache) throws JsonGenerationException, JsonMappingException, IOException {

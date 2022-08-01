@@ -935,4 +935,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 	}
 
+	@Override
+	public Realm getRealmByHost(String serverName) {
+		return realmService.getRealmByHost(serverName);
+	}
+
 }

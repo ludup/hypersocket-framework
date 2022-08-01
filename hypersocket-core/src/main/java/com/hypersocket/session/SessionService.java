@@ -138,6 +138,8 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	
 	boolean isIpStackAPIKeySet(Realm realm);
 
-	UserstackAgent lookupUserAgent(String ua) throws IOException; 
+	UserstackAgent lookupUserAgent(String ua) throws IOException;
+
+	Realm getRealmByHost(String serverName); 
 }
 
