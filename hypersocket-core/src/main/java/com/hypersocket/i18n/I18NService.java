@@ -22,6 +22,10 @@ public interface I18NService {
 	
 	void registerBundle(String bundle, I18NGroup group);
 
+	void deregisterBundle(String bundle);
+	
+	void deregisterBundle(String bundle, I18NGroup group);
+
 	Cache<String,String> getResourceMap(Locale locale);
 	
 	Cache<String, String> getResourceMap(Locale locale,  I18NGroup group);

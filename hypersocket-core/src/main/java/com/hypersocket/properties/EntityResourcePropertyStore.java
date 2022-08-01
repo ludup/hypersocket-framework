@@ -76,6 +76,10 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		findableResourceRepositories.put(clz, repository);
 	}
 	
+	public static void deregisterResourceService(Class<?> clz) {
+		findableResourceRepositories.remove(clz);
+	}
+	
 	public FindableResourceRepository<?> getRepository(Class<?> clz) {
 		return findableResourceRepositories.get(clz);
 	}

@@ -30,7 +30,7 @@ public class I18N {
 	private I18N() {
 	}
 	
-	public static boolean bundleExists(String resourceBundle) {
+	public static boolean bundleExists(ClassLoader cl, String resourceBundle) {
 
 		if (resourceBundle == null) {
 			throw new IllegalArgumentException(
@@ -44,14 +44,21 @@ public class I18N {
 
 		try {
 			ResourceBundle.getBundle(bundle, Locale.getDefault(),
-					I18N.class.getClassLoader());
+					cl);
 			return true;
 		} catch (MissingResourceException e) {
 		}
 		return false;
 	}
 
-	public static Set<String> getResourceKeys(Locale locale,
+	@Deprecated
+	public static Set<String> getResourceKeys(Locale locale, 
+			String resourceBundle) {
+		log.warn("Deprecated use of I18N.getResourceKeys() without classloader. Please use I18NService to get from a registered bundle. This call CANNOT be used in a PF4J plugin.");
+		return getResourceKeys(locale, I18N.class.getClassLoader(), resourceBundle);
+	}
+	
+	public static Set<String> getResourceKeys(Locale locale, ClassLoader cl,
 			String resourceBundle) {
 		if (resourceBundle == null) {
 			throw new IllegalArgumentException(
@@ -66,7 +73,7 @@ public class I18N {
 		Set<String> keys = new HashSet<String>();
 		try {
 			ResourceBundle rb = ResourceBundle.getBundle(bundle, locale,
-					I18N.class.getClassLoader());
+					cl);
 			keys.addAll(rb.keySet());
 		} catch (MissingResourceException e) {
 		}
@@ -97,7 +104,15 @@ public class I18N {
 				.deleteResource(locale, message.getBundle(), message.getId());
 	}
 
+	@Deprecated
 	public static String getResourceOrException(Locale locale, String resourceBundle,
+			String key, Object... arguments) {
+
+		log.warn("Deprecated use of I18N.getResourceOrException() without classloader. Please use I18NService to get from a registered bundle. This call CANNOT be used in a PF4J plugin.");
+		return getResourceOrException(locale, I18N.class.getClassLoader(), resourceBundle, key, arguments);
+	}
+
+	public static String getResourceOrException(Locale locale, ClassLoader cl, String resourceBundle,
 			String key, Object... arguments) {
 		if (key == null) {
 			throw new IllegalArgumentException("You must specify a key!");
@@ -134,7 +149,7 @@ public class I18N {
 		}
 		
 		ResourceBundle resource = ResourceBundle.getBundle(bundlePath,
-				locale, I18N.class.getClassLoader());
+				locale, cl);
 		String localizedString = resource.getString(key);
 		if (arguments == null || arguments.length == 0) {
 			return localizedString;
@@ -145,16 +160,30 @@ public class I18N {
 		return messageFormat.format(formatParameters(arguments));
 	}
 
+	@Deprecated
 	public static String getResource(Locale locale, String resourceBundle,
 			String key, Object... arguments) {
+		log.warn("Deprecated use of I18N.getResource() without classloader. Please use I18NService to get from a registered bundle. This call CANNOT be used in a PF4J plugin.");
+		return getResource(locale, I18N.class.getClassLoader(), resourceBundle, key, arguments);
+	}
+	
+	public static String getResource(Locale locale, ClassLoader cl, String resourceBundle,
+			String key, Object... arguments) {
 		try {
-			return getResourceOrException(locale, resourceBundle, key, arguments);
+			return getResourceOrException(locale, cl, resourceBundle, key, arguments);
 		} catch (MissingResourceException mre) {
 			return "Missing resource key [i18n/" + resourceBundle + "/" + key + "]";
 		}
 	}
-	
+
+	@Deprecated
 	public static String getResourceNoOveride(Locale locale, String resourceBundle,
+			String key, Object... arguments) {
+		log.warn("Deprecated use of I18N.getResourceNoOveride() without classloader. Please use I18NService to get from a registered bundle. This call CANNOT be used in a PF4J plugin.");
+		return getResourceNoOveride(locale, I18N.class.getClassLoader(), resourceBundle, key, arguments);
+	}
+	
+	public static String getResourceNoOveride(Locale locale, ClassLoader cl, String resourceBundle,
 			String key, Object... arguments) {
 		if (key == null) {
 			throw new IllegalArgumentException("You must specify a key!");
@@ -170,7 +199,7 @@ public class I18N {
 		
 		try {
 			ResourceBundle resource = ResourceBundle.getBundle(resourceBundle,
-					locale, I18N.class.getClassLoader());
+					locale, cl);
 			String localizedString = resource.getString(key);
 			if (arguments == null || arguments.length == 0) {
 				return localizedString;

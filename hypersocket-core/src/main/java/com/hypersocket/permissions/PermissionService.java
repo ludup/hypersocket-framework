@@ -32,6 +32,8 @@ public interface PermissionService extends AuthenticatedService {
 	static final String ROLE_EVERYONE = "Everyone";
 	static final String ROLE_SYSTEM_ADMINISTRATOR = "System Administrator";
 
+	void deregisterPermissionCategory(String resourceBundle, String resourceKey);
+
 	PermissionCategory registerPermissionCategory(String resourceBundle, String resourceKey);
 
 	Permission getPermission(String resourceKey);
@@ -112,6 +114,8 @@ public interface PermissionService extends AuthenticatedService {
 	Collection<PropertyCategory> getRoleProperties(Role role) throws AccessDeniedException;
 
 	Permission registerPermission(PermissionType type, PermissionCategory category);
+
+	void deregisterPermission(PermissionType type);
 
 	void grantPermission(Role everyone, Permission permission) throws AccessDeniedException, ResourceException;
 

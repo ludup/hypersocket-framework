@@ -283,6 +283,43 @@ public class EventServiceImpl implements EventService {
 	}
 
 	@Override
+	public void deregisterEvent(Class<? extends SystemEvent> eventClass) {
+
+		if (log.isDebugEnabled()) {
+			log.debug("De-registering event class " + eventClass.getName());
+		}
+
+		try {
+			String resourceKey = (String) eventClass.getField("EVENT_RESOURCE_KEY").get(null);
+			if (log.isDebugEnabled()) {
+				log.debug("Process event with resource key " + resourceKey);
+			}
+			eventDefinitions.remove(resourceKey);
+
+			for (Field field : eventClass.getFields()) {
+				if ((field.getModifiers() & Modifier.STATIC) == Modifier.STATIC
+						&& (field.getModifiers() & Modifier.FINAL) == Modifier.FINAL) {
+
+					if (field.getType().equals(String.class) && field.getName().startsWith("ATTR_")) {
+						try {
+							String attributeName = (String) field.get(null);
+							attributeNames.remove(attributeName);
+							if (log.isDebugEnabled()) {
+								log.debug("Removed attribute " + attributeName);
+							}
+						} catch (IllegalArgumentException e) {
+						} catch (IllegalAccessException e) {
+						}
+					}
+				}
+			}
+		} catch (Throwable t) {
+			throw new IllegalStateException("Failed to de-register event class " + eventClass.getName(), t);
+		}
+
+	}
+
+	@Override
 	public void publishEvent(SystemEvent event) {
 
 		if (isDelayEvent()) {

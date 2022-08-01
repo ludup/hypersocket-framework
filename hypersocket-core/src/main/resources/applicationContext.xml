@@ -41,6 +41,8 @@
 			expression="com.hypersocket.*ServiceImpl" />
 		<context:include-filter type="regex"
 			expression="com.hypersocket.*RepositoryImpl" />
+        <context:include-filter type="regex"
+            expression="com.hypersocket.*Configuration" />
 		<context:include-filter type="assignable"
 			expression="com.hypersocket.repository.AbstractEntity" />
 		<context:exclude-filter type="regex"

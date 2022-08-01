@@ -19,8 +19,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
@@ -41,6 +43,41 @@ import com.hypersocket.session.SessionService;
 
 @Service
 public class I18NServiceImpl implements I18NService {
+	
+	public static class BundleRef {
+		private ClassLoader classLoader;
+		private String bundle;
+		
+		public BundleRef(ClassLoader classLoader, String bundle) {
+			super();
+			this.classLoader = classLoader;
+			this.bundle = bundle;
+		}
+
+		public ClassLoader getClassLoader() {
+			return classLoader;
+		}
+		
+		public String getBundle() {
+			return bundle;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(bundle);
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			BundleRef other = (BundleRef) obj;
+			return Objects.equals(bundle, other.bundle);
+		}
+	}
 
 	public static final String RESOURCE_BUNDLE = "I18NService";
 	public static final String USER_INTERFACE_BUNDLE = "UserInterface";
@@ -50,14 +87,14 @@ public class I18NServiceImpl implements I18NService {
 	@Autowired
 	private CacheService cacheService;
 	
-	private Map<String, Set<String>> bundleMap = new HashMap<>();
-	private long lastUpdate = System.currentTimeMillis();
-	private Set<Locale> supportedLocales = new LinkedHashSet<Locale>();
+	private Map<String, Set<BundleRef>> bundleMap = new HashMap<>();
+	private long lastUpdate = System.currentTimeMillis(); 
+	private Set<Locale> supportedLocales = new LinkedHashSet<>();
 	
-	public static String convertFromTag(String tag, Locale locale, Object... arguments) {
+	public static String convertFromTag(String tag, ClassLoader cl, Locale locale, Object... arguments) {
 		if(tag.startsWith("i18n/")) {
 			String[] elements = tag.split("/");
-			return I18N.getResource(locale, elements[1], elements[2], arguments);
+			return I18N.getResource(locale, cl, elements[1], elements[2], arguments);
 		} else {
 			return tag;
 		}
@@ -85,12 +122,20 @@ public class I18NServiceImpl implements I18NService {
 	
 	@Override
 	public Set<String> getBundles(I18NGroup group) {
-		Set<String> bundle = bundleMap.get(group.getTitle());
+		Set<BundleRef> bundle = getBundleRefs(group);
+		return toBundleNames(bundle);
+	}
+
+	protected Set<BundleRef> getBundleRefs(I18NGroup group) {
+		Set<BundleRef> bundle = bundleMap.get(group.getTitle());
 		if (bundle == null) {
 			return Collections.emptySet();
 		}
-		
 		return bundle;
+	}
+
+	protected Set<String> toBundleNames(Set<BundleRef> bundle) {
+		return bundle == null ? null : bundle.stream().map((b) -> b.getBundle()).collect(Collectors.toSet());
 	}
 
 	@Override
@@ -162,21 +207,21 @@ public class I18NServiceImpl implements I18NService {
 		
 		Map<String,Map<String,Message>> messages = new HashMap<String,Map<String,Message>>();
 		
-		Set<String> bundles = getBundles(group);
+		Set<BundleRef> bundles = getBundleRefs(group);
 		
-		if (bundles == null) {
+		if (bundles == null || bundles.size() == 0) {
 			if (log.isWarnEnabled()) {
 				log.warn(String.format("No bundle found for group %s", group));
 			}
 			return messages;
 		}
 		
-		for(String bundle : bundles) {
-			messages.put(bundle, new HashMap<String,Message>());
-			for(String key :I18N.getResourceKeys(Locale.ENGLISH, bundle)) {
-				String translated = I18N.getResource(Locale.ENGLISH, bundle, key);
-				String original = I18N.getResourceNoOveride(Locale.ENGLISH, bundle, key);
-				messages.get(bundle).put(key, new Message(bundle, key, original, original.equals(translated) ? "" : translated));
+		for(BundleRef bundle : bundles) {
+			messages.put(bundle.getBundle(), new HashMap<String,Message>());
+			for(String key :I18N.getResourceKeys(Locale.ENGLISH, bundle.getClassLoader(), bundle.getBundle())) {
+				String translated = I18N.getResource(Locale.ENGLISH, bundle.getClassLoader(),  bundle.getBundle(), key);
+				String original = I18N.getResourceNoOveride(Locale.ENGLISH, bundle.getClassLoader(), bundle.getBundle(), key);
+				messages.get(bundle.getBundle()).put(key, new Message(bundle.getBundle(), key, original, original.equals(translated) ? "" : translated));
 			}
 		}
 		
@@ -185,7 +230,7 @@ public class I18NServiceImpl implements I18NService {
 	
 	@Override
 	public boolean isRegistered(String bundle, I18NGroup group) {
-		Set<String> bundleSet = bundleMap.get(group.getTitle());
+		Set<String> bundleSet = toBundleNames(bundleMap.get(group.getTitle()));
 		return bundleSet != null && bundleSet.contains(bundle);
 	}
 
@@ -193,33 +238,63 @@ public class I18NServiceImpl implements I18NService {
 	public synchronized void registerBundle(String bundle) {
 		registerBundle(bundle, I18NGroup.DEFAULT_GROUP);
 	}
+
+	@Override
+	public synchronized void deregisterBundle(String bundle) {
+		deregisterBundle(bundle, I18NGroup.DEFAULT_GROUP);
+	}
+	
+	@Override
+	public synchronized void deregisterBundle(String bundle, I18NGroup group) {
+		Set<BundleRef> bundleSet = bundleMap.get(group.getTitle());
+		if(bundleSet == null) {
+			log.warn("No registered bundle set {}", group);
+		}
+		else {
+			var ref = new BundleRef(getClass().getClassLoader(), bundle);
+			if(bundleSet.contains(ref)) {
+				bundleSet.remove(ref);
+			}
+			else {
+				log.warn("No registered bundle {} in {}", bundle, group);
+			}
+			if(bundleSet.isEmpty())
+				bundleMap.remove(group.getTitle());
+		}
+	}
+		
 	
 	@Override
 	public synchronized void registerBundle(String bundle, I18NGroup group) {
-		Set<String> bundleSet = bundleMap.get(group.getTitle());
+		Set<BundleRef> bundleSet = bundleMap.get(group.getTitle());
 		
 		if (bundleSet == null) {
 			bundleSet = new HashSet<>();
 		}
 
-		if(bundleSet.contains(bundle)) {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		if(cl == null)
+			cl = I18NService.class.getClassLoader();
+		BundleRef ref = new BundleRef(cl, bundle);
+
+		if(bundleSet.contains(ref)) {
 			/* TODO: These should actually be fatal so they can be caught earlier */
 			log.warn(String.format("Attempt to register bundle that has already been registered with name %s", bundle));
 		}
 		else {
 			/* TODO: These should actually be fatal so they can be caught earlier */
-			if(!I18N.bundleExists(bundle))
+			if(!I18N.bundleExists(cl, bundle))
 				log.warn(String.format("Attempt to register bundle with name %s that does not exist anywhere on the classpath (in 'i18n' resource folder).", bundle));
 			else {
-				bundleSet.add(bundle);
+				bundleSet.add(ref);
 				bundleMap.put(group.getTitle(), bundleSet);
 			}
 		}
 	}
 
-	private void buildBundleMap(String bundle, Locale locale, Cache<String,String> resources) {
-		for(String key :  I18N.getResourceKeys(locale, bundle)) {
-			resources.put(key, I18N.getResource(locale, bundle, key));
+	private void buildBundleMap(String bundle, ClassLoader cl, Locale locale, Cache<String,String> resources) {
+		for(String key :  I18N.getResourceKeys(locale, cl, bundle)) {
+			resources.put(key, I18N.getResource(locale, cl, bundle, key));
 		}
 	}
 
@@ -228,17 +303,17 @@ public class I18NServiceImpl implements I18NService {
 			log.info(String.format("Building i18n resources cache for %s", locale.getLanguage()));
 		}
 		
-		Set<String> bundles = getBundles(group);
+		Set<BundleRef> bundles = getBundleRefs(group);
 		
-		if (bundles == null) {
+		if (bundles == null || bundles.size() == 0) {
 			if (log.isWarnEnabled()) {
 				log.warn(String.format("No bundle found for group %s", group));
 			}
 			return;
 		}
 		
-		for(String bundle : bundles) {
-			buildBundleMap(bundle, locale, cache);
+		for(BundleRef bundle : bundles) {
+			buildBundleMap(bundle.getBundle(), bundle.getClassLoader(), locale, cache);
 		}
 		if(log.isInfoEnabled()) {
 			log.info(String.format("Completed i18n resources cache for %s", locale.getLanguage()));

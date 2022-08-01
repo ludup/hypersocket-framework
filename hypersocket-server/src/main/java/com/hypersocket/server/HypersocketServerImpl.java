@@ -61,6 +61,7 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.plugins.ExtensionsPluginManager;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.server.HomePageResolver.AuthenticationRequirements;
 import com.hypersocket.server.events.ServerStartedEvent;
@@ -295,6 +296,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		createWebappContext();
 		
 	}
+	
+	@Override
+	public ApplicationContext getWebappContext() {
+		return webappContext;
+	}
 
 
 	private void createWebappContext() throws ServletException {
@@ -312,8 +318,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		webappContext.refresh();
 		webappContext.start();
 		
+		ExtensionsPluginManager pluginManager = applicationContext.getBean(ExtensionsPluginManager.class);
+		pluginManager.startWebContext(webappContext, servletConfig, webappContext.getServletContext());
+		
 		// We use a custom implementation of DispatcherServlet so it does not restrict the HTTP methods
-		dispatcherServlet = new NonRestrictedDispatcherServlet(webappContext);
+		dispatcherServlet = new NonRestrictedDispatcherServlet(webappContext, pluginManager);
 		dispatcherServlet.init(servletConfig);
 
 		registerHttpHandler(new APIRequestHandler(dispatcherServlet, 100));

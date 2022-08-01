@@ -42,12 +42,11 @@ public abstract class HttpRequestHandler implements Comparable<HttpRequestHandle
 	protected void registered() {
 		
 	}
-	
+
 	public String getName() {
 		return name;
 	}
 
-	@Override
 	public int compareTo(HttpRequestHandler obj) {
 		return Integer.valueOf(this.getPriority()).compareTo(Integer.valueOf(obj.getPriority()));
 	}

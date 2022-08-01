@@ -9,6 +9,8 @@ public interface EventService  {
 			String resourceBundle,
 			EventPropertyCollector propertyCollector);
 
+	void deregisterEvent(Class<? extends SystemEvent> eventClass);
+
 	void registerEvent(Class<? extends SystemEvent> eventClass,
 			String resourceBundle);
 

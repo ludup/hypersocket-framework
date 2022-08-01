@@ -144,4 +144,6 @@ public interface HypersocketServer {
 	void addLoggingOutputListener(LoggingOutputListener listener);
 	
 	void removeLoggingOutputListener(LoggingOutputListener listener);
+
+	ApplicationContext getWebappContext();
 }

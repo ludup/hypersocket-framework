@@ -396,8 +396,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 	/**
      * When file timestamp is the same as what the browser is sending up, send a "304 Not Modified"
      *
-     * @param ctx
-     *            Context
+     * @param response
+     *            response
      */
 	protected void sendNotModified(HttpServletResponse response) {
         response.setStatus(HttpStatus.SC_NOT_MODIFIED);
@@ -422,8 +422,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
      * Sets the Date and Cache headers for the HTTP Response
      *
      * @param response
-     *            HTTP response
-     * @param fileToCache
+     *            path response
+     * @param path
      *            file to extract content type
      */
     protected void setDateAndCacheHeaders(HttpServletResponse response, String path) {
@@ -460,7 +460,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
      *
      * @param response
      *            HTTP response
-     * @param file
+     * @param path
      *            file to extract content type
      */
     protected void setContentTypeHeader(HttpServletResponse response, String path) {

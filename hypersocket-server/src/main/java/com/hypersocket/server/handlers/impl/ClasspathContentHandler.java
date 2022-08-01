@@ -12,7 +12,9 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
@@ -26,10 +28,24 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 	
 	private String classpathPrefix;
 	private String basePath;
-	
+	private List<ClassLoader> loaders;
+
 	public ClasspathContentHandler(String classpathPrefix, int priority) {
+		this(classpathPrefix, priority, new ArrayList<>());
+	}
+	
+	public ClasspathContentHandler(String classpathPrefix, int priority, List<ClassLoader> loaders) {
 		super("classpath:" + classpathPrefix, priority);
 		this.classpathPrefix = classpathPrefix;
+		this.loaders = loaders;
+	}
+	
+	public void addClassLoader(ClassLoader classLoader) {
+		loaders.add(classLoader);
+	}
+	
+	public void removeClassLoader(ClassLoader classLoader) {
+		loaders.remove(classLoader);
 	}
 	
 	public String getResourceName() {
@@ -47,6 +63,11 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 	@Override
 	public InputStream getResourceStream(String path)
 			throws FileNotFoundException {
+		for(ClassLoader l : loaders) {
+			InputStream res = l.getResourceAsStream(stripLeadingSlash(classpathPrefix + "/" + path));
+			if(res != null)
+				return res;
+		}
 		return getClass().getResourceAsStream(classpathPrefix + "/" + path);
 	}
 
@@ -58,7 +79,19 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 	@Override
 	public long getLastModified(String path) {
 		try {
-			URL url = getClass().getResource(classpathPrefix + "/" + path);
+			
+			URL url = null;
+			for(ClassLoader l : loaders) {
+				url = l.getResource(stripLeadingSlash(classpathPrefix + "/" + path));
+				if(url != null)
+					break;
+			}
+			if(url == null) {
+				url = getClass().getResource(classpathPrefix + "/" + path);
+			}
+			if(url == null) {
+				throw new IllegalStateException("No resource " + path);
+			}
 			if(log.isDebugEnabled()){
 				log.debug("Processing resource URL " + url.toURI().toString());
 			}
@@ -85,9 +118,13 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 
 	@Override
 	public int getResourceStatus(String path) throws RedirectException {
-		
+
+		for(ClassLoader l : loaders) {
+			if(l.getResource(stripLeadingSlash(classpathPrefix + "/" + path)) != null) {
+				return HttpStatus.SC_OK;
+			}
+		}
 		URL url = getClass().getResource(classpathPrefix + "/" + path);
-		
 		if(url!=null) {
 			return HttpStatus.SC_OK;
 		} else {
@@ -100,4 +137,10 @@ public class ClasspathContentHandler extends ContentHandlerImpl {
 		return false;
 	}
 
+	String stripLeadingSlash(String input) {
+		if(input.startsWith("/")) {
+			return input.substring(1);
+		}
+		return input;
+	}
 }

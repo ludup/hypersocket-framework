@@ -202,6 +202,14 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
+	public void deregisterPermissionCategory(String resourceBundle, String resourceKey) {
+		PermissionCategory result = repository.getCategoryByKey(resourceBundle, resourceKey);
+		if (result != null) {
+			repository.deleteCategory(result);
+		}
+	}
+
+	@Override
 	protected Set<Role> getCurrentRoles() {
 		return getPrincipalRoles(getCurrentPrincipal());
 	}
@@ -210,6 +218,23 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public Permission registerPermission(PermissionType type, PermissionCategory category) {
 		registeredPermissions.put(type.getResourceKey(), type);
 		return registerPermission(type.getResourceKey(), type.isSystem(), category, type.isHidden());
+	}
+	
+	@Override
+	public void deregisterPermission(PermissionType type) {
+		registeredPermissions.put(type.getResourceKey(), type);
+		deregisterPermission(type.getResourceKey());
+	}
+
+	protected void deregisterPermission(String resourceKey) {
+		Permission result = repository.getPermissionByResourceKey(resourceKey);
+		if (result != null) {
+			repository.deletePermission(result);
+			if (result.isSystem()) {
+				nonSystemPermissionIds.remove(result.getId());
+			}
+			registerPermissionIds.remove(result.getId());
+		}
 	}
 
 	protected Permission registerPermission(String resourceKey, boolean system, PermissionCategory category,
