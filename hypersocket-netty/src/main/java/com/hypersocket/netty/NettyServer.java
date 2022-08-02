@@ -55,7 +55,6 @@ import org.jboss.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.jboss.netty.handler.execution.ChannelDownstreamEventRunnable;
 import org.jboss.netty.handler.execution.ChannelUpstreamEventRunnable;
 import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.jboss.netty.util.ObjectSizeEstimator;
@@ -193,7 +192,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		}
 		
 		executionHandler = new ExecutionHandler(
-				newThreadPool(minChannels, maxChannels, TimeUnit.MINUTES.toMillis(WORKER_TIMEOUT_MINUTES), nettyThreadFactory));
+				newScalingThreadPool(minChannels, maxChannels, TimeUnit.MINUTES.toMillis(WORKER_TIMEOUT_MINUTES), nettyThreadFactory));
 		log.info(String.format("Using %d minimum execution threads, %d max execution  threads", 1, maxChannels));
 		
 		requestLog = new NCSARequestLog();
@@ -777,16 +776,8 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		}
 	}
 
-	private ExecutorService newScalingThreadPool(int min, int max, long keepAliveTime, ThreadFactory factory) {
-		return new ScalingThreadPoolExecutor(min, max, keepAliveTime, TimeUnit.MILLISECONDS, factory); 
-	}
-
-	private ExecutorService newThreadPool(int min, int max, long keepAliveTime, ThreadFactory factory) {
-		long maxMem = configurationService.getIntValue("netty.maxChannelMemory");
-		long maxTotal = configurationService.getIntValue("netty.maxTotalMemory");
-		OrderedMemoryAwareThreadPoolExecutor exec = new OrderedMemoryAwareThreadPoolExecutor(max, maxMem, maxTotal, keepAliveTime, TimeUnit.MILLISECONDS, factory);
-		exec.allowCoreThreadTimeOut(true);
-		return exec;
+	public static ExecutorService newScalingThreadPool(int min, int max, long keepAliveTime, ThreadFactory factory) {
+		return new ScalingThreadPoolExecutor(min, max, keepAliveTime, TimeUnit.MILLISECONDS, factory);
 	}
 
 	@Override
