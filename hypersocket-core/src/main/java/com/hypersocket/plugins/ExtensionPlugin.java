@@ -5,9 +5,6 @@ import java.util.Set;
 
 import org.pf4j.PluginWrapper;
 import org.pf4j.spring.SpringPlugin;
-import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
-import org.springframework.aop.aspectj.autoproxy.AspectJAwareAdvisorAutoProxyCreator;
-import org.springframework.aop.framework.ProxyProcessorSupport;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -15,17 +12,13 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
 public abstract class ExtensionPlugin extends SpringPlugin {
-	public interface ExtensionLifecycle {
-		void stop();
-
-		void uninstall();
-	}
-
 	private ApplicationContext webApplicationContext;
-	private Set<String> controllerPackages = new LinkedHashSet<String>();
+	private final Set<String> controllerPackages = new LinkedHashSet<String>();
+	private final Class<?> configurationClass;
 
-	public ExtensionPlugin(PluginWrapper wrapper) {
+	public ExtensionPlugin(PluginWrapper wrapper, Class<?> configurationClass) {
 		super(wrapper);
+		this.configurationClass = configurationClass;
 
 		/*
 		 * The context is the whole 'webapp'. It's path is the base path, i.e.
@@ -46,9 +39,37 @@ public abstract class ExtensionPlugin extends SpringPlugin {
 		return webApplicationContext;
 	}
 
+
+    @Override
+    public final void start() {
+    	beforeStart();
+    	super.start();
+    	afterStart();
+    }
+
+	public final void uninstall(boolean deleteData) throws Exception {
+		beforeUninstall(deleteData);
+		Exception exception = null;
+		for(var bean : getApplicationContext().getBeansOfType(ExtensionLifecycle.class).values()) {
+			try {
+				bean.uninstall(deleteData);
+			} catch (Exception e) {
+				if(exception == null)
+					exception = e;
+			}
+		}
+		afterUninstall(deleteData);
+		if(exception != null)
+			throw exception;
+	}
+
 	@Override
 	public final void stop() {
-		onStop();
+		beforeStop();
+		for(var bean : getApplicationContext().getBeansOfType(ExtensionLifecycle.class).values()) {
+			bean.stop();
+		}
+		
 		// close applicationContext
 		if ((webApplicationContext != null) && (webApplicationContext instanceof ConfigurableApplicationContext)) {
 			try {
@@ -58,9 +79,20 @@ public abstract class ExtensionPlugin extends SpringPlugin {
 			}
 		}
 		super.stop();
+		afterStop();
 	}
 
-	protected abstract void onStop();
+	protected void beforeStop() {
+	}
+
+	protected void beforeStart() {
+	}
+
+	protected void afterStop() {
+	}
+
+	protected void afterStart() {
+	}
 
 	protected ApplicationContext createWebApplicationContext() {
 
@@ -78,6 +110,7 @@ public abstract class ExtensionPlugin extends SpringPlugin {
 			webApplicationContext.setServletContext(servletContext);
 			webApplicationContext.setServletConfig(pm.getServletConfig());
 //			webApplicationContext.scan(controllerPackages.toArray(new String[0]));
+			webApplicationContext.register(configurationClass);
 			webApplicationContext.register(DelegatingWebMvcConfiguration.class);
 			registerWebBeans(webApplicationContext);
 			webApplicationContext.refresh();
@@ -100,15 +133,46 @@ public abstract class ExtensionPlugin extends SpringPlugin {
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
 			applicationContext.setClassLoader(cl);
+			applicationContext.register(configurationClass);
 			registerBeans(applicationContext);
+			
+			
+//			 // create the datasource bean
+//		    BeanDefinitionBuilder dataSourceBeanBuilder = BeanDefinitionBuilder.rootBeanDefinition(DataSourceConfiguration.class, "createDataSource");
+//		    dataSourceBeanBuilder.addConstructorArgValue(descriptor.getDataSourceDescriptor().getJNDILookupName());
+//		    dataSourceBeanBuilder.addConstructorArgValue(descriptor.getDataSourceDescriptor().isResourceRef());
+//		    applicationContext.registerBeanDefinition("dataSource", dataSourceBeanBuilder.getBeanDefinition());
+//
+//		    // now build the sessionFactor
+//		    BeanDefinitionBuilder sessionFactoryBeanBuilder = BeanDefinitionBuilder.rootBeanDefinition(SessionFactoryFactory.class, "createSessionFactory");
+//		    sessionFactoryBeanBuilder.addConstructorArgReference("dataSource");
+//		    sessionFactoryBeanBuilder.addConstructorArgValue(module.getKey());
+//		    sessionFactoryBeanBuilder.addConstructorArgValue(moduleContext.getModuleResourceLoader());
+//		    sessionFactoryBeanBuilder.addConstructorArgValue(annotatedClasses);
+//		    applicationContext.registerBeanDefinition("sessionFactory", sessionFactoryBeanBuilder.getBeanDefinition());
+//
+//		    // now build the transactionManager
+//		    BeanDefinitionBuilder transactionManagerBeanBuilder = BeanDefinitionBuilder.rootBeanDefinition(HibernateConfigurationFactory.class, "createTransactionManager");
+//		    transactionManagerBeanBuilder.addConstructorArgReference("sessionFactory");
+//		    applicationContext.registerBeanDefinition("transactionManager", transactionManagerBeanBuilder.getBeanDefinition());
+//			
+//			
+			
 			applicationContext.refresh();
+			applicationContext.start();
+			
+			applicationContext.getAutowireCapableBeanFactory().autowireBean(this);
 		} finally {
 			Thread.currentThread().setContextClassLoader(was);
 		}
 		return applicationContext;
 	}
 
-	public abstract void uninstall();
+	protected void beforeUninstall(boolean deleteData) {
+	}
+
+	protected void afterUninstall(boolean deleteData) {
+	}
 
 	protected void registerBeans(AnnotationConfigApplicationContext applicationContext) {
 

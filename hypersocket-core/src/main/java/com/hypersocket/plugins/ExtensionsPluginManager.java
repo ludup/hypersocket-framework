@@ -1,5 +1,6 @@
 package com.hypersocket.plugins;
 
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -8,6 +9,7 @@ import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.pf4j.CompoundPluginDescriptorFinder;
@@ -24,11 +26,25 @@ import org.pf4j.RuntimeMode;
 import org.pf4j.spring.SpringPluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import com.hypersocket.json.version.HypersocketVersion;
+import com.hypersocket.util.HypersocketAnnotationSessionFactoryBean;
 
 public final class ExtensionsPluginManager extends SpringPluginManager {
+	public static final class NonClosingDataSource extends DelegatingDataSource implements DisposableBean {
+		public NonClosingDataSource(DataSource targetDataSource) {
+			super(targetDataSource);
+		}
+
+		@Override
+		public void destroy() throws Exception {
+			// Do nothing
+		}
+	}
+
 	private final static Logger LOG = LoggerFactory.getLogger(ExtensionsPluginManager.class);
 	
 	private ApplicationContext webApplicationContext;
@@ -141,4 +157,14 @@ public final class ExtensionsPluginManager extends SpringPluginManager {
 		else
 			return version.substring(0, idx);
 	}
+
+	public DataSource getDataSource() {
+		return new NonClosingDataSource(getApplicationContext().getBean(DataSource.class));
+	}
+
+	public HypersocketAnnotationSessionFactoryBean getSessionFactory() {
+		return getApplicationContext().getBean(HypersocketAnnotationSessionFactoryBean.class);
+	}
+	
+	
 }

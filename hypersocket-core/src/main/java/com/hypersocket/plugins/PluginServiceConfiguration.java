@@ -10,10 +10,4 @@ public class PluginServiceConfiguration {
 	public ExtensionsPluginManager pluginManager() {
 		return new ExtensionsPluginManager();
 	}
-
-//	@Bean
-//	@DependsOn("pluginManager")
-//	public AppExtensions appExtensions() {
-//		return new AppExtensions();
-//	}
 }

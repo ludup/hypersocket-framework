@@ -63,13 +63,6 @@ public class RestApiControllerAdvice {
         return new ResponseEntity<ErrorEntity>(new ErrorEntity("You do not have access to the resource.", incidentId), HttpStatus.FORBIDDEN);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorEntity> exception(Exception e){
-        String incidentId = getIncidentId();
-        log.error("Problem in fetching resource -> Incident Id {}", incidentId, e);
-        return new ResponseEntity<ErrorEntity>(new ErrorEntity("Server failed to respond.", incidentId), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     private String getIncidentId() {
         return UUID.randomUUID().toString();
     }

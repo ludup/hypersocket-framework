@@ -1,6 +1,8 @@
 package com.hypersocket.plugins;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -200,10 +202,26 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			assertPermission(PluginResourcePermission.DELETE);
 		}
-		
-		var ext = (ExtensionPlugin)pluginManager.getPlugin(resource.getId()).getPlugin();
-		ext.uninstall();
 		pluginManager.deletePlugin(resource.getId());
+	}
+
+	@Override
+	public PluginResource disable(PluginResource resource) throws AccessDeniedException, IOException {
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			assertPermission(PluginResourcePermission.UPDATE);
+		}
+		pluginManager.disablePlugin(resource.getId());
+		return getResourceById(resource.getId());
+	}
+
+	@Override
+	public PluginResource enable(PluginResource resource) throws AccessDeniedException, IOException {
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			assertPermission(PluginResourcePermission.UPDATE);
+		}
+		reload(resource);
+		pluginManager.enablePlugin(resource.getId());
+		return getResourceById(resource.getId());
 	}
 
 	@Override
@@ -212,9 +230,13 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 			assertPermission(PluginResourcePermission.UPDATE);
 		}
 		pluginManager.stopPlugin(resource.getId());
+		reload(resource);
+		return getResourceById(resource.getId());
+	}
+
+	protected void reload(PluginResource resource) {
 		pluginManager.unloadPlugin(resource.getId());
 		pluginManager.loadPlugin(Paths.get(resource.getPath()));
-		return getResourceById(resource.getId());
 	}
 
 	@Override
@@ -231,6 +253,19 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 	}
 
 	
+	@Override
+	public PluginResource upload(Realm realm, InputStream inputStream, String name) throws IOException, AccessDeniedException {
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			assertPermission(PluginResourcePermission.CREATE);
+		}
+		var pluginPath = Paths.get("conf/plugins").resolve(name);
+		try(var out = Files.newOutputStream(pluginPath)) {
+			inputStream.transferTo(out);
+		}
+		pluginManager.loadPlugin(pluginPath);
+		return null;
+	}
+
 	@Override
 	public List<PluginResource> getResourcesByIds(String[] ids) throws AccessDeniedException, IOException {
 		List<PluginResource> s = new ArrayList<>(ids.length);
@@ -338,6 +373,22 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 			this.resource = resource;
 		}
 
+	}
+
+	@Override
+	public void uninstall(PluginResource resource, boolean deleteData) throws Exception {
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			assertPermission(PluginResourcePermission.DELETE);
+		}
+		
+		var ext = (ExtensionPlugin)pluginManager.getPlugin(resource.getId()).getPlugin();
+		try {
+			ext.uninstall(deleteData);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			deleteResource(resource);
+		}
 	}
 
 	public String getName() {

@@ -9,6 +9,7 @@
 package com.hypersocket.plugins;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -48,5 +49,13 @@ public interface PluginResourceService {
 	PluginResource createResource(Realm realm, Map<String, String> properties) throws IOException, AccessDeniedException;
 
 	PluginResource start(PluginResource resource) throws AccessDeniedException, IOException;
+
+	PluginResource enable(PluginResource resource) throws AccessDeniedException, IOException;
+
+	PluginResource disable(PluginResource resource) throws AccessDeniedException, IOException;
+
+	void uninstall(PluginResource resourceById, boolean deleteData) throws Exception;
+
+	PluginResource upload(Realm realm, InputStream inputStream, String name) throws IOException, AccessDeniedException;
 
 }
