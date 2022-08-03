@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -20,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHeaders;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.openssl.jcajce.JcePEMEncryptorBuilder;
 import org.slf4j.Logger;
@@ -42,7 +42,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
-import com.hypersocket.certificates.CertificateProvider;
 import com.hypersocket.certificates.CertificateResource;
 import com.hypersocket.certificates.CertificateResourceColumns;
 import com.hypersocket.certificates.CertificateResourceService;
@@ -72,28 +71,19 @@ import com.hypersocket.tables.json.BootstrapTablePageProcessor;
 @Controller
 public class CertificateResourceController extends ResourceController {
 
-	static Logger log = LoggerFactory
-			.getLogger(CertificateResourceController.class);
+	private final static Logger LOG = LoggerFactory.getLogger(CertificateResourceController.class);
+	
 	@Autowired
 	private CertificateResourceService resourceService;
 
 	@RequestMapping(value = "certificates/providers", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext(anonymous = true)
 	public ResourceList<CertificateProviderData> getStates(HttpServletRequest request)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
-
-		setupAnonymousContext(request.getRemoteAddr(), request.getServerName(),
-				request.getHeader(HttpHeaders.USER_AGENT), request.getParameterMap());
-		List<CertificateProviderData> results = new ArrayList<CertificateProviderData>();
-		try {
-			for (Map.Entry<String, CertificateProvider> en : resourceService.getProviders().entrySet())
-				results.add(new CertificateProviderData(en.getValue()));
-		} catch (Exception e) {
-		} finally {
-			clearAuthenticatedContext();
-		}
-		return new ResourceList<>(results);
+		return new ResourceList<>(resourceService.getProviders().values().stream()
+				.map(p -> new CertificateProviderData(p)).collect(Collectors.toList()));
 	}
 
 	@AuthenticationRequired
@@ -570,7 +560,7 @@ public class CertificateResourceController extends ResourceController {
 			// CertificateService.RESOURCE_BUNDLE,
 			// "error.invalidPassphrase"));
 		} catch (Exception e) {
-			log.error("Failed to import PFX.", e);
+			LOG.error("Failed to import PFX.", e);
 			status.setMessage(I18N.getResource(sessionUtils.getLocale(request),
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE, "error.generalError", e.getMessage()));
 		}

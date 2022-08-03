@@ -192,8 +192,6 @@ public class PasswordPolicyResourceController extends ResourceController {
 			return new ResourceStatus<PasswordPolicyResource>(false, e.getMessage());
 		} catch (UnsupportedOperationException e) {
 			return new ResourceStatus<PasswordPolicyResource>(false, "Unsupported");
-		}  finally {
-			clearAuthenticatedContext();
 		}
 	}
 	

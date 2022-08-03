@@ -938,14 +938,15 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 				filteredCategory.getTemplates().add(new ResourcePropertyTemplate(t, resource));
 			else {
 				boolean add = true;
+				var newTemplate = new ResourcePropertyTemplate(t, resource);
 				for(PropertyFilter filter : filters) {
-					if(!filter.filterProperty(t)) {
+					if(!filter.filterProperty(newTemplate)) {
 						add = false;
 						break;
 					}
 				}
 				if(add) {
-					filteredCategory.getTemplates().add(new ResourcePropertyTemplate(t, resource));
+					filteredCategory.getTemplates().add(newTemplate);
 				}
 			}
 		}

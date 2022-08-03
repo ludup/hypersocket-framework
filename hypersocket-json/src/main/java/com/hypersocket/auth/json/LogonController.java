@@ -303,9 +303,10 @@ public class LogonController extends AuthenticatedController {
 				
 				checkRedirect(request, response);
 				
-				FormTemplate template = (!state.isAuthenticationComplete() ? 
-						authenticationService.nextAuthenticationTemplate(state, request.getParameterMap())
-						: authenticationService.nextPostAuthenticationStep(state));
+				var isPostStep = state.isAuthenticationComplete();
+				FormTemplate template = isPostStep ? 
+						authenticationService.nextPostAuthenticationStep(state) :
+						authenticationService.nextAuthenticationTemplate(state, request.getParameterMap());
 				
 				request.getSession().setAttribute("lastFormTemplate", template);
 				
@@ -329,7 +330,7 @@ public class LogonController extends AuthenticatedController {
 							request.getParameterMap());
 				}
 				finally {
-					if(!success && state.isAuthenticationComplete() && !state.hasNextStep())
+					if(!isPostStep && !success && state.isAuthenticationComplete() && !state.hasNextStep()) {
 						/* BPS - 2022/07/07 - If there is an error at the end of authentication (licensing?), then
 						 * clear the state after we have returned the response. This allows
 						 * the user to escape the error by refreshing the page - something that
@@ -337,6 +338,7 @@ public class LogonController extends AuthenticatedController {
 						 * it will work properly)
 						 */
 						state.clean();
+					}
 				}
 				
 			}
@@ -380,8 +382,6 @@ public class LogonController extends AuthenticatedController {
 					state.getScheme().getLastButtonResourceKey(),
 					state.getRealm(),
 					getNonce(request));
-		} finally {
-			clearAuthenticatedContext();
 		}
 	}
 

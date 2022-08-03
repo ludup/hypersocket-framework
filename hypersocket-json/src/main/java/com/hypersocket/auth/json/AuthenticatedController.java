@@ -171,24 +171,17 @@ public class AuthenticatedController implements Elevatable {
 	public void setupSystemContext() {
 		authenticationService.setupSystemContext(realmService.getSystemRealm());	
 	}
-	
-	@SuppressWarnings("deprecation")
-	protected void setupAnonymousContext(String remoteAddress,
+
+	@Deprecated(since = "2.4.0", forRemoval = true)
+	public void setupAnonymousContext(String remoteAddress,
 			String serverName, 
 			String userAgent, 
 			Map<String, String[]> parameters)
 			throws AccessDeniedException {
-		
-		Realm realm = realmService.getRealmByHost(serverName);
-		
-		if(log.isDebugEnabled()) {
-			log.debug("Logging anonymous onto the " + realm.getName() + " realm [" + serverName + "]");
-		}
-
-		authenticationService.setCurrentSession(sessionService.getSystemSession(), realm, Locale.getDefault());
-
+		authenticationService.setupAnonymousContext(remoteAddress, serverName, userAgent, parameters);
 	}
 
+	@Deprecated
 	protected void clearAnonymousContext() {
 		clearAuthenticatedContext();
 	}
@@ -219,6 +212,7 @@ public class AuthenticatedController implements Elevatable {
 		return authenticationService.getCurrentSession();
 	}
 
+	@Deprecated
 	protected void clearAuthenticatedContext() {
 		/* TODO deprecate this after 2.4 is out */
 		clearPrincipalContext();

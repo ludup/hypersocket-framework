@@ -23,4 +23,6 @@ public @interface AuthenticatedContext  {
 	boolean currentRealmOrDefault() default false;
 
 	boolean preferActive() default false;
+
+	boolean anonymous() default false;
 }

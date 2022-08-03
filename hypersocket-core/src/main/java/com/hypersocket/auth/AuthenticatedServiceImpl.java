@@ -94,6 +94,16 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	}
 	
 	@Override
+	public void setupAnonymousContext(String remoteAddress, String serverName, String userAgent,
+			Map<String, String[]> parameters) throws AccessDeniedException {
+		var realm = sessionService.getRealmByHost(serverName);
+		if(log.isDebugEnabled()) {
+			log.debug("Logging anonymous onto the {} realm [{}]", realm.getName(), serverName);
+		}
+		setCurrentSession(sessionService.getSystemSession(), realm, Locale.getDefault());
+	}
+
+	@Override
 	@Deprecated
 	public void setupSystemContext() {
 		setCurrentSession(sessionService.getSystemSession(), Locale.getDefault());
