@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
@@ -77,6 +78,11 @@ public class I18NServiceImpl implements I18NService {
 			BundleRef other = (BundleRef) obj;
 			return Objects.equals(bundle, other.bundle);
 		}
+
+		@Override
+		public String toString() {
+			return "BundleRef [classLoader=" + classLoader + ", bundle=" + bundle + "]";
+		}
 	}
 
 	public static final String RESOURCE_BUNDLE = "I18NService";
@@ -90,6 +96,7 @@ public class I18NServiceImpl implements I18NService {
 	private Map<String, Set<BundleRef>> bundleMap = new HashMap<>();
 	private long lastUpdate = System.currentTimeMillis(); 
 	private Set<Locale> supportedLocales = new LinkedHashSet<>();
+	private Set<String> cacheKeys = new HashSet<>();
 	
 	public static String convertFromTag(String tag, ClassLoader cl, Locale locale, Object... arguments) {
 		if(tag.startsWith("i18n/")) {
@@ -111,8 +118,14 @@ public class I18NServiceImpl implements I18NService {
 	
 	@Override
 	public void clearCache(Locale locale, I18NGroup group) {
-		lastUpdate = System.currentTimeMillis();
-		cacheService.getCacheManager().destroyCache(getCacheKey(locale, group));
+		try {
+			var k = getCacheKey(locale, group);
+			cacheKeys.remove(k);
+			cacheService.getCacheManager().destroyCache(k);
+		}
+		finally {
+			lastUpdate = System.currentTimeMillis();
+		}
 	}
 	
 	@Override
@@ -183,8 +196,8 @@ public class I18NServiceImpl implements I18NService {
 		
 		String cacheKey = getCacheKey(locale, group);
 		Cache<String,String> cache = cacheService.getCacheIfExists(cacheKey,String.class, String.class);
-
 		if(cache==null) {
+			cacheKeys.add(cacheKey);
 			cache = cacheService.getCacheOrCreate(cacheKey, String.class, String.class);
 			buildCache(cache, locale, group);
 		}
@@ -246,13 +259,23 @@ public class I18NServiceImpl implements I18NService {
 	
 	@Override
 	public synchronized void deregisterBundle(String bundle, I18NGroup group) {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		if(cl == null)
+			cl = I18NService.class.getClassLoader();
+		deregisterBundle(bundle, group, cl);
+	}
+	
+	@Override
+	public synchronized void deregisterBundle(String bundle, I18NGroup group, ClassLoader classLoader) {
 		Set<BundleRef> bundleSet = bundleMap.get(group.getTitle());
 		if(bundleSet == null) {
 			log.warn("No registered bundle set {}", group);
 		}
 		else {
-			var ref = new BundleRef(getClass().getClassLoader(), bundle);
+			clearAllCaches();
+			var ref = new BundleRef(classLoader, bundle);
 			if(bundleSet.contains(ref)) {
+				ResourceBundle.clearCache(classLoader);;
 				bundleSet.remove(ref);
 			}
 			else {
@@ -260,22 +283,39 @@ public class I18NServiceImpl implements I18NService {
 			}
 			if(bundleSet.isEmpty())
 				bundleMap.remove(group.getTitle());
+			lastUpdate = System.currentTimeMillis();
 		}
+	}
+
+	protected void clearAllCaches() {
+		log.debug("Clearing all I18n caches.");
+		for(var k : cacheKeys) {
+			log.info("Destroying I18n cache {}", k);
+			cacheService.getCacheManager().destroyCache(k);
+		}
+		cacheKeys.clear();
+		lastUpdate = System.currentTimeMillis();
+	}
+	
+	
+	@Override
+	public synchronized void registerBundle(String bundle, I18NGroup group) {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		if(cl == null)
+			cl = I18NService.class.getClassLoader();
+		registerBundle(bundle, group, cl);
 	}
 		
 	
 	@Override
-	public synchronized void registerBundle(String bundle, I18NGroup group) {
+	public synchronized void registerBundle(String bundle, I18NGroup group, ClassLoader classLoader) {
 		Set<BundleRef> bundleSet = bundleMap.get(group.getTitle());
 		
 		if (bundleSet == null) {
 			bundleSet = new HashSet<>();
 		}
 
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		if(cl == null)
-			cl = I18NService.class.getClassLoader();
-		BundleRef ref = new BundleRef(cl, bundle);
+		BundleRef ref = new BundleRef(classLoader, bundle);
 
 		if(bundleSet.contains(ref)) {
 			/* TODO: These should actually be fatal so they can be caught earlier */
@@ -283,13 +323,14 @@ public class I18NServiceImpl implements I18NService {
 		}
 		else {
 			/* TODO: These should actually be fatal so they can be caught earlier */
-			if(!I18N.bundleExists(cl, bundle))
+			if(!I18N.bundleExists(classLoader, bundle))
 				log.warn(String.format("Attempt to register bundle with name %s that does not exist anywhere on the classpath (in 'i18n' resource folder).", bundle));
 			else {
 				bundleSet.add(ref);
 				bundleMap.put(group.getTitle(), bundleSet);
 			}
 		}
+		clearAllCaches();
 	}
 
 	private void buildBundleMap(String bundle, ClassLoader cl, Locale locale, Cache<String,String> resources) {
@@ -313,6 +354,9 @@ public class I18NServiceImpl implements I18NService {
 		}
 		
 		for(BundleRef bundle : bundles) {
+			if(log.isDebugEnabled()) {
+				log.debug("Rebuilding {}", bundle);
+			}
 			buildBundleMap(bundle.getBundle(), bundle.getClassLoader(), locale, cache);
 		}
 		if(log.isInfoEnabled()) {

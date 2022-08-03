@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.context.event.ContextStartedEvent;
 
+import com.hypersocket.events.CoreStartedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 
 public interface SurveyService {
@@ -74,7 +75,7 @@ public interface SurveyService {
 	 * 
 	 * @param started event
 	 */
-	void contextStarted(ContextStartedEvent started);
+	void contextStarted(CoreStartedEvent started);
 
 	/**
 	 * Recreate the needed jobs to that trigger the readyness of a survey. This will examine

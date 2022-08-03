@@ -15,12 +15,12 @@ import org.jboss.netty.handler.ipfilter.IpSubnetFilterRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
+import com.hypersocket.events.CoreStartedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
@@ -112,7 +112,7 @@ public class DefaultIPRestrictionProvider implements MutableIPRestrictionProvide
 	}
 
 	@EventListener()
-	private void contextStarted(ContextStartedEvent cse) {
+	private void contextStarted(CoreStartedEvent cse) {
 		loadBlockedIPs();
 	}
 

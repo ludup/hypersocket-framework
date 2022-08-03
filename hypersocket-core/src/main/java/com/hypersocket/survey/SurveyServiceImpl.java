@@ -30,13 +30,13 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.hypersocket.events.CoreStartedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.ResourceUtils;
@@ -90,7 +90,7 @@ public class SurveyServiceImpl implements SurveyService {
 
 	@Override
 	@EventListener
-	public void contextStarted(ContextStartedEvent started) {
+	public void contextStarted(CoreStartedEvent started) {
 		realmService.runAsSystemContext(() -> {
 			ready.addAll(Arrays.asList(ResourceUtils
 					.explodeValues(realmService.getRealmProperty(realmService.getSystemRealm(), SURVEYS_READY))));

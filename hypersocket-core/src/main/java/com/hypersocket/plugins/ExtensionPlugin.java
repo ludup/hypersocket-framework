@@ -11,6 +11,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
+import com.hypersocket.upgrade.UpgradeService;
+
 public abstract class ExtensionPlugin extends SpringPlugin {
 	private ApplicationContext webApplicationContext;
 	private final Set<String> controllerPackages = new LinkedHashSet<String>();
@@ -39,37 +41,61 @@ public abstract class ExtensionPlugin extends SpringPlugin {
 		return webApplicationContext;
 	}
 
-
-    @Override
-    public final void start() {
-    	beforeStart();
-    	super.start();
-    	afterStart();
-    }
+	@Override
+	public final void start() {
+		beforeStart();
+		super.start();
+		var ctx = getApplicationContext();
+		for (var bean : ctx.getBeansOfType(PluginLifecycle.class).values()) {
+			bean.start();
+		}
+		
+//		ctx.getBean(UpgradeService.class).upgradePlugins(ctx);
+		afterStart();
+	}
 
 	public final void uninstall(boolean deleteData) throws Exception {
-		beforeUninstall(deleteData);
-		Exception exception = null;
-		for(var bean : getApplicationContext().getBeansOfType(ExtensionLifecycle.class).values()) {
+		try {
+			beforeUninstall(deleteData);
+			Exception exception = null;
 			try {
-				bean.uninstall(deleteData);
-			} catch (Exception e) {
-				if(exception == null)
-					exception = e;
+				for (var bean : getApplicationContext().getBeansOfType(PluginLifecycle.class).values()) {
+					try {
+						bean.uninstall(deleteData);
+					} catch (Exception e) {
+						if (exception == null)
+							exception = e;
+					}
+				}
+			} catch (IllegalStateException ise) {
+				if (exception == null)
+					exception = ise;
 			}
+			afterUninstall(deleteData);
+			if (exception != null)
+				throw exception;
+		} finally {
+			/* getApplicationContext() restarts the context */
+			stopContext();
 		}
-		afterUninstall(deleteData);
-		if(exception != null)
-			throw exception;
 	}
 
 	@Override
 	public final void stop() {
 		beforeStop();
-		for(var bean : getApplicationContext().getBeansOfType(ExtensionLifecycle.class).values()) {
-			bean.stop();
+		try {
+			for (var bean : getApplicationContext().getBeansOfType(PluginLifecycle.class).values()) {
+				bean.stop();
+			}
+		} catch (IllegalStateException ise) {
+			/* Already closed */
 		}
-		
+
+		stopContext();
+		afterStop();
+	}
+
+	protected void stopContext() {
 		// close applicationContext
 		if ((webApplicationContext != null) && (webApplicationContext instanceof ConfigurableApplicationContext)) {
 			try {
@@ -79,7 +105,6 @@ public abstract class ExtensionPlugin extends SpringPlugin {
 			}
 		}
 		super.stop();
-		afterStop();
 	}
 
 	protected void beforeStop() {
@@ -125,7 +150,7 @@ public abstract class ExtensionPlugin extends SpringPlugin {
 	protected final ApplicationContext createApplicationContext() {
 		var pm = (ExtensionsPluginManager) wrapper.getPluginManager();
 		var context = pm.getApplicationContext();
-		
+
 		var applicationContext = new AnnotationConfigApplicationContext();
 		applicationContext.setParent(context);
 		var cl = getWrapper().getPluginClassLoader();
@@ -135,8 +160,7 @@ public abstract class ExtensionPlugin extends SpringPlugin {
 			applicationContext.setClassLoader(cl);
 			applicationContext.register(configurationClass);
 			registerBeans(applicationContext);
-			
-			
+
 //			 // create the datasource bean
 //		    BeanDefinitionBuilder dataSourceBeanBuilder = BeanDefinitionBuilder.rootBeanDefinition(DataSourceConfiguration.class, "createDataSource");
 //		    dataSourceBeanBuilder.addConstructorArgValue(descriptor.getDataSourceDescriptor().getJNDILookupName());
@@ -157,10 +181,10 @@ public abstract class ExtensionPlugin extends SpringPlugin {
 //		    applicationContext.registerBeanDefinition("transactionManager", transactionManagerBeanBuilder.getBeanDefinition());
 //			
 //			
-			
+
 			applicationContext.refresh();
 			applicationContext.start();
-			
+
 			applicationContext.getAutowireCapableBeanFactory().autowireBean(this);
 		} finally {
 			Thread.currentThread().setContextClassLoader(was);

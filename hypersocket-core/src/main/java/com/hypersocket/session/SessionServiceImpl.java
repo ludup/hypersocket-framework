@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +41,7 @@ import com.hypersocket.auth.PasswordEnabledAuthenticatedServiceImpl;
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
+import com.hypersocket.events.CoreStartedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
@@ -64,7 +64,7 @@ import com.hypersocket.utils.HttpUtils;
 
 @Service
 public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
-		implements SessionService, ApplicationListener<ContextStartedEvent> {
+		implements SessionService, ApplicationListener<CoreStartedEvent> {
 
 	public static final String LOCATION_REGION_CODE = "location_region_code";
 
@@ -687,7 +687,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void onApplicationEvent(ContextStartedEvent event) {
+	public void onApplicationEvent(CoreStartedEvent event) {
 
 		runAsSystemContext(() -> {
 			if (log.isInfoEnabled()) {

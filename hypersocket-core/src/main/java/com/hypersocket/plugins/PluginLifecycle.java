@@ -1,8 +1,9 @@
 package com.hypersocket.plugins;
 
-import com.hypersocket.resource.ResourceException;
-
-public interface ExtensionLifecycle {
+public interface PluginLifecycle {
+	default void start() {
+	}
+	
 	default void stop() {
 	}
 

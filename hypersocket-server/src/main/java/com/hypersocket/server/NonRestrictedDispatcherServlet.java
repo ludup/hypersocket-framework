@@ -10,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.context.ApplicationContext;
@@ -60,20 +61,12 @@ public class NonRestrictedDispatcherServlet extends DispatcherServlet {
 	protected void initStrategies(ApplicationContext context) {
 		super.initStrategies(context);
 		for (PluginWrapper pw : pluginManager.getPlugins()) {
-			addPluginHandlerMappings(pw);
-//			try {
-//				ApplicationContext pwContext = ((ExtensionPlugin)pw.getPlugin()).getWebApplicationContext();
-//				HandlerMapping hm = pwContext.getBean(HANDLER_MAPPING_BEAN_NAME, HandlerMapping.class);
-//				this.handlerMappings.add(hm);
-//			}
-//			catch (NoSuchBeanDefinitionException ex) {
-//				ex.printStackTrace();
-//			}	
+			addHandlerMappings(pw);
 		}
 		pluginManager.addPluginStateListener(evt -> {
 			switch (evt.getPluginState()) {
 			case STARTED:
-				addPluginHandlerMappings(evt.getPlugin());
+				addHandlerMappings(evt.getPlugin());
 				break;
 			case STOPPED:
 				handlerMappings.remove(evt.getPlugin().getPluginId());
@@ -82,6 +75,22 @@ public class NonRestrictedDispatcherServlet extends DispatcherServlet {
 				break;
 			}
 		});
+	}
+
+	protected void addHandlerMappings(PluginWrapper pw) {
+		try {
+			addPluginHandlerMappings(pw);
+		}
+		catch(Throwable t) {
+			logger.error("Failed to add plugin handler mappings. Stopping plugin.", t);
+			try {
+				pluginManager.stopPlugin(pw.getPluginId());
+			}
+			finally {
+				pw.setPluginState(PluginState.FAILED);
+				pw.setFailedException(t);
+			}
+		}
 	}
 
 	protected void addPluginHandlerMappings(PluginWrapper pw) {

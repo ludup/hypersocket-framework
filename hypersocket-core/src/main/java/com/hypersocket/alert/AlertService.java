@@ -1,7 +1,6 @@
 package com.hypersocket.alert;
 
-import org.springframework.context.event.ContextStartedEvent;
-
+import com.hypersocket.events.CoreStartedEvent;
 import com.hypersocket.triggers.TriggerResource;
 
 public interface AlertService {
@@ -13,7 +12,7 @@ public interface AlertService {
 			int timeout,
 			AlertCallback<T> callback);
 
-	void onStartup(ContextStartedEvent event);
+	void onStartup(CoreStartedEvent event);
 
 	void registerDynamicEvent(TriggerResource trigger);
 

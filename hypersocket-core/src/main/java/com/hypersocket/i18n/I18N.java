@@ -51,11 +51,10 @@ public class I18N {
 		return false;
 	}
 
-	@Deprecated
 	public static Set<String> getResourceKeys(Locale locale, 
 			String resourceBundle) {
-		log.warn("Deprecated use of I18N.getResourceKeys() without classloader. Please use I18NService to get from a registered bundle. This call CANNOT be used in a PF4J plugin.");
-		return getResourceKeys(locale, I18N.class.getClassLoader(), resourceBundle);
+		var ctx = Thread.currentThread().getContextClassLoader();
+		return getResourceKeys(locale, ctx == null ? I18N.class.getClassLoader() : ctx, resourceBundle);
 	}
 	
 	public static Set<String> getResourceKeys(Locale locale, ClassLoader cl,
@@ -104,12 +103,10 @@ public class I18N {
 				.deleteResource(locale, message.getBundle(), message.getId());
 	}
 
-	@Deprecated
 	public static String getResourceOrException(Locale locale, String resourceBundle,
 			String key, Object... arguments) {
-
-		log.warn("Deprecated use of I18N.getResourceOrException() without classloader. Please use I18NService to get from a registered bundle. This call CANNOT be used in a PF4J plugin.");
-		return getResourceOrException(locale, I18N.class.getClassLoader(), resourceBundle, key, arguments);
+		var ctx = Thread.currentThread().getContextClassLoader();
+		return getResourceOrException(locale, ctx == null ? I18N.class.getClassLoader() : ctx, resourceBundle, key, arguments);
 	}
 
 	public static String getResourceOrException(Locale locale, ClassLoader cl, String resourceBundle,
@@ -160,11 +157,10 @@ public class I18N {
 		return messageFormat.format(formatParameters(arguments));
 	}
 
-	@Deprecated
 	public static String getResource(Locale locale, String resourceBundle,
 			String key, Object... arguments) {
-		log.warn("Deprecated use of I18N.getResource() without classloader. Please use I18NService to get from a registered bundle. This call CANNOT be used in a PF4J plugin.");
-		return getResource(locale, I18N.class.getClassLoader(), resourceBundle, key, arguments);
+		var ctx = Thread.currentThread().getContextClassLoader();
+		return getResource(locale, ctx == null ? I18N.class.getClassLoader() : ctx, resourceBundle, key, arguments);
 	}
 	
 	public static String getResource(Locale locale, ClassLoader cl, String resourceBundle,
@@ -176,11 +172,10 @@ public class I18N {
 		}
 	}
 
-	@Deprecated
 	public static String getResourceNoOveride(Locale locale, String resourceBundle,
 			String key, Object... arguments) {
-		log.warn("Deprecated use of I18N.getResourceNoOveride() without classloader. Please use I18NService to get from a registered bundle. This call CANNOT be used in a PF4J plugin.");
-		return getResourceNoOveride(locale, I18N.class.getClassLoader(), resourceBundle, key, arguments);
+		var ctx = Thread.currentThread().getContextClassLoader();
+		return getResourceNoOveride(locale, ctx == null ? I18N.class.getClassLoader() : ctx, resourceBundle, key, arguments);
 	}
 	
 	public static String getResourceNoOveride(Locale locale, ClassLoader cl, String resourceBundle,

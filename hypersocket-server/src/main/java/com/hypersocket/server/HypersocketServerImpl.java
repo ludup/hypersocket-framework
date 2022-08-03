@@ -57,6 +57,7 @@ import com.hypersocket.certificates.events.CertificateResourceCreatedEvent;
 import com.hypersocket.certificates.events.CertificateResourceUpdatedEvent;
 import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.config.SystemConfigurationService;
+import com.hypersocket.events.CoreStartedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.i18n.I18NService;
@@ -449,6 +450,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		System.setProperty("hypersocket.uiPath", getUiPath());
 		
 		eventService.publishEvent(new ServerStartedEvent(this, realmService.getSystemRealm()));
+		eventService.publishEvent(new CoreStartedEvent(this, realmService.getSystemRealm()));
 
 	}
 

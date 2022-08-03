@@ -21,7 +21,7 @@ import com.hypersocket.tables.ColumnSort;
 
 public interface PluginResourceService {
 
-	public static final String RESOURCE_BUNDLE = "PluginResourcesService";
+	public static final String RESOURCE_BUNDLE = "PluginResourceService";
 
 	List<PluginResource> searchResources(Realm currentRealm, String searchColumn, String searchPattern, int start,
 			int length, ColumnSort[] sorting) throws AccessDeniedException;
@@ -56,6 +56,6 @@ public interface PluginResourceService {
 
 	void uninstall(PluginResource resourceById, boolean deleteData) throws Exception;
 
-	PluginResource upload(Realm realm, InputStream inputStream, String name) throws IOException, AccessDeniedException;
+	PluginResource upload(Realm realm, InputStream inputStream, boolean start) throws IOException, AccessDeniedException;
 
 }

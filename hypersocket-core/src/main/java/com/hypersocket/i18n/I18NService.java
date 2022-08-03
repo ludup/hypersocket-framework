@@ -20,9 +20,17 @@ public interface I18NService {
 
 	void registerBundle(String bundle);
 	
+	default void registerBundle(String bundle, ClassLoader classLoader) {
+		registerBundle(bundle, I18NGroup.DEFAULT_GROUP, classLoader);
+	}
+	
 	void registerBundle(String bundle, I18NGroup group);
 
 	void deregisterBundle(String bundle);
+	
+	default void deregisterBundle(String bundle, ClassLoader classLoader) {
+		deregisterBundle(bundle, I18NGroup.DEFAULT_GROUP, classLoader);
+	}
 	
 	void deregisterBundle(String bundle, I18NGroup group);
 
@@ -55,6 +63,10 @@ public interface I18NService {
 	void clearCache(Locale locale, I18NGroup group);
 	
 	long getLastUpdate();
+
+	void deregisterBundle(String bundle, I18NGroup group, ClassLoader classLoader);
+
+	void registerBundle(String bundle, I18NGroup group, ClassLoader classLoader);
 
 
 }

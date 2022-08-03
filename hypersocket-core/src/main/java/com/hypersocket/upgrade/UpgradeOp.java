@@ -7,30 +7,28 @@
  ******************************************************************************/
 package com.hypersocket.upgrade;
 
-import java.net.URL;
-
 import com.hypersocket.json.version.Version;
 
-public class UpgradeOp implements Comparable<UpgradeOp> {
+public class UpgradeOp<C> implements Comparable<UpgradeOp<C>> {
 
     private Version version;
-    private URL url;
+    private C callable;
     private String module;
     private String language;
 
-    UpgradeOp(Version version, URL url, String module, String language) {
+    UpgradeOp(Version version, C callable, String module, String language) {
         this.version = version;
-        this.url = url;
+        this.callable = callable;
         this.module = module;
         this.language = language;
     }
 
-    public int compareTo(UpgradeOp o) {
+    public int compareTo(UpgradeOp<C> o) {
         int i = getVersion().compareTo(o.getVersion());
         if (i == 0) {
             i = getLanguage().compareTo(o.getLanguage());
             if (i == 0) {
-                i = getUrl().toExternalForm().compareTo(o.getUrl().toExternalForm());
+                i = callable.toString().compareTo(callable.toString());
             }
         }
         return i;
@@ -44,8 +42,8 @@ public class UpgradeOp implements Comparable<UpgradeOp> {
         return module;
     }
 
-    public URL getUrl() {
-        return url;
+    public C getCallable() {
+        return callable;
     }
 
     public Version getVersion() {

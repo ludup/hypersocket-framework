@@ -14,6 +14,7 @@ import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.context.AuthenticatedContext;
+import com.hypersocket.events.CoreStartedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
@@ -46,7 +47,7 @@ public class EncryptionServiceImpl implements EncryptionService {
 	@Override
 	@AuthenticatedContext(system = true)
 	@EventListener
-	public void onContextStartedEvent(ContextStartedEvent event) {
+	public void onContextStartedEvent(CoreStartedEvent event) {
 		
 		try {
 			transactionService.doInTransaction(new TransactionCallback<Object>() {

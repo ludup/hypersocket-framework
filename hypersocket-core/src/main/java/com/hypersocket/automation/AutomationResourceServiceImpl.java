@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.automation.events.AutomationResourceCreatedEvent;
@@ -25,6 +24,7 @@ import com.hypersocket.automation.events.AutomationResourceEvent;
 import com.hypersocket.automation.events.AutomationResourceUpdatedEvent;
 import com.hypersocket.automation.events.AutomationTaskFinishedEvent;
 import com.hypersocket.automation.events.AutomationTaskStartedEvent;
+import com.hypersocket.events.CoreStartedEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -58,7 +58,7 @@ import com.hypersocket.utils.HypersocketUtils;
 
 @Service
 public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<AutomationResource>
-		implements AutomationResourceService, ApplicationListener<ContextStartedEvent> {
+		implements AutomationResourceService, ApplicationListener<CoreStartedEvent> {
 
 	private static Logger log = LoggerFactory.getLogger(AutomationResourceServiceImpl.class);
 
@@ -374,7 +374,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	}
 
 	@Override
-	public void onApplicationEvent(ContextStartedEvent event) {
+	public void onApplicationEvent(CoreStartedEvent event) {
 
 		if (log.isInfoEnabled()) {
 			log.info("Scheduling one time only or repetitive automation resources");

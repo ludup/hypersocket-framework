@@ -8,11 +8,11 @@ import java.util.Map;
 import javax.cache.Cache;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.cache.CacheService;
+import com.hypersocket.events.CoreStartedEvent;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;
@@ -69,7 +69,7 @@ public class AlertServiceImpl implements AlertService {
 	
 	@EventListener
 	@Override
-	public void onStartup(ContextStartedEvent event) {
+	public void onStartup(CoreStartedEvent event) {
 		for (TriggerResource trigger : triggerService
 				.getTriggersByTask(AlertTask.ACTION_GENERATE_ALERT)) {
 			registerDynamicEvent(trigger);

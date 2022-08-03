@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -46,6 +47,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -94,7 +96,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			return databaseType;
 		}
 		try {
-			DatabaseMetaData metaData = connection.getMetaData();
+			var metaData = connection.getMetaData();
 			databaseType = metaData.getDatabaseProductName();
 			if (databaseType.equals("Apache Derby")) {
 				databaseType = "derby";
@@ -130,11 +132,11 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			log.info("Starting pre-upgrade");
 		}
 		
-		try (Connection connection = ds.getConnection()) {
+		try (var connection = ds.getConnection()) {
 			String url = ds.getConnection().getMetaData().getURL();
 			if(url.startsWith("jdbc:h2:")) {
 				log.info("Compacting database, this may take a long time if it hasn't been done for a time!");
-				try(Statement statement = connection.createStatement()) {
+				try(var statement = connection.createStatement()) {
 					statement.execute("SHUTDOWN COMPACT");
 				}
 				catch(Exception e) {
@@ -146,12 +148,12 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			throw new IOException("Failed compact.", e);
 		}
 
-		try (Connection connection = ds.getConnection()) {
+		try (var connection = ds.getConnection()) {
 
-			try(ResultSet rs = connection.getMetaData().getTables(ds.getConnection().getCatalog(), null, "upgrade", null)) {
+			try(var rs = connection.getMetaData().getTables(ds.getConnection().getCatalog(), null, "upgrade", null)) {
 				if(rs.next()) {
-					try (Statement st = connection.createStatement()) {
-						try (ResultSet rs2 = st.executeQuery("select * from upgrade")) {
+					try (var st = connection.createStatement()) {
+						try (var rs2 = st.executeQuery("select * from upgrade")) {
 							fresh = !rs2.next();
 						}
 					}		
@@ -168,8 +170,8 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 				log.info("Pre-upgrading existing database");
 			}
 			
-			List<UpgradeOp> ops = buildUpgradeOps();
-			Map<String, Object> beans = new HashMap<String, Object>();
+			var ops = buildUpgradeOps();
+			var beans = new HashMap<String, Object>();
 
 			// Do all the SQL upgrades first
 			try {
@@ -193,6 +195,97 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 
 	}
 
+	@Override
+	public void upgradePlugins(ApplicationContext ctx) {
+		var txnTemplate = new TransactionTemplate(ctx.getBean(PlatformTransactionManager.class));
+		txnTemplate.afterPropertiesSet();	
+		var sessionFactory = ctx.getBean(SessionFactory.class);
+		try {
+			txnTemplate.execute(new TransactionCallback<Object>() {
+				public Object doInTransaction(TransactionStatus status) {
+
+					try {
+						if (log.isInfoEnabled()) {
+							log.info("Starting upgrade");
+						}
+
+						if (log.isInfoEnabled()) {
+							if (fresh) {
+								log.info("Database is fresh");
+							} else {
+								log.info("Upgrading existing database");
+							}
+						}
+						var ops = buildPluginUpgradeOps(ctx);
+						Map<String, Object> beans = new HashMap<String, Object>();
+
+						// Do all the SQL upgrades first
+						sessionFactory.getCurrentSession().doWork((connection) -> {
+//							try {
+//								doOps(connection, ops, beans, "sql", getDatabaseType(connection), "js", "class");
+//								
+//
+//								// Also mark all the pre.sql ops as done now we definitely have an upgrade table
+//								List<String> l = Arrays.asList("pre.sql", "pre." + getDatabaseType(connection));
+//								for (UpgradeOp op : ops) {
+//									if (l.contains(op.getLanguage())) {
+//										Upgrade upgrade = getUpgrade(connection, op.getModule(), op.getLanguage());
+//										if (upgrade == null) {
+//											String v = "0.0.0";
+//											if (op.getLanguage().equals("java")) {
+//												v = "0.0.9";
+//											}
+//											upgrade = new Upgrade(v, op.getModule(), op.getLanguage());
+//										}
+//										Version currentVersion = new Version(upgrade.getVersion());
+//										// If version for the script found is greater than the current
+//										// version then run the script
+//										if (op.getVersion().compareTo(currentVersion) > 0) {
+//											if (log.isInfoEnabled()) {
+//												log.info("Pre-Module " + op.getModule() + "/" + op.getLanguage() + " is now at " + op.getVersion());
+//											}
+//											upgrade.setVersion(op.getVersion().toString());
+//											saveOrUpdate(connection, upgrade);
+//										} else {
+//											if (log.isInfoEnabled()) {
+//												log.info("Pre-Module " + op.getModule() + "/" + op.getLanguage() + " is at version "
+//														+ currentVersion + ", no need to run script for " + op.getVersion());
+//											}
+//										}
+//									}
+//								}
+								
+								
+								
+//							} catch (IOException | ScriptException ioe) {
+//								throw new IllegalStateException("Failed to run upgrade scripts.", ioe);
+//							}
+
+							for (UpgradeServiceListener listener : listeners) {
+								listener.onUpgradeFinished();
+							}
+						});
+
+						if (log.isInfoEnabled()) {
+							log.info("Finished upgrade");
+						}
+					} catch (Throwable e) {
+						log.error("Failed to upgrade", e);
+						throw new IllegalStateException("Errors upgrading database", e);
+					}
+					return null;
+				}
+			});
+		} catch (TransactionException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+
+		if (log.isInfoEnabled()) {
+			log.info("Completed upgrade");
+		}
+		
+	}
+
 	public void upgrade(SessionFactory sessionFactory, TransactionTemplate txnTemplate) {
 		try {
 			txnTemplate.execute(new TransactionCallback<Object>() {
@@ -210,8 +303,8 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 								log.info("Upgrading existing database");
 							}
 						}
-						List<UpgradeOp> ops = buildUpgradeOps();
-						Map<String, Object> beans = new HashMap<String, Object>();
+						var ops = buildUpgradeOps();
+						var beans = new HashMap<String, Object>();
 
 						// Do all the SQL upgrades first
 						sessionFactory.getCurrentSession().doWork((connection) -> {
@@ -220,8 +313,8 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 								
 
 								// Also mark all the pre.sql ops as done now we definitely have an upgrade table
-								List<String> l = Arrays.asList("pre.sql", "pre." + getDatabaseType(connection));
-								for (UpgradeOp op : ops) {
+								var l = Arrays.asList("pre.sql", "pre." + getDatabaseType(connection));
+								for (var op : ops) {
 									if (l.contains(op.getLanguage())) {
 										Upgrade upgrade = getUpgrade(connection, op.getModule(), op.getLanguage());
 										if (upgrade == null) {
@@ -291,12 +384,12 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 		return done;
 	}
 
-	protected void doOps(Connection connection, List<UpgradeOp> ops, Map<String, Object> beans, String... languages)
+	protected void doOps(Connection connection, List<UpgradeOp<URL>> ops, Map<String, Object> beans, String... languages)
 			throws ScriptException, IOException {
-		List<String> l = Arrays.asList(languages);
-		for (UpgradeOp op : ops) {
+		var l = Arrays.asList(languages);
+		for (var op : ops) {
 			if (l.contains(op.getLanguage())) {
-				Upgrade upgrade = getUpgrade(connection, op.getModule(), op.getLanguage());
+				var upgrade = getUpgrade(connection, op.getModule(), op.getLanguage());
 				if (upgrade == null) {
 					String v = "0.0.0";
 					if (op.getLanguage().equals("java")) {
@@ -304,16 +397,16 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 					}
 					upgrade = new Upgrade(v, op.getModule(), op.getLanguage());
 				}
-				Version currentVersion = new Version(upgrade.getVersion());
+				var currentVersion = new Version(upgrade.getVersion());
 				// If version for the script found is greater than the current
 				// version then run the script
 				if (op.getVersion().compareTo(currentVersion) > 0) {
 					if (log.isInfoEnabled()) {
 						log.info("Module " + op.getModule() + "/" + op.getLanguage() + " is currently at version "
-								+ currentVersion + ". Running the script " + op.getUrl()
+								+ currentVersion + ". Running the script " + op.getCallable()
 								+ " will take the module to version " + op.getVersion());
 					}
-					executeScript(connection, beans, op.getUrl());
+					executeScript(connection, beans, op.getCallable());
 					if (log.isInfoEnabled()) {
 						log.info("Module " + op.getModule() + "/" + op.getLanguage() + " is now at " + op.getVersion());
 					}
@@ -359,14 +452,30 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 		}
 	}
 
-	private List<UpgradeOp> buildUpgradeOps() throws IOException {
-		List<UpgradeOp> ops = new ArrayList<UpgradeOp>();
-		for (Resource script : scripts) {
-			URL url = script.getURL();
+	private List<UpgradeOp<Callable<Void>>> buildPluginUpgradeOps(ApplicationContext ctx) throws IOException {
+		@SuppressWarnings("unchecked")
+		var ops = new ArrayList<>(ctx.getBeansWithAnnotation(UpgradeScript.class).values().stream().map(bean -> {
+
+			var script = bean.getClass().getAnnotation(UpgradeScript.class);
+			String modname = script.module();
+			String modlang = script.lang();
+			if(script.pre()) {
+				modlang = "pre." + modlang;
+			}
+			return new UpgradeOp<>(new Version(modname), (Callable<Void>)bean, modname, modlang);
+		}).collect(Collectors.toList()));
+		Collections.sort(ops);
+		return ops;
+	}
+
+	private List<UpgradeOp<URL>> buildUpgradeOps() throws IOException {
+		var ops = new ArrayList<UpgradeOp<URL>>();
+		for (var script : scripts) {
+			var url = script.getURL();
 
 			url.getFile();
 
-			String name = url.getPath();
+			var name = url.getPath();
 			int idx;
 			if ((idx = name.lastIndexOf("/")) > -1) {
 				name = name.substring(idx + 1);
@@ -383,10 +492,10 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			name = name.replace("_DOT_", ".");
 
 			int moduleIdx = name.indexOf('_');
-			String moduleName = name.substring(0, moduleIdx);
+			var moduleName = name.substring(0, moduleIdx);
 			name = name.substring(moduleIdx + 1);
 			idx = name.lastIndexOf('.');
-			String modname = name.substring(0, idx);
+			var modname = name.substring(0, idx);
 			String modlang;
 			if(modname.endsWith(".pre")) {
 				modname = modname.substring(0, modname.length() - 4);
@@ -394,7 +503,7 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 			}
 			else
 				modlang = name.substring(idx + 1);
-			ops.add(new UpgradeOp(new Version(modname), url, moduleName, modlang));
+			ops.add(new UpgradeOp<>(new Version(modname), url, moduleName, modlang));
 		}
 		Collections.sort(ops);
 		return ops;

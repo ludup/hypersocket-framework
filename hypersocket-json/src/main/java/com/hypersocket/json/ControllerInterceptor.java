@@ -81,6 +81,11 @@ public class ControllerInterceptor implements HandlerInterceptor {
 							sessionUtils.getPrincipal(request), sessionUtils.getLocale(request));
 				}
 			}
+			
+			var was = Thread.currentThread().getContextClassLoader();
+			if(was != null)
+				request.setAttribute("lastContextClassLoader", was);
+			Thread.currentThread().setContextClassLoader(method.getBeanType().getClassLoader());
 		}
 
 		return true;
@@ -104,25 +109,32 @@ public class ControllerInterceptor implements HandlerInterceptor {
 			ModelAndView modelAndView) throws Exception {
 
 		var clearContext = false;
-		if (handler instanceof HandlerMethod) {
-			HandlerMethod method = (HandlerMethod) handler;
-			clearContext = method.getMethodAnnotation(AuthenticatedContext.class) != null;
-		}
-
-		if (clearContext) {
-			if (authenticationService.hasAuthenticatedContext() || authenticationService.hasSessionContext()) {
-				authenticationService.clearPrincipalContext();
-			} else {
-				if (log.isInfoEnabled()) {
-					log.info(
-							"{} {} was expecting to have a context to clear, but there was none. This suggests a coding error.",
-							request.getMethod(), request.getRequestURI());
-				}
+		try {
+			if (handler instanceof HandlerMethod) {
+				HandlerMethod method = (HandlerMethod) handler;
+				clearContext = method.getMethodAnnotation(AuthenticatedContext.class) != null;
 			}
-		} else if (authenticationService.hasAuthenticatedContext() || authenticationService.hasSessionContext()) {
-			log.warn("{} {} still has authenticated/session context. Will remove", request.getMethod(),
-					request.getRequestURI());
-			authenticationService.clearPrincipalContext();
+	
+			if (clearContext) {
+				if (authenticationService.hasAuthenticatedContext() || authenticationService.hasSessionContext()) {
+					authenticationService.clearPrincipalContext();
+				} else {
+					if (log.isInfoEnabled()) {
+						log.info(
+								"{} {} was expecting to have a context to clear, but there was none. This suggests a coding error.",
+								request.getMethod(), request.getRequestURI());
+					}
+				}
+			} else if (authenticationService.hasAuthenticatedContext() || authenticationService.hasSessionContext()) {
+				log.warn("{} {} still has authenticated/session context. Will remove", request.getMethod(),
+						request.getRequestURI());
+				authenticationService.clearPrincipalContext();
+			}
+		}
+		finally {
+			var was = (ClassLoader)request.getAttribute("lastContextClassLoader");
+			if(was != null)
+				Thread.currentThread().setContextClassLoader(was);
 		}
 	}
 

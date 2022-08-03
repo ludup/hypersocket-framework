@@ -1,8 +1,10 @@
 package com.hypersocket.plugins;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,11 +13,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.output.NullOutputStream;
+import org.bouncycastle.util.io.TeeInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,8 +49,8 @@ import com.hypersocket.tables.Sort;
 @Service
 public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl implements PluginResourceService, EventPropertyCollector {
 
-	public static final String RESOURCE_BUNDLE = "PluginResourceService";
-
+	private final static Logger LOG = LoggerFactory.getLogger(PluginResourceServiceImpl.class);
+	
 	@Autowired
 	private I18NService i18nService;
 
@@ -106,15 +115,15 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 				resource, t, getCurrentSession()));
 	}
 
-	protected void fireResourceDeletionEvent(PluginResource resource) {
+	protected void fireResourceDeletionEvent(PluginResource resource, boolean deleteData) {
 		eventService.publishEvent(new PluginResourceDeletedEvent(this,
-				getCurrentSession(), resource));
+				getCurrentSession(), resource, deleteData));
 	}
 
-	protected void fireResourceDeletionEvent(PluginResource resource,
+	protected void fireResourceDeletionEvent(PluginResource resource, boolean deleteData,
 			Throwable t) {
 		eventService.publishEvent(new PluginResourceDeletedEvent(this,
-				resource, t, getCurrentSession()));
+				resource, t, getCurrentSession(), deleteData));
 	}
 
 	@Override
@@ -199,38 +208,70 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public void deleteResource(PluginResource resource) throws AccessDeniedException, IOException {
+		doDeleteResource(resource, false);
+	}
+
+	protected void doDeleteResource(PluginResource resource, boolean deleteData) throws AccessDeniedException {
 		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			assertPermission(PluginResourcePermission.DELETE);
 		}
-		pluginManager.deletePlugin(resource.getId());
+		try {
+			pluginManager.deletePlugin(resource.getId());
+			fireResourceDeletionEvent(resource, deleteData);
+		}
+		catch(RuntimeException re) {
+			fireResourceDeletionEvent(resource, deleteData, re);
+			throw re;
+		}
 	}
 
 	@Override
 	public PluginResource disable(PluginResource resource) throws AccessDeniedException, IOException {
-		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
-			assertPermission(PluginResourcePermission.UPDATE);
+		try {
+			if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+				assertPermission(PluginResourcePermission.UPDATE);
+			}
+			pluginManager.disablePlugin(resource.getId());
+			fireResourceUpdateEvent(resource);
 		}
-		pluginManager.disablePlugin(resource.getId());
+		catch(AccessDeniedException | RuntimeException re) {
+			fireResourceUpdateEvent(resource, re);
+			throw re;
+		}
 		return getResourceById(resource.getId());
 	}
 
 	@Override
 	public PluginResource enable(PluginResource resource) throws AccessDeniedException, IOException {
-		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
-			assertPermission(PluginResourcePermission.UPDATE);
+		try {
+			if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+				assertPermission(PluginResourcePermission.UPDATE);
+			}
+			reload(resource);
+			pluginManager.enablePlugin(resource.getId());
+			fireResourceUpdateEvent(resource);
 		}
-		reload(resource);
-		pluginManager.enablePlugin(resource.getId());
+		catch(AccessDeniedException | RuntimeException re) {
+			fireResourceUpdateEvent(resource, re);
+			throw re;
+		}
 		return getResourceById(resource.getId());
 	}
 
 	@Override
 	public PluginResource stop(PluginResource resource) throws AccessDeniedException, IOException {
-		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
-			assertPermission(PluginResourcePermission.UPDATE);
+		try {
+			if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+				assertPermission(PluginResourcePermission.UPDATE);
+			}
+			pluginManager.stopPlugin(resource.getId());
+			reload(resource);
+			fireResourceUpdateEvent(resource);
 		}
-		pluginManager.stopPlugin(resource.getId());
-		reload(resource);
+		catch(AccessDeniedException | RuntimeException re) {
+			fireResourceUpdateEvent(resource, re);
+			throw re;
+		}
 		return getResourceById(resource.getId());
 	}
 
@@ -254,16 +295,60 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 
 	
 	@Override
-	public PluginResource upload(Realm realm, InputStream inputStream, String name) throws IOException, AccessDeniedException {
+	public PluginResource upload(Realm realm, InputStream inputStream, boolean start) throws IOException, AccessDeniedException {
 		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			assertPermission(PluginResourcePermission.CREATE);
 		}
-		var pluginPath = Paths.get("conf/plugins").resolve(name);
-		try(var out = Files.newOutputStream(pluginPath)) {
-			inputStream.transferTo(out);
+		var tmpName = String.valueOf(System.currentTimeMillis());
+		var tmpPluginPath = Paths.get("conf/plugins").resolve(tmpName);
+		String id = null;
+		try {
+			LOG.info("Temporarily downloading to {}", tmpPluginPath);
+			var p = new Properties();
+			try(var out = Files.newOutputStream(tmpPluginPath)) {
+				var zfile = new ZipInputStream(new TeeInputStream(inputStream, out));
+				ZipEntry zentry = null;
+				while ((zentry = zfile.getNextEntry()) != null) {
+					if (!zentry.isDirectory()) {
+						if(zentry.getName().equals("plugin.properties")) {
+							p.load(zfile);
+							id = p.getProperty("plugin.id", "unknown");
+							LOG.info("Found plugin meta-data for {}", id);
+							p.forEach((k, v) ->LOG.info("    {}={}", k, v));
+						}
+						else
+							zfile.transferTo(new NullOutputStream());
+						zfile.closeEntry();
+					}
+				}
+				
+				inputStream.transferTo(out);
+			}
+			if(id == null) {
+				throw new IOException("Archive contains no plugin meta-data.");
+			}
+			else {
+				var realPluginPath = Paths.get("conf/plugins").resolve(id + "-" + p.getProperty("plugin.version", "0.0.0-SNAPSHOT") + ".zip");
+				LOG.info("Moving plugin {}", tmpPluginPath, realPluginPath);
+				if(Files.exists(realPluginPath))
+					throw new IOException(String.format("Plugin %s already exists.", id));
+				Files.move(tmpPluginPath,  realPluginPath);
+				LOG.info("Loading plugin from {}", realPluginPath);
+				pluginManager.loadPlugin(realPluginPath);
+				if(start) {
+					pluginManager.startPlugin(id);
+				}
+			}
 		}
-		pluginManager.loadPlugin(pluginPath);
-		return null;
+		finally {
+			if(Files.exists(tmpPluginPath)) {
+				Files.walk(tmpPluginPath)
+			      .sorted(Comparator.reverseOrder())
+			      .map(Path::toFile)
+			      .forEach(File::delete);
+			}
+		}
+		return getResourceById(id);
 	}
 
 	@Override
@@ -387,7 +472,7 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			deleteResource(resource);
+			doDeleteResource(resource, deleteData);
 		}
 	}
 

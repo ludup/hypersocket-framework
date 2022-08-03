@@ -12,6 +12,7 @@ import java.io.IOException;
 import javax.sql.DataSource;
 
 import org.hibernate.SessionFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -32,4 +33,6 @@ public interface UpgradeService {
 	boolean isDone();
 
 	void preUpgrade(DataSource dataSource) throws IOException;
+
+	void upgradePlugins(ApplicationContext ctx);
 }
