@@ -173,7 +173,6 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 			@Override
 			public void configure(Criteria criteria) {
 				criteria.add(Restrictions.eq("realm", realm));
-				
 			}
 		});
 	}

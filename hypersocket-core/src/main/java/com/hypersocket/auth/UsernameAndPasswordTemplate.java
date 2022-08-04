@@ -31,7 +31,18 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 	public static final String USERNAME_FIELD = "username";
 	public static final String PASSWORD_FIELD = "password";
 
+	@SuppressWarnings("rawtypes")
 	public UsernameAndPasswordTemplate(AuthenticationState state, Map<String, String[]> params, List<Realm> realms, Realm defaultRealm) {
+		this(state, params, realms, defaultRealm, PASSWORD_FIELD, "password.label", AuthenticationServiceImpl.RESOURCE_BUNDLE);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public UsernameAndPasswordTemplate(AuthenticationState state, Map<String, String[]> params, List<Realm> realms, Realm defaultRealm, String resourceKey, String label) {
+		this(state, params, realms, defaultRealm, resourceKey, label, null);
+	}
+		
+	@SuppressWarnings("rawtypes")
+	public UsernameAndPasswordTemplate(AuthenticationState state, Map<String, String[]> params, List<Realm> realms, Realm defaultRealm, String resourceKey, String labelResourceKeyOrLabel, String bundle) {
 		super(state.getInitialSchemeResourceKey());
 		setResourceKey(UsernameAndPasswordAuthenticator.RESOURCE_KEY);
 
@@ -67,9 +78,9 @@ public class UsernameAndPasswordTemplate extends FormTemplate {
 			
 			fields.add(username);
 		}
-		
-		fields.add(new PasswordInputField(PASSWORD_FIELD, "", true, "Password"));
 
+		fields.add(new PasswordInputField(resourceKey, "", true, bundle == null ? labelResourceKeyOrLabel : I18N.getResource(state.getLocale(),
+				bundle, labelResourceKeyOrLabel)));
 	}
 
 }
