@@ -690,6 +690,11 @@ public class AuthenticationServiceImpl extends
 //							state.setScheme(schemeRepository.getSchemeByResourceKey(principal.getRealm(), 
 //									state.getScheme().getResourceKey()));
 							
+							if(!checkSuspensions(state, authenticator)) {
+								success = false;
+								break;
+							}
+							
 							if(state.getPrincipal()!=null) {
 								if(!state.getScheme().getAllowedRoles().isEmpty()) {
 									boolean found = permissionService.hasRole(state.getPrincipal(), state.getScheme().getAllowedRoles());
@@ -878,7 +883,7 @@ public class AuthenticationServiceImpl extends
 
 	private boolean checkSuspensions(AuthenticationState state, Authenticator authenticator) {
 		
-		if(authenticator.isSecretModule()) {
+		if(StringUtils.isNotBlank(state.getLastPrincipalName()) && authenticator.isSecretModule()) {
 			if (!realmService.verifyPrincipal(state.getLastPrincipalName(), state.getRealm())) {
 				state.clean();
 				state.setLastErrorMsg("error.accountSuspended");
