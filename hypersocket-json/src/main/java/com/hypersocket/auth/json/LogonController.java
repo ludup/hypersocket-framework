@@ -232,8 +232,11 @@ public class LogonController extends AuthenticatedController {
 				 * If the previous state is non-null (which it will be when switching), 
 				 * createAuthenticationState() should merge them. */
 //				if(state==null) {
-					state = AuthenticationState.createAuthenticationState(scheme, request,
-						null, state, sessionUtils.getLocale(request));
+
+					try(var c = tryWithSystemContext()) {
+						state = AuthenticationState.createAuthenticationState(scheme, request,
+							null, state, sessionUtils.getLocale(request));
+					}
 //				}
 			}
 
