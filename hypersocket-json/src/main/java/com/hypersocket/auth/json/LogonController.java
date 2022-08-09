@@ -223,8 +223,10 @@ public class LogonController extends AuthenticatedController {
 				if(StringUtils.isNotBlank(username)) {
 					Principal principal = realmService.getPrincipalByName(getCurrentRealm(), username, PrincipalType.USER);
 					if(Objects.nonNull(principal)) {
-						state = AuthenticationState.createAuthenticationState(scheme, request,
-								principal.getRealm(), principal, state, sessionUtils.getLocale(request));
+						try(var c = tryWithSystemContext()) {
+							state = AuthenticationState.createAuthenticationState(scheme, request,
+									principal.getRealm(), principal, state, sessionUtils.getLocale(request));
+						}
 					}
 				}
 				
