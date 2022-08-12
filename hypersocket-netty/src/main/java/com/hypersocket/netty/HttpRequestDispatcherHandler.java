@@ -19,7 +19,6 @@ import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -36,7 +35,6 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.utils.DateUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
@@ -63,6 +61,8 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.auth.json.UnauthorizedException;
+import com.hypersocket.cache.CacheUtils;
+import com.hypersocket.json.ControllerInterceptor;
 import com.hypersocket.json.RestApi;
 import com.hypersocket.netty.forwarding.NettyWebsocketClient;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -262,7 +262,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 				if(server.isProtectedPage(reverseUri)) {
 					if(!ApplicationContextServiceImpl.getInstance().getBean(SessionUtils.class).hasActiveSession(servletRequest)) {
 						nettyResponse.setStatus(HttpStatus.SC_NOT_FOUND);
-						sendResponse(servletRequest, nettyResponse, false);
+						sendResponse(servletRequest, nettyResponse, false, true);
 						return;
 					}
 				}
@@ -295,7 +295,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 							log.debug("Redirecting to " + redirPath + " for " + reverseUri);
 						}
 						nettyResponse.sendRedirect(redirPath, false /* Don't use a permanent redirection as the alias target may change */);
-						sendResponse(servletRequest, nettyResponse, false);
+						sendResponse(servletRequest, nettyResponse, false, true);
 						return;
 					} else {
 						if(log.isDebugEnabled()) {
@@ -338,7 +338,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 						
 						if(nettyRequest.getUri().equals("/health-check")) {
 							nettyResponse.setStatus(HttpStatus.SC_OK);
-							sendResponse(servletRequest, nettyResponse, false);
+							sendResponse(servletRequest, nettyResponse, false, true);
 							return;
 						} else {
 							// Redirect the plain port to SSL
@@ -355,7 +355,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 												+ String.valueOf(interfaceResource.getRedirectPort()) : "")
 										+ nettyRequest.getUri());
 							}
-							sendResponse(servletRequest, nettyResponse, false);
+							sendResponse(servletRequest, nettyResponse, false, true);
 							return;
 						}
 					}
@@ -371,11 +371,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 							} catch (AccessDeniedException ex) {
 								log.error("Failed to open tunnel", ex);
 								nettyResponse.setStatus(HttpStatus.SC_FORBIDDEN);
-								sendResponse(servletRequest, nettyResponse, false);
+								sendResponse(servletRequest, nettyResponse, false, true);
 							} catch (UnauthorizedException ex) {
 								log.error("Failed to open tunnel", ex);
 								nettyResponse.setStatus(HttpStatus.SC_UNAUTHORIZED);
-								sendResponse(servletRequest, nettyResponse, false);
+								sendResponse(servletRequest, nettyResponse, false, true);
 							}
 							return;
 						}
@@ -397,7 +397,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 								handler.handleHttpRequest(servletRequest, nettyResponse);
 							}
 							finally {
-								sendResponse(servletRequest, nettyResponse, false);
+								sendResponse(servletRequest, nettyResponse, false, handler.getDisableCache());
 							}
 							return;
 						}
@@ -406,7 +406,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 		
 				server.processDefaultResponse(servletRequest, nettyResponse, true);
 				nettyResponse.setStatus(HttpStatus.SC_NOT_FOUND);
-				sendResponse(servletRequest, nettyResponse, false);
+				sendResponse(servletRequest, nettyResponse, false, true);
 		
 				if (log.isDebugEnabled()) {
 					log.debug("Leaving HttpRequestDispatcherHandler processRequest");
@@ -503,7 +503,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 	}
 
 	public void sendResponse(final HttpRequestServletWrapper servletRequest,
-			final HttpResponseServletWrapper servletResponse, boolean chunked) {
+			final HttpResponseServletWrapper servletResponse, boolean chunked, boolean disableCache) {
 
 		try {
 			HttpResponse nettyResponse = ((HttpResponseServletWrapper)servletResponse).getNettyResponse();
@@ -523,7 +523,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 				}
 			}
 			
-			addStandardHeaders(servletRequest, servletResponse);
+			addStandardHeaders(servletRequest, servletResponse, disableCache);
 
 			InputStream stream = processContent(
 					servletRequest,
@@ -683,7 +683,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 		return null;
 	}
 
-	private void addStandardHeaders(HttpServletRequest request, HttpResponseServletWrapper servletResponse) {
+	private void addStandardHeaders(HttpServletRequest request, HttpResponseServletWrapper servletResponse, boolean disableCache) {
 
 		servletResponse.setHeader("Server", server.getApplicationName());
 
@@ -693,10 +693,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 			servletResponse.setHeader("Connection", "close");
 			servletResponse.setCloseOnComplete(true);
 		}
-
-		servletResponse.setHeader("Date",
-				DateUtils.formatDate(new Date(System.currentTimeMillis())));
 		
+		var cc = (Boolean)request.getAttribute(ControllerInterceptor.CACHEABLE);
+		CacheUtils.setDateAndCacheHeaders(servletResponse, -1, ( cc == null && !disableCache) || (cc != null && cc), request.getRequestURI());
 	}
 
 	@Override
@@ -840,7 +839,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 		@Override
 		public void websocketRejected(Throwable cause, int error) {
 			response.setStatus(error);
-			sendResponse(request, response, false);
+			sendResponse(request, response, false, true);
 		}
 
 		@Override

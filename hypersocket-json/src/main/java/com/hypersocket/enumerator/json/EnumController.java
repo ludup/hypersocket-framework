@@ -18,6 +18,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.hypersocket.annotation.EnumDisplayName;
 import com.hypersocket.auth.json.AuthenticatedController;
+import com.hypersocket.auth.json.Cacheable;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.json.ResourceList;
@@ -34,6 +35,7 @@ public class EnumController extends AuthenticatedController {
 	@RequestMapping(value = "enum/{className}/", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@AuthenticatedContext(system = true)
+	@Cacheable
 	public ResourceList<NameValuePair> getStates(
 			WebRequest request, HttpServletResponse response,
 			@PathVariable("className") String className)
@@ -79,6 +81,7 @@ public class EnumController extends AuthenticatedController {
 	@RequestMapping(value = "enum/{className}/{ignore}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@AuthenticatedContext(system = true)
+	@Cacheable
 	public ResourceList<NameValuePair> getStates(
 			WebRequest request, HttpServletResponse response,
 			@PathVariable("className") String className,
@@ -112,6 +115,7 @@ public class EnumController extends AuthenticatedController {
 	@RequestMapping(value = "enum/displayable/{className}/", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@AuthenticatedContext(system = true)
+	@Cacheable
 	public ResourceList<Displayable<?>> getDisplayableEnums(
 			WebRequest request, HttpServletResponse response,
 			@PathVariable("className") String className)

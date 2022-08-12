@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -23,12 +24,16 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.AuthenticationRequiredButDontTouchSession;
+import com.hypersocket.auth.json.Cacheable;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.json.SessionUtils;
 
 @Component
 public class ControllerInterceptor implements HandlerInterceptor {
+	 
+	public static final String CACHEABLE = "overrideCacheable";
 
 	private final static Logger log = LoggerFactory.getLogger(ControllerInterceptor.class);
 
@@ -38,6 +43,20 @@ public class ControllerInterceptor implements HandlerInterceptor {
 	private SessionUtils sessionUtils;
 	@Autowired
 	private RealmService realmService;
+	@Autowired
+	private SystemConfigurationService systemConfigurationService;
+
+	private boolean setupMode;
+	
+	@PostConstruct
+	private void setup() {
+		try {
+			setupMode = !systemConfigurationService.getBooleanValue("setup.completed");
+		}
+		catch(IllegalStateException ise) {
+			/* Non-commercial configuration */
+		}
+	}
 
 	@SuppressWarnings({ "deprecation", "removal" })
 	@Override
@@ -46,6 +65,14 @@ public class ControllerInterceptor implements HandlerInterceptor {
 		if (handler instanceof HandlerMethod) {
 
 			var method = (HandlerMethod) handler;
+
+
+			if(setupMode) {
+				request.setAttribute(CACHEABLE, false);
+			}
+			else if(method.getMethodAnnotation(Cacheable.class) != null) {
+				request.setAttribute(CACHEABLE, method.getMethodAnnotation(Cacheable.class).value());
+			}
 
 			if (method.getMethodAnnotation(AuthenticationRequired.class) != null
 					|| method.getMethodAnnotation(AuthenticationRequiredButDontTouchSession.class) != null) {
