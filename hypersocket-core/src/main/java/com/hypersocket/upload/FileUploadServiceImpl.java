@@ -270,7 +270,7 @@ public class FileUploadServiceImpl extends
 
 		// Let the HTTP server handle it.
 		request.setAttribute(CONTENT_INPUTSTREAM, in);
-		CacheUtils.setDateAndCacheHeaders(response, fileUpload.getModifiedDate().getTime());
+		CacheUtils.setDateAndCacheHeaders(response, fileUpload.getModifiedDate().getTime(), true, request.getRequestURI());
 	}
 	
 	@Override

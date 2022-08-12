@@ -325,7 +325,7 @@ public class FileStoreController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException, ResourceNotFoundException {
 
-			resourceService.downloadURIFile(uuid, request, response, true, false, true);
+		resourceService.downloadURIFile(uuid, request, response, true, false, true);
 	}
 	
 	@AuthenticationRequiredButDontTouchSession
@@ -336,7 +336,12 @@ public class FileStoreController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException,
 			SessionTimeoutException, IOException, ResourceNotFoundException {
 
-			resourceService.downloadURIFile(uuid, request, response, true, false, true);
+		/* XXX: This is for the benefit of Zap scanner. Ideally, this
+		 * call should be removed entirely (is Content-Disposition not working in the case that needs this?) */ 
+		if(filename.equals(".htaccess"))
+			throw new AccessDeniedException();
+
+		resourceService.downloadURIFile(uuid, request, response, true, false, true);
 	}
 	
 	@RequestMapping(value = "files/public/{uuid}/{filename}", method = RequestMethod.GET)

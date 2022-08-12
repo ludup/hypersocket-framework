@@ -137,7 +137,6 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	private Set<String> preventUrlRedirection = new HashSet<>();
 	private NCSARequestLog requestLog;
-	private boolean setupMode;
 
 	public NettyServer() {
 
@@ -211,13 +210,6 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 		}
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-		
-		try {
-			setupMode = !configurationService.getBooleanValue("setup.completed");
-		}
-		catch(IllegalStateException ise) {
-			/* Non-commercial configuration */
-		}
 	}
 
 	public ClientBootstrap getClientBootstrap() {
@@ -764,10 +756,6 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 			nettyResponse.setHeader("X-Frame-Options", configurationService.getValue("security.xFrameOptionsValue"));
 		}
 
-		if(setupMode || ( disableCache && !nettyResponse.containsHeader("Cache-Control"))) {
-			nettyResponse.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
-			nettyResponse.setHeader("Pragma", "no-cache");
-		}
 		nettyResponse.setHeader("X-Content-Type-Options", "nosniff");
 		nettyResponse.setHeader("X-XSS-Protection", "1; mode=block");
 

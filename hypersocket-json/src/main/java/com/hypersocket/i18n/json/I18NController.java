@@ -36,6 +36,7 @@ import org.springframework.web.context.request.WebRequest;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.auth.json.AuthenticatedController;
+import com.hypersocket.auth.json.Cacheable;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.i18n.I18NGroup;
@@ -56,6 +57,7 @@ public class I18NController extends AuthenticatedController {
 	
 	@RequestMapping(value="i18n", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
+	@Cacheable
 	public Map<String,String> getResources(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, AccessDeniedException {
 		
 		return getResourcesWithGroup(webRequest, request, response, I18NGroup.DEFAULT_GROUP.getTitle());
@@ -64,6 +66,7 @@ public class I18NController extends AuthenticatedController {
 	@RequestMapping(value="i18n/group/{group}", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
 	@AuthenticatedContext(anonymous = true)
+	@Cacheable
 	public Map<String,String> getResourcesWithGroup(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response, @PathVariable String group) throws IOException, AccessDeniedException {
 		var rebuildI18N = (Boolean)request.getSession().getAttribute(SessionUtils.HYPERSOCKET_REBUILD_I18N);
 		/* If the locale has just been changed, never return SC_NOT_MODIFIED, we
@@ -84,6 +87,7 @@ public class I18NController extends AuthenticatedController {
 	@RequestMapping(value="i18n/{locale}", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
 	@ResponseStatus(value=HttpStatus.OK)
+	@Cacheable
 	public Map<String,String> getResources(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response, @PathVariable String locale) throws IOException, AccessDeniedException {
 		
 		return getResourcesWithGroupAndLocale(webRequest, request, response, locale, I18NGroup.DEFAULT_GROUP.getTitle());

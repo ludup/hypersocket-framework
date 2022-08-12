@@ -40,6 +40,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 
 import com.hypersocket.ApplicationContextServiceImpl;
+import com.hypersocket.auth.json.Cacheable;
+import com.hypersocket.cache.CacheUtils;
+import com.hypersocket.json.ControllerInterceptor;
 import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
@@ -170,7 +173,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			    return;
 			}
 
-			String path = translatePath(sanitizeUri(request.getRequestURI()));
+			String requri = request.getRequestURI();
+			String path = translatePath(sanitizeUri(requri));
 			if(path.startsWith("/"))
 				path = path.substring(1);
 			
@@ -182,21 +186,21 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			String basePath = getBasePath();
 			
 			if(LOG.isDebugEnabled()) {
-				LOG.debug("Resolving " + getResourceName() + " resource in " + basePath + ": " + request.getRequestURI());
+				LOG.debug("Resolving " + getResourceName() + " resource in " + basePath + ": " + requri);
 			}
 			
 			int status = getResourceStatus(path);
 
 			if(status!=HttpStatus.SC_OK) {
 				if(LOG.isDebugEnabled()) {
-					LOG.debug("Resource error in " + basePath + " [" + status + "]: " + request.getRequestURI());
+					LOG.debug("Resource error in " + basePath + " [" + status + "]: " + requri);
 				}
 				response.sendError(status);
 				return;
 			}
 			
 			if(LOG.isDebugEnabled()) {
-				LOG.debug("Resource found in " + basePath + ": " + request.getRequestURI());
+				LOG.debug("Resource found in " + basePath + ": " + requri);
 			}
 			
 			// Cache Validation
@@ -237,6 +241,8 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				}
 
 			}
+			else
+				request.setAttribute(ControllerInterceptor.CACHEABLE, false);
 
 			long fileLength = getResourceLength(path);
 			long actualLength = 0;
@@ -263,13 +269,14 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			}
 			
 			setContentTypeHeader(response, path);
-			setDateAndCacheHeaders(response, path);
+			CacheUtils.setDateAndCacheHeaders(response, getLastModified(path), true, path);
 			
-			if (request.getRequestURI().endsWith(".html")) {
+			if (requri.endsWith(".js") || requri.endsWith(".css") || requri.endsWith(".xml") || requri.endsWith(".html") || requri.indexOf('.') == -1) {
 				response.addHeader("Referrer-Policy", "no-referrer");
 				
 				response.addHeader("Permissions-Policy", PERMISSIONS_POLICY_HEADER_OPTIONS);
 				response.addHeader("Feature-Policy", FEATURE_POLICY_HEADER_OPTIONS);
+				response.addHeader("Content-Security-Policy", "default-src 'self';  style-src 'self' 'unsafe-inline' 'unsafe-hashes'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src * data:");
 			}
 			
 			response.setStatus(HttpStatus.SC_OK);
@@ -416,43 +423,6 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 
         Calendar time = new GregorianCalendar();
         response.setHeader(HttpHeaders.DATE, dateFormatter.format(time.getTime()));
-    }
-
-    /**
-     * Sets the Date and Cache headers for the HTTP Response
-     *
-     * @param response
-     *            path response
-     * @param path
-     *            file to extract content type
-     */
-    protected void setDateAndCacheHeaders(HttpServletResponse response, String path) {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
-        dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
-
-        // Date header
-        Calendar time = new GregorianCalendar();
-        response.setHeader(HttpHeaders.DATE, dateFormatter.format(time.getTime()));
-
-        // Add cache headers
-        time.add(Calendar.SECOND, HTTP_CACHE_SECONDS);
-        response.setHeader(HttpHeaders.EXPIRES, dateFormatter.format(time.getTime()));
-        response.setHeader(HttpHeaders.CACHE_CONTROL, "max-age=" + HTTP_CACHE_SECONDS);
-       
-        try {
-        	 long lastModified = getLastModified(path);
-			response.setHeader(HttpHeaders.LAST_MODIFIED, dateFormatter.format(lastModified));
-			if(supportsEtag()) {
-	        	response.setHeader(HttpHeaders.ETAG, DigestUtils.sha256Hex(path + "|" + lastModified));
-	        }
-		} catch (FileNotFoundException e) {
-		}
-   
-        
-    }
-    
-    protected boolean supportsEtag() {
-    	return true;
     }
 
     /**
