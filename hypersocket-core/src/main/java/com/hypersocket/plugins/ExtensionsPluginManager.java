@@ -1,11 +1,17 @@
 package com.hypersocket.plugins;
 
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -90,8 +96,13 @@ public final class ExtensionsPluginManager extends SpringPluginManager {
 	@Override
 	protected PluginRepository createPluginRepository() {
 		return new CompoundPluginRepository()
-				.add(new ExtensionsDevelopmentPluginRepository(getDevelopmentPluginsRoots()), this::isDevelopment)
-				.add(new DefaultPluginRepository(getPluginsRoots()));
+//				.add(new ExtensionsDevelopmentPluginRepository(getDevelopmentPluginsRoots()), this::isDevelopment)
+				.add(new DefaultPluginRepository(getPluginsRoots()) {
+					@Override
+				    protected Stream<File> streamFiles(Path directory, FileFilter filter) {
+				        return super.streamFiles(directory, filter).filter(f -> isPF4JPlugin(f.toPath()));
+				    }
+				});
 	}
 
 	@Override
@@ -108,11 +119,8 @@ public final class ExtensionsPluginManager extends SpringPluginManager {
 	protected List<Path> createPluginsRoot() {
 		var roots = new ArrayList<Path>();
 
-		var hypersocketConf = System.getProperty("hypersocket.conf", "conf");
-		var confDir = Paths.get(hypersocketConf);
-
 		/* User plugins */
-		roots.add(confDir.resolve("plugins"));
+		roots.add(getPrimaryPluginsFolder());
 		
 		LOG.info("Plugin roots: ");
 		for(var root: roots) {
@@ -120,6 +128,10 @@ public final class ExtensionsPluginManager extends SpringPluginManager {
 		}
 		
 		return roots;
+	}
+
+	public Path getPrimaryPluginsFolder() {
+		return Paths.get("dist").toAbsolutePath();
 	}
 
 	public ApplicationContext getWebApplicationContext() {
@@ -165,6 +177,21 @@ public final class ExtensionsPluginManager extends SpringPluginManager {
 	public HypersocketAnnotationSessionFactoryBean getSessionFactory() {
 		return getApplicationContext().getBean(HypersocketAnnotationSessionFactoryBean.class);
 	}
-	
+
+
+	private boolean isPF4JPlugin(Path ext) {
+		if(Files.exists(ext.resolve("plugin.properties")))
+			return true;
+		try(var in = new ZipInputStream(Files.newInputStream(ext))) {
+			ZipEntry e;
+			while((e = in.getNextEntry()) != null) {
+				if(e.getName().equals("plugin.properties"))
+					return true;
+			}
+		}
+		catch(IOException ioe) {
+		}
+		return false;
+	}
 	
 }

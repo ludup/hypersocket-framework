@@ -51,7 +51,7 @@ public class SystemConfigurationServiceImpl extends
 		eventService.registerEvent(ConfigurationValueChangedEvent.class,
 				ConfigurationServiceImpl.RESOURCE_BUNDLE);
 
-		repository.loadPropertyTemplates("systemTemplates.xml");
+		repository.loadPropertyTemplates(SYSTEM_TEMPLATES_XML, getClass().getClassLoader());
 	}
 
 	@Override

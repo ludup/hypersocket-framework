@@ -126,7 +126,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	private String[] enabledProtocols;
 	
 	private boolean stopping = false;
-	
 	private Map<Pattern,String> urlRewrite = new HashMap<Pattern,String>();
 	private Map<String,String> aliases = new HashMap<String,String>();
 	private Set<String> protectedPages = new HashSet<String>();
@@ -170,6 +169,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	@Override
 	public void addUrlRewrite(String regex, String rewrite) {
 		urlRewrite.put(Pattern.compile(regex), rewrite);
+	}
+
+	@Override
+	public void removeUrlRewrite(String regex) {
+		urlRewrite.remove(Pattern.compile(regex));
 	}
 	
 	@Override

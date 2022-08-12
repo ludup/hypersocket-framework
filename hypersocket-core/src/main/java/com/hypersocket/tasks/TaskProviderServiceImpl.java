@@ -1,9 +1,11 @@
 package com.hypersocket.tasks;
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -40,6 +42,44 @@ public class TaskProviderServiceImpl extends AbstractAuthenticatedServiceImpl im
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
 	
+	private Optional<TaskDefinition> findTaskDef(List<TaskDefinition> tasks, String resourceKey, TaskProvider action) {
+		for(var t : tasks) {
+			if(t.getResourceKey().equals(resourceKey) && t.getDisplayMode().equals(action.getDisplayMode())) {
+				return Optional.of(t);
+			}
+		}
+		return Optional.empty();
+	}
+	
+	@Override
+	public void deregisterTaskProvider(TaskProvider action) {
+		for (String resourceKey : action.getResourceKeys()) {
+			if(action.supportsTriggers()) {
+				if(action.isRealmTask()) {
+					findTaskDef(realmTriggerTasks, resourceKey, action).ifPresent(t -> realmTriggerTasks.remove(t));
+				} else {
+					if(!action.isSystem()) {
+						findTaskDef(nonSystemTriggerTasks, resourceKey, action).ifPresent(t -> realmTriggerTasks.remove(t));
+					}
+					findTaskDef(triggerTasks, resourceKey, action).ifPresent(t -> realmTriggerTasks.remove(t));
+				}
+			}
+			
+			if(action.supportsAutomation()) {
+				if(action.isRealmTask()) {
+					findTaskDef(realmAutomationTasks, resourceKey, action).ifPresent(t -> realmTriggerTasks.remove(t));
+				} else {
+					if(!action.isSystem()) {
+						findTaskDef(nonSystemAutomationTasks, resourceKey, action).ifPresent(t -> realmTriggerTasks.remove(t));
+					}
+					findTaskDef(automationTasks, resourceKey, action).ifPresent(t -> realmTriggerTasks.remove(t));
+				}
+			}
+			registeredTasks.remove(resourceKey);
+		}
+		repository.deregisterActionRepository(action);
+	}
+
 	@Override
 	public void registerTaskProvider(TaskProvider action) {
 		repository.registerActionRepository(action);

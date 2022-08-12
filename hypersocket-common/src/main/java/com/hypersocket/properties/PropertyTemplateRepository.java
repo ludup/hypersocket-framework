@@ -5,7 +5,9 @@ import java.util.Map;
 
 public interface PropertyTemplateRepository {
 
-	void loadPropertyTemplates(String string);
+	void loadPropertyTemplates(String string, ClassLoader classLoader);
+
+	void unloadPropertyTemplates(ClassLoader classLoader);
 
 	String getValue(String resourceKey);
 

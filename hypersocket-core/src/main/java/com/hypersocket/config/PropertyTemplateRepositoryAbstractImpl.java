@@ -1,20 +1,17 @@
-package com.hypersocket.properties;
+package com.hypersocket.config;
+
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -25,22 +22,29 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import com.hypersocket.plugins.Plugins;
+import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.properties.PropertyStore;
+import com.hypersocket.properties.PropertyTemplate;
+import com.hypersocket.properties.PropertyTemplateRepository;
+import com.hypersocket.properties.PropertyTemplateWeightComparator;
+import com.hypersocket.properties.XmlTemplatePropertyStore;
 
 public class PropertyTemplateRepositoryAbstractImpl implements
 		PropertyTemplateRepository {
 
-	static Logger log = LoggerFactory
+	private final static Logger log = LoggerFactory
 			.getLogger(PropertyTemplateRepositoryAbstractImpl.class);
 
 	public static final String SYSTEM_GROUP = "system";
 
-	private Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<String, PropertyStore>();
-	private Map<String, PropertyStore> propertyStoresById = new HashMap<String, PropertyStore>();
+	private Map<String, PropertyStore> propertyStoresByResourceKey = new HashMap<>();
+	private Map<String, PropertyStore> propertyStoresById = new HashMap<>();
 
-	private Set<PropertyStore> propertyStores = new HashSet<PropertyStore>();
-	private Map<String, PropertyCategory> activeCategories = new HashMap<String, PropertyCategory>();
+	private Set<PropertyStore> propertyStores = new HashSet<>();
+	private Map<String, PropertyCategory> activeCategories = new HashMap<>();
 
 	private String resourceXmlPath;
 	private PropertyStore defaultStore;
@@ -49,47 +53,57 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		this.defaultStore = defaultStore;
 	}
 
-	public void loadPropertyTemplates(String resourceXmlPath) {
-
-		try {
-			Enumeration<URL> urls = getClass().getClassLoader().getResources(
-					resourceXmlPath);
-			while (urls.hasMoreElements()) {
-				URL url = urls.nextElement();
-				try {
-					loadPropertyTemplates(url);
-				} catch (Exception e) {
-					log.error("Failed to process " + url.toExternalForm(), e);
-				}
+	@Override
+	public final void loadPropertyTemplates(String resourceXmlPath, ClassLoader classLoader) {
+		for(var url : Plugins.pluginResources(classLoader, resourceXmlPath)) {
+			try {
+				loadPropertyTemplates(classLoader, url);
+			} catch (Exception e) {
+				log.error("Failed to process " + url.toExternalForm(), e);
 			}
-		} catch (IOException e) {
-			log.error("Failed to load propertyTemplate.xml resources", e);
 		}
 	}
 
-	private void loadPropertyTemplates(URL url) throws SAXException,
+	@Override
+	public final void unloadPropertyTemplates(ClassLoader classLoader) {
+		for(var it = activeCategories.values().iterator(); it.hasNext(); ) {
+			var cat = it.next();
+			if(cat.getClassLoader().equals(classLoader)) {
+				it.remove();
+			}
+			else {
+				for(var it2 = cat.getTemplates().iterator(); it2.hasNext() ; ) {
+					var pt = it2.next();
+					if(pt.getClassLoader().equals(classLoader)) {
+						it2.remove();
+					}
+				}
+			}
+		}
+	}
+
+	private void loadPropertyTemplates(ClassLoader classLoader, URL url) throws SAXException,
 			IOException, ParserConfigurationException {
 
-		DocumentBuilderFactory xmlFactory = DocumentBuilderFactory
-				.newInstance();
-		DocumentBuilder xmlBuilder = xmlFactory.newDocumentBuilder();
-		Document doc = xmlBuilder.parse(url.openStream());
+		var xmlFactory = DocumentBuilderFactory.newInstance();
+		var xmlBuilder = xmlFactory.newDocumentBuilder();
+		var doc = xmlBuilder.parse(url.openStream());
 
 		if (log.isInfoEnabled()) {
 			log.info("Loading property template " + url.getPath());
 		}
 
-		Element root = doc.getDocumentElement();
+		var root = doc.getDocumentElement();
 		if (root.hasAttribute("extends")) {
-			String extendsTemplates = root.getAttribute("extends");
-			StringTokenizer t = new StringTokenizer(extendsTemplates, ",");
+			var extendsTemplates = root.getAttribute("extends");
+			var t = new StringTokenizer(extendsTemplates, ",");
 			while (t.hasMoreTokens()) {
-				Enumeration<URL> extendUrls = getClass().getClassLoader()
+				var extendUrls = getClass().getClassLoader()
 						.getResources(t.nextToken());
 				while (extendUrls.hasMoreElements()) {
-					URL extendUrl = extendUrls.nextElement();
+					var extendUrl = extendUrls.nextElement();
 					try {
-						loadPropertyTemplates(extendUrl);
+						loadPropertyTemplates(classLoader, extendUrl);
 					} catch (Exception e) {
 						log.error(
 								"Failed to process "
@@ -99,17 +113,16 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 			}
 		}
 
-		loadPropertyStores(doc);
-
-		loadPropertyCategories(doc);
+		loadPropertyStores(classLoader, doc);
+		loadPropertyCategories(classLoader, doc);
 	}
 
-	private void loadPropertyCategories(Document doc) throws IOException {
+	private void loadPropertyCategories(ClassLoader classLoader, Document doc) throws IOException {
 
-		NodeList list = doc.getElementsByTagName("propertyCategory");
+		var list = doc.getElementsByTagName("propertyCategory");
 
 		for (int i = 0; i < list.getLength(); i++) {
-			Element node = (Element) list.item(i);
+			var node = (Element) list.item(i);
 
 			if (!node.hasAttribute("resourceKey")
 					|| !node.hasAttribute("resourceBundle")
@@ -123,7 +136,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 						+ node.getAttribute("resourceKey"));
 			}
 
-			PropertyCategory cat = registerPropertyCategory(
+			var cat = registerPropertyCategory(classLoader,
 					node.getAttribute("resourceKey"),
 					node.getAttribute("namespace"),
 					node.hasAttribute("group") ? node.getAttribute("group")
@@ -139,13 +152,13 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 					node.getAttribute("visibilityDependsValue"),
 					node.getAttribute("via"));
 
-			NodeList properties = node.getElementsByTagName("property");
+			var properties = node.getElementsByTagName("property");
 
 			for (int x = 0; x < properties.getLength(); x++) {
 
-				Element pnode = (Element) properties.item(x);
+				var pnode = (Element) properties.item(x);
 
-				PropertyStore store = defaultStore;
+				var store = defaultStore;
 				if (pnode.hasAttribute("store")) {
 					store = propertyStoresById.get(pnode.getAttribute("store"));
 					if (store == null) {
@@ -157,7 +170,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 				try {
 					registerPropertyItem(
-							cat,
+							classLoader, cat,
 							store,
 							pnode);
 				} catch (Throwable e) {
@@ -203,34 +216,33 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		buf.append("}");
 		return buf.toString();
 	}
-	
+
 	protected <T> T getBean(String name, Class<T> clz) {
 		return null;
 	}
 
-	private void loadPropertyStores(Document doc) {
+	private void loadPropertyStores(ClassLoader classLoader, Document doc) {
 
-		NodeList list = doc.getElementsByTagName("propertyStore");
+		var list = doc.getElementsByTagName("propertyStore");
 
 		for (int i = 0; i < list.getLength(); i++) {
-			Element node = (Element) list.item(i);
+			var node = (Element) list.item(i);
 			try {
-				
+
 				PropertyStore store = null;
-				
+
 				if(node.hasAttribute("bean")) {
 					store = getBean(node.getAttribute("bean"), PropertyStore.class);
 				} else {
 					@SuppressWarnings("unchecked")
-					Class<? extends PropertyStore> clz = (Class<? extends PropertyStore>) Class
+					var clz = (Class<? extends PropertyStore>) Class
 							.forName(node.getAttribute("type"));
-	
+
 					store = clz.getConstructor().newInstance();
 				}
 				if(store instanceof XmlTemplatePropertyStore) {
 					((XmlTemplatePropertyStore)store).init(node);
 				}
-
 				propertyStoresById.put(node.getAttribute("id"), store);
 				propertyStores.add(store);
 			} catch (Throwable e) {
@@ -240,31 +252,31 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 	}
 
-	private void registerPropertyItem(PropertyCategory category,
+	private void registerPropertyItem(ClassLoader classLoader, PropertyCategory category,
 			PropertyStore propertyStore, Element pnode) {
 
-		String resourceKey = pnode.getAttribute("resourceKey");
+		var resourceKey = pnode.getAttribute("resourceKey");
 //		String inputType = pnode.getAttribute("inputType");
-		String mapping = pnode.hasAttribute("mapping") ? pnode.getAttribute("mapping") : "";
-		int weight = pnode.hasAttribute("weight") ? Integer.parseInt(pnode.getAttribute("weight")) : 9999;
-		boolean hidden = (pnode.hasAttribute("hidden") && pnode.getAttribute("hidden").equalsIgnoreCase("true"))
+		var mapping = pnode.hasAttribute("mapping") ? pnode.getAttribute("mapping") : "";
+		var weight = pnode.hasAttribute("weight") ? Integer.parseInt(pnode.getAttribute("weight")) : 9999;
+		var hidden = (pnode.hasAttribute("hidden") && pnode.getAttribute("hidden").equalsIgnoreCase("true"))
 				|| (pnode.hasAttribute("inputType") && pnode.getAttribute("inputType").equalsIgnoreCase("hidden"));
-		String displayMode = pnode.hasAttribute("displayMode") ? pnode.getAttribute("displayMode") : "";
-		boolean readOnly = pnode.hasAttribute("readOnly") && pnode.getAttribute("readOnly").equalsIgnoreCase("true");
-		String defaultValue = Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue")
+		var displayMode = pnode.hasAttribute("displayMode") ? pnode.getAttribute("displayMode") : "";
+		var readOnly = pnode.hasAttribute("readOnly") && pnode.getAttribute("readOnly").equalsIgnoreCase("true");
+		var defaultValue = Boolean.getBoolean("hypersocket.development") && pnode.hasAttribute("developmentValue")
 				? pnode.getAttribute("developmentValue") : pnode.hasAttribute("defaultValue") ? pnode.getAttribute("defaultValue") : "";
-		boolean encrypted = pnode.hasAttribute("encrypted") && pnode.getAttribute("encrypted").equalsIgnoreCase("true");
-		String defaultsToProperty = pnode.hasAttribute("defaultsToProperty") ? pnode.getAttribute("defaultsToProperty") : null;
-		String metaData = generateMetaData(pnode);
-		
-		PropertyTemplate template = propertyStore
-				.getPropertyTemplate(resourceKey);
+		var encrypted = pnode.hasAttribute("encrypted") && pnode.getAttribute("encrypted").equalsIgnoreCase("true");
+		var defaultsToProperty = pnode.hasAttribute("defaultsToProperty") ? pnode.getAttribute("defaultsToProperty") : null;
+		var metaData = generateMetaData(pnode);
+
+		var template = propertyStore.getPropertyTemplate(resourceKey);
 		if (template == null) {
 			template = new PropertyTemplate();
 			template.setResourceKey(resourceKey);
 		}
 
 		template.setDefaultValue(defaultValue);
+		template.setClassLoader(classLoader);
 		template.setWeight(weight);
 		template.setHidden(hidden);
 		template.setDisplayMode(displayMode);
@@ -282,9 +294,9 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 				template.getAttributes().put(n.getNodeName(), n.getNodeValue());
 			}
 		}
-		
+
 		propertyStore.registerTemplate(template, resourceXmlPath);
-		
+
 		category.getTemplates().remove(template);
 		category.getTemplates().add(template);
 
@@ -296,29 +308,29 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	}
 
 	protected boolean isKnownAttributeName(String name) {
-		
-		String getMethod = "get" + StringUtils.capitalize(name); 
+
+		var getMethod = "get" + StringUtils.capitalize(name);
 		try {
 			return PropertyTemplate.class.getMethod(getMethod) != null;
 		} catch (NoSuchMethodException e) {
 			return false;
-		} 
+		}
 	}
 
-	private PropertyCategory registerPropertyCategory(String categoryKey, String categoryNamespace,
+	private PropertyCategory registerPropertyCategory(ClassLoader classLoader, String categoryKey, String categoryNamespace,
 			String categoryGroup, String bundle, int weight, String displayMode, boolean systemOnly, boolean nonSystem, String filter, boolean hidden,
 			String visibilityDependsOn, String visibilityDependsValue, String via) {
 
-		if (activeCategories.containsKey(categoryKey) 
+		if (activeCategories.containsKey(categoryKey)
 				&& !activeCategories.get(categoryKey).getBundle().equals(bundle)) {
 			throw new IllegalStateException("Cannot register " + categoryKey
 					+ "/" + bundle
 					+ " as the resource key is already registered by bundle "
 					+ activeCategories.get(categoryKey).getBundle());
 		}
-		
+
 		if(activeCategories.containsKey(categoryKey)) {
-			PropertyCategory existingCategory = activeCategories.get(categoryKey);
+			var existingCategory = activeCategories.get(categoryKey);
 			if(existingCategory.isHidden() && !hidden) {
 				/* Always show if any are visible */
 				log.info(String.format("Multiple registrations of %s, with different visibility. Visible takes precedence", categoryKey));
@@ -328,7 +340,7 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 			}
 		}
 
-		PropertyCategory category = new PropertyCategory();
+		var category = new PropertyCategory();
 		category.setBundle(bundle);
 		category.setCategoryKey(categoryKey);
 		category.setCategoryNamespace(categoryNamespace);
@@ -341,7 +353,8 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 		category.setHidden(hidden);
 		category.setVisibilityDependsOn(visibilityDependsOn);
 		category.setVisibilityDependsValue(visibilityDependsValue);
-		
+		category.setClassLoader(classLoader);
+
 		activeCategories.put(category.getCategoryKey(), category);
 		return category;
 	}
@@ -354,9 +367,9 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 					"No store registered for resource key " + resourceKey);
 		}
 
-		PropertyStore store = propertyStoresByResourceKey.get(resourceKey);
+		var store = propertyStoresByResourceKey.get(resourceKey);
 
-		PropertyTemplate template = store.getPropertyTemplate(resourceKey);
+		var template = store.getPropertyTemplate(resourceKey);
 
 		if (template == null) {
 			throw new IllegalStateException(resourceKey
@@ -423,33 +436,25 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 	@Override
 	public Collection<PropertyCategory> getPropertyCategories(String group) {
-
-		List<PropertyCategory> ret = new ArrayList<PropertyCategory>();
-		for (PropertyCategory c : activeCategories.values()) {
+		var ret = new ArrayList<PropertyCategory>();
+		for (var c : activeCategories.values()) {
 			if (c.getCategoryGroup().equals(group)) {
 				ret.add(c);
 			}
 		}
-		Collections.sort(ret, new Comparator<PropertyCategory>() {
-			@Override
-			public int compare(PropertyCategory cat1, PropertyCategory cat2) {
-				return cat1.getWeight().compareTo(cat2.getWeight());
-			}
-		});
+		Collections.sort(ret, (cat1, cat2) -> cat1.getWeight().compareTo(cat2.getWeight()));
 		return ret;
 	}
 
 	@Override
 	public String[] getValues(String name) {
-
-		String values = getValue(name);
-		return StringUtils.splitByWholeSeparator(values, "]|[");
+		return StringUtils.splitByWholeSeparator(getValue(name), "]|[");
 	}
 
 	@Override
 	public void setValues(Map<String, String> values) {
 
-		for (String name : values.keySet()) {
+		for (var name : values.keySet()) {
 			setValue(name, values.get(name));
 		}
 

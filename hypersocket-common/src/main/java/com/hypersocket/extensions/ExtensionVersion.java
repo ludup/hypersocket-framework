@@ -12,6 +12,7 @@ public class ExtensionVersion extends JsonResource implements Comparable<Extensi
 
 	private Long size;
 	private String version;
+	private String installedVersion;
 	private String hash;
 	private String url;
 	private String extensionName;
@@ -28,6 +29,23 @@ public class ExtensionVersion extends JsonResource implements Comparable<Extensi
 	private String[] dependsOn;
 	private int weight;
 	private ExtensionState state;
+	private ExtensionType type;
+
+	public ExtensionType getType() {
+		return type;
+	}
+
+	public void setType(ExtensionType type) {
+		this.type = type;
+	}
+
+	public String getInstalledVersion() {
+		return installedVersion;
+	}
+
+	public void setInstalledVersion(String installedVersion) {
+		this.installedVersion = installedVersion;
+	}
 
 	public ExtensionState getState() {
 		return state;

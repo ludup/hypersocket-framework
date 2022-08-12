@@ -3,8 +3,6 @@ package com.hypersocket.survey;
 import java.io.IOException;
 import java.util.Map;
 
-import org.springframework.context.event.ContextStartedEvent;
-
 import com.hypersocket.events.CoreStartedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 

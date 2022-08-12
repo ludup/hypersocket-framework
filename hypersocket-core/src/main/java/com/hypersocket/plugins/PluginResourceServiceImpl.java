@@ -47,10 +47,11 @@ import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.Sort;
 
 @Service
-public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl implements PluginResourceService, EventPropertyCollector {
+public class PluginResourceServiceImpl extends AbstractAuthenticatedServiceImpl
+		implements PluginResourceService, EventPropertyCollector {
 
 	private final static Logger LOG = LoggerFactory.getLogger(PluginResourceServiceImpl.class);
-	
+
 	@Autowired
 	private I18NService i18nService;
 
@@ -68,67 +69,49 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		PermissionCategory cat = permissionService.registerPermissionCategory(
-				RESOURCE_BUNDLE, "category.plugins");
+		PermissionCategory cat = permissionService.registerPermissionCategory(RESOURCE_BUNDLE, "category.plugins");
 
 		for (PluginResourcePermission p : PluginResourcePermission.values()) {
 			permissionService.registerPermission(p, cat);
 		}
 
 		/**
-		 * Register the events. All events have to be registerd so the system
-		 * knows about them.
+		 * Register the events. All events have to be registerd so the system knows
+		 * about them.
 		 */
-		eventService.registerEvent(
-				PluginResourceEvent.class, RESOURCE_BUNDLE,
-				this);
-		eventService.registerEvent(
-				PluginResourceCreatedEvent.class, RESOURCE_BUNDLE,
-				this);
-		eventService.registerEvent(
-				PluginResourceUpdatedEvent.class, RESOURCE_BUNDLE,
-				this);
-		eventService.registerEvent(
-				PluginResourceDeletedEvent.class, RESOURCE_BUNDLE,
-				this);
+		eventService.registerEvent(PluginResourceEvent.class, RESOURCE_BUNDLE, this);
+		eventService.registerEvent(PluginResourceCreatedEvent.class, RESOURCE_BUNDLE, this);
+		eventService.registerEvent(PluginResourceUpdatedEvent.class, RESOURCE_BUNDLE, this);
+		eventService.registerEvent(PluginResourceDeletedEvent.class, RESOURCE_BUNDLE, this);
 	}
 
 	protected void fireResourceCreationEvent(PluginResource resource) {
-		eventService.publishEvent(new PluginResourceCreatedEvent(this,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new PluginResourceCreatedEvent(this, getCurrentSession(), resource));
 	}
 
-	protected void fireResourceCreationEvent(PluginResource resource,
-			Throwable t) {
-		eventService.publishEvent(new PluginResourceCreatedEvent(this,
-				resource, t, getCurrentSession()));
+	protected void fireResourceCreationEvent(PluginResource resource, Throwable t) {
+		eventService.publishEvent(new PluginResourceCreatedEvent(this, resource, t, getCurrentSession()));
 	}
 
 	protected void fireResourceUpdateEvent(PluginResource resource) {
-		eventService.publishEvent(new PluginResourceUpdatedEvent(this,
-				getCurrentSession(), resource));
+		eventService.publishEvent(new PluginResourceUpdatedEvent(this, getCurrentSession(), resource));
 	}
 
-	protected void fireResourceUpdateEvent(PluginResource resource,
-			Throwable t) {
-		eventService.publishEvent(new PluginResourceUpdatedEvent(this,
-				resource, t, getCurrentSession()));
+	protected void fireResourceUpdateEvent(PluginResource resource, Throwable t) {
+		eventService.publishEvent(new PluginResourceUpdatedEvent(this, resource, t, getCurrentSession()));
 	}
 
 	protected void fireResourceDeletionEvent(PluginResource resource, boolean deleteData) {
-		eventService.publishEvent(new PluginResourceDeletedEvent(this,
-				getCurrentSession(), resource, deleteData));
+		eventService.publishEvent(new PluginResourceDeletedEvent(this, getCurrentSession(), resource, deleteData));
 	}
 
-	protected void fireResourceDeletionEvent(PluginResource resource, boolean deleteData,
-			Throwable t) {
-		eventService.publishEvent(new PluginResourceDeletedEvent(this,
-				resource, t, getCurrentSession(), deleteData));
+	protected void fireResourceDeletionEvent(PluginResource resource, boolean deleteData, Throwable t) {
+		eventService.publishEvent(new PluginResourceDeletedEvent(this, resource, t, getCurrentSession(), deleteData));
 	}
 
 	@Override
-	public List<PluginResource> searchResources(Realm currentRealm, String searchColumn, String searchPattern, int start,
-			int length, ColumnSort[] sorting) throws AccessDeniedException {
+	public List<PluginResource> searchResources(Realm currentRealm, String searchColumn, String searchPattern,
+			int start, int length, ColumnSort[] sorting) throws AccessDeniedException {
 		List<PluginResource> l = new ArrayList<>();
 		for (PluginResource r : getResources(currentRealm)) {
 			if (r.matches(searchPattern, searchColumn))
@@ -152,13 +135,16 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 					} else if (s.getColumn() == PluginResourceColumns.PROVIDER) {
 						v1 = o1.getProvider();
 						v2 = o2.getProvider();
+					} else if (s.getColumn() == PluginResourceColumns.NAME) {
+						v1 = o1.getName() == null ? null : o1.getName().toLowerCase();
+						v2 = o2.getName() == null ? null : o2.getName().toLowerCase();
 					} else if (s.getColumn() == PluginResourceColumns.PROVIDER) {
 						v1 = o1.getProvider();
 						v2 = o2.getProvider();
 					} else if (s.getColumn() == PluginResourceColumns.VERSION) {
 						v1 = o1.getVersion();
 						v2 = o2.getVersion();
-					}else if (s.getColumn() == PluginResourceColumns.STATE) {
+					} else if (s.getColumn() == PluginResourceColumns.STATE) {
 						v1 = o1.getState();
 						v2 = o2.getState();
 					}
@@ -218,8 +204,7 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 		try {
 			pluginManager.deletePlugin(resource.getId());
 			fireResourceDeletionEvent(resource, deleteData);
-		}
-		catch(RuntimeException re) {
+		} catch (RuntimeException re) {
 			fireResourceDeletionEvent(resource, deleteData, re);
 			throw re;
 		}
@@ -233,8 +218,7 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 			}
 			pluginManager.disablePlugin(resource.getId());
 			fireResourceUpdateEvent(resource);
-		}
-		catch(AccessDeniedException | RuntimeException re) {
+		} catch (AccessDeniedException | RuntimeException re) {
 			fireResourceUpdateEvent(resource, re);
 			throw re;
 		}
@@ -250,8 +234,7 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 			reload(resource);
 			pluginManager.enablePlugin(resource.getId());
 			fireResourceUpdateEvent(resource);
-		}
-		catch(AccessDeniedException | RuntimeException re) {
+		} catch (AccessDeniedException | RuntimeException re) {
 			fireResourceUpdateEvent(resource, re);
 			throw re;
 		}
@@ -267,8 +250,7 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 			pluginManager.stopPlugin(resource.getId());
 			reload(resource);
 			fireResourceUpdateEvent(resource);
-		}
-		catch(AccessDeniedException | RuntimeException re) {
+		} catch (AccessDeniedException | RuntimeException re) {
 			fireResourceUpdateEvent(resource, re);
 			throw re;
 		}
@@ -286,66 +268,61 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 			assertPermission(PluginResourcePermission.UPDATE);
 		}
 		pluginManager.startPlugin(resource.getId());
-		
-		var ext = (ExtensionPlugin)pluginManager.getPlugin(resource.getId()).getPlugin();
-		ext.getWebApplicationContext(); // will initialise two new contexts, one for web and one for service 
-		
+
+		var ext = (ExtensionPlugin) pluginManager.getPlugin(resource.getId()).getPlugin();
+		ext.getWebApplicationContext(); // will initialise two new contexts, one for web and one for service
+
 		return getResourceById(resource.getId());
 	}
 
-	
 	@Override
-	public PluginResource upload(Realm realm, InputStream inputStream, boolean start) throws IOException, AccessDeniedException {
+	public PluginResource upload(Realm realm, InputStream inputStream, boolean start)
+			throws IOException, AccessDeniedException {
 		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			assertPermission(PluginResourcePermission.CREATE);
 		}
-		var tmpName = String.valueOf(System.currentTimeMillis());
-		var tmpPluginPath = Paths.get("conf/plugins").resolve(tmpName);
+		var tmpName = String.valueOf(System.currentTimeMillis()) + ".tmp";
+		var tmpPluginPath = pluginManager.getPrimaryPluginsFolder().resolve(tmpName);
 		String id = null;
 		try {
 			LOG.info("Temporarily downloading to {}", tmpPluginPath);
 			var p = new Properties();
-			try(var out = Files.newOutputStream(tmpPluginPath)) {
+			try (var out = Files.newOutputStream(tmpPluginPath)) {
 				var zfile = new ZipInputStream(new TeeInputStream(inputStream, out));
 				ZipEntry zentry = null;
 				while ((zentry = zfile.getNextEntry()) != null) {
 					if (!zentry.isDirectory()) {
-						if(zentry.getName().equals("plugin.properties")) {
+						if (zentry.getName().equals("plugin.properties")) {
 							p.load(zfile);
 							id = p.getProperty("plugin.id", "unknown");
 							LOG.info("Found plugin meta-data for {}", id);
-							p.forEach((k, v) ->LOG.info("    {}={}", k, v));
-						}
-						else
+							p.forEach((k, v) -> LOG.info("    {}={}", k, v));
+						} else
 							zfile.transferTo(new NullOutputStream());
 						zfile.closeEntry();
 					}
 				}
-				
+
 				inputStream.transferTo(out);
 			}
-			if(id == null) {
+			if (id == null) {
 				throw new IOException("Archive contains no plugin meta-data.");
-			}
-			else {
-				var realPluginPath = Paths.get("conf/plugins").resolve(id + "-" + p.getProperty("plugin.version", "0.0.0-SNAPSHOT") + ".zip");
-				LOG.info("Moving plugin {}", tmpPluginPath, realPluginPath);
-				if(Files.exists(realPluginPath))
+			} else {
+				var realPluginPath = pluginManager.getPrimaryPluginsFolder()
+						.resolve(id + "-" + p.getProperty("plugin.version", "0.0.0-SNAPSHOT") + ".zip");
+				LOG.info("Moving plugin {} to {}", tmpPluginPath, realPluginPath);
+				if (Files.exists(realPluginPath))
 					throw new IOException(String.format("Plugin %s already exists.", id));
-				Files.move(tmpPluginPath,  realPluginPath);
+				Files.move(tmpPluginPath, realPluginPath);
 				LOG.info("Loading plugin from {}", realPluginPath);
 				pluginManager.loadPlugin(realPluginPath);
-				if(start) {
+				if (start) {
 					pluginManager.startPlugin(id);
 				}
 			}
-		}
-		finally {
-			if(Files.exists(tmpPluginPath)) {
-				Files.walk(tmpPluginPath)
-			      .sorted(Comparator.reverseOrder())
-			      .map(Path::toFile)
-			      .forEach(File::delete);
+		} finally {
+			if (Files.exists(tmpPluginPath)) {
+				Files.walk(tmpPluginPath).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
 			}
 		}
 		return getResourceById(id);
@@ -411,7 +388,7 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 		provider.getAttributes().put("inputType", "text");
 		pc.getTemplates().add(provider);
 
-		PluginPropertyTemplate license= new PluginPropertyTemplate();
+		PluginPropertyTemplate license = new PluginPropertyTemplate();
 		license.setResourceKey("license");
 		license.setWeight(140);
 		license.getAttributes().put("inputType", "text");
@@ -442,6 +419,8 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 					return resource.getId();
 				if (getResourceKey().equals("description"))
 					return resource.getDescription();
+				if (getResourceKey().equals("name"))
+					return resource.getName();
 				if (getResourceKey().equals("license"))
 					return resource.getLicense();
 				if (getResourceKey().equals("provider"))
@@ -465,8 +444,8 @@ public class PluginResourceServiceImpl  extends AbstractAuthenticatedServiceImpl
 		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
 			assertPermission(PluginResourcePermission.DELETE);
 		}
-		
-		var ext = (ExtensionPlugin)pluginManager.getPlugin(resource.getId()).getPlugin();
+
+		var ext = (ExtensionPlugin) pluginManager.getPlugin(resource.getId()).getPlugin();
 		try {
 			ext.uninstall(deleteData);
 		} catch (Exception e) {

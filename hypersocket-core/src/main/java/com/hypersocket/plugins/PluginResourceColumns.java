@@ -4,7 +4,7 @@ import com.hypersocket.tables.Column;
 
 public enum PluginResourceColumns implements Column {
 
-	ID, DESCRIPTION, VERSION, VENDOR, PROVIDER, STATE;
+	ID, NAME, DESCRIPTION, VERSION, VENDOR, PROVIDER, STATE;
 	
 	public String getColumnName() {
 		return name().toLowerCase();

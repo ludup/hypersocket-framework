@@ -1,4 +1,4 @@
-package com.hypersocket.extensions;
+package com.hypersocket.plugins;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,12 +23,15 @@ import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.extensions.ExtensionState;
+import com.hypersocket.extensions.ExtensionTarget;
+import com.hypersocket.extensions.ExtensionVersion;
 import com.hypersocket.json.version.HypersocketVersion;
 import com.hypersocket.utils.FileUtils;
 import com.hypersocket.utils.HttpUtilsHolder;
@@ -40,6 +42,9 @@ public abstract class AbstractExtensionUpdater {
 	private static final int MAX_BACKUPS = Integer.parseInt(System.getProperty("hypersocket.maxExtensionBackups", "10"));
 
 	static Logger log = LoggerFactory.getLogger(AbstractExtensionUpdater.class);
+	
+	@Autowired
+	private ExtensionsPluginManager extensionsPluginManager;
 	
 	private long transfered;
 	private long totalSize;
@@ -61,16 +66,10 @@ public abstract class AbstractExtensionUpdater {
 	public long getTotalSize() {
 		return totalSize;
 	}
-	
-	public abstract ExtensionPlace getExtensionPlace();
 
 	public abstract ExtensionTarget[] getUpdateTargets();
 	
 	public abstract String getVersion();
-	
-	public abstract boolean hasLocalRepository(String version);
-	
-	public abstract File getLocalRepositoryFile();
 	
 	public abstract Set<String> getNewFeatures();
 	
@@ -172,31 +171,20 @@ public abstract class AbstractExtensionUpdater {
 			for (ExtensionVersion def : updates) {
 
 				onExtensionDownloadStarted(def);
-				InputStream in = null;
-				String filename = FileUtils.lastPathElement(def.getFilename());
-				if(hasLocalRepository(getVersion())) {
-					File file = new File(getLocalRepositoryFile(), def.getFilename());
-					in = new FileInputStream(file);
-					if (log.isInfoEnabled()) {
-						log.info(String.format("Copying %s", file.getAbsolutePath()));
-					}
-				} else {
-					URL url = resolveExtensionURL(def);
-					if (log.isInfoEnabled()) {
-						log.info(String.format("Downloading %s", url));
-					}
-					in = downloadFromUrl(url);
+				URL url = resolveExtensionURL(def);
+				String filename = FileUtils.lastPathElement(url.getPath());
+				if (log.isInfoEnabled()) {
+					log.info("Downloading {} to {}", url, filename);
 				}
+				;
 
 				File archiveTmp = new File(tmpFolder,filename);
 				archiveTmp.getParentFile().mkdirs();
 				tmpArchives.put(def, archiveTmp);
 				
-				try {
+				try(var in = downloadFromUrl(url)) {
 					
-					OutputStream out = new FileOutputStream(archiveTmp);
-					
-					try {
+					try(var out = new FileOutputStream(archiveTmp)) {
 
 						byte[] buf = new byte[1024 * 1024];
 						int b;
@@ -225,16 +213,10 @@ public abstract class AbstractExtensionUpdater {
 									+ read + " bytes, expected " + def.getSize() + " bytes");
 						}
 
-					} finally {
-						
-						FileUtils.closeQuietly(out);
-					}
-				} finally {
-					FileUtils.closeQuietly(in);
+					} 
 				}
 
-				in = new FileInputStream(archiveTmp);
-				try {
+				try(var in = new FileInputStream(archiveTmp)) {
 					String generatedMd5 = DigestUtils.md5Hex(in);
 					if (def.getHash().length() > 0 && !generatedMd5.equals(def.getHash())) {
 						if (log.isErrorEnabled()) {
@@ -243,14 +225,12 @@ public abstract class AbstractExtensionUpdater {
 						throw new IOException("Corrupt download for extension " + def.getExtensionId() + ". Hash is "
 								+ generatedMd5 + ", expected " + def.getHash());
 					}
-				} finally {
-					IOUtils.closeQuietly(in);
-				}
+				} 
 
 				onExtensionDownloaded(def);
 			}
 
-			File archivesDirFile = getExtensionPlace().getDir();
+			File archivesDirFile = extensionsPluginManager.getPrimaryPluginsFolder().toFile();
 			if (!archivesDirFile.exists() && !archivesDirFile.mkdirs()) {
 				throw new IOException(
 						String.format("Archive directory %s does not exist and could not be created.",
@@ -302,12 +282,12 @@ public abstract class AbstractExtensionUpdater {
 			/**
 			 * Now copy over the new archives
 			 */
-			List<File> newFiles = new ArrayList<>();
+			var newFiles = new ArrayList<File>();
 			try {
 
-				for (ExtensionVersion def : updates) {
-					File archiveTmp = tmpArchives.get(def);
-					File archiveFile = new File(getExtensionPlace().getDir(), archiveTmp.getName());
+				for (var def : updates) {
+					var archiveTmp = tmpArchives.get(def);
+					var archiveFile = new File(archivesDirFile, archiveTmp.getName());
 					if(!archiveFile.getParentFile().exists() && !archiveFile.getParentFile().mkdirs()) {
 						throw new IOException(
 								String.format("Archive directory %s does not exist and could not be created.",
@@ -423,20 +403,15 @@ public abstract class AbstractExtensionUpdater {
 
 	private void completeDownload(File archiveTmp, File archiveFile, ExtensionVersion def) throws IOException {
 
-		InputStream in = new FileInputStream(archiveTmp);
-		try {
+		try(var in = new FileInputStream(archiveTmp)) {
 			if (!archiveFile.getParentFile().exists()) {
 				archiveFile.getParentFile().mkdirs();
 			}
 			if (!archiveFile.exists()) {
 				archiveFile.createNewFile();
 			}
-			OutputStream out = new FileOutputStream(archiveFile);
-
-			try {
-				IOUtils.copy(in, out);
-			} finally {
-				IOUtils.closeQuietly(out);
+			try(var out = new FileOutputStream(archiveFile)) {
+				in.transferTo(out);
 			}
 
 			archiveFile.setLastModified(def.getModifiedDate());
@@ -446,9 +421,7 @@ public abstract class AbstractExtensionUpdater {
 			if (log.isInfoEnabled()) {
 				log.info("Install of extension " + def.getExtensionId() + " to " + archiveFile + " completed ok");
 			}
-		} finally {
-			IOUtils.closeQuietly(in);
-		}
+		} 
 
 		onExtensionUpdateComplete(def);
 

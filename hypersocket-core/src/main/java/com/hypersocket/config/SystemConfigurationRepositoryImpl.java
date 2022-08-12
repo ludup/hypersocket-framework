@@ -17,7 +17,6 @@ import com.hypersocket.properties.PropertyRepository;
 import com.hypersocket.properties.PropertyRepositoryImpl;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.PropertyTemplateRepository;
-import com.hypersocket.properties.PropertyTemplateRepositoryAbstractImpl;
 
 @Repository
 public class SystemConfigurationRepositoryImpl extends PropertyRepositoryImpl implements SystemConfigurationRepository {
@@ -43,8 +42,13 @@ public class SystemConfigurationRepositoryImpl extends PropertyRepositoryImpl im
 	}
 
 	@Override
-	public void loadPropertyTemplates(String string) {
-		repository.loadPropertyTemplates(string);
+	public void unloadPropertyTemplates(ClassLoader classLoader) {
+		repository.unloadPropertyTemplates(classLoader);
+	}
+
+	@Override
+	public void loadPropertyTemplates(String string, ClassLoader classLoader) {
+		repository.loadPropertyTemplates(string, classLoader);
 	}
 
 	@Override

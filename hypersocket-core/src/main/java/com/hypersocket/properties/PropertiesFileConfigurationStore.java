@@ -17,9 +17,7 @@ import org.apache.http.client.utils.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
-import com.hypersocket.utils.FileUtils;
 import com.hypersocket.utils.HypersocketUtils;
 
 public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStore {
@@ -43,14 +41,14 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 	@Override
 	public void init(Element element) throws IOException {
 		
-		NodeList filename = element.getElementsByTagName("filename");
+		var filename = element.getElementsByTagName("filename");
 		if(filename.getLength() != 1) {
 			throw new IOException("<propertyStore> of type PropertiesFileConfigurationStore requires a child <filename> element");
 		}
 		
 		this.propertiesFile = new File(filename.item(0).getTextContent().replace("${hypersocket.conf}", HypersocketUtils.getConfigDir().getAbsolutePath()));
 		
-		String createAttribute = element.getAttribute("create");
+		var createAttribute = element.getAttribute("create");
 		if("true".equals(createAttribute) && !this.propertiesFile.exists()){
 			if(!this.propertiesFile.createNewFile()){
 				log.error(String.format("Problem in creating file %s", this.propertiesFile.getAbsolutePath()));
@@ -68,39 +66,25 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 	}
 
 	protected Properties readProperties(File propertiesFile) throws IOException {
-		return readProperties(new BufferedInputStream(new FileInputStream(propertiesFile)));
+		try(var in = new BufferedInputStream(new FileInputStream(propertiesFile))) {
+			return readProperties(in);
+		}
 	}
 	
 	protected Properties readProperties(InputStream inputStream) throws IOException {
-		Properties properties = new Properties();
-
-		try {
-			properties.load(inputStream);
-		} finally {
-			FileUtils.closeQuietly(inputStream);
-		}
-
+		var properties = new Properties();
+		properties.load(inputStream);
 		return properties;
 	}
 	
-	
-
-
 	protected void saveProperties() throws IOException {
-		
-		FileOutputStream out = new FileOutputStream(propertiesFile);
-		
-		try {
+		try(var out = new FileOutputStream(propertiesFile)) {
 			properties.store(out, "Saved by Hypersocket on " + DateUtils.formatDate(new Date()));
-		
-		} finally {
-			FileUtils.closeQuietly(out);
 		}
 	}
 
 	@Override
 	public void setProperty(PropertyTemplate template, String value) {
-		
 		if(Boolean.getBoolean("hypersocket.demo")) {
 			throw new IllegalStateException("This is a demo. No changes to resources or settings can be persisted.");
 		}
@@ -123,6 +107,8 @@ public class PropertiesFileConfigurationStore implements XmlTemplatePropertyStor
 
 	@Override
 	public void registerTemplate(PropertyTemplate template, String module) {
+		if(templates.containsKey(template.getResourceKey()))
+			throw new IllegalArgumentException(String.format("Attempt to register template '%s', when a template with the same key '%s' already exists", template, templates.get(template.getResourceKey())));
 		templates.put(template.getResourceKey(), template);
 		if(!templatesByModule.containsKey(module)) {
 			templatesByModule.put(module, new ArrayList<PropertyTemplate>());

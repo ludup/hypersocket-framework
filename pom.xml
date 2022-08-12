@@ -9,7 +9,6 @@
 	<packaging>pom</packaging>
 	<name>Hypersocket Framework</name>
 	<description>A framework for building JSON web services based on Spring/Hibernate within a high performance HTTP server based on Netty.</description>
-
 	<licenses>
 		<license>
 			<name>GNU General Public License v3</name>

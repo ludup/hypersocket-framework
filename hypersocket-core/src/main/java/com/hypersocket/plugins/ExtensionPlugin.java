@@ -11,7 +11,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
-import com.hypersocket.upgrade.UpgradeService;
+import com.hypersocket.config.SystemConfigurationRepository;
+import com.hypersocket.config.SystemConfigurationService;
 
 public abstract class ExtensionPlugin extends SpringPlugin {
 	private ApplicationContext webApplicationContext;
@@ -43,56 +44,68 @@ public abstract class ExtensionPlugin extends SpringPlugin {
 
 	@Override
 	public final void start() {
-		beforeStart();
-		super.start();
-		var ctx = getApplicationContext();
-		for (var bean : ctx.getBeansOfType(PluginLifecycle.class).values()) {
-			bean.start();
-		}
-		
-//		ctx.getBean(UpgradeService.class).upgradePlugins(ctx);
-		afterStart();
+		Plugins.runInPluginClassLoader(this, () -> {
+			beforeStart();
+			var ctx = getApplicationContext();
+	
+			ctx.getBean(SystemConfigurationRepository.class).loadPropertyTemplates(SystemConfigurationService.SYSTEM_TEMPLATES_XML, getClass().getClassLoader());
+			
+			super.start();
+			for (var bean : ctx.getBeansOfType(PluginLifecycle.class).values()) {
+				bean.start();
+			}
+			
+	//		ctx.getBean(UpgradeService.class).upgradePlugins(ctx);
+			afterStart();
+		});
 	}
 
 	public final void uninstall(boolean deleteData) throws Exception {
-		try {
-			beforeUninstall(deleteData);
-			Exception exception = null;
+		Plugins.callInPluginClassLoader(this, () -> {
 			try {
-				for (var bean : getApplicationContext().getBeansOfType(PluginLifecycle.class).values()) {
-					try {
-						bean.uninstall(deleteData);
-					} catch (Exception e) {
-						if (exception == null)
-							exception = e;
+				beforeUninstall(deleteData);
+				Exception exception = null;
+				try {
+					for (var bean : getApplicationContext().getBeansOfType(PluginLifecycle.class).values()) {
+						try {
+							bean.uninstall(deleteData);
+						} catch (Exception e) {
+							if (exception == null)
+								exception = e;
+						}
 					}
+				} catch (IllegalStateException ise) {
+					if (exception == null)
+						exception = ise;
 				}
-			} catch (IllegalStateException ise) {
-				if (exception == null)
-					exception = ise;
+				afterUninstall(deleteData);
+				if (exception != null)
+					throw exception;
+			} finally {
+				/* getApplicationContext() restarts the context */
+				stopContext();
 			}
-			afterUninstall(deleteData);
-			if (exception != null)
-				throw exception;
-		} finally {
-			/* getApplicationContext() restarts the context */
-			stopContext();
-		}
+			return null;
+		});
 	}
 
 	@Override
 	public final void stop() {
-		beforeStop();
-		try {
-			for (var bean : getApplicationContext().getBeansOfType(PluginLifecycle.class).values()) {
-				bean.stop();
+		Plugins.runInPluginClassLoader(this, () -> {
+			beforeStop();
+			try {
+				var ctx = getApplicationContext();
+				for (var bean : ctx.getBeansOfType(PluginLifecycle.class).values()) {
+					bean.stop();
+				}
+				ctx.getBean(SystemConfigurationRepository.class).unloadPropertyTemplates( getClass().getClassLoader());
+			} catch (IllegalStateException ise) {
+				/* Already closed */
 			}
-		} catch (IllegalStateException ise) {
-			/* Already closed */
-		}
-
-		stopContext();
-		afterStop();
+	
+			stopContext();
+			afterStop();
+		});
 	}
 
 	protected void stopContext() {

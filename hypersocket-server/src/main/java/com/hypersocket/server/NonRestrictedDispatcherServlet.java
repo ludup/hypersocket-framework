@@ -86,6 +86,9 @@ public class NonRestrictedDispatcherServlet extends DispatcherServlet {
 			try {
 				pluginManager.stopPlugin(pw.getPluginId());
 			}
+			catch(Exception e) {
+				logger.debug("Failed to stop plugin that failed to start.", e);
+			}
 			finally {
 				pw.setPluginState(PluginState.FAILED);
 				pw.setFailedException(t);

@@ -13,6 +13,8 @@ public interface TriggerResourceRepository extends
 
 	void registerActionRepository(TaskProvider action);
 
+	void deregisterActionRepository(TaskProvider action);
+
 	List<TriggerResource> getTriggersForEvent(SystemEvent event);
 
 	TriggerCondition getConditionById(Long id);

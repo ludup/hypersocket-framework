@@ -13,7 +13,7 @@ public class ExtensionsDevelopmentPluginDescriptorFinder implements PluginDescri
 
 	@Override
 	public boolean isApplicable(Path pluginPath) {
-		return Files.exists(resolvePropertiesPath(pluginPath));
+		return Files.exists(pluginPath.resolve("pom.xml")) && Files.exists(resolvePropertiesPath(pluginPath));
 	}
 
 	@Override

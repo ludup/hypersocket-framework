@@ -39,6 +39,7 @@ import org.xml.sax.SAXException;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.encrypt.EncryptionService;
+import com.hypersocket.plugins.Plugins;
 import com.hypersocket.replace.ReplacementUtils;
 import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.triggers.ValidationException;
@@ -146,25 +147,43 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		return propertyContexts.keySet();
 	}
 	@Override
-	public void loadPropertyTemplates(String resourceXmlPath) {
-		loadPropertyTemplates(resourceXmlPath, false);
+	public final void loadPropertyTemplates(String resourceXmlPath, ClassLoader classLoader) {
+		loadPropertyTemplates(resourceXmlPath, false, classLoader);
 	}
 	
-	public void loadPropertyTemplates(String resourceXmlPath, boolean forceReadOnly) {
+	@Override
+	public final void unloadPropertyTemplates(ClassLoader classLoader) {
+		for(var it = activeCategories.values().iterator(); it.hasNext(); ) {
+			var cat = it.next();
+			if(cat.getClassLoader().equals(classLoader)) {
+				it.remove();
+			}
+			else {
+				for(var it2 = cat.getTemplates().iterator(); it2.hasNext() ; ) {
+					var pt = it2.next();
+					if(pt.getClassLoader().equals(classLoader)) {
+						it2.remove();
+					}
+				}
+			}
+		}
+	}
+
+	public final void loadPropertyTemplates(String resourceXmlPath, boolean forceReadOnly, ClassLoader classLoader) {
 
 		this.resourceXmlPath = resourceXmlPath;
 
 		String context = null;
 		try {
-			Enumeration<URL> urls = getClass().getClassLoader().getResources(resourceXmlPath);
+			var urls = Plugins.findPluginResources(classLoader, resourceXmlPath);
 			if (!urls.hasMoreElements()) {
 				throw new IllegalArgumentException(resourceXmlPath + " does not exist!");
 			}
 
 			while (urls.hasMoreElements()) {
-				URL url = urls.nextElement();
+				var url = urls.nextElement();
 				try {
-					context = loadPropertyTemplates(url, forceReadOnly);
+					context = loadPropertyTemplates(url, forceReadOnly, classLoader);
 				} catch (Exception e) {
 					log.error("Failed to process " + url.toExternalForm(), e);
 				}
@@ -187,7 +206,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	}
 
-	private void loadPropertyStores(Document doc) {
+	private void loadPropertyStores(Document doc, ClassLoader loader) {
 
 		NodeList list = doc.getElementsByTagName("propertyStore");
 
@@ -213,7 +232,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	}
 
-	private String loadPropertyTemplates(URL url, boolean forceReadOnly) throws SAXException, IOException, ParserConfigurationException {
+	private String loadPropertyTemplates(URL url, boolean forceReadOnly, ClassLoader classLoader) throws SAXException, IOException, ParserConfigurationException {
 
 		DocumentBuilderFactory xmlFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder xmlBuilder = xmlFactory.newDocumentBuilder();
@@ -226,11 +245,11 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			String extendsTemplates = root.getAttribute("extends");
 			StringTokenizer t = new StringTokenizer(extendsTemplates, ",");
 			while (t.hasMoreTokens()) {
-				Enumeration<URL> extendUrls = getClass().getClassLoader().getResources(t.nextToken());
+				Enumeration<URL> extendUrls = classLoader.getResources(t.nextToken());
 				while (extendUrls.hasMoreElements()) {
 					URL extendUrl = extendUrls.nextElement();
 					try {
-						context = loadPropertyTemplates(extendUrl, forceReadOnly);
+						context = loadPropertyTemplates(extendUrl, forceReadOnly, classLoader);
 					} catch (Exception e) {
 						log.error("Failed to process " + extendUrl.toExternalForm(), e);
 					}
@@ -246,14 +265,13 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			log.debug("Loading property template resource " + url.toExternalForm());
 		}
 
-		loadPropertyStores(doc);
-
-		loadPropertyCategories(doc, forceReadOnly);
+		loadPropertyStores(doc, classLoader);
+		loadPropertyCategories(doc, forceReadOnly, classLoader);
 
 		return context;
 	}
 
-	private void loadPropertyCategories(Document doc, boolean forceReadOnly) throws IOException {
+	private void loadPropertyCategories(Document doc, boolean forceReadOnly, ClassLoader classLoader) throws IOException {
 
 		NodeList list = doc.getElementsByTagName("propertyCategory");
 		
@@ -285,7 +303,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 					node.hasAttribute("hidden") && Boolean.parseBoolean(node.getAttribute("hidden")),
 					node.getAttribute("visibilityDependsOn"),
 					node.getAttribute("visibilityDependsValue"),
-					node.getAttribute("via"));
+					node.getAttribute("via"), classLoader);
 
 			PropertyStore defaultStore = getPropertyStore();
 
@@ -331,7 +349,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 						}
 					}
 
-					registerPropertyItem(cat, store, pnode, forceReadOnly);
+					registerPropertyItem(classLoader, cat, store, pnode, forceReadOnly);
 				} catch (Throwable e) {
 					log.error("Failed to register property item", e);
 				}
@@ -388,7 +406,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		return propertyTemplates.get(resourceKey);
 	}
 
-	private void registerPropertyItem(PropertyCategory category, PropertyStore propertyStore, Element pnode, boolean forceReadOnly) {
+	private void registerPropertyItem(ClassLoader classLoader, PropertyCategory category, PropertyStore propertyStore, Element pnode, boolean forceReadOnly) {
 
 	
 		String resourceKey = pnode.getAttribute("resourceKey");
@@ -440,7 +458,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			template = new PropertyTemplate();
 			template.setResourceKey(resourceKey);
 		}
-
+		template.setClassLoader(classLoader);
 		template.setDefaultValue(defaultValue);
 		template.setWeight(weight);
 		template.setHidden(hidden);
@@ -514,7 +532,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 
 	private PropertyCategory registerPropertyCategory(String resourceKey, String categoryNamespace, String bundle, int weight,
 			boolean userCreated, String group, String displayMode, boolean systemOnly, boolean nonSystem, String filter, boolean hidden,
-			String visibilityDependsOn, String visibilityDependsValue, String via) {
+			String visibilityDependsOn, String visibilityDependsValue, String via, ClassLoader classLoader) {
 
 		String categoryKey = resourceKey + "/" + bundle;
 
@@ -523,6 +541,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 		}
 
 		PropertyCategory category = new PropertyCategory();
+		category.setClassLoader(classLoader);
 		category.setBundle(bundle);
 		category.setCategoryKey(resourceKey);
 		category.setCategoryGroup(group);

@@ -97,6 +97,8 @@ public interface HypersocketServer {
 
 	void addUrlRewrite(String regex, String rewrite);
 
+	void removeUrlRewrite(String regex);
+
 	Map<Pattern, String> getUrlRewrites();
 
 	void addAlias(String alias, String path);

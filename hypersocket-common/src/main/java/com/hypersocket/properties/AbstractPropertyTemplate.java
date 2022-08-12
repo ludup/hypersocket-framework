@@ -25,6 +25,16 @@ public abstract class AbstractPropertyTemplate {
 	private String name;
 	private String description;
 	private Map<String,String> attributes = new HashMap<String,String>();
+	private ClassLoader classLoader;
+
+	@JsonIgnore
+	public ClassLoader getClassLoader() {
+		return classLoader;
+	}
+
+	public void setClassLoader(ClassLoader classLoader) {
+		this.classLoader = classLoader;
+	}
 
 	public String getName() {
 		return name;
@@ -215,13 +225,11 @@ public abstract class AbstractPropertyTemplate {
 
 	@Override
 	public String toString() {
-		return "AbstractPropertyTemplate [resourceKey=" + resourceKey + ", defaultValue=" + defaultValue + ", weight="
-				+ weight + ", hidden=" + hidden + ", displayMode=" + displayMode + ", readOnly=" + readOnly + ", required=" + required
-				+ ", encrypted=" + encrypted + ", category=" + category + ", name=" + name + "]";
+		return "AbstractPropertyTemplate [resourceKey=" + resourceKey + ", defaultValue=" + defaultValue
+				+ ", defaultsToProperty=" + defaultsToProperty + ", weight=" + weight + ", hidden=" + hidden
+				+ ", displayMode=" + displayMode + ", readOnly=" + readOnly + ", required=" + required + ", encrypted="
+				+ encrypted + ", category=" + category + ", mapping=" + mapping + ", metaData=" + metaData + ", name="
+				+ name + ", description=" + description + ", classLoader=" + classLoader + "]";
 	}
 
-	
-	
-	
-	
 }

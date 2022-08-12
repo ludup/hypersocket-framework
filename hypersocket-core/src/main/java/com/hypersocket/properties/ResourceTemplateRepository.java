@@ -9,7 +9,17 @@ import com.hypersocket.resource.SimpleResource;
 
 public interface ResourceTemplateRepository extends PropertyRepository {
 
-	void loadPropertyTemplates(String xmlResourcePath);
+	default void loadPropertyTemplates(String xmlResourcePath) {
+		loadPropertyTemplates(xmlResourcePath, Thread.currentThread().getContextClassLoader() == null ? ResourceTemplateRepository.class.getClassLoader() : Thread.currentThread().getContextClassLoader());
+	}
+
+	void loadPropertyTemplates(String xmlResourcePath, ClassLoader classLoader);
+
+	void unloadPropertyTemplates(ClassLoader classLoader);
+	
+	default void unloadPropertyTemplates() {
+		unloadPropertyTemplates(Thread.currentThread().getContextClassLoader() == null ? ResourceTemplateRepository.class.getClassLoader() : Thread.currentThread().getContextClassLoader());
+	}
 	
 	String getValue(SimpleResource resource, String resourceKey);
 

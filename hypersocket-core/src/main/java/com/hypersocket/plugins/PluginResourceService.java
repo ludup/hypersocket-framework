@@ -19,6 +19,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
 
+@Deprecated
 public interface PluginResourceService {
 
 	public static final String RESOURCE_BUNDLE = "PluginResourceService";

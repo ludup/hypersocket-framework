@@ -10,6 +10,8 @@ public interface TaskProviderService extends AuthenticatedService {
 
 	void registerTaskProvider(TaskProvider action);
 
+	void deregisterTaskProvider(TaskProvider action);
+
 	TaskProvider getTaskProvider(Task task);
 
 	List<TaskDefinition> getTriggerTasks();

@@ -17,6 +17,7 @@ public class PluginResource {
 	private final String description;
 	private final String version;
 	private final String provider;
+	private final String name;
 	private final String license;
 	private final List<PluginDependency> dependencies;
 	private final String path;
@@ -28,6 +29,7 @@ public class PluginResource {
 		description = null;
 		version = null;
 		provider = null;
+		name = null;
 		license = null;
 		dependencies = Collections.emptyList();
 		path = null;
@@ -43,6 +45,7 @@ public class PluginResource {
 		license = p.getDescriptor().getLicense();
 		path = p.getPluginPath().toString();
 		dependencies = p.getDescriptor().getDependencies();
+		name = Plugins.getPluginProperties(p.getPluginPath()).getProperty(Plugins.X_PLUGIN_NAME);
 	}
 
 	public PluginState getState() {
@@ -58,10 +61,7 @@ public class PluginResource {
 	}
 
 	public String getName() {
-		/*
-		 * INFO BPS 31/07/22 Delete action requires a name
-		 */
-		return getId();
+		return name;
 	}
 
 	public String getDescription() {

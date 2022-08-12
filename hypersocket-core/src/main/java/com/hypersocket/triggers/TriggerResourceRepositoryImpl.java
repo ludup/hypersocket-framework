@@ -47,6 +47,13 @@ public class TriggerResourceRepositoryImpl extends
 			registeredRepository.put(resourceKey, action.getRepository());
 		}
 	}
+	
+	@Override
+	public void deregisterActionRepository(TaskProvider action) {
+		for (String resourceKey : action.getResourceKeys()) {
+			registeredRepository.remove(resourceKey);
+		}
+	}
 
 	@Override
 	@Transactional(readOnly=true)

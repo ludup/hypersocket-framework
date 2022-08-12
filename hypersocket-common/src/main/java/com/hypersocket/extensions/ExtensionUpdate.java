@@ -10,10 +10,19 @@ public class ExtensionUpdate {
 	private boolean canUpdate;
 	private int missingComponentCount;
 	private String customer;
-	private String product; 
+	private String product;
+	private boolean restartRequired;
 	
 	public ExtensionUpdate() {
 		
+	}
+	
+	public boolean isRestartRequired() {
+		return restartRequired;
+	}
+
+	public void setRestartRequired(boolean restartRequired) {
+		this.restartRequired = restartRequired;
 	}
 
 	public String getCurrentVersion() {

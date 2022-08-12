@@ -11,6 +11,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class PropertyCategory implements Serializable {
 
 	private static final long serialVersionUID = -9161050636516897409L;
@@ -29,6 +31,7 @@ public class PropertyCategory implements Serializable {
 	private String name = null;
 	private String visibilityDependsOn = "";
 	private String visibilityDependsValue = "";
+	private ClassLoader classLoader;
 	
 	private List<AbstractPropertyTemplate> templates = new ArrayList<AbstractPropertyTemplate>();
 	
@@ -51,8 +54,18 @@ public class PropertyCategory implements Serializable {
 		setHidden(other.isHidden());
 		setVisibilityDependsValue(other.getVisibilityDependsValue());
 		setVisibilityDependsOn(other.getVisibilityDependsOn());
+		setClassLoader(other.getClassLoader());
 	}
 	
+	@JsonIgnore
+	public ClassLoader getClassLoader() {
+		return classLoader;
+	}
+
+	public void setClassLoader(ClassLoader classLoader) {
+		this.classLoader = classLoader;
+	}
+
 	public int getId() {
 		return categoryKey.hashCode();
 	}
