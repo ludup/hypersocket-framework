@@ -18,7 +18,6 @@ import java.util.prefs.Preferences;
 
 import javax.servlet.ServletException;
 
-import org.apache.log4j.PropertyConfigurator;
 import org.hibernate.SessionFactory;
 import org.jboss.netty.logging.InternalLoggerFactory;
 import org.jboss.netty.logging.Slf4JLoggerFactory;
@@ -101,20 +100,6 @@ public class Main {
 
 		System.setProperty("hypersocket.conf", conf.getPath());
 
-		/* Log4J Configuration */
-		String logConfigPath = System.getProperty("hypersocket.logConfiguration", "");
-		if(logConfigPath.equals("")) {
-			/* Load default */
-			PropertyConfigurator.configure(Main.class.getResource("/default-log4j.properties"));
-		}
-		else {
-			File logConfigFile = new File(logConfigPath);
-			if(logConfigFile.exists())
-				PropertyConfigurator.configureAndWatch(logConfigPath);
-			else
-				PropertyConfigurator.configure(Main.class.getResource("/default-log4j.properties"));
-		}
-		
 		/* JULI Configuration */
 		String juliConfigPath = System.getProperty("hypersocket.juliConfiguration", "");
 		if(juliConfigPath.equals("")) {
@@ -134,8 +119,7 @@ public class Main {
 				log.error("Failed to configure JULI.", e);
 			}
 		}
-		//juli.properties
-
+		
 		classLoader = getClass().getClassLoader();
 		if (log.isInfoEnabled()) {
 			log.info("Using class loader " + classLoader.getClass().getName());
