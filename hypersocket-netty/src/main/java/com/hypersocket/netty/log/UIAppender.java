@@ -1,111 +1,103 @@
 package com.hypersocket.netty.log;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Layout;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Core;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Property;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
+import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
+import org.apache.logging.log4j.core.config.plugins.PluginElement;
+import org.apache.logging.log4j.core.config.plugins.PluginFactory;
+import org.slf4j.event.EventConstants;
 import org.slf4j.event.Level;
 
 import com.hypersocket.server.LoggingOutputListener;
 import com.hypersocket.server.LoggingOutputListener.LoggingOutputEvent;
 
-public class UIAppender extends AppenderSkeleton {
-	
-	public static class UILogEvent extends LoggingOutputEvent {
-		public UILogEvent(String text, LoggingEvent evt) {
-			this.text = text;
-			rawText = evt.getRenderedMessage();
-			timestamp = evt.timeStamp;
-			syslogLevel = evt.getLevel().getSyslogEquivalent();
-			switch(evt.getLevel().toInt()) {
-			case org.apache.log4j.Level.ALL_INT:
-			case org.apache.log4j.Level.TRACE_INT:
-				level = Level.TRACE;
-				break;
-			case org.apache.log4j.Level.DEBUG_INT:
-				level = Level.DEBUG;
-				break;
-			case org.apache.log4j.Level.ERROR_INT:
-			case org.apache.log4j.Level.FATAL_INT:
-			case org.apache.log4j.Level.OFF_INT:
-				level = Level.ERROR;
-				break;
-			case org.apache.log4j.Level.WARN_INT:
-				level = Level.WARN;
-				break;
-			default:
-				level = Level.INFO;
-				break;
-			}
-			logger = evt.getLoggerName();
-			className = evt.getLocationInformation().getClassName();
-			fileName = evt.getLocationInformation().getFileName();
-			methodName = evt.getLocationInformation().getMethodName();
-			lineNumber = evt.getLocationInformation().getLineNumber();
-		}
-	}
+@Plugin(name = "UIAppender", category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
+public class UIAppender extends AbstractAppender {
 
-	private static final int MAX_BUFFER_SIZE = 100;
-	private static List<UILogEvent> buffer = Collections.synchronizedList(new LinkedList<>());
 	private ExecutorService queue = Executors.newSingleThreadExecutor();
 	private static UIAppender instance;
-	private List<LoggingOutputListener> listeners=  new ArrayList<>();
+	private List<LoggingOutputListener> listeners = new ArrayList<>();
 
-	public UIAppender() {
+	@PluginFactory
+	public static UIAppender createAppender(@PluginAttribute("name") String name,
+			@PluginElement("Filter") Filter filter, @PluginElement("Layout") Layout<? extends Serializable> layout) {
+		return new UIAppender(name, filter, layout, false, new Property[0]);
+	}
+
+	public UIAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions,
+			Property[] properties) {
+		super(name, filter, layout, ignoreExceptions, properties);
+	}
+
+	{
 		instance = this;
 	}
-	
+
 	public void addListener(LoggingOutputListener listener) {
 		listeners.add(listener);
 	}
-	
+
 	public void removeListener(LoggingOutputListener listener) {
 		listeners.remove(listener);
 	}
-	
+
 	public static UIAppender getInstance() {
 		return instance;
 	}
 
-	public UIAppender(Layout layout) {
-		setLayout(layout);
-	}
-
 	@Override
-	public void close() {
-	}
-
-	@Override
-	public boolean requiresLayout() {
-		return true;
-	}
-
-	@Override
-	protected void append(LoggingEvent event) {
+	public void append(LogEvent event) {
 		queue.execute(() -> {
-			UILogEvent uiLogEvent = toUILogEvent(event);
-			buffer.add(uiLogEvent);
-			for(int i = listeners.size() -1 ; i >= 0 ; i--) {
+			var uiLogEvent = toUILogEvent(event);
+			for (int i = listeners.size() - 1; i >= 0; i--) {
 				listeners.get(i).logEvent(uiLogEvent);
-			}
-			while (buffer.size() > MAX_BUFFER_SIZE) {
-				buffer.remove(0);
 			}
 		});
 	}
 
-	private UILogEvent toUILogEvent(LoggingEvent event) {
-		return new UILogEvent(layout.format(event), event);
-	}
-
-	public static List<UILogEvent> getLoggingEventBuffer() {
-		return buffer;
+	private LoggingOutputEvent toUILogEvent(LogEvent event) {
+		Level level;
+		int syslogLevel;
+		switch (event.getLevel().intLevel()) {
+		case EventConstants.TRACE_INT:
+			level = Level.TRACE;
+			syslogLevel = 7;
+			break;
+		case EventConstants.DEBUG_INT:
+			level = Level.DEBUG;
+			syslogLevel = 7;
+			break;
+		case EventConstants.ERROR_INT:
+			level = Level.ERROR;
+			syslogLevel = 3;
+			break;
+		case EventConstants.WARN_INT:
+			level = Level.WARN;
+			syslogLevel = 4;
+			break;
+		default:
+			level = Level.INFO;
+			syslogLevel = 6;
+			break;
+		}
+		return new LoggingOutputEvent(event.getTimeMillis(), event.getMessage().getFormattedMessage(), level,
+				syslogLevel, event.getLoggerName(), event.getSource() == null ? null : event.getSource().getClassName(),
+				event.getSource() == null ? null : event.getSource().getFileName(),
+				event.getSource() == null ? null : event.getSource().getMethodName(),
+				event.getSource() == null ? null : String.valueOf(event.getSource().getLineNumber()),
+				event.getMessage() == null ? null : event.getMessage().getFormat());
 	}
 
 }
