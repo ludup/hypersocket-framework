@@ -309,9 +309,12 @@ public class LogonController extends AuthenticatedController {
 				checkRedirect(request, response);
 				
 				var isPostStep = state.isAuthenticationComplete();
-				FormTemplate template = isPostStep ? 
-						authenticationService.nextPostAuthenticationStep(state) :
-						authenticationService.nextAuthenticationTemplate(state, request.getParameterMap());
+				FormTemplate template;
+				try(var c = tryWithSystemContext()) {
+					template = isPostStep ? 
+							authenticationService.nextPostAuthenticationStep(state) :
+							authenticationService.nextAuthenticationTemplate(state, request.getParameterMap());
+				}
 				
 				request.getSession().setAttribute("lastFormTemplate", template);
 				
