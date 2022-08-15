@@ -18,6 +18,8 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -75,7 +77,12 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 		i18nService.registerBundle(LocalRealmProviderImpl.RESOURCE_BUNDLE);
 
 		defaultProperties.add("description");
-
+		
+	}
+	
+	@EventListener
+	@Override
+	public void started(ContextStartedEvent cse) {
 		if(Boolean.getBoolean("logonbox.forceAdminPassword")) {
 			sessionService.executeInSystemContext(()->{
 				try {
@@ -108,7 +115,6 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 				}
 			});
 		}
-		
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.auth.AuthenticationModulesOperationContext;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.profile.ProfileCredentialsService;
 import com.hypersocket.realm.Principal;
@@ -28,7 +29,7 @@ public class ProfileCreationJob extends PermissionsAwareJob {
 			if(target==null) {
 				throw new JobExecutionException(String.format("Invalid principal id %d", principalId));
 			}
-			profileService.createProfile(target);
+			profileService.createProfile(target, new AuthenticationModulesOperationContext());
 		} catch (AccessDeniedException e) {
 			throw new JobExecutionException(e.getMessage(), e);
 		}

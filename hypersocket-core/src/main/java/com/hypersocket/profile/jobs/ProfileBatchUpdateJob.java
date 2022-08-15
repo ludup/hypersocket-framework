@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.auth.AuthenticationModulesOperationContext;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.profile.Profile;
 import com.hypersocket.profile.ProfileCredentialsService;
@@ -37,8 +38,9 @@ public class ProfileBatchUpdateJob extends PermissionsAwareJob {
 		
 		try {
 			
+			var ctx = new AuthenticationModulesOperationContext();
 			for(Profile profile : repository.getProfilesWithStatus(Arrays.asList(getCurrentRealm()))) {
-				profileService.updateProfile(realmService.getPrincipalById(profile.getId()));
+				profileService.updateProfile(realmService.getPrincipalById(profile.getId()), ctx);
 			}
 			
 			if(log.isInfoEnabled()) {
