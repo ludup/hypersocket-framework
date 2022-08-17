@@ -81,6 +81,7 @@ import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 import com.hypersocket.session.Session;
+import com.hypersocket.session.json.SessionUtils;
 
 public abstract class HypersocketServerImpl implements HypersocketServer, 
 				ApplicationListener<SystemEvent> {
@@ -95,6 +96,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	
 	@Autowired 
 	private RealmService realmService;
+	
+	@Autowired 
+	private SessionUtils sessionUtils;
 
 	private Map<String, Object> attributes = new HashMap<String, Object>();
 
@@ -107,16 +111,16 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	
 	private Set<String> controllerPackages = new LinkedHashSet<String>();
 	
-	private Map<HTTPInterfaceResource,SSLContext> sslContexts = new HashMap<HTTPInterfaceResource,SSLContext>();
-	private Map<HTTPInterfaceResource,KeyStore> sslCertificates = new HashMap<HTTPInterfaceResource,KeyStore>();
+	private Map<HTTPInterfaceResource,SSLContext> sslContexts = new HashMap<>();
+	private Map<HTTPInterfaceResource,KeyStore> sslCertificates = new HashMap<>();
 	private String defaultRedirectPath = null;
 	private List<HomePageResolver> homePageResolvers = new ArrayList<>(); 
 	
 	private List<HttpRequestHandler> httpHandlers = Collections
-			.synchronizedList(new ArrayList<HttpRequestHandler>());
+			.synchronizedList(new ArrayList<>());
 
 	private List<WebsocketHandler> wsHandlers = Collections
-			.synchronizedList(new ArrayList<WebsocketHandler>());
+			.synchronizedList(new ArrayList<>());
 	
 	private List<String> compressablePaths = new ArrayList<String>();
 	
@@ -154,7 +158,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	    	addUrlRewrite("/hypersocket/(.*)", "${basePath}/$1");
 	    }
 	}
-	
+
 	@Override
 	public void registerControllerPackage(String controllerPackage) {
 		controllerPackages.add(controllerPackage);
@@ -558,11 +562,13 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		}
 
 		Cookie cookie = new Cookie(sessionCookieName, session.getId());
-		cookie.setMaxAge(60 * 15);
+		cookie.setMaxAge(60 * 2); // just needs to be longer than ping (
 		cookie.setPath("/");
 		cookie.setSecure(secure);
-//		cookie.setHttpOnly(true);
+		cookie.setHttpOnly(true);
 		cookie.setDomain(domain);
+		cookie.setComment("; SameSite=Strict");
+		cookie = sessionUtils.decorateCookie(cookie);
 		servletResponse.addCookie(cookie);
 
 		return session;

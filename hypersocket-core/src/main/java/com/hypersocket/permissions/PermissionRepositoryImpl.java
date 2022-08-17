@@ -746,6 +746,14 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 	@Transactional(readOnly = true)
 	public Set<Principal> getPrincpalsByRole(Realm realm, int max, Collection<Role> roles) {
 
+		/* NOTE: BPS - 17/08/2022 
+		 * 
+		 * This method produces a very complex query that can choke
+		 * MySQL/MariaDB. If you see hangs when this query runs, it 
+		 * may be the "optimizer_search_depth" setting. Try setting this
+		 * to 0 in the MySQL server configuration.
+		 */
+		
 		if(roles.isEmpty()) {
 			return new HashSet<Principal>();
 		}

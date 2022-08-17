@@ -54,8 +54,8 @@ public class AuthenticationRequiredResult extends AuthenticationResult {
 		this.inPostAuthentication = inPostAuthentication;
 		this.lastButtonResourceKey = lastButtonResourceKey;
 		this.realm = realm;
-		this.requestParameters = requestParameters;
 		this.page = page;
+		this.requestParameters = requestParameters;
 	}
 
 	public int getNonce() {

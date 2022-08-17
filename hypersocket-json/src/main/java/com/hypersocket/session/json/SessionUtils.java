@@ -62,6 +62,7 @@ public class SessionUtils {
 	@Autowired
 	private RealmService realmService; 
 	
+	
 	public Session getActiveSession(HttpServletRequest request) {
 		
 		Session session = null;
@@ -344,25 +345,38 @@ public class SessionUtils {
 		return true;
 	}
 	
+	public int calccSessionTimeoutSeconds(Session session) {
+		return (session.getTimeout() > 0 ? 60 * session.getTimeout() : Integer.MAX_VALUE);
+	}
 	
+	public Cookie decorateCookie(Cookie cookie) {
+		for(var d : sessionService.getCookieDecorators()) {
+			cookie = d.decorate(cookie);
+		}
+		return cookie;
+	}
 
 	public void addAPISession(HttpServletRequest request,
 			HttpServletResponse response, Session session) {
 
 		Cookie cookie = new Cookie(HYPERSOCKET_API_SESSION, session.getId());
-		cookie.setMaxAge((session.getTimeout() > 0 ? 60 * session.getTimeout() : Integer.MAX_VALUE));
+		cookie.setMaxAge(calccSessionTimeoutSeconds(session));
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
-//		cookie.setHttpOnly(true);
+		cookie.setHttpOnly(true);
 		cookie.setDomain(request.getServerName());
 		cookie.setPath("/");
+		cookie.setComment("; SameSite=Strict");
+		cookie = decorateCookie(cookie);
 		response.addCookie(cookie);
 		
 		cookie = new Cookie(HYPERSOCKET_CSRF_TOKEN, session.getCsrfToken());
-		cookie.setMaxAge((session.getTimeout() > 0 ? 60 * session.getTimeout() : Integer.MAX_VALUE));
+		cookie.setMaxAge(calccSessionTimeoutSeconds(session));
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
 		cookie.setPath("/");
-//		cookie.setHttpOnly(true);
+		cookie.setHttpOnly(false); // hypersocket-utils.js#getCsrfToken()
 		cookie.setDomain(request.getServerName());
+		cookie.setComment("; SameSite=Strict");
+		cookie = decorateCookie(cookie);
 		response.addCookie(cookie);
 	
 	}
@@ -400,8 +414,10 @@ public class SessionUtils {
 		cookie.setPath("/");
 
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
-//		cookie.setHttpOnly(true);
+		cookie.setHttpOnly(true);
 		cookie.setDomain(request.getServerName());
+		cookie.setComment("; SameSite=Strict");
+		cookie = decorateCookie(cookie);
 		response.addCookie(cookie);
 
 	}

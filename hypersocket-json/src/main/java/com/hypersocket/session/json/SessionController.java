@@ -67,6 +67,7 @@ public class SessionController extends ResourceController {
 	public AuthenticationResult peek(HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		Session session = sessionUtils.getSession(request);
+		sessionUtils.addAPISession(request, response, session);
 		return getSuccessfulResult(session);
 	}
 

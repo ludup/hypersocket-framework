@@ -141,5 +141,9 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	UserstackAgent lookupUserAgent(String ua) throws IOException;
 
 	Realm getRealmByHost(String serverName); 
+	
+	void registerCookieDecorator(CookieDecorator decorator);
+
+	List<CookieDecorator> getCookieDecorators();
 }
 

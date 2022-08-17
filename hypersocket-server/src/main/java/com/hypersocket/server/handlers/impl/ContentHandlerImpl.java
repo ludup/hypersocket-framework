@@ -271,11 +271,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			CacheUtils.setDateAndCacheHeaders(response, getLastModified(path), true, path);
 			
 			if (requri.endsWith(".js") || requri.endsWith(".css") || requri.endsWith(".xml") || requri.endsWith(".html") || requri.indexOf('.') == -1) {
-				response.addHeader("Referrer-Policy", "no-referrer");
-				
-				response.addHeader("Permissions-Policy", PERMISSIONS_POLICY_HEADER_OPTIONS);
-				response.addHeader("Feature-Policy", FEATURE_POLICY_HEADER_OPTIONS);
-				response.addHeader("Content-Security-Policy", "default-src 'self';  style-src 'self' 'unsafe-inline' 'unsafe-hashes'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src * data:");
+				addDefaultCSPHeaders(response);
 			}
 			
 			response.setStatus(HttpStatus.SC_OK);
@@ -297,6 +293,14 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				}
 			}
 		}
+	}
+
+	public static void addDefaultCSPHeaders(HttpServletResponse response) {
+		response.addHeader("Referrer-Policy", "no-referrer");
+		
+		response.addHeader("Permissions-Policy", PERMISSIONS_POLICY_HEADER_OPTIONS);
+		response.addHeader("Feature-Policy", FEATURE_POLICY_HEADER_OPTIONS);
+		response.addHeader("Content-Security-Policy", "default-src 'self';  style-src 'self' 'unsafe-inline' 'unsafe-hashes'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src * data:");
 	}
 	
 	protected String processReplacements(String path) {
