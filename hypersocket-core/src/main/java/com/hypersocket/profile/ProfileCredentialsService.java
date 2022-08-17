@@ -2,6 +2,7 @@ package com.hypersocket.profile;
 
 import java.util.Collection;
 
+import com.hypersocket.auth.AuthenticationModulesOperationContext;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -20,9 +21,9 @@ public interface ProfileCredentialsService {
 
 	void onUserDeleted(UserDeletedEvent event);
 
-	Profile createProfile(Principal target) throws AccessDeniedException;
+	Profile createProfile(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException;
 
-	void updateProfile(Principal target) throws AccessDeniedException;
+	void updateProfile(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException;
 
 	void deleteProfile(Principal target) throws AccessDeniedException;
 
@@ -32,11 +33,11 @@ public interface ProfileCredentialsService {
 
 	void onBatchChange(ProfileBatchChangeEvent event);
 
-	void updateProfile(Profile profile, Principal target) throws AccessDeniedException;
+	void updateProfile(Profile profile, Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException;
 
-	Profile generateProfile(Principal target) throws AccessDeniedException;
+	Profile generateProfile(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException;
 
-	Profile updateOrGenerate(Principal target) throws AccessDeniedException;
+	Profile updateOrGenerate(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException;
 
 	Profile getProfileForUser(Principal target) throws AccessDeniedException;
 

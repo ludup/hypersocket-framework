@@ -20,6 +20,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
+import com.hypersocket.auth.AuthenticationModulesOperationContext;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.Authenticator;
@@ -103,10 +104,10 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	
 	@Override
 	public boolean areCredentialsRequired(Principal principal, String module) throws AccessDeniedException  {
-		
+		var ctx = new AuthenticationModulesOperationContext();
 		Profile profile = getProfileForUser(principal);
 		if(Objects.isNull(profile)) {
-			profile = generateProfile(principal);
+			profile = generateProfile(principal, ctx);
 		}
 		
 		for(ProfileCredentials creds : profile.getCredentials()) {
@@ -138,11 +139,11 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		return userSchemes;
 	}
 	
-	protected boolean collectAuthenticatorStates(Profile profile, Principal principal, List<ProfileCredentials> states, Map<String,ProfileCredentials> existingCredentials) throws AccessDeniedException {
+	protected boolean collectAuthenticatorStates(Profile profile, Principal principal, List<ProfileCredentials> states, Map<String,ProfileCredentials> existingCredentials, AuthenticationModulesOperationContext ctx) throws AccessDeniedException {
 		
 		boolean is2FA = false;
 		if(Objects.nonNull(validator)) {
-			Set<String> nonSelectiveCredentials = new HashSet<>(validator.getRequiredUserCredentials(principal));
+			Set<String> nonSelectiveCredentials = new HashSet<>(validator.getRequiredUserCredentials(principal, ctx));
 			is2FA = nonSelectiveCredentials.contains("2faAuthenticationFlow");
 			
 			
@@ -157,7 +158,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 					ProfileCredentialsProvider provider = providers.get(authenticator.getCredentialsResourceKey());
 					is2FA |= module.equals("2faAuthenticationFlow");
 					if(Objects.nonNull(provider)) {
-						ProfileCredentialsState currentState = provider.hasCredentials(principal);
+						ProfileCredentialsState currentState = provider.hasCredentials(principal, ctx);
 						if(currentState!=ProfileCredentialsState.NOT_REQUIRED) {
 							ProfileCredentials c;
 							if(!existingCredentials.containsKey(provider.getResourceKey())) {
@@ -174,23 +175,23 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 			} 
 			
 			if(is2FA) {
-				iterate2FACredentials(principal, states, existingCredentials);
+				iterate2FACredentials(principal, states, existingCredentials, ctx);
 			}
 		} else {
-			iterateAllCredentials(principal, states, existingCredentials);
+			iterateAllCredentials(principal, states, existingCredentials, ctx);
 		}
 		
 		profile.setSelective(is2FA);
 		return is2FA;
 	}
 	
-	private void iterate2FACredentials(Principal principal, List<ProfileCredentials> states, Map<String,ProfileCredentials> existingCredentials) throws AccessDeniedException {
+	private void iterate2FACredentials(Principal principal, List<ProfileCredentials> states, Map<String,ProfileCredentials> existingCredentials, AuthenticationModulesOperationContext ctx) throws AccessDeniedException {
 		
 		for(String module : validator.getRequired2FACredentials(principal)) {
 			Authenticator authenticator = authenticationService.getAuthenticator(module);
 			ProfileCredentialsProvider provider = providers.get(authenticator.getCredentialsResourceKey());
 			if(Objects.nonNull(provider)) {
-				ProfileCredentialsState currentState = provider.hasCredentials(principal);
+				ProfileCredentialsState currentState = provider.hasCredentials(principal, ctx);
 				if(currentState!=ProfileCredentialsState.NOT_REQUIRED) {
 					ProfileCredentials c;
 					if(!existingCredentials.containsKey(provider.getResourceKey())) {
@@ -206,10 +207,10 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		}
 	}
 	
-	private void iterateAllCredentials(Principal principal, List<ProfileCredentials> states, Map<String,ProfileCredentials> existingCredentials) throws AccessDeniedException {
+	private void iterateAllCredentials(Principal principal, List<ProfileCredentials> states, Map<String,ProfileCredentials> existingCredentials, AuthenticationModulesOperationContext ctx) throws AccessDeniedException {
 		
 		for(ProfileCredentialsProvider provider : providers.values()) {
-			ProfileCredentialsState currentState = provider.hasCredentials(principal);
+			ProfileCredentialsState currentState = provider.hasCredentials(principal, ctx);
 			if(currentState!=ProfileCredentialsState.NOT_REQUIRED) {
 				ProfileCredentials c;
 				if(!existingCredentials.containsKey(provider.getResourceKey())) {
@@ -284,13 +285,13 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	}
 	
 	@Override
-	public Profile createProfile(Principal target) throws AccessDeniedException {
+	public Profile createProfile(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException {
 		
 		if(log.isInfoEnabled()) {
 			log.info(String.format("Creating profile for user %s", target.getPrincipalName()));
 		}
 		
-		Profile profile = generateProfile(target);
+		Profile profile = generateProfile(target, ctx);
 		
 		if(log.isInfoEnabled()) {
 			log.info(String.format("Saving profile as %s for user %s", profile.getState(), target.getPrincipalName()));
@@ -301,41 +302,41 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	}
 	
 	@Override
-	public Profile generateProfile(Principal target) throws AccessDeniedException {
+	public Profile generateProfile(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException {
 		Profile profile = new Profile();
 		profile.setId(target);
 		profile.setRealm(target.getRealm());
 		
 		List<ProfileCredentials> creds = new ArrayList<>();
-		collectAuthenticatorStates(profile, target,creds,new HashMap<String,ProfileCredentials>());
+		collectAuthenticatorStates(profile, target,creds,new HashMap<String,ProfileCredentials>(), ctx);
 		profile.setCredentials(creds);
 		calculateCompleteness(profile);
 		return profile;
 	}
 	
 	@Override
-	public Profile updateOrGenerate(Principal target) throws AccessDeniedException {
+	public Profile updateOrGenerate(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException {
 		Profile profile = profileRepository.getEntityById(target.getId());
 		if(profile!=null) {
-			updateProfile(profile, target);
+			updateProfile(profile, target, ctx);
 			return profile;
 		} else {
-			return generateProfile(target);
+			return generateProfile(target, ctx);
 		}
 	}
 	
 	@Override
-	public void updateProfile(Principal target) throws AccessDeniedException {
+	public void updateProfile(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException {
 		Profile profile = profileRepository.getEntityById(target.getId());
 		if(profile==null) {
-			createProfile(target);
+			createProfile(target, ctx);
 		} else {
-			updateProfile(profile, target);
+			updateProfile(profile, target, ctx);
 		}
 	}
 	
 	@Override
-	public void updateProfile(Profile profile, Principal target) throws AccessDeniedException {
+	public void updateProfile(Profile profile, Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException {
 
 		if(log.isInfoEnabled()) {
 			log.info(String.format("Updating profile for user %s", target.getPrincipalName()));
@@ -347,7 +348,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		}
 		
 		List<ProfileCredentials> currentCreds = new ArrayList<>();
-		collectAuthenticatorStates(profile, target, currentCreds, creds);
+		collectAuthenticatorStates(profile, target, currentCreds, creds, ctx);
 		
 		profile.getCredentials().clear();
 		StringBuffer names = new StringBuffer();
