@@ -172,16 +172,6 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		if (cookie.getMaxAge() > 0) {
 			cookieHeader.append("; Max-Age=");
 			cookieHeader.append(cookie.getMaxAge());
-			/**
-			 * This breaks IE when date of server and browser do not match
-			 */
-			cookieHeader.append("; Expires=");
-			if (cookie.getMaxAge() == 0) {
-				cookieHeader.append(DateUtils.formatDate(new Date(10000), DateUtils.PATTERN_RFC1036));
-			} else {
-				cookieHeader.append(DateUtils.formatDate(new Date(System
-						.currentTimeMillis() + cookie.getMaxAge() * 1000L), DateUtils.PATTERN_RFC1036));
-			}
 		}
 		
 		if (cookie.getSecure()) {
@@ -192,7 +182,11 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		if (cookie.isHttpOnly()) { 
 			cookieHeader.append("; HttpOnly"); 
 		}
-		cookieHeader.append("; SameSite=None");
+		if(cookie.getComment() != null) {
+			if(!cookie.getComment().startsWith(";"))
+				cookieHeader.append(";");
+			cookieHeader.append(cookie.getComment());
+		}
 
 		/**
 		 * Make sure we are not adding duplicate cookies

@@ -69,6 +69,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.server.handlers.WebsocketHandler;
+import com.hypersocket.server.handlers.impl.ContentHandlerImpl;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.server.interfaces.http.HTTPProtocol;
 import com.hypersocket.server.websocket.WebsocketClient;
@@ -442,6 +443,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 			url = (URL) servletRequest.getAttribute("404.html");
 		}
 		servletResponse.setContentType("text/html");
+		ContentHandlerImpl.addDefaultCSPHeaders(servletResponse);
 		URLConnection conx = url.openConnection();
 		servletResponse.setContentLength(conx.getContentLength());
 		setContentStream(servletRequest, conx.getInputStream());
@@ -465,6 +467,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 	}
 	
 	public void send500(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse) throws IOException {
+		ContentHandlerImpl.addDefaultCSPHeaders(servletResponse);
 		servletResponse.sendError(HttpStatus.SC_NOT_FOUND);
 		URL url = getClass().getResource("/500.html");
 		if(servletRequest.getAttribute("500.html")!=null) {

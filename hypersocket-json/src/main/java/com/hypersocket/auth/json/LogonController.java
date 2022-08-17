@@ -10,7 +10,9 @@ package com.hypersocket.auth.json;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
@@ -211,6 +213,7 @@ public class LogonController extends AuthenticatedController {
 			scheme = (String) request.getSession().getAttribute(AuthenticationService.AUTHENTICATION_SCHEME);
 		}
 		try {
+
 			if(state!=null) {
 				state.setLastErrorMsg(null);
 				state.setLastErrorIsResourceKey(false);
@@ -335,7 +338,7 @@ public class LogonController extends AuthenticatedController {
 							state.getScheme().getLastButtonResourceKey(),
 							state.getRealm(),
 							getNonce(request),
-							request.getParameterMap());
+							sanitizeMap(request.getParameterMap()));
 				}
 				finally {
 					if(!isPostStep && !success && state.isAuthenticationComplete() && !state.hasNextStep()) {
@@ -391,6 +394,19 @@ public class LogonController extends AuthenticatedController {
 					state.getRealm(),
 					getNonce(request));
 		}
+	}
+
+	private Map<String, String[]> sanitizeMap(Map<String, String[]> parameterMap) {
+		var m = new HashMap<String, String[]>();
+		parameterMap.forEach((k, v) -> {
+			if(!k.equalsIgnoreCase("username") && !k.equalsIgnoreCase("password")) {
+				var a = new String[v.length];
+				for(int i = 0 ; i < a.length ; i++)
+					a[i] = LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(v[i]);
+				m.put(k, a);
+			}
+		});
+		return m;
 	}
 
 	private int getNonce(HttpServletRequest request) {

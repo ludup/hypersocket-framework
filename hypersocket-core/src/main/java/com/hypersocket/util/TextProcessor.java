@@ -48,7 +48,7 @@ public class TextProcessor {
 			ExpressionParser parser = new SpelExpressionParser(config);
 			StandardEvaluationContext evalContext = new StandardEvaluationContext();
 			evalContext.setVariables(map);
-			Expression exp = parser.parseExpression("new Object[] { " + scriptText + " }");
+			Expression exp = parser.parseExpression(scriptText);
 			return exp.getValue(evalContext);
 		}
 		
@@ -377,7 +377,7 @@ public class TextProcessor {
 						try {
 							val = eng.eval(scriptText, bindings.get(lang));
 						} catch (Exception e) {
-							throw new IllegalArgumentException("Failed to evaluate expression.", e);
+							throw new IllegalArgumentException("Failed to evaluate expression '" + scriptText + "' for '" + "'.", e);
 						}
 					}
 					String str = val == null ? "" : val.toString();

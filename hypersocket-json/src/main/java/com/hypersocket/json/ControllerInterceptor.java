@@ -122,10 +122,10 @@ public class ControllerInterceptor implements HandlerInterceptor {
 		if (!(method.getBean() instanceof AuthenticatedController)) {
 			if (log.isErrorEnabled()) {
 				log.error(
-						"Use of @AuthenticationRequired annotation is restricted to subclass of AuthenticatedController");
+						"Use of @AuthenticationRequired and @AuthenticatedContext annotation is restricted to subclass of AuthenticatedController");
 			}
 			throw new IllegalArgumentException(
-					"Use of @AuthenticationRequired annotation is restricted to subclass of AuthenticatedController");
+					"Use of @AuthenticationRequired and @AuthenticatedContext annotation is restricted to subclass of AuthenticatedController. " + method.getBean().getClass() + " is not.");
 		}
 	}
 

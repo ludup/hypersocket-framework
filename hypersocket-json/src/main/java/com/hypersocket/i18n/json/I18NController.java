@@ -58,6 +58,7 @@ public class I18NController extends AuthenticatedController {
 	@RequestMapping(value="i18n", method = RequestMethod.GET, produces = {"application/json"})
 	@ResponseBody
 	@Cacheable
+	@AuthenticatedContext(anonymous = true)
 	public Map<String,String> getResources(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, AccessDeniedException {
 		
 		return getResourcesWithGroup(webRequest, request, response, I18NGroup.DEFAULT_GROUP.getTitle());
@@ -88,6 +89,7 @@ public class I18NController extends AuthenticatedController {
 	@ResponseBody
 	@ResponseStatus(value=HttpStatus.OK)
 	@Cacheable
+	@AuthenticatedContext(anonymous = true)
 	public Map<String,String> getResources(WebRequest webRequest, HttpServletRequest request, HttpServletResponse response, @PathVariable String locale) throws IOException, AccessDeniedException {
 		
 		return getResourcesWithGroupAndLocale(webRequest, request, response, locale, I18NGroup.DEFAULT_GROUP.getTitle());
