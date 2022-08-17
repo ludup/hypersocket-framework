@@ -134,6 +134,7 @@ If you refer to other Java classes in a comment, remember to use double asterisk
 ### JavaScript
 
  * Prefer single quotes for strings
+ * Do not leave `debugger` statements when committing without a good reason.  
 
 ### LogonBox Framework
 
