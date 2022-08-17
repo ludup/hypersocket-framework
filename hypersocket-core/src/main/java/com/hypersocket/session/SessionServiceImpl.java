@@ -44,6 +44,8 @@ import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
+import com.hypersocket.geo.GeoIPLocation;
+import com.hypersocket.geo.GeoIPService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.Role;
@@ -96,6 +98,9 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Autowired
 	private SystemConfigurationService systemConfigurationService;
+
+	@Autowired(required = false)
+	private GeoIPService geoIpService;
 
 	static final String SESSION_TIMEOUT = "session.timeout";
 
@@ -871,68 +876,36 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		return countMapByRegion;
 	}
 	
-	@Override
-	public IStackLocation lookupGeoIP(Realm realm, String ipAddress) {
+	private void populateGeoInfoIfEnabled(String remoteAddress, Map<String, String> parameters, Realm realm) {
+		if(geoIpService == null)
+			return;
+		
+		if(!geoIpService.isConfigured(realm))
+			return;
+		
+		GeoIPLocation location;
 		try {
-			
-			String accessKey = systemConfigurationService.getValue("ipstack.accesskey");
-			
-			if (StringUtils.isBlank(accessKey)) {
-				return null;
-			}
-		
-			Cache<String,IStackLocation> cached = cacheService.getCacheOrCreate(
-					"geoIPs", String.class, IStackLocation.class,  
-					CreatedExpiryPolicy.factoryOf(Duration.ONE_DAY));
-			
-			IStackLocation loc = cached.get(ipAddress);
-			
-			if(Objects.nonNull(loc)) {
-				return loc;
-			}
-			
-			String locationJson = httpUtils.doHttpGetContent(
-					String.format("http://api.ipstack.com/%s?access_key=%s", 
-								ipAddress, accessKey),
-							false, 
-							new HashMap<String,String>());
-			
-			IStackLocation location =  o.readValue(locationJson, IStackLocation.class);
-			cached.put(ipAddress, location);
-		
-			return location;
-
-		} catch (Exception e) {
-			log.error("Problem in fetching geo ip info.", e);
+			location = geoIpService.lookupGeoIP(remoteAddress);
+		} catch (IOException e) {
+			throw new IllegalStateException("Failed to get location information. Rejecting session.", e);
 		}
 		
-		return new IStackLocation();
-		
-	}
-	
-	@Override
-	public boolean isIpStackAPIKeySet(Realm realm) {
-		return StringUtils.isNotBlank(systemConfigurationService.getValue("ipstack.accesskey"));
-	}
-	
-	private void populateGeoInfoIfEnabled(String remoteAddress, Map<String, String> parameters, Realm realm) {
-		IStackLocation location = lookupGeoIP(realm, remoteAddress);
 		if (location != null) {
 			
-			if (StringUtils.isNotBlank(location.latitude)) {
-				parameters.put(LOCATION_LAT, location.latitude);
+			if (StringUtils.isNotBlank(location.getLatitude())) {
+				parameters.put(LOCATION_LAT, location.getLatitude());
 			}
 			
-			if (StringUtils.isNotBlank(location.longitude)) {
-				parameters.put(LOCATION_LON, location.longitude);
+			if (StringUtils.isNotBlank(location.getLongitude())) {
+				parameters.put(LOCATION_LON, location.getLongitude());
 			}
 			
-			if (StringUtils.isNotBlank(location.country_code)) {
-				parameters.put(LOCATION_COUNTRY_CODE, location.country_code);
+			if (StringUtils.isNotBlank(location.getCountryCode())) {
+				parameters.put(LOCATION_COUNTRY_CODE, location.getCountryCode());
 			}
 			
-			if (StringUtils.isNotBlank(location.region_code)) {
-				parameters.put(LOCATION_REGION_CODE, location.region_code);
+			if (StringUtils.isNotBlank(location.getRegionCode())) {
+				parameters.put(LOCATION_REGION_CODE, location.getRegionCode());
 			}
 			
 		}
