@@ -7,7 +7,11 @@
  ******************************************************************************/
 package com.hypersocket.local;
 
+import org.springframework.context.event.ContextStartedEvent;
+
 import com.hypersocket.realm.RealmProvider;
 
 public interface LocalRealmProvider extends RealmProvider {
+
+	void started(ContextStartedEvent cse);
 }

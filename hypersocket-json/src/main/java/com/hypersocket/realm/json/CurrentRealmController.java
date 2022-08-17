@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.hypersocket.auth.AuthenticationModulesOperationContext;
 import com.hypersocket.auth.PrincipalNotFoundException;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
@@ -1397,7 +1398,7 @@ public class CurrentRealmController extends ResourceController {
 			if(principal ==null)
 				throw new IllegalStateException("Invalid principal");
 			
-			credentialsService.updateProfile(principal);
+			credentialsService.updateProfile(principal, new AuthenticationModulesOperationContext());
 			
 			return new RequestStatus(true);
 		} catch(Throwable t) { 
