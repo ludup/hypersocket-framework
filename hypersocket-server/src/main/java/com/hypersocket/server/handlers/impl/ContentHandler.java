@@ -31,6 +31,8 @@ public interface ContentHandler {
 
 	void addDynamicPage(String path);
 
+	void removeDynamicPage(String path);
+
 	boolean hasAlias(String alias);
 
 }

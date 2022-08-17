@@ -14,4 +14,6 @@ public interface AnnotationService {
 	Object process(ProceedingJoinPoint pjp) throws Throwable;
 
 	void registerExtensionPoint(String id, HypersocketExtensionPoint ext);
+
+	void deregisterExtensionPoint(String id);
 }

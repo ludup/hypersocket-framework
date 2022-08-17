@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
@@ -34,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
 import com.hypersocket.json.version.HypersocketVersion;
@@ -56,6 +59,8 @@ public final class ExtensionsPluginManager extends SpringPluginManager {
 	private ApplicationContext webApplicationContext;
 	private ServletConfig servletConfig;
 	private ServletContext servletContext;
+
+	private boolean inited;
 	
 	{
 		setSystemVersion(ExtensionsPluginManager.stripSnapshot(HypersocketVersion.getVersion()));
@@ -114,6 +119,22 @@ public final class ExtensionsPluginManager extends SpringPluginManager {
 		}
 		return runtimeMode;
 	}
+
+    @PostConstruct
+    @Override
+    public void init() {
+    	/* We override and defer super.init() until all the standard extensions have started 
+    	 * up (i.e. the main application context is completely ready) 
+    	 */
+    }
+    
+    @EventListener
+    private void contextRead(ContextStartedEvent cse) {
+    	if(!inited) {
+    		super.init();
+    		inited = true;
+    	}
+    }
 
 	@Override
 	protected List<Path> createPluginsRoot() {

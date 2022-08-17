@@ -2519,6 +2519,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
+	public void deregisterRealmListener(RealmListener listener) {
+		realmListeners.remove(listener);
+	}
+
+	@Override
 	public Realm getDefaultRealm() {
 		return realmRepository.getDefaultRealm();
 	}

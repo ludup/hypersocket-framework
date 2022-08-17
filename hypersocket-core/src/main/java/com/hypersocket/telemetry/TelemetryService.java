@@ -7,5 +7,7 @@ public interface TelemetryService {
 
 	void registerProducer(TelemetryProducer producer);
 
+	void deregisterProducer(TelemetryProducer producer);
+
 	String collect() throws AccessDeniedException, ResourceException;
 }

@@ -1,7 +1,6 @@
 Configuration:
   status: warn
   monitorInterval: 30
-  packages: "com.hypersocket.netty.log"
 
   appenders:
     Console:

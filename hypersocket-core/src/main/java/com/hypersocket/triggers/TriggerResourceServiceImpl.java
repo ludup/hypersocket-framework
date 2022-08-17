@@ -126,7 +126,7 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 
-		repository.loadPropertyTemplates("triggerTemplate.xml");
+		repository.loadPropertyTemplates("triggerTemplate.xml", getClass().getClassLoader());
 
 		/**
 		 * Register the events. All events have to be registered so the system knows

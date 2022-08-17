@@ -19,7 +19,7 @@ public class CertificateExpiringMessageRepositoryImpl extends ResourceTemplateRe
 	
 	@PostConstruct
 	private void postConstruct() {
-		loadPropertyTemplates("certificateExpiring.xml");
+		loadPropertyTemplates("certificateExpiring.xml", getClass().getClassLoader());
 	}
 
 	@Override

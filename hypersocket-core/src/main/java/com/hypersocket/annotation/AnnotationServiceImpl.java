@@ -39,5 +39,10 @@ public class AnnotationServiceImpl implements AnnotationService {
 		
 	}
 
+	@Override
+	public void deregisterExtensionPoint(String id) {
+		extensionPoints.remove(id);
+	}
+
 	
 }

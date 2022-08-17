@@ -202,6 +202,11 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	}
 	
 	@Override
+	public void unprotectPage(String page) {
+		protectedPages.remove(page);
+	}
+	
+	@Override
 	public boolean isProtectedPage(String page) {
 		return protectedPages.contains(page);
 	}

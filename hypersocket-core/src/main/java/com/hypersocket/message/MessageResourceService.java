@@ -65,6 +65,8 @@ public interface MessageResourceService extends
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system, MessageTemplateRepository repository);
 
+	void deregisterI18nMessage(String resourceKey);
+
 	void registerI18nMessage(String resourceBundle, String resourceKey, Set<String> variables,
 			boolean system, MessageTemplateRepository repository, boolean enabled, EmailDeliveryStrategy delivery);
 

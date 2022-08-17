@@ -322,6 +322,16 @@ public class AuthenticationServiceImpl extends
 	}
 
 	@Override
+	public void deregisterAuthenticator(Authenticator authenticator) {
+		if (log.isInfoEnabled()) {
+			log.info("De-registering " + authenticator.getResourceKey()
+					+ " authenticator");
+		}
+
+		authenticators.remove(authenticator.getResourceKey());
+	}
+
+	@Override
 	public void registerAuthenticator(Authenticator authenticator) {
 
 		if (authenticators.containsKey(authenticator.getResourceKey()))
@@ -972,6 +982,12 @@ public class AuthenticationServiceImpl extends
 		}
 		FormTemplate t = modifyTemplate(state, state.getCurrentPostAuthenticationStep().createTemplate(state), true);
 		return t;
+	}
+
+	@Override
+	public void deregisterPostAuthenticationStep(
+			PostAuthenticationStep postAuthenticationStep) {
+		postAuthenticationSteps.remove(postAuthenticationStep);
 	}
 
 	@Override

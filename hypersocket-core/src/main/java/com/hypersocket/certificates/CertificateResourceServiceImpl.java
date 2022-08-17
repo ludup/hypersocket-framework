@@ -135,7 +135,7 @@ public class CertificateResourceServiceImpl extends
 			permissionService.registerPermission(p, cat);
 		}
 
-		repository.loadPropertyTemplates("certificateResourceTemplate.xml");
+		repository.loadPropertyTemplates("certificateResourceTemplate.xml", getClass().getClassLoader());
 
 		/**
 		 * Register the events. All events have to be registerd so the system

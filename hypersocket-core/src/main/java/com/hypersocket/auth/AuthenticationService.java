@@ -26,6 +26,8 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 
 	void registerAuthenticator(Authenticator authenticator);
 
+	void deregisterAuthenticator(Authenticator authenticator);
+
 	AuthenticationScheme getDefaultScheme(String remoteAddress,
 			Map<String, Object> environment, Realm realm);
 
@@ -45,6 +47,9 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	FormTemplate nextPostAuthenticationStep(AuthenticationState state) throws AccessDeniedException;
 
 	void registerPostAuthenticationStep(
+			PostAuthenticationStep postAuthenticationStep);
+
+	void deregisterPostAuthenticationStep(
 			PostAuthenticationStep postAuthenticationStep);
 
 	Map<String,Authenticator> getAuthenticators(String scheme);

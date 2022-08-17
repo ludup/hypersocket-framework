@@ -312,6 +312,12 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 		messageIds.add(r.getMessageId());
 	}
 
+	@Override
+	public void deregisterI18nMessage(String resourceKey) {
+		messageRegistrations.remove(resourceKey);
+		messageIds.add(resourceKey);
+	}
+
 	private void createI18nMessage(String resourceBundle, String resourceKey, Set<String> variables, Realm realm,
 			boolean enabled, EmailDeliveryStrategy delivery) throws ResourceException, AccessDeniedException {
 		String plainBody = I18N.getResource(Locale.getDefault(), resourceBundle, resourceKey + ".body");

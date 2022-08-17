@@ -37,6 +37,11 @@ public class TelemetryServiceImpl implements TelemetryService {
 	}
 
 	@Override
+	public void deregisterProducer(TelemetryProducer producer) {
+		producers.add(producer);
+	}
+
+	@Override
 	public String collect() throws AccessDeniedException, ResourceException {
 		Gson gson = new Gson();
 

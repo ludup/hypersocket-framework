@@ -174,6 +174,8 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 
 	void registerRealmListener(RealmListener listener);
 
+	void deregisterRealmListener(RealmListener listener);
+
 	Realm getDefaultRealm();
 
 	List<Realm> allRealms(boolean ignoreMissingProvider);

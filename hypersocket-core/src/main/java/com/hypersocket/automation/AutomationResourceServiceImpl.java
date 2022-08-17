@@ -114,7 +114,7 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 			permissionService.registerPermission(p, cat);
 		}
 
-		repository.loadPropertyTemplates("automationTemplate.xml");
+		repository.loadPropertyTemplates("automationTemplate.xml", getClass().getClassLoader());
 
 		/**
 		 * Register the events. All events have to be registered so the system

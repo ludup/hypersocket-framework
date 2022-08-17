@@ -103,13 +103,13 @@ public interface HypersocketServer {
 
 	void addAlias(String alias, String path);
 
+	void removeAlias(String alias);
+
 	boolean isRedirectable(String uri);
 
 	void setRedirectable(String uri, boolean redirectable);
 
 	Map<String, String> getAliases();
-
-	void removeAlias(String alias);
 
 	boolean isAliasFor(String redirectPage, String uri);
 
@@ -132,6 +132,8 @@ public interface HypersocketServer {
 	String processReplacements(String str);
 
 	void protectPage(String page);
+
+	void unprotectPage(String page);
 
 	boolean isProtectedPage(String page);
 

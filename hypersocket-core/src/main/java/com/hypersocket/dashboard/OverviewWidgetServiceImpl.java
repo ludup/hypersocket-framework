@@ -133,6 +133,22 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 	}
 
 	@Override
+	public void deregisterWidget(String resourceKey, String widgetResourceKey) {
+		if(widgetList.containsKey(resourceKey)) {
+			var l = widgetList.get(resourceKey);
+			for(var it = l.iterator(); it.hasNext(); ) {
+				var w = it.next();
+				if(w.getResourceKey().equals(widgetResourceKey)) {
+					it.remove();
+					if(l.isEmpty())
+						widgetList.remove(resourceKey);
+					return;
+				}
+			}
+		}
+	}
+
+	@Override
 	public List<OverviewWidget> getWidgets(String resourceKey) {
 
 		List<OverviewWidget> visibleWidgets = new ArrayList<>();
