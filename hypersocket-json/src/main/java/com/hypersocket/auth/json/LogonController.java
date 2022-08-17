@@ -191,6 +191,7 @@ public class LogonController extends AuthenticatedController {
 		boolean requireRedirect = request.getParameterMap().containsKey("rr");
 		
 		request.getSession().removeAttribute("flash");
+		request.getSession().removeAttribute("flashStyle");
 
 		try {
 			
@@ -198,7 +199,7 @@ public class LogonController extends AuthenticatedController {
 				session = sessionUtils.touchSession(request, response);
 				if (session != null) {
 					try {
-						return getSuccessfulResult(session, flash, 
+						return getSuccessfulResult(session, flash, flashStyle, 
 								state!=null ? state.getHomePage() : "",
 								request, response);
 					} finally {
@@ -291,6 +292,7 @@ public class LogonController extends AuthenticatedController {
 					return getSuccessfulResult(
 							state.getSession(),
 							flash,
+							flashStyle,
 							performRedirect ? state.getHomePage() : "",
 							request, 
 							response);
@@ -544,11 +546,11 @@ public class LogonController extends AuthenticatedController {
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session,
-			String info, String homePage, 
+			String error, String errorStyle, String homePage, 
 			HttpServletRequest request, 
 			HttpServletResponse response) throws IOException, RedirectException {
 		
-		return new LogonSuccessResult(info,
+		return new LogonSuccessResult(error, errorStyle, 
 				configurationService.hasUserLocales(), session, homePage,
 				getCurrentRole(session));
 		
