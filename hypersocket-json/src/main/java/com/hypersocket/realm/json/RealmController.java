@@ -419,7 +419,7 @@ public class RealmController extends ResourceController {
 				@Override
 				public Long getTotalCount(String searchColumn, String searchPattern)
 						throws UnauthorizedException, AccessDeniedException {
-					return new Long(realms.size());
+					return Long.valueOf(realms.size());
 				}
 			});
 			return r;

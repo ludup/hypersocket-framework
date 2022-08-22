@@ -13,6 +13,11 @@ public class LogonSuccessResult extends AuthenticationSuccessResult {
 		super();
 	}
 
+	public LogonSuccessResult(String error, String errorStyle, boolean showLocales, Session session, String homePage,
+			Role currentRole) {
+		super(error, errorStyle, showLocales, session, homePage, currentRole);
+	}
+
 	public LogonSuccessResult(String bannerMsg, boolean showLocales, Session session, String homePage,
 			Role currentRole) {
 		super(bannerMsg, showLocales, session, homePage, currentRole);

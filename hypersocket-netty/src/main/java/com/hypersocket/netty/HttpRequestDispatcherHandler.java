@@ -465,11 +465,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 	}
 	
 	public void send500(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse) throws IOException {
-		servletResponse.sendError(HttpStatus.SC_NOT_FOUND);
 		URL url = getClass().getResource("/500.html");
 		if(servletRequest.getAttribute("500.html")!=null) {
 			url = (URL) servletRequest.getAttribute("500.html");
 		}
+		servletResponse.setContentType("text/html");
 		ITokenResolver resolver = new TokenAdapter() {
 			
 			@Override

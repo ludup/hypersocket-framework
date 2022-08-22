@@ -21,6 +21,14 @@ public class AuthenticationSuccessResult extends AuthenticationResult {
 
 	}
 
+	public AuthenticationSuccessResult(String error, String errorStyle, boolean showLocales, Session session, String homePage, Role currentRole) {
+		super(null, error, errorStyle, showLocales);
+		this.session = session;
+		this.homePage = homePage;
+		this.currentRole = currentRole;
+		setSuccess(true);
+	}
+
 	public AuthenticationSuccessResult(String bannerMsg, boolean showLocales, Session session, String homePage, Role currentRole) {
 		super(bannerMsg, null, null, showLocales);
 		this.session = session;

@@ -191,6 +191,7 @@ public class LogonController extends AuthenticatedController {
 		boolean requireRedirect = request.getParameterMap().containsKey("rr");
 		
 		request.getSession().removeAttribute("flash");
+		request.getSession().removeAttribute("flashStyle");
 
 		try {
 			
@@ -198,7 +199,7 @@ public class LogonController extends AuthenticatedController {
 				session = sessionUtils.touchSession(request, response);
 				if (session != null) {
 					try {
-						return getSuccessfulResult(session, flash, 
+						return getSuccessfulResult(session, flash, flashStyle, 
 								state!=null ? state.getHomePage() : "",
 								request, response);
 					} finally {
@@ -291,6 +292,7 @@ public class LogonController extends AuthenticatedController {
 					return getSuccessfulResult(
 							state.getSession(),
 							flash,
+							flashStyle,
 							performRedirect ? state.getHomePage() : "",
 							request, 
 							response);
@@ -317,7 +319,8 @@ public class LogonController extends AuthenticatedController {
 				}
 				
 				checkRedirect(request, response);
-				
+
+				var isPostStep = state.isAuthenticationComplete();
 				FormTemplate template = (!state.isAuthenticationComplete() ? 
 						authenticationService.nextAuthenticationTemplate(state, request.getParameterMap())
 						: authenticationService.nextPostAuthenticationStep(state));
@@ -344,7 +347,7 @@ public class LogonController extends AuthenticatedController {
 							state.getRequestParameters());
 				}
 				finally {
-					if(!success && state.isAuthenticationComplete() && !state.hasNextStep())
+					if(!isPostStep && !success && state.isAuthenticationComplete() && !state.hasNextStep())
 						/* BPS - 2022/07/07 - If there is an error at the end of authentication (licensing?), then
 						 * clear the state after we have returned the response. This allows
 						 * the user to escape the error by refreshing the page - something that
@@ -543,11 +546,11 @@ public class LogonController extends AuthenticatedController {
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session,
-			String info, String homePage, 
+			String error, String errorStyle, String homePage, 
 			HttpServletRequest request, 
 			HttpServletResponse response) throws IOException, RedirectException {
 		
-		return new LogonSuccessResult(info,
+		return new LogonSuccessResult(error, errorStyle, 
 				configurationService.hasUserLocales(), session, homePage,
 				getCurrentRole(session));
 		

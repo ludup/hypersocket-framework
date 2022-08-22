@@ -29,11 +29,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.hypersocket.auth.AuthenticationModulesOperationContext;
 import com.hypersocket.auth.PrincipalNotFoundException;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.ResourceController;
 import com.hypersocket.auth.json.UnauthorizedException;
-import com.hypersocket.delegation.UserDelegationResourceService;
 import com.hypersocket.export.AttributeView;
 import com.hypersocket.export.CommonEndOfLineEnum;
 import com.hypersocket.i18n.I18N;
@@ -98,9 +98,6 @@ public class CurrentRealmController extends ResourceController {
 	
 	@Autowired
 	private TransactionService transactionService; 
-	
-	@Autowired
-	private UserDelegationResourceService delegationService; 
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })
@@ -272,7 +269,7 @@ public class CurrentRealmController extends ResourceController {
 								throws UnauthorizedException,
 								AccessDeniedException {
 							try {
-								return new Long(results.get().size());
+								return Long.valueOf(results.get().size());
 							} finally {
 								results.remove();
 							}
@@ -1642,7 +1639,7 @@ public class CurrentRealmController extends ResourceController {
 			if(principal ==null)
 				throw new IllegalStateException("Invalid principal");
 			
-			credentialsService.updateProfile(principal);
+			credentialsService.updateProfile(principal, new AuthenticationModulesOperationContext());
 			
 			return new RequestStatus(true);
 		} catch(Throwable t) { 
