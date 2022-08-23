@@ -1067,7 +1067,10 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@Override
 	public Role getPersonalRole(Principal principal) {
-		return repository.getPersonalRole(principal);
+		Role role = repository.getPersonalRole(principal);
+		if(role == null)
+			role = repository.createPersonalRole(principal);
+		return role;
 	}
 
 	@Override
@@ -1330,7 +1333,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	protected void deletePrincipalRole(Principal principal) {
 		if (principal.isPrimaryAccount()) {
 			try {
-				Role role = repository.getPersonalRole(principal, false);
+				Role role = repository.getPersonalRole(principal);
 				if (role != null) {
 					deleteRole(role, false);
 				}
