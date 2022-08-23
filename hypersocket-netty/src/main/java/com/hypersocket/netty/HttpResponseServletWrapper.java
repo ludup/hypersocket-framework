@@ -84,7 +84,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public String getContentType() {
-		String contentType = response.getHeader(HttpHeaders.CONTENT_TYPE);
+		String contentType = response.headers().get(HttpHeaders.CONTENT_TYPE);
 		if (contentType != null
 				&& contentType.indexOf("charset=") == -1) {
 			return contentType + "; charset=" + charset;
@@ -109,12 +109,12 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public void setContentLength(int len) {
-		response.setHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(len));
+		response.headers().set(HttpHeaders.CONTENT_LENGTH, String.valueOf(len));
 	}
 
 	@Override
 	public void setContentType(String type) {
-		response.setHeader(HttpHeaders.CONTENT_TYPE, type);
+		response.headers().set(HttpHeaders.CONTENT_TYPE, type);
 	}
 
 	@Override
@@ -191,7 +191,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 		/**
 		 * Make sure we are not adding duplicate cookies
 		 */
-		for(Entry<String,String> entry : response.getHeaders()) {
+		for(Entry<String,String> entry : response.headers().entries()) {
 			if(entry.getKey().equals("Set-Cookie") && entry.getValue().equals(cookieHeader.toString())) {
 				return;
 			}
@@ -202,7 +202,7 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public boolean containsHeader(String name) {
-		return response.containsHeader(name);
+		return response.headers().contains(name);
 	}
 
 	@Override
@@ -253,36 +253,36 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public void addDateHeader(String name, long date) {
-		response.setHeader(name, DateUtils.formatDate(new Date(date)));
+		response.headers().set(name, DateUtils.formatDate(new Date(date)));
 
 	}
 
 	@Override
 	public void setHeader(String name, String value) {
-		response.setHeader(name, value);
+		response.headers().set(name, value);
 	}
 	
 	public void removeHeader(String name) {
-		response.removeHeader(name);
+		response.headers().remove(name);
 	}
 
 	@Override
 	public void addHeader(String name, String value) {
-		if(name.equalsIgnoreCase("content-type") && response.containsHeader("Content-Type")) {
+		if(name.equalsIgnoreCase("content-type") && response.headers().contains("Content-Type")) {
 			setHeader(name, value);
 		} else {
-			response.addHeader(name, value);
+			response.headers().add(name, value);
 		}
 	}
 
 	@Override
 	public void setIntHeader(String name, int value) {
-		response.setHeader(name, String.valueOf(value));
+		response.headers().set(name, String.valueOf(value));
 	}
 
 	@Override
 	public void addIntHeader(String name, int value) {
-		response.addHeader(name, String.valueOf(value));
+		response.headers().add(name, String.valueOf(value));
 	}
 
 	@Override
@@ -318,16 +318,16 @@ public class HttpResponseServletWrapper implements HttpServletResponse {
 
 	@Override
 	public String getHeader(String name) {
-		return response.getHeader(name);
+		return response.headers().get(name);
 	}
 
 	@Override
 	public Collection<String> getHeaders(String name) {
-		return response.getHeaders(name);
+		return response.headers().getAll(name);
 	}
 
 	@Override
 	public Collection<String> getHeaderNames() {
-		return response.getHeaderNames();
+		return response.headers().names();
 	}
 }

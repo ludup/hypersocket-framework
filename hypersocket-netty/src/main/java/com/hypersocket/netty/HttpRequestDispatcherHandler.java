@@ -166,8 +166,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 			InetSocketAddress remoteAddress = (InetSocketAddress) ctx.getChannel().getRemoteAddress();
 			RemoteAddressResolver remoteAddressResolver = new RemoteAddressResolver( remoteAddress.getAddress().getHostAddress(), remoteAddress.getPort(), resolve);
 			
-			if(nettyRequest.containsHeader("X-Forwarded-For")) {
-				String[] ips = nettyRequest.getHeader("X-Forwarded-For").split(",");
+			if(nettyRequest.headers().contains("X-Forwarded-For")) {
+				String[] ips = nettyRequest.headers().get("X-Forwarded-For").split(",");
 				
 				/* Some proxies might senda port number. It seems a bit ambiguous if
 				 * this is in the spec or not, depending on where you look. 
@@ -177,8 +177,8 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 				String[] ipAndPort = ips[0].split(":");
 				
 				remoteAddressResolver = new RemoteAddressResolver(ips[0], ipAndPort.length > 1 ? Integer.parseInt(ipAndPort[1]) : remoteAddress.getPort(), resolve);
-			} else if(nettyRequest.containsHeader("Forwarded")) {
-				StringTokenizer t = new StringTokenizer(nettyRequest.getHeader("Forwarded"), ";");
+			} else if(nettyRequest.headers().contains("Forwarded")) {
+				StringTokenizer t = new StringTokenizer(nettyRequest.headers().get("Forwarded"), ";");
 				while(t.hasMoreTokens()) {
 					String[] pair = t.nextToken().split("=");
 					if(pair.length == 2 && pair[0].equalsIgnoreCase("for")) {
@@ -188,9 +188,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 			}
 			
 			session = server.setupHttpSession(
-					nettyRequest.getHeaders("Cookie"), 
+					nettyRequest.headers().getAll("Cookie"), 
 					interfaceResource.getProtocol()==HTTPProtocol.HTTPS,
-					StringUtils.substringBefore(nettyRequest.getHeader("Host"), ":"),
+					StringUtils.substringBefore(nettyRequest.headers().get("Host"), ":"),
 					nettyResponse);
 			
 			servletRequest = new HttpRequestServletWrapper(
@@ -211,7 +211,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 			try {
 				requestLocal.set(servletRequest);
 
-				String contentType = nettyRequest.getHeader(HttpHeaders.CONTENT_TYPE);
+				String contentType = nettyRequest.headers().get(HttpHeaders.CONTENT_TYPE);
 				
 				int idx;
 				if (contentType != null) {
@@ -343,7 +343,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 							return;
 						} else {
 							// Redirect the plain port to SSL
-							String host = nettyRequest.getHeader(HttpHeaders.HOST);
+							String host = nettyRequest.headers().get(HttpHeaders.HOST);
 							if(host==null) {
 								nettyResponse.sendError(400, "No Host Header");
 							} else {
@@ -362,7 +362,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 					}
 				}
 		
-				if (nettyRequest.containsHeader("Upgrade")) {
+				if (nettyRequest.headers().contains("Upgrade")) {
 					for (WebsocketHandler handler : server.getWebsocketHandlers()) {
 						if (handler.handlesRequest(servletRequest)) {
 							try {
@@ -531,7 +531,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 			InputStream stream = processContent(
 					servletRequest,
 					servletResponse,
-					servletResponse.getRequest().getHeader(
+					servletResponse.getRequest().headers().get(
 							HttpHeaders.ACCEPT_ENCODING));
 
 			if (nettyResponse != null && (log.isDebugEnabled() || isLoggableStatus(nettyResponse.getStatus()))) {
@@ -539,10 +539,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 					log.info("Begin Response >>>>>> " + servletRequest.getRequestURI());
 					log.info(nettyResponse.getStatus()
 							.toString());
-					for (String header : nettyResponse
-							.getHeaderNames()) {
+					for (String header : nettyResponse.headers().names()) {
 						for (String value : nettyResponse
-								.getHeaders(header)) {
+								.headers().getAll(header)) {
 							log.debug(header + ": " + value);
 						}
 					}
@@ -655,8 +654,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 			ChannelBuffer buffer = servletResponse.getContent();
 			boolean doGzip = false;
 
-			if (servletResponse.getNettyResponse()
-					.getHeader("Content-Encoding") == null) {
+			if (servletResponse.getNettyResponse().headers().get("Content-Encoding") == null) {
 				if (acceptEncodings != null) {
 					doGzip = acceptEncodings.indexOf("gzip") > -1;
 				}
@@ -690,7 +688,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 
 		servletResponse.setHeader("Server", server.getApplicationName());
 
-		String connection = servletResponse.getRequest().getHeader(
+		String connection = servletResponse.getRequest().headers().get(
 				HttpHeaders.CONNECTION);
 		if (connection!=null && connection.equalsIgnoreCase("close")) {
 			servletResponse.setHeader("Connection", "close");
@@ -858,7 +856,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 	}
 
 	private static String getWebSocketLocation(HttpRequest req) {
-		return "ws://" + req.getHeader(HttpHeaders.HOST) + req.getUri();
+		return "ws://" + req.headers().get(HttpHeaders.HOST) + req.getUri();
 	}
 
 }

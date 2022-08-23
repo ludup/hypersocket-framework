@@ -40,7 +40,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 
 import com.hypersocket.ApplicationContextServiceImpl;
-import com.hypersocket.auth.json.Cacheable;
 import com.hypersocket.cache.CacheUtils;
 import com.hypersocket.json.ControllerInterceptor;
 import com.hypersocket.server.handlers.HttpRequestHandler;

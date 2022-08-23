@@ -132,7 +132,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		 * reconstructed URL must reflect the path used to obtain the
 		 * RequestDispatcher, and not the server path specified by the client.
 		 */
-		this.requestUrl = (secure ? "https://" : "http://") + request.getHeader(HttpHeaders.HOST) + requestUri;
+		this.requestUrl = (secure ? "https://" : "http://") + request.headers().get(HttpHeaders.HOST) + requestUri;
 		
 		/* Strip the context path from the working URI */
 		uri = uri.equals("/") || !uri.startsWith(getContextPath()) ? uri : uri.substring(getContextPath().length());
@@ -260,14 +260,14 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	public String getCharacterEncoding() {
 		if (charset != null) {
 			return charset;
-		} else if (request.getHeader(HttpHeaders.CONTENT_TYPE) == null) {
+		} else if (request.headers().get(HttpHeaders.CONTENT_TYPE) == null) {
 			return null;
 		} else {
-			int charsetPos = request.getHeader(HttpHeaders.CONTENT_TYPE).indexOf("charset=");
+			int charsetPos = request.headers().get(HttpHeaders.CONTENT_TYPE).indexOf("charset=");
 			if (charsetPos == -1) {
 				return "UTF-8";
 			} else {
-				return request.getHeader(HttpHeaders.CONTENT_TYPE).substring(charsetPos + 8);
+				return request.headers().get(HttpHeaders.CONTENT_TYPE).substring(charsetPos + 8);
 			}
 		}
 	}
@@ -277,15 +277,14 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 		this.charset = charset;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public int getContentLength() {
-		return (int) request.getContentLength();
+		return (int) org.jboss.netty.handler.codec.http.HttpHeaders.getContentLength(request);
 	}
 
 	@Override
 	public String getContentType() {
-		return request.getHeader(HttpHeaders.CONTENT_TYPE);
+		return request.headers().get(HttpHeaders.CONTENT_TYPE);
 	}
 
 	@Override
@@ -476,22 +475,44 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public String getHeader(String name) {
-		return request.getHeader(name);
+		return request.headers().get(name);
 	}
 
 	@Override
 	public Enumeration<String> getHeaders(String name) {
-		return new Vector<String>(request.getHeaders(name)).elements();
+		var it = request.headers().getAll(name).iterator();
+		return new Enumeration<String>() {
+			@Override
+			public boolean hasMoreElements() {
+				return it.hasNext();
+			}
+
+			@Override
+			public String nextElement() {
+				return it.next();
+			}
+		};
 	}
 
 	@Override
 	public Enumeration<String> getHeaderNames() {
-		return new Vector<String>(request.getHeaderNames()).elements();
+		var it = request.headers().names().iterator();
+		return new Enumeration<String>() {
+			@Override
+			public boolean hasMoreElements() {
+				return it.hasNext();
+			}
+
+			@Override
+			public String nextElement() {
+				return it.next();
+			}
+		};
 	}
 
 	@Override
 	public int getIntHeader(String name) {
-		return Integer.parseInt(request.getHeader(name));
+		return Integer.parseInt(request.headers().get(name));
 	}
 
 	@Override
