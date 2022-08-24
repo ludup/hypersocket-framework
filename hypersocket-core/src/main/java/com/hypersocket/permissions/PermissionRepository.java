@@ -90,8 +90,6 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 
 	Long countRoles(Realm realm, String searchPattern, String searchColumn, boolean includeChildRealms, RoleType... types);
 
-	Role getPersonalRole(Principal principal);
-
 	Role createRole(String name, Realm realm, RoleType type);
 
 	Set<Role> getRolesForPrincipal(List<Principal> associatedPrincipals);
@@ -115,7 +113,7 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 			boolean allUsers, boolean allPermissions, boolean system,
 			Set<Permission> permissions, Map<String,String> properties, RoleType type) throws ResourceException;
 
-	Role getPersonalRole(Principal principal, boolean createIfNotFound);
+	Role getPersonalRole(Principal principal);
 	
 	Set<Role> getPersonalRoles(Realm realm);
 
@@ -138,5 +136,7 @@ public interface PermissionRepository extends AbstractResourceRepository<Role> {
 	Set<Role> getPrincipalRolesForRealm(List<Principal> principals, Realm realm);
 
 	Collection<Role> getAllPermissionsRoles(Realm currentRealm);
+
+	Role createPersonalRole(Principal principal);
 
 }

@@ -565,7 +565,10 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 				});
 	}
 
-	private Role createPersonalRole(Principal principal) {
+
+	@Override
+	@Transactional
+	public Role createPersonalRole(Principal principal) {
 		Role r = createRole(
 				principal.getRealm().getName() + "/"
 						+ principal.getPrincipalName(), principal.getRealm(),
@@ -574,17 +577,11 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		assignRole(r, principal);
 		return r;
 	}
-
-	@Override
-	@Transactional
-	public Role getPersonalRole(Principal principal) {
-		return getPersonalRole(principal, true);
-	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	@Transactional
-	public Role getPersonalRole(Principal principal, boolean createIfNotFound) {
+	@Transactional(readOnly = true)
+	public Role getPersonalRole(Principal principal) {
 
 		Criteria crit = createCriteria(Role.class)
 				.setResultTransformer(
@@ -595,9 +592,6 @@ public class PermissionRepositoryImpl extends AbstractResourceRepositoryImpl<Rol
 		Set<Role> roles = new HashSet<Role>(crit.list());
 
 		if (roles.isEmpty()) {
-			if(createIfNotFound) {
-				return createPersonalRole(principal);
-			}
 			return null;
 		} else {
 			return roles.iterator().next();
