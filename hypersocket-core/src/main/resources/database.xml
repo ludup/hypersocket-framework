@@ -30,7 +30,7 @@
 		<property name="acquireIncrement" value="3" />
 		<property name="minPoolSize" value="1" />
 		<property name="initialPoolSize" value="5" />
-		<property name="maxPoolSize" value="${jdbc.maxPoolSize:500}" />
+		<property name="maxPoolSize" value="${jdbc.maxPoolSize:100}" />
 		<property name="maxStatementsPerConnection" value="${jdbc.maxStatementsPerConnection:100}" />
 		<property name="automaticTestTable" value="c3p0_test_table" />
 		<property name="numHelperThreads" value="${jdbc.numHelperThreads:0}" />
