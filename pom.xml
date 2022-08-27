@@ -25,7 +25,6 @@
 		</repository>
 		<snapshotRepository>
 			<id>opensource-snapshots</id>
-			<uniqueVersion>false</uniqueVersion>
 			<url>https://artifactory.jadaptive.com/opensource-snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
