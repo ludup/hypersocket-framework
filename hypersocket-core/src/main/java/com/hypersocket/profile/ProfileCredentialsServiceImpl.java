@@ -9,9 +9,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +28,12 @@ import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.Authenticator;
 import com.hypersocket.config.ConfigurationValueChangedEvent;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.json.utils.HypersocketUtils;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.profile.jobs.ProfileBatchUpdateJob;
 import com.hypersocket.profile.jobs.ProfileCreationJob;
+import com.hypersocket.profile.jobs.ProfileReportingJob;
 import com.hypersocket.profile.jobs.ProfileUpdateJob;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
@@ -89,7 +93,13 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		
 		});
 		
-	
+		try {
+			if(schedulerService.jobDoesNotExists("profileReporting")) {
+				schedulerService.scheduleAt(ProfileReportingJob.class, "profileReporting", new JobDataMap(), HypersocketUtils.today(), TimeUnit.DAYS.toMillis(1));
+			}
+		} catch (SchedulerException e) {
+			log.error("Failed to schedule exchange rate job", e);
+		}
 	}
 	
 	@Override
