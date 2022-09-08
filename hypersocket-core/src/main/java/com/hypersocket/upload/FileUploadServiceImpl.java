@@ -354,7 +354,11 @@ public class FileUploadServiceImpl extends
 	    fis.close();
 	    fos.close();
 	    
-	    return createFile(zipFile, zipFile.getName(), realm, type, publicFile);
+	    try {
+	    	return createFile(zipFile, zipFile.getName(), realm, type, publicFile);
+	    } finally {
+	    	zipFile.delete();
+	    }
 	}
 	
 
