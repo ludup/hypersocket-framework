@@ -13,7 +13,7 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.yaml.YamlConfiguration;
 
 @Plugin(name = "XYamlConfigurationFactory", category = "ConfigurationFactory")
-@Order(10)
+@Order(99999)
 public class XYamlConfigurationFactory extends ConfigurationFactory {
 
 	public static final String[] SUFFIXES = new String[] { ".yml", "*" };

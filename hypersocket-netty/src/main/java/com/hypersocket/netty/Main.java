@@ -18,6 +18,7 @@ import java.util.prefs.Preferences;
 
 import javax.servlet.ServletException;
 
+import org.apache.logging.log4j.core.config.plugins.util.PluginManager;
 import org.hibernate.SessionFactory;
 import org.jboss.netty.logging.InternalLoggerFactory;
 import org.jboss.netty.logging.Slf4JLoggerFactory;
@@ -29,6 +30,7 @@ import org.springframework.core.SpringVersion;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.hypersocket.netty.log.XYamlConfigurationFactory;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.profile.ProfileLoaderClassPathXmlApplicationContext;
 import com.hypersocket.profile.ProfileNameFinder;
@@ -39,6 +41,10 @@ import com.hypersocket.server.MiniHttpServer.DynamicContentFactory;
 import com.hypersocket.upgrade.UpgradeService;
 
 public class Main {
+	
+	static {
+		PluginManager.addPackage(XYamlConfigurationFactory.class.getPackageName());
+	}
 
 	private static final String STARTUP_TOOK = "startupTook";
 	static Logger log = LoggerFactory.getLogger(Main.class);
