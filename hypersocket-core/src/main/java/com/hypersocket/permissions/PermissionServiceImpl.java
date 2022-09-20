@@ -1170,8 +1170,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 
 	@Override
-	public boolean hasEveryoneRole(Collection<Role> roles, Realm realm)
-			throws ResourceNotFoundException {
+	public boolean hasEveryoneRole(Collection<Role> roles, Realm realm) {
 		for(Role r : roles)
 			if(r.getName().equals(ROLE_EVERYONE))
 				return true;
@@ -1310,7 +1309,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	}
 	
 	@Override
-	public Iterator<Principal> iteratePrincipalsByRole(Realm realm, Collection<Role> roles) throws ResourceNotFoundException {
+	public Iterator<Principal> iteratePrincipalsByRole(Realm realm, Collection<Role> roles) {
 		if(hasEveryoneRole(roles, realm)) {
 			return realmService.iterateUsers(realm);
 		}
