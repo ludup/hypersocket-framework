@@ -472,7 +472,7 @@ public abstract class AbstractExtensionUpdater {
 
 	public static String getExtensionStoreRoot() {
 		String url = System.getProperty("hypersocket.archivesURL",
-				"https://updates2.hypersocket.com/hypersocket/");
+				"https://updates.logonbox.com/hypersocket/");
 		return url.endsWith("/") ? url : url + "/";
 	}
 

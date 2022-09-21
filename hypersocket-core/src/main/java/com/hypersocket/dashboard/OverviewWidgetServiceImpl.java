@@ -183,12 +183,12 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 				// Get global documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/links-"
+						.doHttpGet("https://updates.logonbox.com/hypersocket/api/webhooks/publish/links-"
 								+ HypersocketVersion.getBrandId(), true), Link[].class)));
 
 				// Get product documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/links-"
+						.doHttpGet("https://updates.logonbox.com/hypersocket/api/webhooks/publish/links-"
 								+ HypersocketVersion.getProductId(), true), Link[].class)));
 
 			} catch (Throwable e) {
@@ -220,12 +220,12 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 				// Get global documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/videos-"
+						.doHttpGet("https://updates.logonbox.com/hypersocket/api/webhooks/publish/videos-"
 								+ HypersocketVersion.getBrandId(), true), Link[].class)));
 
 				// Get product documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/videos-"
+						.doHttpGet("https://updates.logonbox.com/hypersocket/api/webhooks/publish/videos-"
 								+ HypersocketVersion.getProductId(), true), Link[].class)));
 
 
@@ -269,12 +269,12 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 				// Get global documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/docs-"
+						.doHttpGet("https://updates.logonbox.com/hypersocket/api/webhooks/publish/docs-"
 								+ HypersocketVersion.getBrandId(), true), Link[].class)));
 
 				// Get product documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/docs-"
+						.doHttpGet("https://updates.logonbox.com/hypersocket/api/webhooks/publish/docs-"
 								+ HypersocketVersion.getProductId(), true), Link[].class)));
 
 
@@ -308,12 +308,12 @@ public class OverviewWidgetServiceImpl extends AbstractAuthenticatedServiceImpl
 
 				// Get global documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/steps-"
+						.doHttpGet("https://updates.logonbox.com/hypersocket/api/webhooks/publish/steps-"
 								+ HypersocketVersion.getBrandId(), true), Link[].class)));
 
 				// Get product documentation
 				results.addAll(Arrays.asList(mapper.readValue(httpUtils
-						.doHttpGet("https://updates2.hypersocket.com/hypersocket/api/webhooks/publish/steps-"
+						.doHttpGet("https://updates.logonbox.com/hypersocket/api/webhooks/publish/steps-"
 								+ HypersocketVersion.getProductId(), true), Link[].class)));
 
 			} catch (Throwable e) {

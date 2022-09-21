@@ -616,7 +616,7 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 			throws IOException {
 
 		String uri = System.getProperty("hypersocket.templateServerImageUrl",
-				"https://updates2.hypersocket.com/hypersocket/api/templates/image/") + uuid;
+				"https://updates.logonbox.com/hypersocket/api/templates/image/") + uuid;
 		CloseableHttpResponse resp = httpUtils.doHttpGet(uri, true, null);
 		if(resp.getStatusLine().getStatusCode() != 200) {
 			response.setStatus(resp.getStatusLine().getStatusCode());
@@ -649,7 +649,7 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 		params.put("sSortDir_0", "asc");
 
 		String url = System.getProperty("hypersocket.templateServerUrl",
-				"https://updates2.hypersocket.com/hypersocket/api/templates") + "/"
+				"https://updates.logonbox.com/hypersocket/api/templates") + "/"
 				+( (Boolean.getBoolean("hypersocketTriggers.enablePrivate") ? "developer" : "table" ) + "/3");
 		log.info(String.format("Retrieving from %s", url));
 		String json = httpUtils.doHttpPost(
