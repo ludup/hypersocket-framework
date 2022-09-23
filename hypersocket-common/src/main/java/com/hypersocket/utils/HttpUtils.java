@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -35,5 +36,8 @@ public interface HttpUtils {
 
 	InputStream doHttpGetInputStream(String uri, boolean allowSelfSigned, Map<String, String> headers)
 			throws IOException;
+
+	String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned,
+			Map<String, String> additionalHeaders, int... acceptableResponses) throws IOException;
 
 }
