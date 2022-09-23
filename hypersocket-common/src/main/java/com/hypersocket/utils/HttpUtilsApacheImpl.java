@@ -81,9 +81,14 @@ public class HttpUtilsApacheImpl implements HttpUtils {
 					throws IOException {
 		return doHttpPost(url, parameters, allowSelfSigned, null);
 	}
-	
+
 	@Override
 	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned, Map<String,String> additionalHeaders) throws IOException {
+		return doHttpPost(url, parameters, allowSelfSigned, additionalHeaders, HttpStatus.SC_OK);
+	}
+	
+	@Override
+	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned, Map<String,String> additionalHeaders, int... acceptableResponses) throws IOException {
 
 		CloseableHttpClient client = createHttpClient(allowSelfSigned);
 
@@ -103,11 +108,14 @@ public class HttpUtilsApacheImpl implements HttpUtils {
 			request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 			HttpResponse response = client.execute(request);
 
-			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-				throw new IOException("Received " + response.getStatusLine().toString());
+			for(int status : acceptableResponses) {
+				if(status == response.getStatusLine().getStatusCode()) {
+					HttpEntity entity = response.getEntity();
+					return EntityUtils.toString(entity);
+				}
 			}
-			HttpEntity entity = response.getEntity();
-			return EntityUtils.toString(entity);
+			
+			throw new IOException("Received " + response.getStatusLine().toString());
 
 		} finally {
 			try {

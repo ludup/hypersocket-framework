@@ -38,6 +38,11 @@ public class HttpUtilsHolder implements HttpUtils {
 	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned, Map<String,String> additionalHeaders) throws IOException {
 		return instance.doHttpPost(url, parameters, allowSelfSigned, additionalHeaders);
 	}
+	
+	@Override
+	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned, Map<String,String> additionalHeaders, int... acceptableResponses) throws IOException {
+		return instance.doHttpPost(url, parameters, allowSelfSigned, additionalHeaders, acceptableResponses);
+	}
 
 	@Override
 	public InputStream doHttpGet(String uri, boolean allowSelfSigned) throws IOException {
