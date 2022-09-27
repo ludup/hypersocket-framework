@@ -1,6 +1,7 @@
 package com.hypersocket.profile.jobs;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -13,6 +14,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.profile.Profile;
 import com.hypersocket.profile.ProfileCredentialsService;
 import com.hypersocket.profile.ProfileRepository;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 
@@ -36,7 +38,10 @@ public class ProfileBatchUpdateJob extends PermissionsAwareJob {
 			
 			var ctx = new AuthenticationModulesOperationContext();
 			for(Profile profile : repository.getProfilesWithStatus(Arrays.asList(getCurrentRealm()))) {
-				profileService.updateProfile(realmService.getPrincipalById(profile.getId()), ctx);
+				Principal principal = realmService.getPrincipalById(profile.getId());
+				if(Objects.nonNull(principal)) {
+					profileService.updateProfile(principal, ctx);
+				}
 			}
 			
 		} catch (AccessDeniedException e) {

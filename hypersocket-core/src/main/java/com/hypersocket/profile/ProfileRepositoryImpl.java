@@ -44,50 +44,87 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 	
 	@Override
 	@Transactional(readOnly=true)
-	public long getCompleteProfileCount(Collection<Realm>  realm) {
-		return getCount(Profile.class, new RealmsCriteria(realm), new DeletedCriteria(false), new CriteriaConfiguration(){
+	public long getCompleteProfileCount(Collection<Realm>  realms) {
+		return getCount(Principal.class, new RealmsCriteria(realms), 
+				new DeletedCriteria(false), 
+				new PrincipalTypeRestriction(PrincipalType.USER), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.eq("state", ProfileCredentialsState.COMPLETE));
-			} 
+				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
+						.add(Restrictions.eq("deleted", false))
+						.add(Restrictions.in("p.state", 
+							new ProfileCredentialsState[] { ProfileCredentialsState.COMPLETE }))  
+					    		.setProjection( Projections.property("p.id"));
+				
+				criteria.add(Subqueries.propertyIn("id", profileSubquery));
+			}
+			
 		});
 	}
 	
 	@Override
 	@Transactional(readOnly=true)
-	public long getCompleteProfileOnDateCount(Collection<Realm> realm, final Date date) {
-		return getCount(Profile.class, new RealmsCriteria(realm), new DeletedCriteria(false),  new CriteriaConfiguration(){
+	public long getCompleteProfileOnDateCount(Collection<Realm> realms, final Date date) {
+		
+		return getCount(Principal.class, new RealmsCriteria(realms), 
+				new DeletedCriteria(false), 
+				new PrincipalTypeRestriction(PrincipalType.USER), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.eq("state", ProfileCredentialsState.COMPLETE));
-				criteria.add(Restrictions.eq("completed", date));
-			} 
+				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
+						.add(Restrictions.eq("deleted", false))
+						.add(Restrictions.eq("p.completed", date))
+						.add(Restrictions.in("p.state", 
+							new ProfileCredentialsState[] { ProfileCredentialsState.COMPLETE }))  
+					    		.setProjection( Projections.property("p.id"));
+				
+				criteria.add(Subqueries.propertyIn("id", profileSubquery));
+			}
+			
 		});
 	}
 	
 	@Override
 	@Transactional(readOnly=true)
-	public long getIncompleteProfileCount(Collection<Realm> realm) {
-		return getCount(Profile.class, new RealmsCriteria(realm), new DeletedCriteria(false), new CriteriaConfiguration(){
+	public long getIncompleteProfileCount(Collection<Realm> realms) {
+		return getCount(Principal.class, new RealmsCriteria(realms), 
+				new DeletedCriteria(false), 
+				new PrincipalTypeRestriction(PrincipalType.USER), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.eq("state", ProfileCredentialsState.INCOMPLETE));
-			} 
+				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
+						.add(Restrictions.eq("deleted", false))
+						.add(Restrictions.in("p.state", 
+							new ProfileCredentialsState[] { ProfileCredentialsState.INCOMPLETE }))  
+					    		.setProjection( Projections.property("p.id"));
+				
+				criteria.add(Subqueries.propertyIn("id", profileSubquery));
+			}
+			
 		});
 	}
 	
 	@Override
 	@Transactional(readOnly=true)
-	public long getPartiallyCompleteProfileCount(Collection<Realm> realm) {
-		return getCount(Profile.class, new RealmsCriteria(realm), new DeletedCriteria(false), new CriteriaConfiguration(){
+	public long getPartiallyCompleteProfileCount(Collection<Realm> realms) {
+		return getCount(Principal.class, new RealmsCriteria(realms), 
+				new DeletedCriteria(false), 
+				new PrincipalTypeRestriction(PrincipalType.USER), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
-				criteria.add(Restrictions.eq("state", ProfileCredentialsState.PARTIALLY_COMPLETE));
-			} 
+				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
+						.add(Restrictions.eq("deleted", false))
+						.add(Restrictions.in("p.state", 
+							new ProfileCredentialsState[] { ProfileCredentialsState.PARTIALLY_COMPLETE }))  
+					    		.setProjection( Projections.property("p.id"));
+				
+				criteria.add(Subqueries.propertyIn("id", profileSubquery));
+			}
+			
 		});
 	}
 
