@@ -215,6 +215,15 @@ public class CertificateResourceController extends ResourceController {
 					resource.getName(), properties);
 		} else {
 			newResource = resourceService.createResource(resource.getName(), realm, properties, false);
+			
+			var certificateProvider = resourceService.getProvider(newResource.getProvider());
+			if (certificateProvider.isDeferredCertificateCreation(newResource, realm, properties, true)) {
+				var bundleKeyPair = certificateProvider.deferredCertificateCreationMessageInfo();
+				return new ResourceStatus<CertificateResource>(newResource,
+						I18N.getResource(sessionUtils.getLocale(request), bundleKeyPair.getFirst(),
+								bundleKeyPair.getSecond(),
+								resource.getName()));
+			}
 		}
 		return new ResourceStatus<CertificateResource>(newResource,
 				I18N.getResource(sessionUtils.getLocale(request), CertificateResourceServiceImpl.RESOURCE_BUNDLE,

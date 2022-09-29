@@ -297,7 +297,8 @@ public class CertificateResourceServiceImpl extends
 			public void beforeOperation(CertificateResource resource, Map<String, String> properties)
 					throws ResourceException {
 				try {
-					getProvider(resource.getProvider()).create(resource, properties);
+					var certificateProvider = getProvider(resource.getProvider());
+					certificateProvider.create(resource, properties);
 				} catch (CertificateException | UnsupportedEncodingException | AccessDeniedException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				}
@@ -306,14 +307,18 @@ public class CertificateResourceServiceImpl extends
 			@Override
 			public void afterOperation(CertificateResource resource, Map<String, String> properties)
 					throws ResourceException {
-				sendCertificateNotification(resource, MESSAGE_CERTIFICATE_CREATED);
+				var certificateProvider = getProvider(resource.getProvider());
+				if (!certificateProvider.isDeferredCertificateCreation(resource, realm, properties, true)) {
+					sendCertificateNotification(resource, MESSAGE_CERTIFICATE_CREATED);
+				}
 			}
 			
 		});
 		return resource;
 	}
 
-	private CertificateProvider getProvider(String providerId) {
+	@Override
+	public CertificateProvider getProvider(String providerId) {
 		CertificateProvider provider = providers.get(StringUtils.isBlank(providerId) ? "default" : providerId);
 		if(provider == null)
 			throw new IllegalArgumentException(String.format("No provider with ID of %s", providerId));
