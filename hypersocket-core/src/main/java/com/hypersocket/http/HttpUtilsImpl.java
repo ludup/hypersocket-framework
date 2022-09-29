@@ -10,7 +10,6 @@ import java.net.URI;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +43,8 @@ import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -191,6 +192,44 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 		return doHttpPost(url, parameters, allowSelfSigned, additionalHeaders, HttpStatus.SC_OK);
 	}
 	
+	@Override
+	public String doHttpPost(String url, boolean allowSelfSigned,
+			Map<String, String> additionalHeaders, String requestBody, String contentType, int... acceptableResponses) throws IOException {
+		CloseableHttpClient client = createHttpClient(allowSelfSigned);
+
+		try {
+			HttpPost request = new HttpPost(url);
+
+			if (additionalHeaders != null) {
+				for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+					request.addHeader(entry.getKey(), entry.getValue());
+				}
+			}
+			request.setEntity(new StringEntity(requestBody, ContentType.parse(contentType)));
+			HttpResponse response = client.execute(request);
+
+			for(int status : acceptableResponses) {
+				if(status == response.getStatusLine().getStatusCode()) {
+					HttpEntity entity = response.getEntity();
+					return EntityUtils.toString(entity);
+				}
+			}
+			
+			throw new IOException("Received " + response.getStatusLine().toString());
+			
+			
+		} catch(InternalError error) {
+			/* We get this if proxy authentication fails */
+			throw new IOException("Unexpected HTTP error.", error.getCause());
+		} finally {
+			try {
+				client.close();
+			} catch (IOException e) {
+			}
+		}
+		
+		
+	}
 	@Override
 	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned,
 			Map<String, String> additionalHeaders, int... acceptableResponses) throws IOException {
