@@ -76,4 +76,10 @@ public class HttpUtilsHolder implements HttpUtils {
 			throws IOException {
 		return instance.doHttpGetInputStream(uri, allowSelfSigned, headers);
 	}
+
+	@Override
+	public String doHttpPost(String url, boolean allowSelfSigned, Map<String, String> additionalHeaders,
+			String requestBody, String contentType, int... acceptableResponses) throws IOException {
+		return instance.doHttpPost(url, allowSelfSigned, additionalHeaders, requestBody, contentType, acceptableResponses);
+	}
 }

@@ -39,4 +39,7 @@ public interface HttpUtils {
 	String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned,
 			Map<String, String> additionalHeaders, int... acceptableResponses) throws IOException;
 
+	String doHttpPost(String url, boolean allowSelfSigned, Map<String, String> additionalHeaders, String requestBody,
+			String contentType, int... acceptableResponses) throws IOException;
+
 }
