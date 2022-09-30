@@ -1,5 +1,8 @@
 package com.hypersocket.extensions;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ExtensionUpdate {
 
 	private String currentVersion;

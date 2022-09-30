@@ -38,6 +38,11 @@ public class HttpUtilsHolder implements HttpUtils {
 	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned, Map<String,String> additionalHeaders) throws IOException {
 		return instance.doHttpPost(url, parameters, allowSelfSigned, additionalHeaders);
 	}
+	
+	@Override
+	public String doHttpPost(String url, Map<String, String> parameters, boolean allowSelfSigned, Map<String,String> additionalHeaders, int... acceptableResponses) throws IOException {
+		return instance.doHttpPost(url, parameters, allowSelfSigned, additionalHeaders, acceptableResponses);
+	}
 
 	@Override
 	public InputStream doHttpGet(String uri, boolean allowSelfSigned) throws IOException {
@@ -70,5 +75,11 @@ public class HttpUtilsHolder implements HttpUtils {
 	public InputStream doHttpGetInputStream(String uri, boolean allowSelfSigned, Map<String, String> headers)
 			throws IOException {
 		return instance.doHttpGetInputStream(uri, allowSelfSigned, headers);
+	}
+
+	@Override
+	public String doHttpPost(String url, boolean allowSelfSigned, Map<String, String> additionalHeaders,
+			String requestBody, String contentType, int... acceptableResponses) throws IOException {
+		return instance.doHttpPost(url, allowSelfSigned, additionalHeaders, requestBody, contentType, acceptableResponses);
 	}
 }

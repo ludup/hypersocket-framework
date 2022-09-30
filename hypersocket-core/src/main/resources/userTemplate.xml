@@ -4,6 +4,7 @@
 		resourceBundle="UserInterface" weight="9999999" displayMode="admin">
 		<property resourceKey="user.bannedEmail" inputType="switch" ldapIgnore="true"
 		       weight="0" defaultValue="false"/>
+	 <property resourceKey="user.validatedEmail" inputType="switch"  weight="0" defaultValue="false"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.timezone" store="db"
 		resourceBundle="UserInterface" weight="999999">

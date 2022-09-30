@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -84,29 +85,41 @@ public class AuthenticatedController {
 	@ExceptionHandler(UnauthorizedException.class)
 	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
 	public void unauthorizedAccess(HttpServletRequest request,
-			HttpServletResponse response, UnauthorizedException redirect) {
-
+			HttpServletResponse response, UnauthorizedException redirect) throws UnsupportedEncodingException, IOException {
+		response.setContentType("text/plain; charset=UTF-8");
+		byte[] error = "Unauthorized!".getBytes("UTF-8");
+		response.setContentLength(error.length);
+		response.getOutputStream().write(error);
 	}
 
 	@ExceptionHandler(SessionTimeoutException.class)
 	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
 	public void sessionTimeout(HttpServletRequest request,
-			HttpServletResponse response, UnauthorizedException redirect) {
-
+			HttpServletResponse response, UnauthorizedException redirect) throws IOException {
+		response.setContentType("text/plain; charset=UTF-8");
+		byte[] error = "Session timeout!".getBytes("UTF-8");
+		response.setContentLength(error.length);
+		response.getOutputStream().write(error);
 	}
 
 	@ExceptionHandler(AccessDeniedException.class)
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)
 	public void unauthorizedAccess(HttpServletRequest request,
-			HttpServletResponse response, AccessDeniedException redirect) {
-
+			HttpServletResponse response, AccessDeniedException redirect) throws IOException {
+		response.setContentType("text/plain; charset=UTF-8");
+		byte[] error = "Access denied!".getBytes("UTF-8");
+		response.setContentLength(error.length);
+		response.getOutputStream().write(error);
 	}
 	
 	@ExceptionHandler(FileNotFoundException.class)
 	@ResponseStatus(value = HttpStatus.NOT_FOUND)
 	public void fileNotFound(HttpServletRequest request,
-			HttpServletResponse response, FileNotFoundException redirect) {
-
+			HttpServletResponse response, FileNotFoundException redirect) throws IOException {
+		response.setContentType("text/plain; charset=UTF-8");
+		byte[] error = "Not found!".getBytes("UTF-8");
+		response.setContentLength(error.length);
+		response.getOutputStream().write(error);
 	}
 
 	public SessionUtils getSessionUtils() {

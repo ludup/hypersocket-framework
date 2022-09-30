@@ -46,7 +46,9 @@
 		<property resourceKey="email.archiveAddress" inputType="text" weight="800" defaultValue="" />
 		<property resourceKey="email.serverName" inputType="text" weight="900" defaultValue="Hypersocket Server" />
 		<property resourceKey="email.externalHostname" inputType="text" weight="1000" defaultValue="localhost" />
-		<property resourceKey="email.blocked" inputType="multipleTextInput" weight="1100" defaultValue="" />
+		<property resourceKey="email.sendGridAPIKey" inputType="text" weight="1100" defaultValue=""/>
+		<property resourceKey="email.sendGridMinScore" inputType="integer" minValue="0" maxValue="100" weight="1200" defaultValue="0" />
+		<property resourceKey="email.blocked" inputType="multipleTextInput" weight="1300" defaultValue="" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.jobs"
 		resourceBundle="JobResourceService" weight="800"  group="messages">

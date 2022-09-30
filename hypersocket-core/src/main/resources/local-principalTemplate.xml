@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
 <propertyTemplates >
 	<propertyCategory resourceKey="local.userDetailsE"
-		resourceBundle="LocalRealm" weight="0">
+		resourceBundle="LocalRealm" weight="0" namespace="local" >
 		<property resourceKey="description" inputType="text" weight="0" defaultValue="" showVariables="true" />
 		<property resourceKey="email" inputType="text" weight="100" allowEmpty="true" validateAll="email" defaultValue="" showVariables="true"/>
 		<property resourceKey="secondaryEmail" inputType="multipleTextInput" weight="200" allowEmpty="true" validateAll="email" defaultValue="" showVariables="true"/>

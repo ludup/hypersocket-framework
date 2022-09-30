@@ -1,6 +1,7 @@
 package com.hypersocket.profile.jobs;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -12,8 +13,8 @@ import com.hypersocket.auth.AuthenticationModulesOperationContext;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.profile.Profile;
 import com.hypersocket.profile.ProfileCredentialsService;
-import com.hypersocket.profile.ProfileHistoryRepository;
 import com.hypersocket.profile.ProfileRepository;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.PermissionsAwareJob;
 
@@ -29,10 +30,7 @@ public class ProfileBatchUpdateJob extends PermissionsAwareJob {
 	
 	@Autowired
 	private ProfileRepository repository;
-	
-	@Autowired
-	private ProfileHistoryRepository historyRepository;
-	
+
 	@Override
 	protected void executeJob(JobExecutionContext context) throws JobExecutionException {
 		
@@ -40,26 +38,9 @@ public class ProfileBatchUpdateJob extends PermissionsAwareJob {
 			
 			var ctx = new AuthenticationModulesOperationContext();
 			for(Profile profile : repository.getProfilesWithStatus(Arrays.asList(getCurrentRealm()))) {
-				profileService.updateProfile(realmService.getPrincipalById(profile.getId()), ctx);
-			}
-			
-			if(log.isInfoEnabled()) {
-				log.info("Updating profile history");
-			}
-			
-			if(getCurrentRealm().isSystem()) {
-				long systemCount = repository.getCompleteProfileCount(null);
-				historyRepository.report(getCurrentRealm(), systemCount);
-				
-				if(log.isInfoEnabled()) {
-					log.info("System has a total combined profile count of {}", systemCount);
-				}
-			} else {
-				long realmCount = repository.getCompleteProfileCount(Arrays.asList(getCurrentRealm()));
-				historyRepository.report(getCurrentRealm(), realmCount);	
-				
-				if(log.isInfoEnabled()) {
-					log.info("Realm {} has a total profile count of {}", getCurrentRealm().getName(), realmCount);
+				Principal principal = realmService.getPrincipalById(profile.getId());
+				if(Objects.nonNull(principal)) {
+					profileService.updateProfile(principal, ctx);
 				}
 			}
 			

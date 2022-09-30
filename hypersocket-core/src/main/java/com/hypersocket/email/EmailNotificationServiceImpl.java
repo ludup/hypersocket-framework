@@ -1,8 +1,12 @@
 package com.hypersocket.email;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -11,7 +15,6 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.mail.Message.RecipientType;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import org.apache.http.auth.InvalidCredentialsException;
@@ -20,7 +23,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.simplejavamail.MailException;
 import org.simplejavamail.api.email.EmailPopulatingBuilder;
-import org.simplejavamail.api.mailer.AsyncResponse;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
@@ -28,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
@@ -45,6 +49,7 @@ import com.hypersocket.replace.ReplacementUtils;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.triggers.ValidationException;
+import com.hypersocket.utils.HttpUtils;
 
 @Service
 public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceImpl implements EmailNotificationService {
@@ -71,6 +76,9 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	@Autowired
 	private I18NService i18nService; 
+	
+	@Autowired
+	private HttpUtils httpUtils;
 	
 	private EmailController controller; 
 	
@@ -299,6 +307,52 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 			}
 		}
 		
+		String apiKey = mailerService.getSMTPValue(realm, "email.sendGridAPIKey");
+		
+		if(StringUtils.isNotBlank(apiKey)) {
+	
+			boolean validated = false;
+			if(p!=null) {
+				if(realmService.getUserPropertyBoolean(p, "user.validatedEmail")) {
+					validated = true;
+				}
+			}
+		
+			if(!validated) {
+				Map<String,String> headers = new HashMap<>();
+				headers.put("Authorization", "Bearer " + apiKey);
+				headers.put("Content-Type", "application/json");
+				
+				String json = "{\"email\": \"" + r.getEmail() + "\", \"source\": \"validate\"}";
+				
+				try {
+					String response = httpUtils.doHttpPost("https://api.sendgrid.com/v3/validations/email", 
+							false, headers, json, "application/json", 200);
+					
+					ObjectMapper m = new ObjectMapper();
+					
+					JsonNode node = m.readTree(response);
+					String verdict = node.findValue("verdict").asText("Invalid");
+					Double score = node.findValue("score").asDouble(0D);
+					Double allowedScore = Double.valueOf(mailerService.getSMTPIntValue(realm, "email.sendGridMinScore"));
+					if(p!=null) {
+						realmService.setUserPropertyBoolean(p, "user.validatedEmail", true);
+					}
+					if("Invalid".equals(verdict) || (allowedScore > 0 && (score * 100) < allowedScore)) {
+						if(p!=null) {
+							realmService.setUserPropertyBoolean(p, "user.bannedEmail", true);
+						}
+						eventService.publishEvent(new EmailEvent(this, new IOException("Email validation failed with score " + score + " and verdict " + verdict), realm, subject, plainText, r.getEmail(), context));
+						return;	
+					}
+				} catch (IOException e) {
+					eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail(), context));
+					return;
+				}
+			}
+			
+		}
+		
 		String fromAddress = mailerService.getSMTPValue(realm, MailerServiceImpl.SMTP_FROM_ADDRESS);
 		if(r.getEmail().equalsIgnoreCase(fromAddress)) {
 			if(log.isInfoEnabled()) {
@@ -353,7 +407,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 								if(!"base64".equals(enc)) {
 									throw new UnsupportedOperationException(String.format("%s is not supported for embedded images.", enc));
 								}
-								byte[] bytes = Base64.decodeBase64(data);
+								byte[] bytes = Base64.getDecoder().decode(data);
 								UUID cid = UUID.randomUUID();
 								el.attr("src", "cid:" + OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid);
 								email.withEmbeddedImage(OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid.toString(), bytes, mime);
