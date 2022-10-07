@@ -40,11 +40,11 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	@Override
 	public void deleteRealm(Realm realm) {
 		Query q = sessionFactory.getCurrentSession().createSQLQuery(
-				"delete l from principal_links l left join principals p ON p.resource_id = l.principals_resource_id WHERE p.realm_id = "
+				"delete from principal_links l left join principals p ON p.resource_id = l.principals_resource_id WHERE p.realm_id = "
 						+ realm.getId());
 		q.executeUpdate();
 		q = sessionFactory.getCurrentSession().createSQLQuery(
-				"delete l from principal_links l left join principals p ON p.resource_id = l.linkedPrincipals_resource_id WHERE p.realm_id = "
+				"delete from principal_links l left join principals p ON p.resource_id = l.linkedPrincipals_resource_id WHERE p.realm_id = "
 						+ realm.getId());
 		q.executeUpdate();
 	}
