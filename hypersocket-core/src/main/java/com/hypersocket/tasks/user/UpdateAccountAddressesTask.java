@@ -99,7 +99,7 @@ public class UpdateAccountAddressesTask extends AbstractAccountTask {
 	}
 
 	public String getResultResourceKey() {
-		return DisableAccountTaskResult.EVENT_RESOURCE_KEY;
+		return UpdateAccountAddressesTaskResult.EVENT_RESOURCE_KEY;
 	}
 
 	@Override
