@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
@@ -57,6 +59,9 @@ public class HTTPInterfaceResourceServiceImpl extends
 	
 	@Autowired
 	private SystemConfigurationService configurationService;
+	
+	@Autowired 
+	private CertificateResourceService certificateResourceService; 
 
 	public HTTPInterfaceResourceServiceImpl() {
 		super("HTTPInterface");
@@ -230,6 +235,10 @@ public class HTTPInterfaceResourceServiceImpl extends
 
 		resource.setName(name);
 		
+		checkCertificate(properties);
+		
+		checkAdditionalCertificates(properties);
+		
 		checkForPortAddressConflicts(resource, properties);
 		
 		updateResource(resource, properties);
@@ -281,11 +290,21 @@ public class HTTPInterfaceResourceServiceImpl extends
 			@Override
 			public void beforeOperation(HTTPInterfaceResource resource, Map<String, String> properties)
 					throws ResourceException {
-				if(resource.getProtocol()==HTTPProtocol.HTTPS) {
-					if(Objects.isNull(resource.getCertificate())) {
+				
+				if(resource.getProtocol() == HTTPProtocol.HTTPS) {
+					
+					var certificate = resource.getCertificate();
+					
+					if(Objects.isNull(certificate)) {
 						throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noCertificate");
 					}
-				}		
+					
+					checkCertificate(properties);
+					
+					checkAdditionalCertificates(properties);
+					
+				}
+				
 				checkForPortAddressConflicts(resource, properties);
 			}
 			
@@ -324,6 +343,59 @@ public class HTTPInterfaceResourceServiceImpl extends
 				return true;
 		}
 		return false;
+	}
+	
+	private void checkAdditionalCertificates(Map<String, String> properties) throws ResourceException {
+		var additionalCertificates = properties.get("additionalCertificates");
+		
+		if (additionalCertificates != null) {
+			var certificateIds = ResourceUtils.explodeNamePairs(additionalCertificates).stream().map(p-> Long.parseLong(p.getValue())).collect(Collectors.toList());
+			checkInterfaceCertificatesAreProductionReady(certificateIds.toArray(new Long[0]));
+		}
+	}
+
+	private void checkCertificate(Map<String, String> properties) throws ResourceException {
+		var certificateId = properties.get("certificate");
+		
+		if (certificateId != null) {
+			try {
+				checkInterfaceCertificatesAreProductionReady(Long.parseLong(certificateId));
+			} catch (NumberFormatException e) {
+				throw new IllegalStateException(e.getMessage(), e);
+			}
+		}
+	}
+	
+	private void checkInterfaceCertificatesAreProductionReady(Long...certificateResources) throws ResourceException {
+
+		try {
+			for (Long certificateId : certificateResources) {
+				
+				var certificateFromDb = certificateResourceService.getResourceById(certificateId);
+				
+				if (certificateFromDb == null) {
+					throw new IllegalStateException(String.format("Certificate by id %d not found.", certificateId));
+				}
+				
+				
+				var providerId = certificateFromDb.getProvider();
+				
+				var provider = certificateResourceService.getProvider(providerId); 
+				
+				if (provider == null) {
+					throw new IllegalStateException(String.format("Provider not found by id %s.", providerId));
+				}
+				
+		
+				if (!provider.isCertificateProductionReady(certificateFromDb)) {
+					throw new ResourceException(RESOURCE_BUNDLE, "error.certificate.not.production.ready",  certificateFromDb.getName());
+				}
+					
+			}
+		} catch (AccessDeniedException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+		
 	}
 
 }

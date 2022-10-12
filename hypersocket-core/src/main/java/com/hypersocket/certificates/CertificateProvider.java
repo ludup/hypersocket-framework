@@ -46,4 +46,15 @@ public interface CertificateProvider {
 		return new Pair<String>("", "");
 	}
 	
+	
+	/**
+	 * Providers at times might have pending action before a certificate is ready for production use.
+	 * For e.g. Lets encrypt wild card certificates need to complete DNS verification using action framework.
+	 * When these certificates are used api should check they are ready for production use or not.
+	 * 
+	 * @return Certificate is ready for production or not. true implies ready.
+	 */
+	default boolean isCertificateProductionReady(CertificateResource resource) {
+		return true;
+	}
 }
