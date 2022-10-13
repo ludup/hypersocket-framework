@@ -609,7 +609,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 										default:
 										}
 									} else {
-										log.info("{} is has an email bad", principal.getPrincipalName());
+										log.info("{} is has an email ban", principal.getPrincipalName());
 									}
 								}
 								else
