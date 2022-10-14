@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.alert.AlertCallback;
 import com.hypersocket.alert.AlertService;
 import com.hypersocket.auth.AuthenticationAttemptEvent;
+import com.hypersocket.auth.FakePrincipal;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.message.MessageResourceService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -122,14 +123,20 @@ public class UnauthorizedAccessServiceImpl implements UnauthorizedAccessService 
 							
 							Principal principal = realmService.getPrincipalByName(realm, 
 									principalName, PrincipalType.USER);
+							if(Objects.isNull(principal)) {
+								principal = new FakePrincipal(principalName);
+							}
+							
 							try {
 								suspensionService.createPrincipalSuspension(principal, principalName, realm, new Date(), 
 										configurationService.getLongValue(realm, "lock.period"), 
 										PrincipalSuspensionType.MANUAL);
 								
 								if(principal!=null) {
-									messageService.sendMessage(MESSAGE_ACCOUNT_SUSPENDED, principal.getRealm(), 
-										new AccountSuspensionResolver((UserPrincipal<?>)principal, failedAttempts, lockoutTime, period));
+									messageService.sendMessage(MESSAGE_ACCOUNT_SUSPENDED, 
+											principal.getRealm(), 
+										   new AccountSuspensionResolver((UserPrincipal<?>)principal, failedAttempts, lockoutTime, period),
+										   principal);
 								}
 							} catch (ResourceException | AccessDeniedException e) {
 								log.error("Failed to create suspension", e);
