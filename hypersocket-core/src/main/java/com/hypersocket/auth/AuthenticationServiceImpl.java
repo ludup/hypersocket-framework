@@ -290,6 +290,8 @@ public class AuthenticationServiceImpl extends
 			throw new IllegalStateException("Admin registry already made.");
 		}
 		
+		Objects.requireNonNull(adminInfoRegistry, "Registry object is null.");
+		
 		this.adminInfoRegistry = adminInfoRegistry;
 		
 	}
