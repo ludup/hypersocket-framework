@@ -75,4 +75,5 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 
 	Authenticator nextAuthenticator(AuthenticationState state);
 
+	void registerAdminInfoRegistry(AdminInfoRegistry adminInfoRegistry);
 }
