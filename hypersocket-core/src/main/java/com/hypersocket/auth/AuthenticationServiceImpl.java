@@ -659,24 +659,26 @@ public class AuthenticationServiceImpl extends
 									
 									var currentScheme = state.getScheme();
 									
-									var adminRoles = adminInfoRegistry.allAdminRoles(currentRealm);
+									var adminScheme = adminInfoRegistry.adminAuthenticationScheme(currentRealm);
 									
-									var hasAdminRole = permissionService.hasRole(state.getPrincipal(), adminRoles);
-									
-									if (hasAdminRole) {
-									
-										var adminScheme = adminInfoRegistry.adminAuthenticationScheme(currentRealm);
-										
-										adminScheme.ifPresent(scheme -> {
-											if (!state.getScheme().getName().equals(scheme.getName())) {
-												
-												log.info("Current scheme {} is different from Admin scheme and current principal"
-														+ " is admin, changing scheme to admin scheme", currentScheme.getName());
-												
+									adminScheme.ifPresent(scheme -> {
+										if (!state.getScheme().getName().equals(scheme.getName())) {
+											
+											log.info("Current scheme {} is different from Admin scheme and current principal"
+													+ " is admin, changing scheme to admin scheme", currentScheme.getName());
+											
+											var adminRoles = adminInfoRegistry.allAdminRoles(currentRealm);
+											
+											var hasAdminRole = permissionService.hasRole(state.getPrincipal(), adminRoles);
+											
+											if (hasAdminRole) {
 												state.setScheme(scheme);
+												
+												var modules = repository.getModulesForScheme(scheme);
+												state.setModules(modules);
 											}
-										});
-									}
+										}
+									});
 								}
 								
 								
