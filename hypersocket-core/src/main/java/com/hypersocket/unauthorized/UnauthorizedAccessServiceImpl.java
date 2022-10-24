@@ -19,7 +19,6 @@ import com.hypersocket.auth.AuthenticationAttemptEvent;
 import com.hypersocket.auth.FakePrincipal;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.message.MessageResourceService;
-import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.LogonException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalSuspensionService;
@@ -138,7 +137,7 @@ public class UnauthorizedAccessServiceImpl implements UnauthorizedAccessService 
 										   new AccountSuspensionResolver((UserPrincipal<?>)principal, failedAttempts, lockoutTime, period),
 										   principal);
 								}
-							} catch (ResourceException | AccessDeniedException e) {
+							} catch (ResourceException e) {
 								log.error("Failed to create suspension", e);
 							}
 							return null;
