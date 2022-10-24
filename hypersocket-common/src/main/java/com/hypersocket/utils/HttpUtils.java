@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
 
-import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
