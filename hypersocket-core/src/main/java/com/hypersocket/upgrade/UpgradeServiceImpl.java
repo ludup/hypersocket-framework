@@ -131,22 +131,6 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 		}
 		
 		try (Connection connection = ds.getConnection()) {
-			String url = ds.getConnection().getMetaData().getURL();
-			if(url.startsWith("jdbc:h2:")) {
-				log.info("Compacting database, this may take a long time if it hasn't been done for a time!");
-				try(Statement statement = connection.createStatement()) {
-					statement.execute("SHUTDOWN COMPACT");
-				}
-				catch(Exception e) {
-				}
-				log.info("Compact completed.");
-			}
-		}
-		catch (SQLException  e) {
-			throw new IOException("Failed compact.", e);
-		}
-
-		try (Connection connection = ds.getConnection()) {
 
 			try(ResultSet rs = connection.getMetaData().getTables(ds.getConnection().getCatalog(), null, "upgrade", null)) {
 				if(rs.next()) {
@@ -159,15 +143,34 @@ public class UpgradeServiceImpl implements UpgradeService, ApplicationContextAwa
 				else
 					fresh = true;
 			}
+		}
+		catch (SQLException  e) {
+			throw new IOException("Failed compact.", e);
+		}
 			
-
-			if (fresh) {
-				log.info("Database is fresh, not doing any pre-upgrading");
-				return;
-			} else {
-				log.info("Pre-upgrading existing database");
+		if (fresh) {
+			log.info("Database is fresh, not doing any pre-upgrading");
+			return;
+		} else {
+			try (Connection connection = ds.getConnection()) {
+				String url = ds.getConnection().getMetaData().getURL();
+				if(url.startsWith("jdbc:h2:")) {
+					log.info("Compacting database, this may take a long time if it hasn't been done for a time!");
+					try(Statement statement = connection.createStatement()) {
+						statement.execute("SHUTDOWN COMPACT");
+					}
+					catch(Exception e) {
+					}
+					log.info("Compact completed.");
+				}
 			}
-			
+			catch (SQLException  e) {
+				throw new IOException("Failed compact.", e);
+			}
+			log.info("Pre-upgrading existing database");
+		}
+
+		try (Connection connection = ds.getConnection()) {	
 			List<UpgradeOp> ops = buildUpgradeOps();
 			Map<String, Object> beans = new HashMap<String, Object>();
 
