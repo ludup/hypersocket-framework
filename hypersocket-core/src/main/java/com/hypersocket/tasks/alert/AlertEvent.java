@@ -30,6 +30,13 @@ public class AlertEvent extends AbstractTaskResult implements DefaultEvent {
 		
 		addAllAttributes(alertEvent.getAttributes());
 	}
+	
+	public AlertEvent(Object source, Task task, SystemEvent alertEvent) {
+		super(source, EVENT_RESOURCE_KEY, SystemEventStatus.SUCCESS, alertEvent.getCurrentRealm(), task);
+
+		addAttribute(ATTR_TASK_NAME, task.getName());
+		addAllAttributes(alertEvent.getAttributes());
+	}
 
 	@Override
 	public boolean isPublishable() {
