@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.hibernate.Criteria;
-import org.hibernate.Query;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
@@ -26,6 +26,7 @@ import com.hypersocket.resource.AbstractResourceRepositoryImpl;
 import com.hypersocket.resource.RealmCriteria;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.tables.ColumnSort;
+import com.hypersocket.util.ConfigurableComboPooledDataSource;
 
 @Repository
 public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Principal> implements PrincipalRepository {
@@ -37,16 +38,29 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	@Autowired
 	private DelegationCriteria delegationCriteria;
 	
+	@Autowired
+	private ConfigurableComboPooledDataSource dataSource;
+	
 	@Override
 	public void deleteRealm(Realm realm) {
-		Query q = sessionFactory.getCurrentSession().createSQLQuery(
-				"delete from principal_links l left join principals p ON p.resource_id = l.principals_resource_id WHERE p.realm_id = "
-						+ realm.getId());
-		q.executeUpdate();
-		q = sessionFactory.getCurrentSession().createSQLQuery(
-				"delete from principal_links l left join principals p ON p.resource_id = l.linkedPrincipals_resource_id WHERE p.realm_id = "
-						+ realm.getId());
-		q.executeUpdate();
+		
+		Session currentSession = sessionFactory.getCurrentSession();
+		if(dataSource.getDriverClass().equals("org.h2.Driver")) {
+			currentSession.createSQLQuery(
+					"delete from principal_links l where exists (select 0 from principals p where p.resource_id = l.principals_resource_id and p.realm_id = "
+							+ realm.getId() + ")").executeUpdate();
+			currentSession.createSQLQuery(
+					"delete from principal_links l where exists (select 0 from principals p where p.resource_id = l.linkedPrincipals_resource_id and p.realm_id = "
+							+ realm.getId() + ")").executeUpdate();
+		}
+		else {
+			currentSession.createSQLQuery(
+					"delete l from principal_links l left join principals p ON p.resource_id = l.principals_resource_id WHERE p.realm_id = "
+							+ realm.getId()).executeUpdate();
+			currentSession.createSQLQuery(
+					"delete l from principal_links l left join principals p ON p.resource_id = l.linkedPrincipals_resource_id WHERE p.realm_id = "
+							+ realm.getId()).executeUpdate();
+		}
 	}
 
 	@Override
