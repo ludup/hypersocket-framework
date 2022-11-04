@@ -2,6 +2,7 @@ package com.hypersocket.tasks.alert;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 
@@ -96,14 +97,20 @@ public class AlertTask extends AbstractTaskProvider {
 		String alertKey = key.toString();
 		
 		
-		return alertService.processAlert(task.getResourceKey(), alertKey, delay, threshold, timeout, new AlertCallback<AlertEvent>() {
+		AbstractTaskResult result = alertService.processAlert(task.getResourceKey(), alertKey, delay, threshold, timeout, new AlertCallback<AlertEvent>() {
 
 			@Override
 			public AlertEvent alert() {
-				return new AlertEvent(AlertTask.this, "event.alert", true, currentRealm, threshold, timeout, task, lastEvent);
+				return new AlertEvent(AlertTask.this, AlertEvent.EVENT_RESOURCE_KEY, true, currentRealm, threshold, timeout, task, lastEvent);
 			}
 			
 		});
+		
+		if(Objects.nonNull(result)) {
+			return result;
+		} else {
+			return new AlertEvent(this, task, lastEvent);
+		}
 	}
 	
 	public String getResultResourceKey() {

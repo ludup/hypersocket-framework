@@ -454,6 +454,9 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 				String cookieName = nextCookie.substring(0, equalsPos);
 				String cookieValue = nextCookie.substring(equalsPos + 1);
 				try {
+					if(cookieValue.startsWith("\"") && cookieValue.endsWith("\"")) {
+						cookieValue = cookieValue.substring(1, cookieValue.length() - 2);
+					}
 					lst.add(new Cookie(cookieName, cookieValue));
 				} catch (IllegalArgumentException e) {
 				}
