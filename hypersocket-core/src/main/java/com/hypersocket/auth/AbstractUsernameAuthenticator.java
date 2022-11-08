@@ -58,7 +58,7 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 				if(StringUtils.isBlank(name)) {
 					state.setLastErrorIsResourceKey(true);
 					state.setLastErrorMsg("error.userMustSelectRealm");
-					return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPALY_ERROR;
+					return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPLAY_ERROR;
 				}
 			}
 			selectedRealm = realmService.getRealmByName(name);
@@ -90,7 +90,7 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 			if(configurationService.getBooleanValue(state.getRealm()==null? realmService.getDefaultRealm() : state.getRealm(), "logon.verboseErrors")) {
 				state.setLastErrorIsResourceKey(false);
 				state.setLastErrorMsg(e.getMessage());
-				return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPALY_ERROR;
+				return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPLAY_ERROR;
 			}
 			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
 		}

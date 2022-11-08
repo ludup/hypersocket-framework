@@ -555,7 +555,7 @@ public class AuthenticationServiceImpl extends
 						state.setLastErrorIsResourceKey(false);
 						break;
 					}
-					case AUTHENTICATION_FAILURE_DISPALY_ERROR: 
+					case AUTHENTICATION_FAILURE_DISPLAY_ERROR: 
 					{
 						if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
 							state.fakeCredentials();
@@ -814,7 +814,7 @@ public class AuthenticationServiceImpl extends
 				state.setLastErrorIsResourceKey(false);
 				break;
 			}
-			case AUTHENTICATION_FAILURE_DISPALY_ERROR: 
+			case AUTHENTICATION_FAILURE_DISPLAY_ERROR: 
 			{
 				break;
 			}

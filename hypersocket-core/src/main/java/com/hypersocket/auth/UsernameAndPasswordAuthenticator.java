@@ -116,7 +116,7 @@ public class UsernameAndPasswordAuthenticator extends
 		} catch (IOException | LogonException e) {
 			state.setLastErrorIsResourceKey(false);
 			state.setLastErrorMsg(e.getMessage());
-			return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPALY_ERROR;
+			return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPLAY_ERROR;
 		}
 	}
 
