@@ -274,7 +274,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 			log.info("Scheduling job " + clz.getSimpleName() + " with id " + scheduleId + " to start "
 					+ (start == null ? "now" : "at " + HypersocketUtils.formatDateTime(start)) + " with interval of "
 					+ (interval / 60000) + " minutes and repeat "
-					+ (repeat != SimpleTrigger.REPEAT_INDEFINITELY ? repeat + " time(s)" : "indefinitely")
+					+ (end == null ? "0 times" : ( repeat != SimpleTrigger.REPEAT_INDEFINITELY ? repeat + " time(s)" : "indefinitely"))
 					+ (end != null ? " until " + HypersocketUtils.formatDateTime(end) : ""));
 		}
 		JobDetail job = JobBuilder.newJob(clz).withIdentity(scheduleId).build();
