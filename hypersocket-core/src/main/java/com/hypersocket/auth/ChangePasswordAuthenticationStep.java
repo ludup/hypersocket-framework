@@ -106,7 +106,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 			state.setLastErrorMsg(e.getMessage());
 			state.setLastErrorIsResourceKey(false);
 			
-			return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPALY_ERROR;
+			return AuthenticatorResult.AUTHENTICATION_FAILURE_DISPLAY_ERROR;
 		} finally {
 			authenticationService.clearPrincipalContext();
 		}
