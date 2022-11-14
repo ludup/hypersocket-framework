@@ -347,7 +347,8 @@ public class LogonController extends AuthenticatedController {
 							state.getRequestParameters());
 				}
 				finally {
-					if(!isPostStep && !success && state.isAuthenticationComplete() && !state.hasNextStep())
+					if((!isPostStep && !success && state.isAuthenticationComplete() && !state.hasNextStep()) ||
+					   (isPostStep && !success && state.isAuthenticationComplete() && state.getLastErrorMsg() != null)) {
 						/* BPS - 2022/07/07 - If there is an error at the end of authentication (licensing?), then
 						 * clear the state after we have returned the response. This allows
 						 * the user to escape the error by refreshing the page - something that
@@ -355,6 +356,7 @@ public class LogonController extends AuthenticatedController {
 						 * it will work properly)
 						 */
 						state.clean();
+					}
 				}
 				
 			}
