@@ -7,6 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -33,6 +34,9 @@ public class ProfileCredentials extends AbstractEntity<Long> {
 	
 	@Column(name="resource_key")
 	private String resourceKey; 
+	
+	@Transient
+	private String iconClass;
 	
 	@Override
 	public Long getId() {
@@ -67,4 +71,13 @@ public class ProfileCredentials extends AbstractEntity<Long> {
 	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
 		builder.append(resourceKey, obj);
 	}
+
+	public String getIconClass() {
+		return iconClass;
+	}
+
+	public void setIconClass(String iconClass) {
+		this.iconClass = iconClass;
+	}
+	
 }
