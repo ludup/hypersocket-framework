@@ -496,6 +496,7 @@ public class AuthenticationServiceImpl extends
 			}
 
 			try {
+				
 				if (state.getCurrentPostAuthenticationStep() != null) {
 
 					preProcess(state.getCurrentPostAuthenticationStep(), state, parameterMap);
@@ -746,6 +747,8 @@ public class AuthenticationServiceImpl extends
 								setupSystemContext(state.getPrincipal());
 								
 								try {
+									
+									state.addPostAuthenticationStep(new NullPostAuthenticationStep());
 									for (PostAuthenticationStep proc : postAuthenticationSteps) {
 										if (proc.requiresProcessing(state)) {
 											state.addPostAuthenticationStep(proc);
