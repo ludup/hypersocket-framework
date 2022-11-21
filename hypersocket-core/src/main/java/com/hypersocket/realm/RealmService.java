@@ -368,6 +368,10 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	void setLinkedAccountProvider(LinkedAccountProvider provider);
 	
 	LinkedAccountProvider getLinkedAccountProvider();
+	
+	Set<CommunicationDataView> getPrincipalCommunicationDataView(Realm realm, Long id);
+	
+	void registerPrincipalCommunicationDataViewProviders(PrincipalCommunicationDataViewProvider principalCommunicationDataViewProvider);
 
 }
 
