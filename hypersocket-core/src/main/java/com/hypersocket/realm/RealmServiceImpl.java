@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -215,6 +216,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Autowired
 	private RemoteAccountFilter remoteAccountFilter;
 	
+	@Autowired
+	@Qualifier(CorePrincipalCommunicationDataViewProvider.CORE_PRINCIPAL_COMMUNICATION_DATA_VIEW_PROVIDER)
+	private PrincipalCommunicationDataViewProvider principalCommunicationDataViewProvider;
+	
 	private List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
 	private Principal systemPrincipal;
 	private Realm systemRealm;
@@ -233,6 +238,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	private Collection<Principal> passwordOperations = Collections.synchronizedCollection(new HashSet<>());
 	private LinkedAccountProvider linkedAccountProvider;
+	
+	private List<PrincipalCommunicationDataViewProvider> principalCommunicationDataViewProviders
+		= new ArrayList<>();
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -323,6 +331,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		registerPrincipalFilter(userDisabledFilter);
 		registerPrincipalFilter(userNeverLoggedInFilter);
 		registerPrincipalFilter(userNotLoggedIn30DaysFilter);
+		registerPrincipalCommunicationDataViewProviders(principalCommunicationDataViewProvider);
 
 	}
 
@@ -343,6 +352,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void registerOwnershipResolver(RealmOwnershipResolver resolver) {
 		ownershipResolvers.add(resolver);
+	}
+	
+	public void registerPrincipalCommunicationDataViewProviders(PrincipalCommunicationDataViewProvider principalCommunicationDataViewProvider) {
+		principalCommunicationDataViewProviders.add(principalCommunicationDataViewProvider);
 	}
 
 	@Override
@@ -3169,5 +3182,22 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public LinkedAccountProvider getLinkedAccountProvider() {
 		return linkedAccountProvider;
+	}
+
+	@Override
+	public Set<CommunicationDataView> getPrincipalCommunicationDataView(Realm realm, Long id) {
+		
+		var allViews = new HashSet<CommunicationDataView>();
+		
+		try {
+			for (PrincipalCommunicationDataViewProvider principalCommunicationDataViewProvider : 
+					principalCommunicationDataViewProviders) {
+				allViews.addAll(principalCommunicationDataViewProvider.getPrincipalCommunicationDataView(realm, id));
+			}
+		} catch (AccessDeniedException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+		
+		return allViews;
 	}
 }

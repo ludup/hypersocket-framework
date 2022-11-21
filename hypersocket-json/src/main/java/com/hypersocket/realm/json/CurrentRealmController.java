@@ -52,6 +52,7 @@ import com.hypersocket.profile.ProfileCredentialsService;
 import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.CommunicationDataView;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalColumns;
 import com.hypersocket.realm.PrincipalSuspension;
@@ -1425,5 +1426,16 @@ public class CurrentRealmController extends ResourceController {
 		}
 	}
 	
-	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/communicationDataView/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
+	public ResourceList<CommunicationDataView> listPrincipalCommunicationDataViews(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		return new ResourceList<CommunicationDataView>(
+				realmService.getPrincipalCommunicationDataView(getCurrentRealm(), id));
+	}
 }
