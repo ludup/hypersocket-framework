@@ -1,6 +1,7 @@
 package com.hypersocket.profile;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.hypersocket.auth.AuthenticationModulesOperationContext;
 import com.hypersocket.auth.AuthenticationScheme;
@@ -42,6 +43,8 @@ public interface ProfileCredentialsService {
 	Profile getProfileForUser(Principal target) throws AccessDeniedException;
 
 	void resetProfile(Principal principal) throws AccessDeniedException, ResourceException;
+	
+	void resetProfiles(List<Principal> principals) throws AccessDeniedException, ResourceException;
 
 	void onUserUndeleted(UserUndeletedEvent event);
 
