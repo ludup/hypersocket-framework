@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.auth.AuthenticationModulesOperationContext;
@@ -47,6 +48,7 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.session.events.SessionOpenEvent;
+import com.hypersocket.transactions.TransactionService;
 
 @Service
 public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceImpl implements ProfileCredentialsService {
@@ -72,6 +74,9 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		
 	@Autowired
 	private AuthenticationService authenticationService; 
+	
+	@Autowired
+	private TransactionService transactionService;
 	
 	private ProfileValidator validator = null;
 	
@@ -544,5 +549,22 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	public void disableBatchUpdate(Realm realm) {
 		log.warn("Realm {} is now disabled batch updates", realm.getName());
 		disabledRealms.add(realm);
+	}
+
+	@Override
+	public void resetProfiles(List<Principal> principals) throws AccessDeniedException, ResourceException {
+		transactionService.doInTransaction((TransactionCallback<Void>) t -> {
+			if (principals != null) {
+				for (Principal p : principals) {
+					try {
+						resetProfile(p);
+					} catch (AccessDeniedException | ResourceException e) {
+						throw new IllegalStateException(e.getMessage(), e);
+					}
+				}
+			}
+			return null;
+		});
+		
 	}
 }

@@ -1387,6 +1387,42 @@ public class CurrentRealmController extends ResourceController {
 	}
 	
 	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/resetProfiles", method = RequestMethod.POST, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
+	public RequestStatus resetProfiles(HttpServletRequest request,
+			HttpServletResponse response,
+			@RequestBody Long[] ids)
+			 {
+		try {
+			
+			if(ids == null) {
+				ids = new Long[0];
+			}
+			
+			List<Principal> userResources = realmService.getUsersByIds(ids);
+
+			if(userResources == null || userResources.isEmpty()) {
+				return new RequestStatus(false,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.reset.profile.empty"));
+			} else {
+				credentialsService.resetProfiles(userResources);
+				return new RequestStatus(true,
+						I18N.getResource(sessionUtils.getLocale(request),
+								I18NServiceImpl.USER_INTERFACE_BUNDLE,
+								"bulk.reset.profile.success"));
+			}
+			
+		} catch (Exception e) {
+			return new RequestStatus(false, e.getMessage());
+		} 
+
+	}
+	
+	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/forceProfileSync/{id}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
