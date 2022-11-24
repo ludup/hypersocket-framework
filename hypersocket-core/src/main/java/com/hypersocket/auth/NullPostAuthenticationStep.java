@@ -2,7 +2,7 @@ package com.hypersocket.auth;
 
 import java.util.Map;
 
-import com.hypersocket.input.FormTemplate;
+import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
 
 public class NullPostAuthenticationStep implements PostAuthenticationStep {
