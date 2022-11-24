@@ -23,7 +23,7 @@ public class NullPostAuthenticationStep implements PostAuthenticationStep {
 	}
 
 	@Override
-	public AuthenticatorResult process(AuthenticationState state, Map parameters) throws AccessDeniedException {
+	public AuthenticatorResult process(AuthenticationState state, Map<String, String[]> parameters) throws AccessDeniedException {
 		return AuthenticatorResult.AUTHENTICATION_SUCCESS;
 	}
 
