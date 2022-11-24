@@ -321,7 +321,7 @@ public class LogonController extends AuthenticatedController {
 				
 				request.getSession().setAttribute("lastFormTemplate", template);
 				
-				try {
+//				try {
 					return new LogonRequiredResult(
 							LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state.getRealm(),
 									"logon.banner")),
@@ -339,19 +339,19 @@ public class LogonController extends AuthenticatedController {
 							state.getRealm(),
 							getNonce(request),
 							sanitizeMap(request.getParameterMap()));
-				}
-				finally {
-					if((!isPostStep && !success && state.isAuthenticationComplete() && !state.hasNextStep()) ||
-					   (isPostStep && !success && state.isAuthenticationComplete() && state.getLastErrorMsg() != null)) {
-						/* BPS - 2022/07/07 - If there is an error at the end of authentication (licensing?), then
-						 * clear the state after we have returned the response. This allows
-						 * the user to escape the error by refreshing the page - something that
-						 * is otherwise impossible (well, you can NOW also switch schemes and
-						 * it will work properly)
-						 */
-						state.clean();
-					}
-				}
+//				}
+//				finally {
+//					if((!isPostStep && !success && state.isAuthenticationComplete() && !state.hasNextStep()) ||
+//					   (isPostStep && !success && state.isAuthenticationComplete() && state.getLastErrorMsg() != null)) {
+//						/* BPS - 2022/07/07 - If there is an error at the end of authentication (licensing?), then
+//						 * clear the state after we have returned the response. This allows
+//						 * the user to escape the error by refreshing the page - something that
+//						 * is otherwise impossible (well, you can NOW also switch schemes and
+//						 * it will work properly)
+//						 */
+//						state.clean();
+//					}
+//				}
 				
 			}
 		} catch(FallbackAuthenticationRequired e) {

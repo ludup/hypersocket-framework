@@ -730,6 +730,7 @@ public class AuthenticationServiceImpl extends
 												this, state, authenticator));
 
 								try(var c = tryAs(state.getPrincipal())) {
+									state.addPostAuthenticationStep(new NullPostAuthenticationStep());
 									for (PostAuthenticationStep proc : postAuthenticationSteps) {
 										if (proc.requiresProcessing(state)) {
 											state.addPostAuthenticationStep(proc);
