@@ -253,6 +253,10 @@ public class AuthenticationState {
 		}
 	}
 
+	public boolean hasNonSessionPostAuthenticationStep() {
+		return nonSessionPostAuthenticationSteps.size() > 0;
+	}
+
 	public boolean hasPostAuthenticationStep() {
 		return (sessionPostAuthenticationSteps.size() + nonSessionPostAuthenticationSteps.size()) > 0;
 	}
