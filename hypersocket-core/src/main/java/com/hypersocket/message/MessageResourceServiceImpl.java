@@ -1,15 +1,11 @@
 package com.hypersocket.message;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -21,11 +17,6 @@ import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang3.StringUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-import org.simplejavamail.MailException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,23 +45,16 @@ import com.hypersocket.realm.PrincipalWithoutPasswordResolver;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.realm.ServerResolver;
 import com.hypersocket.realm.UserPrincipal;
 import com.hypersocket.resource.AbstractResourceRepository;
 import com.hypersocket.resource.AbstractResourceServiceImpl;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
-import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
-import com.hypersocket.util.CompoundIterator;
-import com.hypersocket.util.ProxiedIterator;
 import com.hypersocket.util.TransformingIterator;
 import com.hypersocket.utils.ITokenResolver;
-
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 
 @Service
 public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<MessageResource>
@@ -407,24 +391,31 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 				"serverName", "serverHost"));
 		return vars;
 	}
+	
+	@Override
+	public MessageSender newMessageSender(Realm realm) {
+		return new MessageSender(realm, realmService, templateService, batchService, emailService, uploadService, this);
+	}
 
 	@Override
 	@Transactional
 	public void test(MessageResource message, String email) throws ResourceNotFoundException, AccessDeniedException {
-		UserPrincipal<?> user = (UserPrincipal<?>) realmService.getPrincipalByEmail(message.getRealm(), email);
-		Collection<String> recipients = StringUtils.isEmpty(email) ? null : Arrays.asList(email);
-		sendMessage(message, user.getRealm(), new PrincipalWithoutPasswordResolver(user), null,
-				(Iterator<Principal>)null, recipients, null,
-						null, (String)null);
+		try {
+			newMessageSender(message.getRealm()).messageResource(message).tokenResolver(new PrincipalWithoutPasswordResolver((UserPrincipal<?>)realmService.getPrincipalByEmail(message.getRealm(), email))).recipientAddress(email).sendOrError();
+		} catch (Exception e) {
+			throw new IllegalStateException("Failed to send test email. ", e);
+		}
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Principal... principals)
 			throws ResourceException {
 		sendMessage(resourceKey, realm, tokenResolver, Arrays.asList(principals));
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			List<EmailAttachment> attachments, Iterator<Principal> principals, String context) {
 		sendMessage(resourceKey, realm, tokenResolver, replyTo, attachments, principals,
@@ -432,52 +423,40 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	}
 	
 	@Override
+	@Deprecated
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder recipient) {
 		sendMessage(resourceKey, realm, tokenResolver, recipient, Collections.emptyList());
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver,
 			String... principals) {
 		sendMessageToEmailAddress(resourceKey, realm, tokenResolver, Arrays.asList(principals), null, null);
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver,
 			Collection<String> emails, List<EmailAttachment> attachments, String context) {
-
-		MessageResource message = getMessageById(resourceKey, realm);
-
-		if (message == null) {
-			log.error(String.format("Invalid message id %s", resourceKey));
-			return;
-		}
-
-		sendMessage(message, realm, tokenResolver, null,
-				new TransformingIterator<String, RecipientHolder>(emails.iterator()) {
-					@Override
-					protected RecipientHolder transform(String email) {
-						return new RecipientHolder(ResourceUtils.getNamePairKey(email),
-								ResourceUtils.getNamePairValue(email));
-					}
-				}, attachments, context);
+		newMessageSender(realm).messageResourceKey(resourceKey).tokenResolver(tokenResolver).recipients(new TransformingIterator<String, RecipientHolder>(emails.iterator()) {
+			@Override
+			protected RecipientHolder transform(String email) {
+				return new RecipientHolder(ResourceUtils.getNamePairKey(email),
+						ResourceUtils.getNamePairValue(email));
+			}
+		}).attachments(attachments).context(context);
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
 			RecipientHolder replyTo, ITokenResolver tokenResolver, List<EmailAttachment> attachments, String context) {
-		MessageResource message = getMessageById(resourceKey, realm);
-
-		if (message == null) {
-			log.error(String.format("Invalid message id %s", resourceKey));
-			return;
-		}
-
-		sendMessage(message, realm, tokenResolver, replyTo, recipients.iterator(), attachments, context);
-
+		newMessageSender(realm).messageResourceKey(resourceKey).recipients(recipients).replyTo(replyTo).tokenResolver(tokenResolver).attachments(attachments).context(context).send();
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
 			ITokenResolver tokenResolver) {
 		sendMessageToEmailAddress(resourceKey, realm, recipients, null, tokenResolver, null, null);
@@ -490,12 +469,14 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			List<EmailAttachment> attachments, Iterator<Principal> principals, Collection<String> emails, String context) {
 		sendMessage(resourceKey, realm, tokenResolver, replyTo, principals, emails, new Date(), attachments);
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver,
 			Collection<Principal> principals) throws ResourceException {
 		sendMessage(resourceKey, realm, tokenResolver, principals.iterator(), Collections.<String>emptyList(),
@@ -503,297 +484,42 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver,
 			Iterator<Principal> principals) throws ResourceException {
 		sendMessage(resourceKey, realm, tokenResolver, principals, Collections.<String>emptyList(), new Date());
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver,
 			Iterator<Principal> principals, Collection<String> emails, Date schedule) {
 		sendMessage(resourceKey, realm, tokenResolver, null, principals, emails, schedule, null);
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Iterator<Principal> principals, Collection<String> emails, Date schedule,
 			List<EmailAttachment> attachments) {
-		
-		MessageResource message = getMessageById(resourceKey, realm);
-
-		if (message == null) {
-			log.error(String.format("Invalid message id %s", resourceKey));
-			return;
-		}
-
-		sendMessage(message, message.getRealm(), tokenResolver, replyTo, principals, emails, schedule, attachments, null);
+		newMessageSender(realm).messageResourceKey(resourceKey).tokenResolver(tokenResolver).replyTo(replyTo).principals(principals).recipientAddresses(emails).batchFor(schedule).attachments(attachments);
 	}
 	
 	@Override
+	@Deprecated
 	public void sendMessage(String resourceKey, Realm realm, 
 			ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Collection<Principal> principals) {
-		
-		MessageResource message = getMessageById(resourceKey, realm);
-
-		if (message == null) {
-			log.error(String.format("Invalid message id %s", resourceKey));
-			return;
-		}
-		
-		sendMessage(message, realm, tokenResolver, replyTo, 
-				principals.iterator(), Collections.<String>emptyList(), null, 
-				Collections.<EmailAttachment>emptyList(), null);
+		newMessageSender(realm).messageResourceKey(resourceKey).tokenResolver(tokenResolver).replyTo(replyTo).principals(principals).send();
 	}
 	
 	@Override
+	@Deprecated
 	public void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Iterator<Principal> principals, Collection<String> emails, Date schedule,
 			List<EmailAttachment> attachments, String context) {
 
-		EmailDeliveryStrategy strategy = message.getDeliveryStrategy();
-
-		List<RecipientHolder> validated = new ArrayList<>();
-		if (emails != null && !emails.isEmpty()) {
-			/**
-			 * LDP discovered issue where a blank value was in this collection. 
-			 * Guard against that here.
-			 */
-			for(String email : emails) {
-				if(StringUtils.isNotBlank(email)) {
-					validated.add(new RecipientHolder(email.toLowerCase()));
-				}
-			}
-		}
-		
-		CompoundIterator<RecipientHolder> recipients = new CompoundIterator<>();
-
-		if (strategy != EmailDeliveryStrategy.ONLY_ADDITIONAL) {
-			recipients.addIterator(new ProxiedIterator<RecipientHolder>() {
-
-				Iterator<String> childAddressIt;
-				Principal principal;
-
-				@Override
-				protected RecipientHolder checkNext(RecipientHolder item) {
-					if (item == null) {
-						while (item == null) {
-							if (childAddressIt != null) {
-								if (childAddressIt.hasNext()) {
-									item = new RecipientHolder(principal, childAddressIt.next());
-								} else
-									childAddressIt = null;
-							}
-							if (item == null) {
-								if (principals!=null && principals.hasNext()) {
-									principal = principals.next();
-									if(!realmService.isDisabled(principal) && !realmService.getUserPropertyBoolean(principal, "user.bannedEmail")) {
-										switch (strategy) {
-										case ALL:
-											item = new RecipientHolder(principal, principal.getEmail());
-											Iterator<String> it = ResourceUtils.explodeCollectionValues(
-													((UserPrincipal<?>) principal).getSecondaryEmail()).iterator();
-											if (it.hasNext())
-												childAddressIt = it;
-											break;
-										case PRIMARY:
-											item = new RecipientHolder(principal, principal.getEmail());
-											break;
-										case SECONDARY:
-											it = ResourceUtils.explodeCollectionValues(
-													((UserPrincipal<?>) principal).getSecondaryEmail()).iterator();
-											if (it.hasNext())
-												childAddressIt = it;
-											break;
-
-										default:
-										}
-									} else {
-										log.info("{} is has an email ban", principal.getPrincipalName());
-									}
-								}
-								else
-									break;
-							}
-						}
-					}
-					return item;
-				}
-			});
-		}
-	
-		recipients.addIterator(validated.iterator());
-
-		sendMessage(message, realm, tokenResolver, replyTo, recipients, schedule, null, context);
-	}
-
-	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver,
-			RecipientHolder replyTo, Iterator<RecipientHolder> recipients, List<EmailAttachment> attachments, String context) {
-		sendMessage(message, realm, tokenResolver, replyTo, recipients, new Date(), attachments, context);
-	}
-
-	private void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver,
-			RecipientHolder replyTo, Iterator<RecipientHolder> recipients, Date schedule,
-			List<EmailAttachment> attachments, String context) {
-
-		if (!message.getEnabled()) {
-			log.info(String.format("Message template %s has been disabled", message.getName()));
-			return;
-		}
-
-		final List<String> additionalRecipients = ResourceUtils.explodeCollectionValues(message.getAdditionalTo());
-		if (!additionalRecipients.isEmpty()) {
-			CompoundIterator<RecipientHolder> cit = new CompoundIterator<RecipientHolder>();
-			cit.addIterator(recipients);
-			cit.addIterator(new TransformingIterator<String, RecipientHolder>(additionalRecipients.iterator()) {
-				@Override
-				protected RecipientHolder transform(String from) {
-					return new RecipientHolder("", from);
-				}
-			});
-			recipients = cit;
-		}
-
-		/**
-		 * LDP - Final guard against a user receiving duplicate messages 
-		 */
-		Set<String> processedEmails = new HashSet<>();
-		
-		try {
-			while (recipients.hasNext()) {
-				RecipientHolder recipient = recipients.next();
-
-				if(StringUtils.isBlank(recipient.getEmail())) {
-					log.warn("Detected empty email in a RecipientHolder! Skipping");
-					continue;
-				}
-				
-				if(processedEmails.contains(recipient.getEmail().toLowerCase())) {
-					log.info("Skipping {} because we already sent this message to that address", recipient.getEmail());
-					continue;
-				}
-				
-				processedEmails.add(recipient.getEmail().toLowerCase());
-				
-				Map<String, Object> data = tokenResolver.getData();
-				data.putAll(new ServerResolver(realm).getData());
-				data.put("email", recipient.getEmail());
-				data.put("firstName", recipient.getFirstName());
-				data.put("fullName", recipient.getName());
-				data.put("principalId", recipient.getPrincipalId());
-
-				if(recipient.hasPrincipal()) {
-					
-					if(realmService.getUserPropertyBoolean(recipient.getPrincipal(), "user.bannedEmail")) {
-						log.warn("User {} has email ban turned on. Ignoring", recipient.getPrincipal().getName());
-						continue;
-					}
-					/* 
-					 * #V1HT82 - Issue Title is not showing in outgoing email
-					 * 
-					 * Don't overwrite variables provided by the token resolver, 
-					 * they should have higher priority.
-					 */
-					final Map<String, String> userProps = realmService.getUserPropertyValues(recipient.getPrincipal());
-					for(Map.Entry<String, String> en : userProps.entrySet()) {
-						if(!data.containsKey(en.getKey()))
-							data.put(en.getKey(), en.getValue());
-					}
-				}
-				
-				Template subjectTemplate = templateService.createTemplate("message.subject." + message.getId(),
-						message.getSubject(), message.getModifiedDate().getTime());
-				StringWriter subjectWriter = new StringWriter();
-				subjectTemplate.process(data, subjectWriter);
-
-				Template bodyTemplate = templateService.createTemplate("message.body." + message.getId(),
-						message.getBody(), message.getModifiedDate().getTime());
-				StringWriter bodyWriter = new StringWriter();
-				bodyTemplate.process(data, bodyWriter);
-
-				String receipientHtml = "";
-
-				if (StringUtils.isNotBlank(message.getHtml())) {
-					if (message.getHtmlTemplate() != null) {
-						Document doc = Jsoup.parse(message.getHtmlTemplate().getHtml());
-						Elements elements = doc.select(message.getHtmlTemplate().getContentSelector());
-						if (elements.isEmpty()) {
-							throw new IllegalStateException(String.format("Invalid content selector %s",
-									message.getHtmlTemplate().getContentSelector()));
-						}
-						elements.first().append(message.getHtml());
-						receipientHtml = doc.toString();
-					} else {
-						receipientHtml = message.getHtml();
-					}
-				}
-
-				Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(),
-						receipientHtml, message.getModifiedDate().getTime());
-
-				data.put("htmlTitle", subjectWriter.toString());
-
-				StringWriter htmlWriter = new StringWriter();
-				htmlTemplate.process(data, htmlWriter);
-
-				String attachmentsListString = message.getAttachments();
-				List<String> attachmentUUIDs = new ArrayList<>(
-						Arrays.asList(ResourceUtils.explodeValues(attachmentsListString)));
-
-				if (tokenResolver instanceof ResolverWithAttachments) {
-					attachmentUUIDs.addAll(((ResolverWithAttachments) tokenResolver).getAttachmentUUIDS());
-				}
-
-				if (attachments != null) {
-					for (EmailAttachment attachment : attachments) {
-						attachmentUUIDs.add(attachment.getName());
-					}
-				}
-
-				if(Boolean.getBoolean("hypersocket.disableBatchEmails") || Objects.isNull(schedule)) {
-					
-					List<EmailAttachment> emailAttachments = new ArrayList<EmailAttachment>();
-					if (attachments != null) {
-						emailAttachments.addAll(attachments);
-					}
-					for (String uuid : attachmentUUIDs) {
-						try {
-							FileUpload upload = uploadService.getFileUpload(uuid);
-							emailAttachments
-									.add(new EmailAttachment(upload.getFileName(), uploadService.getContentType(uuid)) {
-										@Override
-										public InputStream getInputStream() throws IOException {
-											return uploadService.getInputStream(getName());
-										}
-									});
-						} catch (ResourceNotFoundException | IOException e) {
-							log.error(String.format("Unable to locate upload %s", uuid), e);
-						}
-					}
-
-					emailService.sendEmail(realm, subjectWriter.toString(), bodyWriter.toString(),
-							htmlWriter.toString(), 
-							replyTo != null ? replyTo.getName() : message.getReplyToName(),
-							replyTo != null ? replyTo.getEmail() : message.getReplyToEmail(),
-							new RecipientHolder[] { recipient }, message.getArchive(), message.getTrack(), 50,
-							context, emailAttachments.toArray(new EmailAttachment[0]));
-				} else {
-					attachmentsListString = ResourceUtils.implodeValues(attachmentUUIDs);
-
-					batchService.scheduleEmail(realm, subjectWriter.toString(), bodyWriter.toString(),
-							htmlWriter.toString(), replyTo != null ? replyTo.getName() : message.getReplyToName(),
-							replyTo != null ? replyTo.getEmail() : message.getReplyToEmail(), recipient.getName(),
-							recipient.getEmail(), message.getArchive(), message.getTrack(), attachmentsListString, schedule, context);
-
-				}
-			}
-
-		} catch (MailException e) {
-			// Will be logged by mail API
-		} catch (AccessDeniedException | ValidationException | IOException | TemplateException | ResourceException e) {
-			log.error("Failed to send email", e);
-		}
-
+		newMessageSender(realm).messageResource(message).tokenResolver(tokenResolver).replyTo(replyTo).principals(principals).recipientAddresses(emails).batchFor(schedule).attachments(attachments).context(context).send(); 
 	}
 
 	class MessageRegistration {
@@ -824,12 +550,14 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	}
 
 	@Override
+	@Deprecated
 	public void sendMessage(String resourceKey, Realm currentRealm, ITokenResolver ticketResolver,
 			Iterator<Principal> principals, Collection<String> emails) {
 		sendMessage(resourceKey, currentRealm, ticketResolver, principals, emails, new Date());
 	}
 	
 	@Override
+	@Deprecated
 	public void sendMessageNow(String resourceKey, Realm currentRealm, ITokenResolver ticketResolver,
 			Iterator<Principal> principals, Collection<String> emails) {
 		sendMessage(resourceKey, currentRealm, ticketResolver, principals, emails, null);
