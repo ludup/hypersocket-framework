@@ -43,6 +43,7 @@ import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -121,18 +122,31 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 		CloseableHttpClient httpclient = null;
 
 		try {
-			Stack<HostnameVerifier> cbl = verifier.get();
-			HostnameVerifier cb;
-			if (cbl == null || cbl.isEmpty())
-				cb = this;
-			else
-				cb = cbl.get(cbl.size() - 1);
-
-			SSLContextBuilder builder = new SSLContextBuilder();
-			builder.loadTrustMaterial(null, this);
-			Registry<ConnectionSocketFactory> reg = RegistryBuilder.<ConnectionSocketFactory>create()
-					.register("http", new PlainConnectionSocketFactory())
-					.register("https", new SSLConnectionSocketFactory(builder.build(), cb)).build();
+			Registry<ConnectionSocketFactory> reg;
+			if(allowSelfSigned) {
+				SSLContextBuilder builder = new SSLContextBuilder();
+				builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+				reg = RegistryBuilder.<ConnectionSocketFactory>create()
+				        .register("http", new PlainConnectionSocketFactory())
+				        .register("https", new SSLConnectionSocketFactory(builder.build(), SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER))
+				        .build();
+				
+			}
+			else {
+			
+				Stack<HostnameVerifier> cbl = verifier.get();
+				HostnameVerifier cb;
+				if (cbl == null || cbl.isEmpty())
+					cb = this;
+				else
+					cb = cbl.get(cbl.size() - 1);
+	
+				SSLContextBuilder builder = new SSLContextBuilder();
+				builder.loadTrustMaterial(null, this);
+				reg = RegistryBuilder.<ConnectionSocketFactory>create()
+						.register("http", new PlainConnectionSocketFactory())
+						.register("https", new SSLConnectionSocketFactory(builder.build(), cb)).build();
+			}
 
 			PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(reg);
 			RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(requestTimeout)
