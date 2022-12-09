@@ -111,8 +111,6 @@ public class AuthenticationServiceImpl extends
 	private AuthenticationSchemeSelector authenticationSelector;
 	private List<AuthenticatorSelector> authenticatorSelectors = new ArrayList<AuthenticatorSelector>();
 	
-	private AdminInfoRegistry adminInfoRegistry;
-	
 	@PostConstruct
 	private void postConstruct() {
 
@@ -283,19 +281,6 @@ public class AuthenticationServiceImpl extends
 		});
 	}
 
-	@Override
-	public void registerAdminInfoRegistry(AdminInfoRegistry adminInfoRegistry) {
-		
-		if (this.adminInfoRegistry != null) {
-			throw new IllegalStateException("Admin registry already made.");
-		}
-		
-		Objects.requireNonNull(adminInfoRegistry, "Registry object is null.");
-		
-		this.adminInfoRegistry = adminInfoRegistry;
-		
-	}
-	
 	@Override
 	public void fill(JsonObject data) throws ResourceException, AccessDeniedException {
 		Set<String> modules = new LinkedHashSet<>();
@@ -653,35 +638,7 @@ public class AuthenticationServiceImpl extends
 								break;
 							}
 							
-							if(state.getPrincipal() != null) {
-								
-								if (adminInfoRegistry != null) {
-									
-									var currentScheme = state.getScheme();
-									
-									var adminScheme = adminInfoRegistry.adminAuthenticationScheme(currentRealm);
-									
-									adminScheme.ifPresent(scheme -> {
-										if (!state.getScheme().getName().equals(scheme.getName())) {
-											
-											log.info("Current scheme {} is different from Admin scheme and current principal"
-													+ " is admin, changing scheme to admin scheme", currentScheme.getName());
-											
-											var adminRoles = adminInfoRegistry.allAdminRoles(currentRealm);
-											
-											var hasAdminRole = permissionService.hasRole(state.getPrincipal(), adminRoles);
-											
-											if (hasAdminRole) {
-												state.setScheme(scheme);
-												
-												var modules = repository.getModulesForScheme(scheme);
-												state.setModules(modules);
-											}
-										}
-									});
-								}
-								
-								
+							if(state.getPrincipal()!=null) {
 								if(!state.getScheme().getAllowedRoles().isEmpty()) {
 									boolean found = permissionService.hasRole(state.getPrincipal(), state.getScheme().getAllowedRoles());
 									
