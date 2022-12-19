@@ -169,14 +169,43 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 			if(nettyRequest.headers().contains("X-Forwarded-For")) {
 				String[] ips = nettyRequest.headers().get("X-Forwarded-For").split(",");
 				
-				/* Some proxies might senda port number. It seems a bit ambiguous if
+				/* Only support the first address */
+				String forwardedAddress = ips[0].trim();
+				
+				/* Some proxies might send a port number. It seems a bit ambiguous if
 				 * this is in the spec or not, depending on where you look. 
 				 * 
-				 * Let's support it anyway
+				 * Let's support it anyway.
+				 * 
+				 * The address might be an Ipv6 address, which is also colon separated
+				 * so incompatible with agents that send the port number.
+				 * In this case we expect the X-Forwarded-Port
 				 */
-				String[] ipAndPort = ips[0].split(":");
+				String[] ipAndPort = forwardedAddress.split(":");
 				
-				remoteAddressResolver = new RemoteAddressResolver(ips[0], ipAndPort.length > 1 ? Integer.parseInt(ipAndPort[1]) : remoteAddress.getPort(), resolve);
+				int port = remoteAddress.getPort();
+				if(nettyRequest.headers().contains("X-Forwarded-Port")) {
+					try {
+						port = Integer.parseInt(nettyRequest.headers().get("X-Forwarded-Port"));
+					}
+					catch(Exception nfe2) {
+					}
+				}
+				
+				if(ipAndPort.length > 2) {
+					/* Assume there is no port for Ipv6 */
+					remoteAddressResolver = new RemoteAddressResolver(forwardedAddress, port, resolve);
+				}
+				else {
+					if(ipAndPort.length > 1) {
+						try {
+							port = Integer.parseInt(ipAndPort[1]);
+						}
+						catch(Exception nfe) {
+						}
+					}
+					remoteAddressResolver = new RemoteAddressResolver(ipAndPort[0], port, resolve);
+				}
 			} else if(nettyRequest.headers().contains("Forwarded")) {
 				StringTokenizer t = new StringTokenizer(nettyRequest.headers().get("Forwarded"), ";");
 				while(t.hasMoreTokens()) {
