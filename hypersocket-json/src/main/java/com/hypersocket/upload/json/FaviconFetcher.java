@@ -369,8 +369,8 @@ public class FaviconFetcher {
 	}
 	
 	/**
-	 * We try to parse and find known svg elements and if count is more than 3
-	 * it is good chance it is indead svg file. 
+	 * We try to parse and find known svg elements and if found
+	 * it is good chance it is indeed svg file. 
 	 * 
 	 * As SVG is an xml file somebody can still play dirty.
 	 * 
@@ -383,7 +383,7 @@ public class FaviconFetcher {
 			
 			Elements allElements = document.body().getAllElements();
 			
-			String notFound = null;
+			var found = new HashSet<Element>();
 			
 			for (Element element : allElements) {
 				
@@ -392,18 +392,14 @@ public class FaviconFetcher {
 					continue;
 				}
 				
-				if (!SVG_TAG_SET.contains(element.nodeName())) {
-					notFound = element.nodeName();
-					break;
+				if (SVG_TAG_SET.contains(element.nodeName())) {
+					found.add(element);
+				} else {
+					log.error("Found tag {} not in white list.", element.nodeName());
 				}
 			}
 			
-			if (notFound != null) {
-				log.error("Found tag {} not in white list.", notFound);
-				return false;
-			}
-			
-			return true;
+			return !found.isEmpty();
 			
 		} catch (Exception e) {
 			log.error("Problem in parsing SVG", e);
