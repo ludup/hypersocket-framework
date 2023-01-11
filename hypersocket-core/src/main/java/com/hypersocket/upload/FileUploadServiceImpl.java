@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -253,7 +254,12 @@ public class FileUploadServiceImpl extends
 		}
 		
 		InputStream in = getInputStream(uuid);
-		String contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
+		
+		String contentType = fileUpload.getType();
+		
+		if (StringUtils.isBlank(contentType)) {
+			contentType = mimeTypesMap.getContentType(fileUpload.getFileName());
+		}
 
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("Setting Content-Type of request to %s", contentType));
