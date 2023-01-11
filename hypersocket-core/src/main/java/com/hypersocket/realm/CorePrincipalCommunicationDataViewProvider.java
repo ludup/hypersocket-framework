@@ -37,7 +37,7 @@ public class CorePrincipalCommunicationDataViewProvider implements PrincipalComm
 	private I18NService i18nService;
 	
 	@Override
-	public Set<? extends CommunicationDataView> getPrincipalCommunicationDataView(Realm realm,Long id) 
+	public Set<? extends CommunicationDataView> getPrincipalCommunicationDataView(Realm realm, Long id) 
 			throws AccessDeniedException {
 		
 		var principal = realmService.getPrincipalById(id);
@@ -54,29 +54,29 @@ public class CorePrincipalCommunicationDataViewProvider implements PrincipalComm
 							.flatMap(prop -> prop.getTemplates().stream())
 							.collect(Collectors.toSet());
 		
+		
+		var view = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_EMAIL, 
+				new String [] { principal.getPrimaryEmail() }, 
+				Map.of(
+						RESOURCE_KEY, "email",
+						TAG, i18nService.getResource("communication.data.view.tag.email.primary", 
+								authenticatedService.getCurrentLocale())
+					)
+				);
+		
+		dataViews.add(view);
+		
 		templates.forEach(template -> {
 			
 			String key = template.getResourceKey();
 			String[] value = ResourceUtils.explodeValues(template.getValue());
 			
-			CommunicationDataView view = null;
+			CommunicationDataView communicationDataView = null;
 			
 			switch (key) {
-				case "email":
-					view = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_EMAIL, 
-							value, 
-							Map.of(
-									RESOURCE_KEY, key,
-									TAG, i18nService.getResource("communication.data.view.tag.email.primary", 
-											authenticatedService.getCurrentLocale())
-								)
-							);
-					
-					dataViews.add(view);
-					break;
 				
 				case "mobile":
-					view = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_MOBILE, 
+					communicationDataView = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_MOBILE, 
 							value, 
 							Map.of(
 									RESOURCE_KEY, key,
@@ -85,11 +85,11 @@ public class CorePrincipalCommunicationDataViewProvider implements PrincipalComm
 								)
 							);
 					
-					dataViews.add(view);
+					dataViews.add(communicationDataView);
 					break;
 				
 				case "user.email":
-					view = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_EMAIL, 
+					communicationDataView = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_EMAIL, 
 							value, 
 							Map.of(
 									RESOURCE_KEY, key,
@@ -98,11 +98,11 @@ public class CorePrincipalCommunicationDataViewProvider implements PrincipalComm
 								)
 							);
 					
-					dataViews.add(view);
+					dataViews.add(communicationDataView);
 					break;
 				
 				case "user.mobile":
-					view = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_MOBILE, 
+					communicationDataView = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_MOBILE, 
 							value, 
 							Map.of(
 									RESOURCE_KEY, key,
@@ -111,11 +111,11 @@ public class CorePrincipalCommunicationDataViewProvider implements PrincipalComm
 								)
 							);
 					
-					dataViews.add(view);
+					dataViews.add(communicationDataView);
 					break;
 				
 				case "secondaryMobile":
-					view = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_MOBILE, 
+					communicationDataView = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_MOBILE, 
 							value, 
 							Map.of(
 									RESOURCE_KEY, key,
@@ -124,11 +124,11 @@ public class CorePrincipalCommunicationDataViewProvider implements PrincipalComm
 								)
 							);
 					
-					dataViews.add(view);
+					dataViews.add(communicationDataView);
 					break;
 				
 				case "secondaryEmail":
-					view = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_EMAIL, 
+					communicationDataView = new CoreCommunicationDataView(CommunicationDataView.COMMON_TYPE_EMAIL, 
 							value, 
 							Map.of(
 									RESOURCE_KEY, key,
@@ -137,7 +137,7 @@ public class CorePrincipalCommunicationDataViewProvider implements PrincipalComm
 								)
 							);
 					
-					dataViews.add(view);
+					dataViews.add(communicationDataView);
 					break;
 	
 				default:
