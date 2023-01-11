@@ -445,7 +445,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 				return new RecipientHolder(ResourceUtils.getNamePairKey(email),
 						ResourceUtils.getNamePairValue(email));
 			}
-		}).attachments(attachments).context(context);
+		}).attachments(attachments).context(context).send();
 	}
 
 	@Override
@@ -502,7 +502,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
 			Iterator<Principal> principals, Collection<String> emails, Date schedule,
 			List<EmailAttachment> attachments) {
-		newMessageSender(realm).messageResourceKey(resourceKey).tokenResolver(tokenResolver).replyTo(replyTo).principals(principals).recipientAddresses(emails).batchFor(schedule).attachments(attachments);
+		newMessageSender(realm).messageResourceKey(resourceKey).tokenResolver(tokenResolver).replyTo(replyTo).principals(principals).recipientAddresses(emails).batchFor(schedule).attachments(attachments).send();
 	}
 	
 	@Override
