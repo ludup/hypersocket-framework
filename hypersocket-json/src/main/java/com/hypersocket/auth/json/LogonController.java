@@ -363,12 +363,14 @@ public class LogonController extends AuthenticatedController {
 			 */
 			throw e;
 		} catch(JsonRedirectException e) {
-			return new LogonRedirectResult(
-					LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state==null ? sessionUtils.getCurrentRealmOrDefault(request) : state.getRealm(),
-							"logon.banner")),
-					flash!=null ? flash : state==null ? "" : state.getLastErrorMsg(),
-					flashStyle!=null ? flashStyle : state==null ? "" : state.getLastErrorType(),
-					configurationService.hasUserLocales(), e.getMessage());
+			try(var c = tryWithSystemContext()) {
+				return new LogonRedirectResult(
+						LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state==null ? sessionUtils.getCurrentRealmOrDefault(request) : state.getRealm(),
+								"logon.banner")),
+						flash!=null ? flash : state==null ? "" : state.getLastErrorMsg(),
+						flashStyle!=null ? flashStyle : state==null ? "" : state.getLastErrorType(),
+						configurationService.hasUserLocales(), e.getMessage());
+			}
 		} catch(Throwable t) {
 			
 			if(log.isErrorEnabled()) {
