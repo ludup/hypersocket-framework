@@ -365,7 +365,7 @@ public class SessionUtils {
 		cookie.setHttpOnly(true);
 		cookie.setDomain(request.getServerName());
 		cookie.setPath("/");
-		cookie.setComment("; SameSite=Strict");
+//		cookie.setComment("; SameSite=Strict");
 		cookie = decorateCookie(cookie);
 		response.addCookie(cookie);
 		
@@ -375,7 +375,7 @@ public class SessionUtils {
 		cookie.setPath("/");
 		cookie.setHttpOnly(false); // hypersocket-utils.js#getCsrfToken()
 		cookie.setDomain(request.getServerName());
-		cookie.setComment("; SameSite=Strict");
+//		cookie.setComment("; SameSite=Strict");
 		cookie = decorateCookie(cookie);
 		response.addCookie(cookie);
 	
