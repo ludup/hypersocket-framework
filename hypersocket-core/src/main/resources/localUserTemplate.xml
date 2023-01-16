@@ -7,7 +7,7 @@
 		<property resourceKey="user.email" inputType="text" weight="10" allowEmpty="true" validateAll="email" hidden="true"
 			defaultValue="" />
 		<property resourceKey="user.mobile" inputType="text" weight="20" hidden="true"
-			defaultValue="" />
+			defaultValue="" validateAll="telephone"/>
 		<property resourceKey="user.subsystem" inputType="hidden" weight="30" hidden="true" defaultValue="system" />
 	</propertyCategory>
 
@@ -15,7 +15,7 @@
 		resourceBundle="LocalRealm" weight="0" namespace="local" >
 		<property resourceKey="description" inputType="text" weight="0" defaultValue="" />
 		<property resourceKey="email" inputType="text" weight="100" allowEmpty="true" validateAll="email" defaultValue="" />
-		<property resourceKey="mobile" inputType="text" weight="300" defaultValue="" />
+		<property resourceKey="mobile" inputType="text" weight="300" defaultValue="" validateAll="telephone"/>
 	</propertyCategory>
 	
 	<propertyCategory resourceKey="local.userContacts"
