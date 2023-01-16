@@ -3,8 +3,8 @@
 	<propertyCategory resourceKey="category.importPrincipalLegacyIDTask"
 		resourceBundle="ImportPrincipalLegacyIDTask" weight="1000">
 		<property resourceKey="importPrincipalLegacyID.reference" inputType="text"
-			weight="0" defaultValue="" allowEmpty="false" validate="long" />
+			weight="0" defaultValue="" allowEmpty="false" validateAll="long" />
 		<property resourceKey="importPrincipalLegacyID.legacyId" inputType="text"
-			weight="100" defaultValue="" allowEmpty="false" validate="long" />
+			weight="100" defaultValue="" allowEmpty="false" validateAll="long" />
 	</propertyCategory>
 </propertyTemplates>
