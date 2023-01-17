@@ -710,8 +710,10 @@ public class AuthenticationServiceImpl extends
 							} else {
 								authenticator = nextAuthenticator(state);
 								
-								if(!authenticator.requiresUserInput(state)) {
-									return logon(state, parameterMap);
+								try(var v = tryWithSystemContext()) {
+									if(!authenticator.requiresUserInput(state)) {
+										return logon(state, parameterMap);
+									}
 								}
 							}
 						} catch(IllegalStateException e) { 
