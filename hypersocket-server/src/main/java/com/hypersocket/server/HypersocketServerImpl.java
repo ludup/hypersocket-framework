@@ -547,7 +547,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		cookie.setSecure(secure);
 		cookie.setHttpOnly(true);
 		cookie.setDomain(domain);
-		cookie.setComment("; SameSite=Strict");
+		cookie.setComment("; SameSite=" + System.getProperty("hypersocket.cookie.sameSite", SessionUtils.COOKIE_SAME_SITE_DEFAULT));
 		cookie = sessionUtils.decorateCookie(cookie);
 		servletResponse.addCookie(cookie);
 
