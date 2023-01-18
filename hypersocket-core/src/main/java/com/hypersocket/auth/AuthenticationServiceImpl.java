@@ -487,269 +487,272 @@ public class AuthenticationServiceImpl extends
 
 		boolean success = false;
 
-		if (state.isAuthenticationComplete()) {
-			if (state.getSession() != null) {
-				try(var c = tryAs(state.getSession(), state.getLocale())) {
+		try(var v = tryAs(state.getRealm())) {
+			if (state.isAuthenticationComplete()) {
+				if (state.getSession() != null) {
+					try(var c = tryAs(state.getSession(), state.getLocale())) {
+						success = doCompleteLogon(state, parameterMap, success);
+					}
+					catch(IOException ioe) {
+						throw new IllegalStateException("Failed to logon.", ioe);
+					}
+				}
+				else
 					success = doCompleteLogon(state, parameterMap, success);
-				}
-				catch(IOException ioe) {
-					throw new IllegalStateException("Failed to logon.", ioe);
-				}
-			}
-			else
-				success = doCompleteLogon(state, parameterMap, success);
-		} else {
-			Authenticator authenticator = nextAuthenticator(state);
-			Realm currentRealm = state.getRealm(); // The default realm
-			if (authenticator == null) {
-				throw new FallbackAuthenticationRequired();
-			}
-
-			if (authenticator.isSecretModule()
-					&& state.getPrincipal() instanceof FakePrincipal) {
-				state.setLastErrorMsg("error.genericLogonError");
-				state.setLastErrorIsResourceKey(true);
-				eventService.publishEvent(new AuthenticationAttemptEvent(this,
-						state, authenticator, "hint.invalidPrincipal"));
 			} else {
-				
-				if(checkSuspensions(state, authenticator)) {
-				
-					AuthenticatorResult result;
-					if(state.getPrincipal()!=null && state.getPrincipal() instanceof FakePrincipal) {
-						result = AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
-					} else {
-						preProcess(authenticator, state, parameterMap);
-						
-						result = authenticator.authenticate(state, parameterMap);
-						
-						postProcess(authenticator, result, state, parameterMap);
-					}
+				Authenticator authenticator = nextAuthenticator(state);
+				Realm currentRealm = state.getRealm(); // The default realm
+				if (authenticator == null) {
+					throw new FallbackAuthenticationRequired();
+				}
+	
+				if (authenticator.isSecretModule()
+						&& state.getPrincipal() instanceof FakePrincipal) {
+					state.setLastErrorMsg("error.genericLogonError");
+					state.setLastErrorIsResourceKey(true);
+					eventService.publishEvent(new AuthenticationAttemptEvent(this,
+							state, authenticator, "hint.invalidPrincipal"));
+				} else {
 					
-					switch (result) {
-					case INSUFFICIENT_DATA: {
-						if (state.getLastErrorMsg() == null && parameterMap.size() > 1) {
-							if (state.getAttempts() >= 1) {
-								state.setLastErrorMsg("error.insufficentData");
-								state.setLastErrorIsResourceKey(true);
-							}
-						}
-						break;
-					}
-					case INSUFFICIENT_DATA_NO_ERROR: {
-						state.setLastErrorMsg(null);
-						state.setLastErrorIsResourceKey(false);
-						break;
-					}
-					case AUTHENTICATION_FAILURE_DISPLAY_ERROR: 
-					{
-						if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
-							state.fakeCredentials();
-							state.nextModule();
+					if(checkSuspensions(state, authenticator)) {
+					
+						AuthenticatorResult result;
+						if(state.getPrincipal()!=null && state.getPrincipal() instanceof FakePrincipal) {
+							result = AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
 						} else {
-							eventService
-									.publishEvent(new AuthenticationAttemptEvent(
-											this, state, authenticator, false));
-						}
-						break;
-					}
-					case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
-	
-						if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
-							state.fakeCredentials();
-							state.nextModule();
-						} else {
-							state.setLastErrorMsg("error.genericLogonError");
-							state.setLastErrorIsResourceKey(true);
-							eventService
-									.publishEvent(new AuthenticationAttemptEvent(
-											this, state, authenticator,
-											"hint.badCredentials"));
-						}
-	
-						break;
-					}
-					case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
-	
-						if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
-							state.fakeCredentials();
-							state.nextModule();
-						} else {
-							state.setLastErrorMsg("error.genericLogonError");
-							state.setLastErrorIsResourceKey(true);
-							eventService
-									.publishEvent(new AuthenticationAttemptEvent(
-											this, state, authenticator,
-											"hint.invalidPrincipal"));
-						}
-						break;
-					}
-					case AUTHENTICATION_FAILURE_INVALID_REALM: {
-	
-						if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
-							state.fakeCredentials();
-							state.nextModule();
-						} else {
-							state.setLastErrorMsg("error.genericLogonError");
-							state.setLastErrorIsResourceKey(true);
-							eventService
-									.publishEvent(new AuthenticationAttemptEvent(
-											this, state, authenticator,
-											"hint.invalidRealm"));
-						}
-	
-						break;
-					}
-					case AUTHENTICATION_SUCCESS: 
-					case AUTHENTICATION_SWITCHED: {
-						try {
-							success = true;
+							preProcess(authenticator, state, parameterMap);
 							
+							result = authenticator.authenticate(state, parameterMap);
+							
+							postProcess(authenticator, result, state, parameterMap);
+						}
+						
+						switch (result) {
+						case INSUFFICIENT_DATA: {
+							if (state.getLastErrorMsg() == null && parameterMap.size() > 1) {
+								if (state.getAttempts() >= 1) {
+									state.setLastErrorMsg("error.insufficentData");
+									state.setLastErrorIsResourceKey(true);
+								}
+							}
+							break;
+						}
+						case INSUFFICIENT_DATA_NO_ERROR: {
 							state.setLastErrorMsg(null);
 							state.setLastErrorIsResourceKey(false);
-							
-							if((currentRealm==null || !state.getRealm().equals(currentRealm)) && state.getCurrentIndex()==0) {
-								/**
-								 * The users realm is not the realm we started off in. We need to switch
-								 */
-								AuthenticationScheme realmScheme = schemeRepository.getSchemeByResourceKey(
-										state.getRealm(), state.getScheme().getResourceKey());
-								List<AuthenticationModule> modules = repository.getModulesForScheme(realmScheme);
-								if(modules.isEmpty()) {
-									throw new IllegalStateException("Incorrect authentication configured. Contact your Administrator");
-								}
-								if(state.getCurrentModule().getTemplate().equals(modules.get(0).getTemplate())) {
-									if(log.isInfoEnabled()) {
-										log.info(String.format("Switching realms from %s to %s", currentRealm==null ? "unknown" : currentRealm.getName(), state.getRealm().getName()));
-									}
-									state.setScheme(realmScheme);
-									state.setModules(modules);
-								} else {
-									throw new IllegalStateException("Invalid realm configuration. Contact your Administrator");
-								}
-								
-							}
-							
-							// We need to reset the scheme to the new principal realm.
-//							state.setScheme(schemeRepository.getSchemeByResourceKey(principal.getRealm(), 
-//									state.getScheme().getResourceKey()));
-							
-							if(!checkSuspensions(state, authenticator)) {
-								success = false;
-								break;
-							}
-							
-							if(state.getPrincipal()!=null) {
-								if(!state.getScheme().getAllowedRoles().isEmpty()) {
-									boolean found = permissionService.hasRole(state.getPrincipal(), state.getScheme().getAllowedRoles());
-									
-									if(!found) {
-										state.clean();
-										state.setLastErrorMsg(StringUtils.isNotBlank(state.getScheme().getDeniedRoleError()) ? state.getScheme().getDeniedRoleError() : "error.roleNotAllowed");
-										state.setLastErrorIsResourceKey(true);
-										
-										success = false;
-										break;
-									}
-								}
-								
-								if(!state.getScheme().getDeniedRoles().isEmpty()) {
-									boolean found = permissionService.hasRole(state.getPrincipal(), state.getScheme().getDeniedRoles());
-									
-									if(found) {
-										state.clean();
-										state.setLastErrorMsg(StringUtils.isNotBlank(state.getScheme().getDeniedRoleError()) ? state.getScheme().getDeniedRoleError() : "error.roleDenied");
-										state.setLastErrorIsResourceKey(true);
-										
-										success = false;
-										break;
-									}
-								}
-							}
-							
-							if(result==AuthenticatorResult.AUTHENTICATION_SUCCESS) {
+							break;
+						}
+						case AUTHENTICATION_FAILURE_DISPLAY_ERROR: 
+						{
+							if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
+								state.fakeCredentials();
 								state.nextModule();
+							} else {
+								eventService
+										.publishEvent(new AuthenticationAttemptEvent(
+												this, state, authenticator, false));
 							}
-	
-							if(!state.isPrimaryState() && state.isAuthenticationComplete()) {
-								state.switchBack();
+							break;
+						}
+						case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
+		
+							if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
+								state.fakeCredentials();
+								state.nextModule();
+							} else {
+								state.setLastErrorMsg("error.genericLogonError");
+								state.setLastErrorIsResourceKey(true);
+								eventService
+										.publishEvent(new AuthenticationAttemptEvent(
+												this, state, authenticator,
+												"hint.badCredentials"));
 							}
-							
-							if (state.isAuthenticationComplete()) {
-	
-								permissionService.verifyPermission(
-										state.getRealm(),
-										state.getPrincipal(),
-										PermissionStrategy.INCLUDE_IMPLIED,
-										AuthenticationPermission.LOGON,
-										SystemPermission.SYSTEM_ADMINISTRATION);
-	
-								eventService.publishEvent(new AuthenticationAttemptEvent(
-												this, state, authenticator));
-
-								try(var c = tryAs(state.getPrincipal())) {
-									state.addPostAuthenticationStep(new NullPostAuthenticationStep());
-									for (PostAuthenticationStep proc : postAuthenticationSteps) {
-										if (proc.requiresProcessing(state)) {
-											state.addPostAuthenticationStep(proc);
+		
+							break;
+						}
+						case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
+		
+							if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
+								state.fakeCredentials();
+								state.nextModule();
+							} else {
+								state.setLastErrorMsg("error.genericLogonError");
+								state.setLastErrorIsResourceKey(true);
+								eventService
+										.publishEvent(new AuthenticationAttemptEvent(
+												this, state, authenticator,
+												"hint.invalidPrincipal"));
+							}
+							break;
+						}
+						case AUTHENTICATION_FAILURE_INVALID_REALM: {
+		
+							if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
+								state.fakeCredentials();
+								state.nextModule();
+							} else {
+								state.setLastErrorMsg("error.genericLogonError");
+								state.setLastErrorIsResourceKey(true);
+								eventService
+										.publishEvent(new AuthenticationAttemptEvent(
+												this, state, authenticator,
+												"hint.invalidRealm"));
+							}
+		
+							break;
+						}
+						case AUTHENTICATION_SUCCESS: 
+						case AUTHENTICATION_SWITCHED: {
+							try {
+								success = true;
+								
+								state.setLastErrorMsg(null);
+								state.setLastErrorIsResourceKey(false);
+								
+								if((currentRealm==null || !state.getRealm().equals(currentRealm)) && state.getCurrentIndex()==0) {
+									/**
+									 * The users realm is not the realm we started off in. We need to switch
+									 */
+									AuthenticationScheme realmScheme = schemeRepository.getSchemeByResourceKey(
+											state.getRealm(), state.getScheme().getResourceKey());
+									List<AuthenticationModule> modules = repository.getModulesForScheme(realmScheme);
+									if(modules.isEmpty()) {
+										throw new IllegalStateException("Incorrect authentication configured. Contact your Administrator");
+									}
+									if(state.getCurrentModule().getTemplate().equals(modules.get(0).getTemplate())) {
+										if(log.isInfoEnabled()) {
+											log.info(String.format("Switching realms from %s to %s", currentRealm==null ? "unknown" : currentRealm.getName(), state.getRealm().getName()));
+										}
+										state.setScheme(realmScheme);
+										state.setModules(modules);
+									} else {
+										throw new IllegalStateException("Invalid realm configuration. Contact your Administrator");
+									}
+									
+								}
+								
+								// We need to reset the scheme to the new principal realm.
+	//							state.setScheme(schemeRepository.getSchemeByResourceKey(principal.getRealm(), 
+	//									state.getScheme().getResourceKey()));
+								
+								if(!checkSuspensions(state, authenticator)) {
+									success = false;
+									break;
+								}
+								
+								if(state.getPrincipal()!=null) {
+									if(!state.getScheme().getAllowedRoles().isEmpty()) {
+										boolean found = permissionService.hasRole(state.getPrincipal(), state.getScheme().getAllowedRoles());
+										
+										if(!found) {
+											state.clean();
+											state.setLastErrorMsg(StringUtils.isNotBlank(state.getScheme().getDeniedRoleError()) ? state.getScheme().getDeniedRoleError() : "error.roleNotAllowed");
+											state.setLastErrorIsResourceKey(true);
+											
+											success = false;
+											break;
 										}
 									}
-	
-									if (state.canCreateSession()) {
-										state.setSession(completeLogon(state));
-									}
-	
-									if (state.hasPostAuthenticationStep()) {
-										PostAuthenticationStep step = state
-												.getCurrentPostAuthenticationStep();
-										if (!step.requiresUserInput(state)) {
-											success = logon(state, parameterMap);
+									
+									if(!state.getScheme().getDeniedRoles().isEmpty()) {
+										boolean found = permissionService.hasRole(state.getPrincipal(), state.getScheme().getDeniedRoles());
+										
+										if(found) {
+											state.clean();
+											state.setLastErrorMsg(StringUtils.isNotBlank(state.getScheme().getDeniedRoleError()) ? state.getScheme().getDeniedRoleError() : "error.roleDenied");
+											state.setLastErrorIsResourceKey(true);
+											
+											success = false;
+											break;
 										}
 									}
 								}
 								
-							} else {
-								authenticator = nextAuthenticator(state);
+								if(result==AuthenticatorResult.AUTHENTICATION_SUCCESS) {
+									state.nextModule();
+								}
+		
+								if(!state.isPrimaryState() && state.isAuthenticationComplete()) {
+									state.switchBack();
+								}
 								
-								try(var v = tryWithSystemContext()) {
+								if (state.isAuthenticationComplete()) {
+		
+									permissionService.verifyPermission(
+											state.getRealm(),
+											state.getPrincipal(),
+											PermissionStrategy.INCLUDE_IMPLIED,
+											AuthenticationPermission.LOGON,
+											SystemPermission.SYSTEM_ADMINISTRATION);
+		
+									eventService.publishEvent(new AuthenticationAttemptEvent(
+													this, state, authenticator));
+	
+									try(var c = tryAs(state.getPrincipal())) {
+										state.addPostAuthenticationStep(new NullPostAuthenticationStep());
+										for (PostAuthenticationStep proc : postAuthenticationSteps) {
+											if (proc.requiresProcessing(state)) {
+												state.addPostAuthenticationStep(proc);
+											}
+										}
+		
+										if (state.canCreateSession()) {
+											state.setSession(completeLogon(state));
+										}
+		
+										if (state.hasPostAuthenticationStep()) {
+											PostAuthenticationStep step = state
+													.getCurrentPostAuthenticationStep();
+											if (!step.requiresUserInput(state)) {
+												success = logon(state, parameterMap);
+											}
+										}
+									}
+									
+								} else {
+									authenticator = nextAuthenticator(state);
+									
+									
 									if(!authenticator.requiresUserInput(state)) {
 										return logon(state, parameterMap);
 									}
 								}
+							} catch(IllegalStateException e) { 
+								
+								log.error("Encountereed error in authenticator", e);
+								state.setLastErrorMsg(e.getMessage());
+								state.setLastErrorIsResourceKey(false);
+								state.revertModule();
+								success = false;
+								
+							} catch (AccessDeniedException e) {
+		
+								log.error("User cannot login", e);
+								
+								eventService.publishEvent(new AuthenticationAttemptEvent(
+												this, state, authenticator,
+												"hint.noPermission"));
+								// user does not have LOGON permission
+								state.setLastErrorMsg("error.noLogonPermission");
+								state.setLastErrorIsResourceKey(true);
+								state.revertModule();
+								success = false;
+							} catch(IOException ioe) {
+								throw new IllegalStateException("Failed to clear context.", ioe);
 							}
-						} catch(IllegalStateException e) { 
-							
-							log.error("Encountereed error in authenticator", e);
-							state.setLastErrorMsg(e.getMessage());
-							state.setLastErrorIsResourceKey(false);
-							state.revertModule();
-							success = false;
-							
-						} catch (AccessDeniedException e) {
-	
-							log.error("User cannot login", e);
-							
-							eventService.publishEvent(new AuthenticationAttemptEvent(
-											this, state, authenticator,
-											"hint.noPermission"));
-							// user does not have LOGON permission
-							state.setLastErrorMsg("error.noLogonPermission");
-							state.setLastErrorIsResourceKey(true);
-							state.revertModule();
-							success = false;
-						} catch(IOException ioe) {
-							throw new IllegalStateException("Failed to clear context.", ioe);
+							break;
 						}
-						break;
-					}
+						}
 					}
 				}
+				state.authAttempted();
+	
 			}
-			state.authAttempted();
-
+	
+			return success;
+		} catch (IOException e) {
+			throw new IllegalStateException(e.getMessage(), e);
 		}
-
-		return success;
 
 	}
 
