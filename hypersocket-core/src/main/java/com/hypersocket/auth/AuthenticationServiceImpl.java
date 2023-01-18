@@ -51,6 +51,7 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.servlet.request.Request;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.telemetry.TelemetryProducer;
@@ -916,6 +917,8 @@ public class AuthenticationServiceImpl extends
 			throw new IllegalStateException(
 					"completeLogon called without a principal in the AuthenticationState!");
 		}
+		
+		Request.cleanSessionOnLogin();
 
 		Session session = sessionService.openSession(state.getRemoteAddress(),
 				state.getPrincipal(), state.getScheme(), state.getUserAgent(),
