@@ -22,6 +22,12 @@
 			<artifactId>hypersocket-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.hypersocket</groupId>
+			<artifactId>hypersocket-servlet-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
 
 		<dependency>
 			<groupId>org.bouncycastle</groupId>

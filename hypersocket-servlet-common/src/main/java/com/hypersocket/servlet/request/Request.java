@@ -1,7 +1,11 @@
 package com.hypersocket.servlet.request;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 public class Request {
 
@@ -22,7 +26,7 @@ public class Request {
 	}
 	
 	public static boolean isAvailable() {
-		return threadRequests.get()!=null;
+		return threadRequests.get() != null;
 	}
 	
 	public static void remove() {
@@ -39,5 +43,29 @@ public class Request {
 			host = request.getHeader("Host");
 		b.append(host);
 		return b.toString();
+	}
+	
+	public static void cleanSessionOnLogin() {
+		if (isAvailable()) {
+			var session = get().getSession(false);
+			if (session != null) {
+				var copy = copyCurrentSessionAttributes(session);
+				session.invalidate();
+				session = get().getSession(true);
+				if (copy != null) {
+					copy.forEach(session::setAttribute);
+				}
+			}
+		}
+	}
+	
+	private static Map<String, Object> copyCurrentSessionAttributes(HttpSession session) {
+		var attributesToCopy = new HashMap<String, Object>();
+		var enumeration = session.getAttributeNames();
+		while (enumeration.hasMoreElements()) {
+			var key = enumeration.nextElement();
+			attributesToCopy.put(key, session.getAttribute(key));
+		}
+		return attributesToCopy;
 	}
 }
