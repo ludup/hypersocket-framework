@@ -7,15 +7,20 @@
  ******************************************************************************/
 package com.hypersocket.netty;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.nio.file.Files;
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.LogManager;
 import java.util.prefs.Preferences;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.servlet.ServletException;
 
 import org.apache.logging.log4j.core.config.plugins.util.PluginManager;
@@ -30,15 +35,16 @@ import org.springframework.core.SpringVersion;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.hypersocket.certs.X509CertificateUtils;
 import com.hypersocket.netty.log.XYamlConfigurationFactory;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.profile.ProfileLoaderClassPathXmlApplicationContext;
 import com.hypersocket.profile.ProfileNameFinder;
 import com.hypersocket.server.HypersocketServer;
-import com.hypersocket.server.MiniHttpServer;
-import com.hypersocket.server.MiniHttpServer.DynamicContent;
-import com.hypersocket.server.MiniHttpServer.DynamicContentFactory;
 import com.hypersocket.upgrade.UpgradeService;
+import com.sshtools.uhttpd.UHTTPD;
+import com.sshtools.uhttpd.UHTTPD.RootContext;
+import com.sshtools.uhttpd.UHTTPD.Status;
 
 public class Main {
 	
@@ -47,6 +53,7 @@ public class Main {
 	}
 
 	private static final String STARTUP_TOOK = "startupTook";
+	
 	static Logger log = LoggerFactory.getLogger(Main.class);
 	static Preferences PREFS = Preferences.userNodeForPackage(Main.class);
 
@@ -57,7 +64,7 @@ public class Main {
 	private ClassLoader classLoader;
 	private File conf;
 
-	private MiniHttpServer miniServer;
+	private RootContext miniServer;
 	private long miniserverStarted;
 	
 	static Main instance;
@@ -161,48 +168,47 @@ public class Main {
 			 * It also provides log output (via a custom log appender), and startup progress
 			 * based on the last known time taken.
 			 */
-			if("true".equals(System.getProperty(MiniHttpServer.HYPERSOCKET_BOOT_HTTP_SERVER,MiniHttpServer.HYPERSOCKET_BOOT_HTTP_SERVER_DEFAULT)) && !new File(conf, "no-boot-httpserver").exists()) {
+			if("true".equals(System.getProperty(HypersocketServer.HYPERSOCKET_BOOT_HTTP_SERVER, HypersocketServer.HYPERSOCKET_BOOT_HTTP_SERVER_DEFAULT)) && !new File(conf, "no-boot-httpserver").exists()) {
 				String username = System.getProperty("user.name");
+				var admin = username.equals("root") || username.equals("Administrator");
 				miniserverStarted = System.currentTimeMillis();
-				File bootKeystore = new File(conf, "boothttp.keystore");
-				if (username.equals("root") || username.equals("Administrator"))
-					miniServer = new MiniHttpServer(Integer.parseInt(System.getProperty("hypersocket.http.port", "80")), Integer.parseInt(System.getProperty("hypersocket.https.port", "443")), bootKeystore);
-				else
-					miniServer = new MiniHttpServer(Integer.parseInt(System.getProperty("hypersocket.http.port", "8080")), Integer.parseInt(System.getProperty("hypersocket.https.port", "8443")), bootKeystore);
+				var bootKeystore = new File(conf, "boothttp.keystore").toPath();
+				var kspassword = "changeit".toCharArray();
+				
+				if (!Files.exists(bootKeystore)) {
+					log.info(String.format("Generating keystore"));
+					KeyPair kp = X509CertificateUtils.generatePrivateKey("RSA", 2048);
+					X509Certificate cert = X509CertificateUtils.generateSelfSignedCertificate(
+							InetAddress.getLocalHost().getHostName(), "", "", "", "", "", kp, "SHA1WithRSAEncryption", new String[0]);
+					var ks = X509CertificateUtils.createPKCS12Keystore(kp, new X509Certificate[] { cert }, "server",
+							kspassword);
+					log.info(String.format("Writing temporary keystore to %s", bootKeystore));
+					try (OutputStream fout = Files.newOutputStream(bootKeystore)) {
+						ks.store(fout, kspassword);
+					}
+					var kmf = KeyManagerFactory.getInstance("SunX509");
+					kmf.init(ks, kspassword);
+				}
 
-				miniServer.addContent(new DynamicContentFactory() {
-					@Override
-					public DynamicContent get(String path) throws IOException {
-						if (path.matches("/.*/api/.*")) {
-							throw new IllegalStateException("Booting up and not ready yet, try again shortly.");
-						}
-						return null;
-					}
-				});
-				miniServer.addContent(new DynamicContentFactory() {
-					@Override
-					public DynamicContent get(String path) throws IOException {
-						if (path.startsWith("/progress")) {
-							/* Estimate of 5 minutes for first startup */
-							long took = PREFS.getLong(STARTUP_TOOK, TimeUnit.MINUTES.toMillis(5));
-							long taken = System.currentTimeMillis() - miniserverStarted;
-							return new DynamicContent("text/plain", new ByteArrayInputStream((took == 0 ? "0/0" : taken + "/" + took).getBytes()));
-						}
-						return null;
-					}
-				});
-				miniServer.addContent(new DynamicContentFactory() {
-					@Override
-					public DynamicContent get(String path) throws IOException {
-						if (path.startsWith("/app") || path.startsWith("/hypersocket")) {
-							throw new IllegalArgumentException("/");
-						}
-						return null;
-					}
-				});
+				var took = PREFS.getLong(STARTUP_TOOK, TimeUnit.MINUTES.toMillis(5));
+				miniServer = UHTTPD.server().
+						withHttpAddress("0.0.0.0").
+						withHttpsAddress("0.0.0.0").
+						withHttp(Integer.parseInt(System.getProperty("hypersocket.http.port", admin ? "80" : "8080"))).
+						withHttps(Integer.parseInt(System.getProperty("hypersocket.https.port", admin ? "443" : "8443"))).
+						withKeyStoreFile(bootKeystore).
+						withKeyStorePassword(kspassword).
+						withoutCache().
+						get("/random", 		tx -> tx.response(Math.random())).
+						get("/.*/api/.*", 	tx -> tx.responseCode(Status.SERVICE_UNAVAILABLE)).
+						get("/app/.*|/hypersocket/.*", tx -> tx.redirect(Status.MOVED_TEMPORARILY, "/")).
+						get("/", UHTTPD.classpathResource("boothttp/index.html")).
+						get("/progress", 	tx -> tx.response("text/plain", took == 0 ? "0/0" : (System.currentTimeMillis() - miniserverStarted) + "/" + took)).
+						classpathResources("(.*)", "boothttp").
+						build();
 				miniServer.start();
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error(
 					"Failed to setup bootstrap HTTP server, no web requests will be served until the app is fully started.",
 					e);

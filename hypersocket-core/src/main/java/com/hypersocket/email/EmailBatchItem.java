@@ -69,6 +69,9 @@ public class EmailBatchItem extends AbstractEntity<Long> {
 	@Column(name = "context")
 	private String context;
 
+	@Column(name = "provider")
+	private String provider;
+
 	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "email_batch_items_cascade_1"))
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Long realm;
@@ -79,6 +82,14 @@ public class EmailBatchItem extends AbstractEntity<Long> {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public String getProvider() {
+		return provider;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
 	}
 
 	public long getRealm() {

@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.simplejavamail.MailException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +16,15 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.batch.BatchProcessingItemRepository;
 import com.hypersocket.batch.BatchProcessingServiceImpl;
-import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.messagedelivery.AbstractEMailMessageDeliveryProvider;
+import com.hypersocket.messagedelivery.MessageDeliveryException;
+import com.hypersocket.messagedelivery.MessageDeliveryService;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
-import com.hypersocket.triggers.ValidationException;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
 
@@ -33,7 +37,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 	private EmailBatchRepository repository;
 
 	@Autowired
-	private EmailNotificationService emailService;
+	private MessageDeliveryService messageDeliveryService;
 
 	@Autowired
 	private FileUploadService uploadService;
@@ -76,16 +80,26 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 				}
 			}
 
-			emailService.sendEmail(realmService.getRealmById(item.getRealm()), item.getSubject(), item.getText(), item.getHtml(),
-					item.getReplyToName(), 
-					item.getReplyToEmail(),
-					new RecipientHolder[] { new RecipientHolder(item.getToName(), item.getToEmail()) }, 
-					item.getArchive(), 
-					item.getTrack(),
-					5, item.getContext(), attachments.toArray(new EmailAttachment[0]));
+			@SuppressWarnings("unchecked")
+			var provider = StringUtils.isNotBlank(item.getProvider()) ? 
+						(AbstractEMailMessageDeliveryProvider<EmailNotificationBuilder>)messageDeliveryService.getProvider(item.getProvider()) : 
+							messageDeliveryService.getBestProvider(MediaType.EMAIL, EmailNotificationBuilder.class);
+			var builder = provider.newBuilder(realmService.getRealmById(item.getRealm()));
+			builder.subject(item.getSubject());
+			builder.text(item.getText());
+			builder.html(item.getHtml());
+			builder.replyToName(item.getReplyToName());
+			builder.replyToEmail(item.getReplyToEmail());
+			builder.recipient(RecipientHolder.ofNameAndAddress(item.getToName(), item.getToEmail()));
+			builder.archive(item.getArchive());
+			builder.track(item.getTrack());
+			builder.delay(5);
+			builder.context(item.getContext());
+			builder.attachments(attachments);
+			builder.send();
 
 			
-		} catch (MailException | AccessDeniedException | ValidationException e) {
+		} catch (MailException | MessageDeliveryException e) {
 			log.error("I could not send an email in realm {} to user {} with subject {}",
 					item.getRealm(),
 					item.getToEmail(), 
@@ -103,20 +117,21 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 	}
 
 	@Override
-	public void queueEmail(Realm realm, String subject, String body, String html, String replyToName,
+	public void queueEmail(Realm realm, Optional<String> provider, String subject, String body, String html, String replyToName,
 			String replyToEmail, String name, String email, Boolean archive, Boolean track, String attachments, String context)
 			throws ResourceException {
-		scheduleEmail(realm, subject, body, html, replyToName, replyToEmail, name, email, archive, track, attachments, null, context);
+		scheduleEmail(realm, provider, subject, body, html, replyToName, replyToEmail, name, email, archive, track, attachments, null, context);
 	}
 
 	@Override
-	public void scheduleEmail(Realm realm, String subject, String body, String html, String replyToName,
+	public void scheduleEmail(Realm realm, Optional<String> provider,  String subject, String body, String html, String replyToName,
 			String replyToEmail, String name, String email, Boolean archive, Boolean track, String attachments, Date schedule, String context)
 			throws ResourceException {
 
 		EmailBatchItem item = new EmailBatchItem();
 		item.setRealm(realm.getId());
 		item.setContext(context);
+		item.setProvider(provider.orElse(""));
 		item.setSubject(subject);
 		item.setText(body);
 		item.setHtml(html);

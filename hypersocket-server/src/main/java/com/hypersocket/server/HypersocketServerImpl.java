@@ -590,14 +590,14 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 			
 			KeyStore ks = sslCertificates.get(resource);
 			
-			if("true".equals(System.getProperty(MiniHttpServer.HYPERSOCKET_BOOT_HTTP_SERVER,MiniHttpServer.HYPERSOCKET_BOOT_HTTP_SERVER_DEFAULT))) {
+			if("true".equals(System.getProperty(HypersocketServer.HYPERSOCKET_BOOT_HTTP_SERVER,HypersocketServer.HYPERSOCKET_BOOT_HTTP_SERVER_DEFAULT))) {
 				/* Write out this keystore as a file that can be used by the mini-http server
 				 * for it's keystore as well. 
 				 */
 				File file = new File(new File(System.getProperty("hypersocket.conf")), "boothttp.keystore");
 				log.info(String.format("Storing certificate keystore for use by Boot HTTP server at %s", file));
 				try(OutputStream out = new FileOutputStream(file)) {
-					ks.store(out, MiniHttpServer.KEYSTORE_PASSWORD.toCharArray());
+					ks.store(out, "changeit".toCharArray());
 					out.flush();
 				}
 			}

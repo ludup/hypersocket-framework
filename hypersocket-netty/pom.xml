@@ -17,6 +17,12 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.sshtools</groupId>
+			<artifactId>uhttpd</artifactId>
+			<version>0.0.1</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.hypersocket</groupId>
 			<artifactId>hypersocket-server</artifactId>
 			<version>${project.version}</version>

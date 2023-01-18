@@ -13,43 +13,80 @@ import com.hypersocket.realm.Principal;
 
 public class RecipientHolder {
 
-	private String name;
-	private String email;
-	private Principal principal;
+	private final String name;
+	private final String address;
+	private final Principal principal;
 	
 	static Set<String> salutations = new HashSet<String>(Arrays.asList("MR", "MS", "MRS", "DR", "PROF"));
 	
+	public final static String EMAIL_PATTERN = "(?:\"?([^\"]*)\"?\\s)?(?:<?(.+@[^>]+)>?)";
+	public final static String GENERIC_PATTERN = "(?:\"?([^\"]*)\"?\\s)?(?:<?(.+)>?)";
+	
+	public static RecipientHolder ofEmailAddressSpec(String addressSpec) {
+		return new RecipientHolder(addressSpec, EMAIL_PATTERN, null);
+	}
+	
+	public static RecipientHolder ofGeneric(String addressSpec) {
+		return new RecipientHolder(addressSpec, GENERIC_PATTERN, null);
+	}
+	
+	public static RecipientHolder ofName(String name) {
+		return new RecipientHolder(name, "");
+	}
+	
+	public static RecipientHolder ofAddress(String address) {
+		return new RecipientHolder("", address);
+	}
+	
+	public static RecipientHolder ofNameAndAddress(String name, String address) {
+		return new RecipientHolder(name, address);
+	}
+
+	@Deprecated
 	public RecipientHolder(String name) {
+		this(name, EMAIL_PATTERN, null);
+	}
+	
+	protected RecipientHolder(String addressSpec, String pattern, Principal principal) {
 		
-		Pattern depArrHours = Pattern.compile("(?:\"?([^\"]*)\"?\\s)?(?:<?(.+@[^>]+)>?)");
-		Matcher matcher = depArrHours.matcher(name);
+		Pattern depArrHours = Pattern.compile(pattern);
+		Matcher matcher = depArrHours.matcher(addressSpec);
 		if(matcher.find()) {
 			this.name = StringUtils.defaultString(matcher.group(1));
-			this.email = StringUtils.defaultString(matcher.group(2));
+			this.address = StringUtils.defaultString(matcher.group(2));
 		} else {
-			this.email = name;
+			this.address = addressSpec;
+			this.name = null;
 		}	
+		this.principal = principal;
 	}
-	
-	public RecipientHolder(String name, String email) {
+
+	@Deprecated
+	public RecipientHolder(String name, String address) {
 		this.name = name;
-		this.email = email;
+		this.address = address;
+		this.principal = null;
 	}
 	
-	public RecipientHolder(Principal principal, String email) {
+	public RecipientHolder(Principal principal, String address) {
 		this.name = principal.getDescription();
-		this.email = email;
+		this.address = address;
 		this.principal = principal;
 	}
 	
 	public RecipientHolder(Principal principal) {
 		this.name = principal.getDescription();
-		this.email = principal.getEmail();
+		this.address = principal.getEmail();
 		this.principal = principal;
 	}
 	
+	@Deprecated
 	public String getEmail() {
-		return email;
+		return address;
+	}
+	
+	public String getAddress() {
+		return address;
 	}
 	
 	public String getName() {
@@ -96,7 +133,7 @@ public class RecipientHolder {
 
 	@Override
 	public String toString() {
-		return String.format("%s <%s>", name, email);
+		return String.format("%s <%s>", name, address);
 	}
 	
 	public static void main(String[] srgs) {
