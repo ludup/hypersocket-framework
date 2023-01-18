@@ -38,6 +38,7 @@ import com.hypersocket.session.SessionService;
 @Component
 public class SessionUtils {
 
+	public static String COOKIE_SAME_SITE_DEFAULT = "Strict";
 	static Logger log = LoggerFactory.getLogger(SessionUtils.class);
 	
 	static boolean debugCSRF = "true".equals(System.getProperty("hypersocket.csrfDebugRequests"));
@@ -365,7 +366,10 @@ public class SessionUtils {
 		cookie.setHttpOnly(true);
 		cookie.setDomain(request.getServerName());
 		cookie.setPath("/");
-//		cookie.setComment("; SameSite=Strict");
+		var cfg = System.getProperty("hypersocket.cookie.sameSite", SessionUtils.COOKIE_SAME_SITE_DEFAULT);
+		if(!cfg.equalsIgnoreCase("Omit")) {
+			cookie.setComment("; SameSite=" + cfg);
+		}
 		cookie = decorateCookie(cookie);
 		response.addCookie(cookie);
 		
@@ -375,7 +379,9 @@ public class SessionUtils {
 		cookie.setPath("/");
 		cookie.setHttpOnly(false); // hypersocket-utils.js#getCsrfToken()
 		cookie.setDomain(request.getServerName());
-//		cookie.setComment("; SameSite=Strict");
+		if(!cfg.equalsIgnoreCase("Omit")) {
+			cookie.setComment("; SameSite=" + cfg);
+		}
 		cookie = decorateCookie(cookie);
 		response.addCookie(cookie);
 	
@@ -416,7 +422,10 @@ public class SessionUtils {
 		cookie.setSecure(request.getProtocol().equalsIgnoreCase("https"));
 		cookie.setHttpOnly(true);
 		cookie.setDomain(request.getServerName());
-		cookie.setComment("; SameSite=Strict");
+		var cfg = System.getProperty("hypersocket.cookie.sameSite", SessionUtils.COOKIE_SAME_SITE_DEFAULT);
+		if(!cfg.equalsIgnoreCase("Omit")) {
+			cookie.setComment("; SameSite=" + cfg);
+		}
 		cookie = decorateCookie(cookie);
 		response.addCookie(cookie);
 

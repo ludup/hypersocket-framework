@@ -29,6 +29,8 @@ import com.hypersocket.server.websocket.TCPForwardingClientCallback;
 
 public interface HypersocketServer {
 
+	String HYPERSOCKET_BOOT_HTTP_SERVER = "hypersocket.bootHttpServer";
+	String HYPERSOCKET_BOOT_HTTP_SERVER_DEFAULT = "true";
 	final static String RESOURCE_BUNDLE = "HypersocketServer";
 	String CONTENT_INPUTSTREAM = "ContentInputStream";
 	String BROWSER_URI = "browserRequestUri";
