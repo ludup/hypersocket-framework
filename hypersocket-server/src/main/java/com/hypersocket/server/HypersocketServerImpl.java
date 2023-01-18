@@ -542,7 +542,7 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		}
 
 		Cookie cookie = new Cookie(sessionCookieName, session.getId());
-		cookie.setMaxAge(60 * 2); // just needs to be longer than ping (
+		
 		cookie.setPath("/");
 		cookie.setSecure(secure);
 		cookie.setHttpOnly(true);
