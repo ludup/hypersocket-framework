@@ -161,6 +161,7 @@ public class LogonController extends AuthenticatedController {
 			RequestMethod.POST }, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext(realmHost = true)
 	public AuthenticationResult logon(HttpServletRequest request,
 			HttpServletResponse response) throws AccessDeniedException,
 			UnauthorizedException, IOException, RedirectException {
