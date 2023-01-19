@@ -105,6 +105,8 @@ The first effectively replaces `setupSystemContext(realmService.getRealmByHost(r
 
 The second variant is similar, but will use the currently authenticated realm if the user is already authenticated. If they are not, the system realm will be used. In this case, add `currentRealmOrDefault = true`.
 
+Note, `@AuthenticatedContext` will only work on the root call in the Controller. For example, if you have two methods for two separate API calls, but the first internally calls the second, then the annotation *must* be placed on both method signatures. Failure to do so means only the method that has it's own annotation will work as expected.   
+
 ### Customised Behaviour
 
 If the annotation does not meet your requirements, you can always use the patterns below intended for non-controller code to perform custom behaviour.
