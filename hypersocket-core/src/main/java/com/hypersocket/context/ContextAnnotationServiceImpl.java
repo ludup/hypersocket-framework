@@ -39,7 +39,7 @@ public class ContextAnnotationServiceImpl implements ContextAnnotationService {
 			}
 			if (annot != null) {
 				if (annot.preferActive()) {
-					throw new UnsupportedOperationException("Realm Host is not supported in services.");
+					throw new UnsupportedOperationException("Active session is not supported in services.");
 				} else if (annot.system()) {
 					try (var c = realmService.tryWithSystemContext()) {
 						return pjp.proceed();
@@ -52,7 +52,7 @@ public class ContextAnnotationServiceImpl implements ContextAnnotationService {
 				} else if (annot.currentRealmOrDefault()) {
 					throw new UnsupportedOperationException("Current realm or default is not supported in services.");
 				} else {
-					throw new UnsupportedOperationException("Active user is not supported in services.");
+					throw new UnsupportedOperationException("Not supported in services.");
 				}
 			}
 		}
