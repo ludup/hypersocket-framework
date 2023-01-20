@@ -21,6 +21,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.hypersocket.auth.AuthenticationService;
+import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.AuthenticationRequiredButDontTouchSession;
@@ -98,6 +99,9 @@ public class ControllerInterceptor implements HandlerInterceptor {
 					else
 						contrl.setCurrentSession(sessionUtils.getActiveSession(request),
 								sessionUtils.getLocale(request));
+				} else if(acAnnotation.principal()) { 
+					AuthenticationState state = AuthenticationState.getCurrentState(request);
+					contrl.setupAuthenticatedContext(state.getSession(), sessionUtils.getLocale(request));
 				} else if(acAnnotation.anonymous()) {
 					contrl.setupAnonymousContext(request.getRemoteAddr(), request.getServerName(),
 							request.getHeader(HttpHeaders.USER_AGENT), request.getParameterMap());
