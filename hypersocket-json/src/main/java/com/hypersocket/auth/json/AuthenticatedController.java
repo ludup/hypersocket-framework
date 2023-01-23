@@ -200,7 +200,7 @@ public class AuthenticatedController implements Elevatable {
 	}
 	
 	@Deprecated(forRemoval = true, since = "2.4.0")
-	protected void setupAuthenticatedContext(Session session, Locale locale) {
+	public void setupAuthenticatedContext(Session session, Locale locale) {
 		/* TODO Deprecate after 2.4 (replace with callAs* and runAs and @AuthenticatedContext *) */
 		authenticationService.setCurrentSession(session, locale);
 	}
