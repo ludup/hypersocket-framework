@@ -35,6 +35,8 @@ public interface SessionRepository extends AbstractEntityRepository<Session,Stri
 	void updateSession(Session session);
 
 	List<Session> getActiveSessions();
+	
+	List<Session> getPrincipalActiveSessions(Principal principal);
 
 	List<Session> getSystemSessions();
 
