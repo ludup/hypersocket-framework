@@ -50,4 +50,6 @@ public interface Authenticator {
 	boolean canAuthenticate(Principal principal) throws AccessDeniedException;
 
 	String getCredentialsResourceKey();
+	
+	AuthenticationModuleCategory getAuthenticationModuleCategory();
 }
