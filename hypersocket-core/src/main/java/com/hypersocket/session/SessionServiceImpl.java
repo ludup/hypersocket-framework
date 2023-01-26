@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
@@ -59,6 +60,7 @@ import com.hypersocket.realm.events.UserImpersonatedEvent;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
+import com.hypersocket.session.events.ConcurrentSessionEvent;
 import com.hypersocket.session.events.SessionClosedEvent;
 import com.hypersocket.session.events.SessionEvent;
 import com.hypersocket.session.events.SessionOpenEvent;
@@ -501,6 +503,51 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 
 		return repository.getActiveSessions();
+	}
+	
+	@Override
+	public List<Session> getPrincipalActiveSessions(Principal principal) throws AccessDeniedException {
+
+		if (!permissionService.hasAdministrativePermission(getCurrentPrincipal())) {
+			assertPermission(SystemPermission.SYSTEM);
+		}
+
+		return repository.getPrincipalActiveSessions(principal);
+	}
+	
+	@Override
+	public Boolean hasConcurrentSession() throws AccessDeniedException {
+		
+		var currentSession = getCurrentSession();
+		
+		if (currentSession == null) {
+			throw new IllegalStateException("Current sesion found to be null cannot proceed.");
+		}
+		
+		var activeSessions = getPrincipalActiveSessions(getCurrentPrincipal());
+		
+		var otherActiveSessions = Collections.<Session>emptyList();
+		if (activeSessions != null) {
+			otherActiveSessions = activeSessions
+										.stream()
+										.filter(s -> !s.getId().equals(currentSession.getId()))
+										.collect(Collectors.toList());
+		}
+		
+		var concurrentSessionDetected = otherActiveSessions != null && !otherActiveSessions.isEmpty();
+		
+		if (concurrentSessionDetected) {
+			
+			var sessionTrackedInfo = otherActiveSessions
+											.stream()
+											.map(s -> s.getId())
+											.collect(Collectors.toList())
+											.toString();
+			
+			eventService.publishEvent(new ConcurrentSessionEvent(this, currentSession, sessionTrackedInfo));
+		}
+		
+		return concurrentSessionDetected;
 	}
 
 	@Override
