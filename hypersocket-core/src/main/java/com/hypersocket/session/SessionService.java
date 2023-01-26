@@ -52,6 +52,10 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 			ResourceSession<?> resourceSession);
 
 	List<Session> getActiveSessions() throws AccessDeniedException;
+	
+	List<Session> getPrincipalActiveSessions(Principal principal) throws AccessDeniedException;
+	
+	Boolean hasConcurrentSession() throws AccessDeniedException;
 
 	<T> SessionResourceToken<T> createSessionToken(T resource);
 

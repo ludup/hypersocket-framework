@@ -257,5 +257,16 @@ public class SessionController extends ResourceController {
 
 		return new ResourceStatus<Map<String, Long>>(sessionService.getSessionGeoInfoByRegionCount(countryCode));
 	}
+	
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "session/hasConcurrentSession", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
+	public ResourceStatus<Boolean> currentActiveSessions(HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
+		return new ResourceStatus<Boolean>(sessionService.hasConcurrentSession());
+	}
 
 }

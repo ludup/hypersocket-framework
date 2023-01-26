@@ -107,6 +107,16 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	
 	@Override
 	@Transactional(readOnly=true)
+	public List<Session> getPrincipalActiveSessions(Principal principal) {
+		return allEntities(Session.class, (c) -> {
+			c.add(Restrictions.eq("principal", principal))
+				.add(Restrictions.isNull("signedOut"))
+				.add(Restrictions.eq("system", false));
+		});
+	}
+	
+	@Override
+	@Transactional(readOnly=true)
 	public Long getActiveSessionCount(boolean distinctUsers) {
 		Criteria criteria = createCriteria(Session.class);
 
