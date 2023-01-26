@@ -144,4 +144,9 @@ public class UsernameAndPasswordAuthenticator extends
 	public String getCredentialsResourceKey() {
 		return "password";
 	}
+
+	@Override
+	public AuthenticationModuleCategory getAuthenticationModuleCategory() {
+		return AuthenticationModuleCategory.IDENTITY_SECRET;
+	}
 }
