@@ -6,23 +6,16 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
-import javax.mail.Message.RecipientType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
-import org.apache.http.auth.InvalidCredentialsException;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.simplejavamail.MailException;
-import org.simplejavamail.api.email.EmailPopulatingBuilder;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
@@ -30,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.config.ConfigurationService;
@@ -38,8 +30,12 @@ import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.email.events.EmailEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.messagedelivery.MessageDeliveryException;
+import com.hypersocket.messagedelivery.MessageDeliveryResult;
+import com.hypersocket.messagedelivery.MessageDeliveryService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.SystemPermission;
+import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -53,43 +49,45 @@ import com.hypersocket.utils.HttpUtils;
 
 @Service
 public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceImpl implements EmailNotificationService {
-	
-	private final static List<String> NO_REPLY_ADDRESSES = Arrays.asList("noreply", "no.reply", "no-reply", "no_reply", "do_not_reply", "do.not.reply", "do_not_reply");
+
+	private final static List<String> NO_REPLY_ADDRESSES = Arrays.asList("noreply", "no.reply", "no-reply", "no_reply",
+			"do_not_reply", "do.not.reply", "do_not_reply");
 
 	@Autowired
 	private ConfigurationService configurationService;
 
 	@Autowired
-	private RealmService realmService;  
-	
+	private RealmService realmService;
+
 	@Autowired
-	private EmailTrackerService trackerService; 
-	
+	private EmailTrackerService trackerService;
+
 	@Autowired
 	private EventService eventService;
-	
+
 	@Autowired
 	private SystemConfigurationService systemConfigurationService;
-	
+
 	@Autowired
-	private MailerService mailerService; 
-	
+	private MailerService mailerService;
+
 	@Autowired
-	private I18NService i18nService; 
-	
+	private I18NService i18nService;
+
 	@Autowired
 	private HttpUtils httpUtils;
-	
-	private EmailController controller; 
-	
+
+	@Autowired
+	private MessageDeliveryService messageDeliveryService;
+
 	static Logger log = LoggerFactory.getLogger(SessionServiceImpl.class);
 
 //	ThreadLocal<Boolean> synchronousEmail = new ThreadLocal<>();
-	
+
 	public final static String SMTP_DO_NOT_SEND_TO_NO_REPLY = "smtp.doNotSendToNoReply";
-	
+
 	public static final String EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-	
+
 	public static final String EMAIL_NAME_PATTERN = "(.*?)<([^>]+)>\\s*,?";
 
 	public static final String OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX = "OGIAU";
@@ -97,352 +95,389 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	@PostConstruct
 	private void postConstruct() {
 		i18nService.registerBundle(RESOURCE_BUNDLE);
-		ThreadLocal.withInitial(()->(Boolean.FALSE));
+		messageDeliveryService.registerProvider(this);
+		ThreadLocal.withInitial(() -> (Boolean.FALSE));
 	}
-	
+
 	@Override
 	@SafeVarargs
-	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean archive, boolean track, int delay, String context, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+	@Deprecated
+	public final void sendEmail(String subject, String text, String html, RecipientHolder[] recipients, boolean archive,
+			boolean track, int delay, String context, EmailAttachment... attachments)
+			throws MailException, AccessDeniedException, ValidationException {
 		sendEmail(getCurrentRealm(), subject, text, html, recipients, archive, track, delay, context, attachments);
 	}
-	
+
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients, boolean archive, boolean track, int delay, String context, EmailAttachment... attachments) throws MailException, AccessDeniedException, ValidationException {
+	@Deprecated
+	public final void sendEmail(Realm realm, String subject, String text, String html, RecipientHolder[] recipients,
+			boolean archive, boolean track, int delay, String context, EmailAttachment... attachments)
+			throws MailException, AccessDeniedException, ValidationException {
 		sendEmail(realm, subject, text, html, null, null, recipients, archive, track, delay, context, attachments);
 	}
-	
-	public EmailController getController() {
-		return controller;
+
+	@Override
+	public MediaType getSupportedMedia() {
+		return MediaType.EMAIL;
 	}
 
-	public void setController(EmailController controller) {
-		this.controller = controller;
-	}
-	
 	@Override
-	public void enableSynchronousEmail() {
-//		synchronousEmail.set(true);
+	public String getResourceKey() {
+		return "SMTP";
 	}
-	
+
 	@Override
-	public void disableSynchronousEmail() {
-//		synchronousEmail.remove();
+	public EmailNotificationBuilder newBuilder(Realm realm) {
+		var b = new EmailNotificationBuilder() {
+			@Override
+			protected MessageDeliveryResult sendImpl() throws MessageDeliveryException {
+				return EmailNotificationServiceImpl.this.send(this);
+			}
+
+			@Override
+			public RecipientHolder parseRecipient(String recipientAddress) throws ValidationException {
+				return EmailNotificationServiceImpl.this.parseRecipient(recipientAddress);
+			}
+		};
+		b.realm(realm == null ? getCurrentRealm() : realm);
+		return b;
 	}
 
 	@Override
 	@SafeVarargs
-	public final void sendEmail(Realm realm, 
-			String recipeintSubject, 
-			String receipientText, 
-			String receipientHtml, 
-			String replyToName, 
-			String replyToEmail, 
-			RecipientHolder[] recipients, 
-			boolean archive,
-			boolean track,
-			int delay,
-			String context, EmailAttachment... attachments) throws MailException, ValidationException, AccessDeniedException {
-		
-		if(!isEnabled()) {
-			if(systemConfigurationService.getBooleanValue("smtp.on")) {
-				log.warn("This system is not allowed to send email messages.");
-			} else {
-				log.warn("Sending messages is disabled. Enable SMTP settings in System realm to allow sending of emails");
-			}
-			return;
-		}
-		
-		try(var c = tryWithElevatedPermissions(SystemPermission.SYSTEM)) {
+	@Deprecated
+	public final void sendEmail(Realm realm, String recipeintSubject, String receipientText, String receipientHtml,
+			String replyToName, String replyToEmail, RecipientHolder[] recipients, boolean archive, boolean track,
+			int delay, String context, EmailAttachment... attachments)
+			throws MailException, ValidationException, AccessDeniedException {
+		var b = newBuilder(realm);
+		b.subject(recipeintSubject);
+		b.text(receipientText);
+		b.replyToName(replyToName);
+		b.replyToName(replyToEmail);
+		b.recipients(recipients);
+		b.archive(archive);
+		b.track(track);
+		b.delay(delay);
+		b.context(context);
+		b.addAttachments(attachments);
 
-			Mailer mail = mailerService.getMailer(realm);
-			
-			String archiveAddress = configurationService.getValue(realm, "email.archiveAddress");
-			List<RecipientHolder> archiveRecipients = new ArrayList<RecipientHolder>();
-	
-			if(archive && StringUtils.isNotBlank(archiveAddress)) {
-				populateEmailList(new String[] {archiveAddress} , archiveRecipients, RecipientType.TO);
+		try {
+			b.send();
+		} catch (IOException ioe) {
+			if (ioe.getCause() instanceof MailException) {
+				throw (MailException) ioe.getCause();
+			} else if (ioe.getCause() instanceof ValidationException) {
+				throw (ValidationException) ioe.getCause();
+			} else if (ioe.getCause() instanceof AccessDeniedException) {
+				throw (AccessDeniedException) ioe.getCause();
 			}
-			
-			boolean noNoReply = configurationService.getBooleanValue(realm, SMTP_DO_NOT_SEND_TO_NO_REPLY);
-	
-			for(RecipientHolder r : recipients) {
-				
-				if(StringUtils.isBlank(r.getEmail())) {
-					log.warn(String.format("Missing email address for %s", r.getName()));
-					continue;
-				}
-				
-				if(noNoReply && isNoReply(StringUtils.left(r.getEmail(), r.getEmail().indexOf('@')))) {
-					log.warn(String.format("Skipping no reply email address for %s", r.getEmail()));
-					continue;
-				}
-				
-				
-				ServerResolver serverResolver = new ServerResolver(realm);
-				
-				String messageSubject = processDefaultReplacements(recipeintSubject, r, serverResolver);
-				String messageText = processDefaultReplacements(receipientText, r, serverResolver);
-				
-				
-				if(StringUtils.isNotBlank(receipientHtml)) {
-				
-					/**
-					 * Send a HTML email and generate tracking if required. Make sure
-					 * only the recipients get a tracking email. We don't want to 
-					 * track the archive emails.
-					 */
-					String trackingImage = configurationService.getValue(realm, "email.trackingImage");
-					String nonTrackingUri = trackerService.generateNonTrackingUri(trackingImage, realm);
-					
-					String messageHtml = processDefaultReplacements(receipientHtml, r, serverResolver);
-					messageHtml = messageHtml.replace("${htmlTitle}", messageSubject);
-					
-					String archiveRecipientHtml = messageHtml.replace("__trackingImage__", nonTrackingUri);
-	
-					if(track && StringUtils.isNotBlank(trackingImage)) {
-						String trackingUri = trackerService.generateTrackingUri(trackingImage, messageSubject, r.getName(), r.getEmail(), realm);
-						messageHtml = messageHtml.replace("__trackingImage__", trackingUri);
-					} else {
-						messageHtml = messageHtml.replace("__trackingImage__", nonTrackingUri);
-					}
-	
-					send(realm, mail, 
-							messageSubject, 
-							messageText,
-							messageHtml, 
-							replyToName, 
-							replyToEmail, 
-							r, 
-							delay,
-							context, attachments);
-					
-					for(RecipientHolder recipient : archiveRecipients) {
-						send(realm, mail, messageSubject, messageText, archiveRecipientHtml, 
-								replyToName, replyToEmail, recipient, delay, context, attachments);
-					}
-					
-				} else {
-				
-					/**
-					 * Send plain email without any tracking
-					 */
-					send(realm, mail, 
-							messageSubject, 
-							messageText, 
-							"", 
-							replyToName, 
-							replyToEmail, 
-							r, 
-							delay,
-							context, attachments);
-					
-					for(RecipientHolder recipient : archiveRecipients) {
-						send(realm, mail, messageSubject, messageText, "", 
-								replyToName, replyToEmail, recipient, delay, context, attachments);
-					}
-				}
-			}
-		} catch(IOException ioe) {
-			log.error("Mail failed", ioe);
-			throw new IllegalStateException("Mail failed.", ioe);
-		} catch(Throwable e) { 
-			log.error("Mail failed", e);
-			throw e;
+			throw new IllegalStateException("Failed to send.", ioe);
 		}
 	}
-	
+
+	private MessageDeliveryResult send(EmailNotificationBuilder builder) throws MessageDeliveryException {
+
+		if (!isEnabled()) {
+			if (systemConfigurationService.getBooleanValue("email.on")) {
+				return MessageDeliveryResult.ofNonFatalError("This system is not allowed to send email messages.");
+			} else {
+				return MessageDeliveryResult.ofNonFatalError(
+						"Sending messages is disabled. Enable SMTP settings in System realm to allow sending of emails");
+			}
+		}
+
+		var results = new MessageDeliveryResult(builder.recipients());
+
+		try (var c = tryWithElevatedPermissions(SystemPermission.SYSTEM)) {
+
+			var mail = mailerService.getMailer(builder.realm());
+			var archiveAddress = configurationService.getValue(builder.realm(), "email.archiveAddress");
+			var archiveRecipients = new ArrayList<RecipientHolder>();
+
+			if (builder.archive() && StringUtils.isNotBlank(archiveAddress)) {
+				archiveRecipients.add(parseRecipient(archiveAddress));
+			}
+
+			var noNoReply = configurationService.getBooleanValue(builder.realm(), SMTP_DO_NOT_SEND_TO_NO_REPLY);
+
+			for (var r : builder.recipients()) {
+
+				var result = results.newResult(r);
+
+				if (StringUtils.isBlank(r.getAddress())) {
+					var msg = String.format("Missing email address for %s", r.getName());
+					log.warn(msg);
+					result.skip(msg);
+					continue;
+				}
+
+				if (noNoReply && isNoReply(StringUtils.left(r.getAddress(), r.getAddress().indexOf('@')))) {
+					var msg = String.format("Skipping no reply email address for %s", r.getAddress());
+					log.warn(msg);
+					result.skip(msg);
+					continue;
+				}
+
+				var serverResolver = new ServerResolver(builder.realm());
+
+				var messageSubject = processDefaultReplacements(builder.subject(), r, serverResolver);
+				var messageText = processDefaultReplacements(builder.text(), r, serverResolver);
+
+				try {
+					if (StringUtils.isNotBlank(builder.html())) {
+
+						/**
+						 * Send a HTML email and generate tracking if required. Make sure only the
+						 * recipients get a tracking email. We don't want to track the archive emails.
+						 */
+						var trackingImage = configurationService.getValue(builder.realm(), "email.trackingImage");
+						var nonTrackingUri = trackerService.generateNonTrackingUri(trackingImage, builder.realm());
+
+						var messageHtml = processDefaultReplacements(builder.html(), r, serverResolver).replace("${htmlTitle}", messageSubject);
+						var archiveRecipientHtml = messageHtml.replace("__trackingImage__", nonTrackingUri);
+
+						result.wrap(() -> {
+							send(mail, messageSubject, messageText,  getMessageHtml(builder, r, messageSubject, trackingImage, nonTrackingUri,
+									messageHtml), builder, r);
+
+							for (var recipient : archiveRecipients) {
+								send(mail, messageSubject, messageText, archiveRecipientHtml, builder, recipient);
+							}
+						});
+
+					} else {
+						result.wrap(() -> {
+							/**
+							 * Send plain email without any tracking
+							 */
+							send(mail, messageSubject, messageText, "", builder, r);
+
+							for (var recipient : archiveRecipients) {
+								send(mail, messageSubject, messageText, "", builder, recipient);
+							}
+						});
+
+
+					}
+				} catch (Throwable e) {
+					log.error("Mail failed", e);
+					result.error(e);
+				}
+			}
+		} catch (IOException e) {
+			throw new MessageDeliveryException("Failed to send email.", e);
+		} catch (ValidationException e) {
+			throw new MessageDeliveryException("Failed to validate archive email addresses. Please check configuration.", e);
+		}
+
+		return results;
+	}
+
+	private String getMessageHtml(EmailNotificationBuilder builder, RecipientHolder r, String messageSubject,
+			String trackingImage, String nonTrackingUri, String messageHtml) throws AccessDeniedException {
+		if (builder.track() && StringUtils.isNotBlank(trackingImage)) {
+			var trackingUri = trackerService.generateTrackingUri(trackingImage, messageSubject,
+					r.getName(), r.getAddress(), builder.realm());
+			messageHtml = messageHtml.replace("__trackingImage__", trackingUri);
+		} else {
+			messageHtml = messageHtml.replace("__trackingImage__", nonTrackingUri);
+		}
+		return messageHtml;
+	}
+
 	private boolean isNoReply(String addr) {
-		for(String a : NO_REPLY_ADDRESSES) {
-			if(addr.startsWith(a))
+		for (String a : NO_REPLY_ADDRESSES) {
+			if (addr.startsWith(a))
 				return true;
 		}
 		return false;
 	}
-	
+
 	private String processDefaultReplacements(String str, RecipientHolder r, ServerResolver serverResolver) {
-		str = str.replace("${email}", r.getEmail());
+		str = str.replace("${email}", r.getAddress());
 		str = str.replace("${firstName}", r.getFirstName());
 		str = str.replace("${fullName}", r.getName());
 		str = str.replace("${principalId}", r.getPrincipalId());
-		
+
 		return ReplacementUtils.processTokenReplacements(str, serverResolver);
 	}
 
-
-	
+	@Override
 	public final boolean isEnabled() {
-		return !"false".equals(System.getProperty("hypersocket.mail", "true")) && systemConfigurationService.getBooleanValue("smtp.on") && (Objects.isNull(controller) || controller.canSend());
+		return !"false".equals(System.getProperty("hypersocket.mail", "true"))
+				&& systemConfigurationService.getBooleanValue("email.on")
+				&& (Objects.isNull(messageDeliveryService.getController()) || messageDeliveryService.getController().canSend(this));
 	}
-	
-	private void send(Realm realm, 
-			Mailer mail,
-			String subject, 
-			String plainText, 
-			String htmlText, 
-			String replyToName, 
-			String replyToEmail, 
-			RecipientHolder r, 
-			int delay,
-			String context, EmailAttachment... attachments) throws AccessDeniedException {
-		
+
+	private void send(Mailer mail, String subject, String plainText, String htmlText, EmailNotificationBuilder builder,
+			RecipientHolder r) throws AccessDeniedException {
+
 		Principal p = null;
-		
-		if(r.hasPrincipal()) {
+
+		if (r.hasPrincipal()) {
 			p = r.getPrincipal();
 		} else {
 			try {
-				p = realmService.getPrincipalByEmail(realm, r.getEmail());
+				p = realmService.getPrincipalByEmail(builder.realm(), r.getAddress());
 			} catch (ResourceNotFoundException e) {
 			}
 		}
-		
-		if(p!=null) {
-			if(realmService.getUserPropertyBoolean(p, "user.bannedEmail")) {
-				if(log.isInfoEnabled()) {
-					log.info("Email to principal {} is banned", r.getEmail());
+
+		if (p != null) {
+			if (realmService.getUserPropertyBoolean(p, "user.bannedEmail")) {
+				if (log.isInfoEnabled()) {
+					log.info("Email to principal {} is banned", r.getAddress());
 				}
 				return;
 			}
 		}
-		
-		String apiKey = mailerService.getSMTPValue(realm, "email.sendGridAPIKey");
-		
-		if(StringUtils.isNotBlank(apiKey)) {
-	
-			boolean validated = false;
-			if(p!=null) {
-				if(realmService.getUserPropertyBoolean(p, "user.validatedEmail")) {
+
+		var apiKey = mailerService.getSMTPValue(builder.realm(), "email.sendGridAPIKey");
+
+		if (StringUtils.isNotBlank(apiKey)) {
+
+			var validated = false;
+			if (p != null) {
+				if (realmService.getUserPropertyBoolean(p, "user.validatedEmail")) {
 					validated = true;
 				}
 			}
-		
-			if(!validated) {
-				Map<String,String> headers = new HashMap<>();
+
+			if (!validated) {
+				var headers = new HashMap<String, String>();
 				headers.put("Authorization", "Bearer " + apiKey);
 				headers.put("Content-Type", "application/json");
-				
-				String json = "{\"email\": \"" + r.getEmail() + "\", \"source\": \"validate\"}";
-				
+
+				var json = "{\"email\": \"" + r.getAddress() + "\", \"source\": \"validate\"}";
+
 				try {
-					String response = httpUtils.doHttpPost("https://api.sendgrid.com/v3/validations/email", 
-							false, headers, json, "application/json", 200);
-					
-					ObjectMapper m = new ObjectMapper();
-					
-					JsonNode node = m.readTree(response);
-					String verdict = node.findValue("verdict").asText("Invalid");
-					Double score = node.findValue("score").asDouble(0D);
-					Double allowedScore = Double.valueOf(mailerService.getSMTPIntValue(realm, "email.sendGridMinScore"));
-					if(p!=null) {
+					var response = httpUtils.doHttpPost("https://api.sendgrid.com/v3/validations/email", false, headers,
+							json, "application/json", 200);
+
+					var m = new ObjectMapper();
+
+					var node = m.readTree(response);
+					var verdict = node.findValue("verdict").asText("Invalid");
+					var score = node.findValue("score").asDouble(0D);
+					double allowedScore = mailerService.getSMTPIntValue(builder.realm(), "email.sendGridMinScore");
+					if (p != null) {
 						realmService.setUserPropertyBoolean(p, "user.validatedEmail", true);
 					}
-					if("Invalid".equals(verdict) || (allowedScore > 0 && (score * 100) < allowedScore)) {
-						if(p!=null) {
+					if ("Invalid".equals(verdict) || (allowedScore > 0 && (score * 100) < allowedScore)) {
+						if (p != null) {
 							realmService.setUserPropertyBoolean(p, "user.bannedEmail", true);
 						}
-						eventService.publishEvent(new EmailEvent(this, new IOException("Email validation failed with score " + score + " and verdict " + verdict), realm, subject, plainText, r.getEmail(), context));
-						return;	
+						eventService.publishEvent(new EmailEvent(this,
+								new IOException(
+										"Email validation failed with score " + score + " and verdict " + verdict),
+								builder.realm(), subject, plainText, r.getAddress(), builder.context()));
+						return;
 					}
 				} catch (IOException e) {
-					eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail(), context));
+					eventService.publishEvent(new EmailEvent(this, e, builder.realm(), subject, plainText,
+							r.getAddress(), builder.context()));
 					return;
 				}
 			}
-			
+
 		}
-		
-		String fromAddress = mailerService.getSMTPValue(realm, MailerServiceImpl.SMTP_FROM_ADDRESS);
-		if(r.getEmail().equalsIgnoreCase(fromAddress)) {
-			if(log.isInfoEnabled()) {
-				log.info("Email loopback detected. The from address {} is the same as the destination", fromAddress, r.getEmail());
+
+		var fromAddress = mailerService.getSMTPValue(builder.realm(), MailerServiceImpl.SMTP_FROM_ADDRESS);
+		if (r.getAddress().equalsIgnoreCase(fromAddress)) {
+			if (log.isInfoEnabled()) {
+				log.info("Email loopback detected. The from address {} is the same as the destination", fromAddress,
+						r.getAddress());
 			}
 			return;
 		}
-		
-		List<String> blocked = Arrays.asList(configurationService.getValues(realm, "email.blocked"));
-		for(String emailAddress : blocked) {
-			if(r.getEmail().equalsIgnoreCase(emailAddress)) {
-				if(log.isInfoEnabled()) {
+
+		var blocked = Arrays.asList(configurationService.getValues(builder.realm(), "email.blocked"));
+		for (var emailAddress : blocked) {
+			if (r.getAddress().equalsIgnoreCase(emailAddress)) {
+				if (log.isInfoEnabled()) {
 					log.info("Email blocked. The destination address {} is blocked", emailAddress);
 				}
 				return;
 			}
 		}
-		
-		EmailPopulatingBuilder email = EmailBuilder.startingBlank().from(mailerService.getSMTPValue(realm, MailerServiceImpl.SMTP_FROM_NAME), fromAddress);
-		
-		if(StringUtils.isNotBlank(replyToName) && StringUtils.isNotBlank(replyToEmail)) {
-			email.withReplyTo(replyToName, replyToEmail);
-		} else if(StringUtils.isNotBlank(mailerService.getSMTPValue(realm, MailerServiceImpl.SMTP_REPLY_NAME))
-				&& StringUtils.isNotBlank(mailerService.getSMTPValue(realm, MailerServiceImpl.SMTP_REPLY_ADDRESS))) {
-			email.withReplyTo(mailerService.getSMTPValue(realm, MailerServiceImpl.SMTP_REPLY_NAME), mailerService.getSMTPValue(realm, MailerServiceImpl.SMTP_REPLY_ADDRESS));
+
+		var email = EmailBuilder.startingBlank()
+				.from(mailerService.getSMTPValue(builder.realm(), MailerServiceImpl.SMTP_FROM_NAME), fromAddress);
+
+		if (StringUtils.isNotBlank(builder.replyToName()) && StringUtils.isNotBlank(builder.replyToEmail())) {
+			email.withReplyTo(builder.replyToName(), builder.replyToEmail());
+		} else if (StringUtils
+				.isNotBlank(mailerService.getSMTPValue(builder.realm(), MailerServiceImpl.SMTP_REPLY_NAME))
+				&& StringUtils.isNotBlank(
+						mailerService.getSMTPValue(builder.realm(), MailerServiceImpl.SMTP_REPLY_ADDRESS))) {
+			email.withReplyTo(mailerService.getSMTPValue(builder.realm(), MailerServiceImpl.SMTP_REPLY_NAME),
+					mailerService.getSMTPValue(builder.realm(), MailerServiceImpl.SMTP_REPLY_ADDRESS));
 		}
-		
-		email.to(r.getName(), r.getEmail());
-		
+
+		email.to(r.getName(), r.getAddress());
+
 		email.withSubject(subject.equals("") ? "<No Subject>" : subject);
 
-		if(StringUtils.isNotBlank(htmlText)) {
-			Document doc = Jsoup.parse(htmlText);
+		if (StringUtils.isNotBlank(htmlText)) {
+			var doc = Jsoup.parse(htmlText);
 			try {
-				for (Element el : doc.select("img")) {
-					String src = el.attr("src");
-					if(src != null && src.startsWith("data:")) {
+				for (var el : doc.select("img")) {
+					var src = el.attr("src");
+					if (src != null && src.startsWith("data:")) {
 						int idx = src.indexOf(':');
 						src = src.substring(idx + 1);
 						idx = src.indexOf(';');
-						String mime = src.substring(0, idx);
+						var mime = src.substring(0, idx);
 						src = src.substring(idx + 1).trim();
-						for(String arg : src.split(";")) {
+						for (String arg : src.split(";")) {
 							arg = arg.trim();
-							if(arg.startsWith("name=")) {
+							if (arg.startsWith("name=")) {
 								// Ignore
-							}
-							else if(arg.startsWith("base64")) {
+							} else if (arg.startsWith("base64")) {
 								idx = arg.indexOf(',');
-								String enc = arg.substring(0, idx);
-								String data = arg.substring(idx + 1);
-								if(!"base64".equals(enc)) {
-									throw new UnsupportedOperationException(String.format("%s is not supported for embedded images.", enc));
+								var enc = arg.substring(0, idx);
+								var data = arg.substring(idx + 1);
+								if (!"base64".equals(enc)) {
+									throw new UnsupportedOperationException(
+											String.format("%s is not supported for embedded images.", enc));
 								}
-								byte[] bytes = Base64.getDecoder().decode(data);
-								UUID cid = UUID.randomUUID();
+								var bytes = Base64.getDecoder().decode(data);
+								var cid = UUID.randomUUID();
 								el.attr("src", "cid:" + OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid);
-								email.withEmbeddedImage(OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid.toString(), bytes, mime);
-							}
-							else {
+								email.withEmbeddedImage(OUTGOING_INLINE_ATTACHMENT_UUID_PREFIX + "-" + cid.toString(),
+										bytes, mime);
+							} else {
 								log.warn(String.format("Unexpected attribute in embedded image data URI. %s", arg));
 							}
 						}
 					}
 				}
-			}
-			catch(Exception e) {
-				log.error(String.format("Failed to parse embedded images in email %s to %s.", subject, r.getEmail()), e);
+			} catch (Exception e) {
+				log.error(String.format("Failed to parse embedded images in email %s to %s.", subject, r.getAddress()),
+						e);
 			}
 			email.appendTextHTML(doc.toString());
 		}
-		
+
 		email.withPlainText(plainText);
-		
-		if(attachments!=null) {
-			for(EmailAttachment attachment : attachments) {
-				email.withAttachment(attachment.getName(), attachment);
-			}
+
+		for (EmailAttachment attachment : builder.attachments()) {
+			email.withAttachment(attachment.getName(), attachment);
 		}
-		
+
 		try {
-			
-			if(Boolean.getBoolean("smtp.enableDelay") && delay > 0) {
+
+			if (Boolean.getBoolean("smtp.enableDelay") && builder.delay() > 0) {
 				try {
-					Thread.sleep(delay);
+					Thread.sleep(builder.delay());
 				} catch (InterruptedException e) {
-				};
+				}
 			}
-			
-			if("true".equals(System.getProperty("hypersocket.email", "true"))) {
-				
+
+			if ("true".equals(System.getProperty("hypersocket.email", "true"))) {
+
 //				Boolean sync = synchronousEmail.get();
 //				if(Boolean.TRUE.equals(sync)) {
 //					AsyncResponse asyncResponse = mail.sendMail(email.buildEmail(), true);
@@ -450,171 +485,70 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 //					asyncResponse.onException((e) -> eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail(), context)));
 //				} else {
 				/**
-				 * sendMail actually sends async if you setup the Mailer to be async (the javadocs are wrong, look at the code).
+				 * sendMail actually sends async if you setup the Mailer to be async (the
+				 * javadocs are wrong, look at the code).
 				 */
-					mail.sendMail(email.buildEmail());
-					eventService.publishEvent(new EmailEvent(this, realm, subject, plainText, r.getEmail(), context));
+				mail.sendMail(email.buildEmail());
+				eventService.publishEvent(
+						new EmailEvent(this, builder.realm(), subject, plainText, r.getAddress(), builder.context()));
 //				}
-				
+
 			}
-			
+
 		} catch (MailException e) {
-			eventService.publishEvent(new EmailEvent(this, e, realm, subject, plainText, r.getEmail(), context));
+			eventService.publishEvent(
+					new EmailEvent(this, e, builder.realm(), subject, plainText, r.getAddress(), builder.context()));
 			throw e;
 		}
 	}
-	
-	@Override
-	public boolean validateEmailAddresses(String[] emails) {
-		for(String email : emails) {
-			if(!validateEmailAddress(email)) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	@Override
-	public boolean validateEmailAddress(String val) {
-		
-		Pattern p = Pattern.compile(EmailNotificationServiceImpl.EMAIL_NAME_PATTERN);
 
-		Matcher m = p.matcher(val);
 
-		if (m.find()) {
-			@SuppressWarnings("unused")
-			String name = m.group(1).replaceAll("[\\n\\r]+", "");
-			String email = m.group(2).replaceAll("[\\n\\r]+", "");
+	private RecipientHolder parseRecipient(String val) throws ValidationException {
+		var p = Pattern.compile(EmailNotificationServiceImpl.EMAIL_NAME_PATTERN);
 
-			if (Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, email)) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		if (Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, val)) {
-			return true;
-		}
-
-		// Not an email address? Is this a principal of the realm?
-		Principal principal = realmService.getPrincipalByName(getCurrentRealm(), val, PrincipalType.USER);
-		
-		if(principal!=null) {
-			return StringUtils.isNotBlank(principal.getEmail());
-		}
-		return false;
-	}
-	
-	private void populateEmail(String val, List<RecipientHolder> recipients) throws ValidationException {
-
-		Pattern p = Pattern.compile(EmailNotificationServiceImpl.EMAIL_NAME_PATTERN);
-
-		Matcher m = p.matcher(val);
+		var m = p.matcher(val);
 		Principal principal = null;
-		
+
 		if (m.find()) {
-			String name = m.group(1).replaceAll("[\\n\\r]+", "");
-			String email = m.group(2).replaceAll("[\\n\\r]+", "");
+			var name = m.group(1).replaceAll("[\\n\\r]+", "");
+			var email = m.group(2).replaceAll("[\\n\\r]+", "");
 
 			if (!Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, email)) {
-				throw new ValidationException(email
-						+ " is not a valid email address");
+				throw new ValidationException(email + " is not a valid email address");
 			}
-			
-			name = WordUtils.capitalize(name.replace('.',  ' ').replace('_', ' '));
-			
+
+			name = WordUtils.capitalize(name.replace('.', ' ').replace('_', ' '));
+
 			principal = realmService.getPrincipalByName(getCurrentRealm(), email, PrincipalType.USER);
 		} else {
 
 			// Not an email address? Is this a principal of the realm?
 			principal = realmService.getPrincipalByName(getCurrentRealm(), val, PrincipalType.USER);
 		}
-		
-		if(principal==null) {
+
+		if (principal == null) {
 			try {
 				principal = realmService.getPrincipalByEmail(getCurrentRealm(), val);
 			} catch (ResourceNotFoundException e) {
 			}
 		}
-		
-		if(principal==null) {
+
+		if (principal == null) {
 			try {
 				principal = realmService.getPrincipalById(getCurrentRealm(), Long.parseLong(val), PrincipalType.USER);
-			} catch(AccessDeniedException | NumberFormatException e) { };
-		}
-		
-		if(principal!=null) {
-			if(StringUtils.isNotBlank(principal.getEmail())) {
-				recipients.add(new RecipientHolder(principal, principal.getEmail()));
-				return;
+			} catch (AccessDeniedException | NumberFormatException e) {
 			}
 		}
-		
-		if(Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, val)) {
-			recipients.add(new RecipientHolder("", val));
-			return;
-		}
-		throw new ValidationException(val
-				+ " is not a valid email address");
-	}
-	
-	@Override
-	public String populateEmailList(String[] emails, 
-			List<RecipientHolder> recipients,
-			RecipientType type)
-			throws ValidationException {
 
-		StringBuffer ret = new StringBuffer();
-
-		for (String email : emails) {
-
-			if (ret.length() > 0) {
-				ret.append(", ");
-			}
-			ret.append(email);
-			populateEmail(email, recipients);
-		}
-
-		return ret.toString();
-	}
-	
-	@Override
-	public String getEmailName(String val) throws InvalidCredentialsException {
-		
-		Pattern p = Pattern.compile(EmailNotificationServiceImpl.EMAIL_NAME_PATTERN);
-
-		Matcher m = p.matcher(val);
-
-		if (m.find()) {
-			return m.group(1).replaceAll("[\\n\\r]+", "");
-		}
-		
-		return "";
-	}
-	
-	@Override
-	public String getEmailAddress(String val) throws InvalidCredentialsException {
-		Pattern p = Pattern.compile(EmailNotificationServiceImpl.EMAIL_NAME_PATTERN);
-
-		Matcher m = p.matcher(val);
-
-		if (m.find()) {
-			@SuppressWarnings("unused")
-			String name = m.group(1).replaceAll("[\\n\\r]+", "");
-			String email = m.group(2).replaceAll("[\\n\\r]+", "");
-
-			if (Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, email)) {
-				return email;
-			} else {
-				throw new InvalidCredentialsException();
+		if (principal != null) {
+			if (StringUtils.isNotBlank(principal.getEmail())) {
+				return new RecipientHolder(principal, principal.getEmail());
 			}
 		}
 
 		if (Pattern.matches(EmailNotificationServiceImpl.EMAIL_PATTERN, val)) {
-			return val;
+			return RecipientHolder.ofAddress(val);
 		}
-		
-		throw new InvalidCredentialsException();
+		throw new ValidationException(val + " is not a valid email address");
 	}
 }

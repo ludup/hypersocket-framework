@@ -15,9 +15,11 @@
 		<property resourceKey="auth.chooseRealm" inputType="switch"
 			defaultValue="true" weight="0" />
 	</propertyCategory>
-	<propertyCategory resourceKey="category.email"
+	<propertyCategory resourceKey="category.messageDelivery"
 		resourceBundle="EmailService" weight="200">
-			<property resourceKey="smtp.on" inputType="switch" weight="0" defaultValue="true"/>
+		<property resourceKey="email.on" inputType="switch" weight="0" defaultValue="true"/>
+		<property resourceKey="email.defaultProvider" inputType="select"
+			weight="10" defaultValue="" url="messageDelivery/defaultProviders/EMAIL" resourceKeyTemplate="messageDeliveryProvider.{0}" notSetResourceKey="messageDeliveryProvider.default" valueAttr="name" emptySelectionAllowed="true" nameIsResourceKey="true"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.security" resourceBundle="HypersocketServer" weight="400">
 		<property resourceKey="security.knownHosts" inputType="hidden" defaultValue="" weight="0" cache="false"/>

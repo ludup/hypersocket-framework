@@ -6,6 +6,8 @@
 			weight="80" defaultValue="" size="255" allowEmpty="false" invalidResourceKey="error.subjectRequired"/>
 		<property resourceKey="email.body" inputType="textarea" rows="10"
 			cols="100" maxlength="8000" defaultValue="" weight="100" allowEmpty="true" invalidResourceKey="error.bodyRequired"/>
+		<property resourceKey="email.provider" inputType="select"
+			weight="2000" defaultValue="" url="messageDelivery/providers/EMAIL" valueAttr="name" emptySelectionAllowed="true"/>
 	</propertyCategory>
 	<propertyCategory resourceKey="category.email.html"
 		resourceBundle="TriggerResourceService" weight="2000">

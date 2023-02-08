@@ -11,8 +11,11 @@ public class EmailTaskResult extends AbstractTaskResult {
 	private static final long serialVersionUID = 712812739563857588L;
 
 	public static final String EVENT_RESOURCE_KEY = "event.emailResult";
-	public EmailTaskResult(Object source, Realm currentRealm, Task task) {
+	public static final String ATTR_EMAIL_ID = "attr.emailId";
+	
+	public EmailTaskResult(Object source, Realm currentRealm, String emailId, Task task) {
 		super(source, EVENT_RESOURCE_KEY, true, currentRealm, task);
+		addAttribute(ATTR_EMAIL_ID, emailId);
 	}
 
 	public EmailTaskResult(Object source,Realm currentRealm, Task task, Throwable e) {

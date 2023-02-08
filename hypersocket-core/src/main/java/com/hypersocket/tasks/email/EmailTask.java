@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
-import javax.mail.Message.RecipientType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
@@ -25,16 +24,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.hypersocket.email.EmailAttachment;
-import com.hypersocket.email.EmailNotificationService;
-import com.hypersocket.email.RecipientHolder;
+import com.hypersocket.email.EmailMessageDeliveryProvider;
+import com.hypersocket.email.EmailNotificationBuilder;
 import com.hypersocket.email.events.EmailEvent;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.html.HtmlTemplateResource;
 import com.hypersocket.html.HtmlTemplateResourceRepository;
+import com.hypersocket.messagedelivery.MessageDeliveryService;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceTemplateRepository;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -53,6 +54,8 @@ import com.hypersocket.util.CloseOnEOFInputStream;
 @Component
 public class EmailTask extends AbstractTaskProvider {
 
+	private static final String ATTR_PROVIDER = "email.provider";
+
 	private static Logger log = LoggerFactory
 			.getLogger(EmailTask.class);
 
@@ -69,7 +72,7 @@ public class EmailTask extends AbstractTaskProvider {
 	public static final String ATTR_EVENT_SOURCE_TYPE = "attach.eventSourceType";
 
 	@Autowired
-	private EmailNotificationService emailService;
+	private MessageDeliveryService messageDeliveryService;
 
 	@Autowired
 	private EmailTaskRepository repository;
@@ -115,7 +118,7 @@ public class EmailTask extends AbstractTaskProvider {
 		return new String[] { "sendEmail" };
 	}
 
-	protected void validateEmailField(String field, Map<String, String> parameters, List<TriggerValidationError> invalidAttributes) {
+	protected void validateEmailField(EmailMessageDeliveryProvider<EmailNotificationBuilder> provider, String field, Map<String, String> parameters, List<TriggerValidationError> invalidAttributes) {
 		
 		String value = parameters
 				.get(ATTR_TO_ADDRESSES);
@@ -124,7 +127,7 @@ public class EmailTask extends AbstractTaskProvider {
 			String[] emails = ResourceUtils.explodeValues(value);
 			for (String email : emails) {
 				if(!ResourceUtils.isReplacementVariable(email)) {
-					if (!emailService.validateEmailAddress(email)) {
+					if (!provider.validateEmailAddress(email)) {
 						invalidAttributes.add(new TriggerValidationError(
 								ATTR_TO_ADDRESSES, email));
 					}
@@ -138,13 +141,16 @@ public class EmailTask extends AbstractTaskProvider {
 			throws ValidationException {
 
 		List<TriggerValidationError> invalidAttributes = new ArrayList<TriggerValidationError>();
+		var providerName = parameters.get(ATTR_PROVIDER);
+
+		EmailMessageDeliveryProvider<EmailNotificationBuilder> provider = (EmailMessageDeliveryProvider<EmailNotificationBuilder>) messageDeliveryService.getProviderOrBest(MediaType.EMAIL, providerName, EmailNotificationBuilder.class);
 
 		if(!parameters.containsKey(ATTR_TO_ADDRESSES)
 				|| StringUtils.isEmpty(parameters.get(ATTR_TO_ADDRESSES))) {
 			invalidAttributes
 					.add(new TriggerValidationError(ATTR_TO_ADDRESSES));
 		} else {
-			validateEmailField(ATTR_TO_ADDRESSES, parameters, invalidAttributes);
+			validateEmailField(provider, ATTR_TO_ADDRESSES, parameters, invalidAttributes);
 		}
 
 		if(!parameters.containsKey(ATTR_SUBJECT)
@@ -168,25 +174,26 @@ public class EmailTask extends AbstractTaskProvider {
 			throws ValidationException {
 
 		
-		String subject = processTokenReplacements(
+		var subject = processTokenReplacements(
 				repository.getValue(task, ATTR_SUBJECT), event, false, false);
-		String body = processTokenReplacements(
+		var body = processTokenReplacements(
 				repository.getValue(task, ATTR_BODY), event, false, false);
-		String bodyHtml = processTokenReplacements(
+		var bodyHtml = processTokenReplacements(
 				repository.getValue(task, ATTR_BODY_HTML), event, false, false);
-		List<RecipientHolder> recipients = new ArrayList<RecipientHolder>();
 
-		populateEmailList(task, ATTR_TO_ADDRESSES, recipients,
-				RecipientType.TO, event);
+		var providerName = repository.getValue(task, ATTR_PROVIDER);
+		EmailMessageDeliveryProvider<EmailNotificationBuilder> provider = (EmailMessageDeliveryProvider<EmailNotificationBuilder>) messageDeliveryService.getProviderOrBest(MediaType.EMAIL, providerName, EmailNotificationBuilder.class);
+
+		var recipients = ResourceUtils.explodeValues(processTokenReplacements(repository.getValue(task, ATTR_TO_ADDRESSES), event));
 
 		if(log.isInfoEnabled()) {
-			log.info(String.format("Sending email named %s to %d receipients", subject, recipients.size()));
+			log.info(String.format("Sending email named %s to %d receipients", subject, recipients.length));
 		}
 		
-		List<EmailAttachment> attachments = new ArrayList<EmailAttachment>();
+		var attachments = new ArrayList<EmailAttachment>();
 	
 		
-		for(String uuid : repository.getValues(task, ATTR_STATIC_ATTACHMENTS)) {
+		for(var uuid : repository.getValues(task, ATTR_STATIC_ATTACHMENTS)) {
 			try {
 				addUUIDAttachment(uuid, new String[0], attachments);
 			} catch (ResourceException e) {
@@ -198,7 +205,7 @@ public class EmailTask extends AbstractTaskProvider {
 			}
 		}
 		
-		for(String path : repository.getValues(task,  ATTR_DYNAMIC_ATTACHMENTS)) {
+		for(var path : repository.getValues(task,  ATTR_DYNAMIC_ATTACHMENTS)) {
 			try {
 				addFileAttachment(path, attachments, event);
 			} catch (FileNotFoundException | UnsupportedEncodingException e) {
@@ -206,11 +213,11 @@ public class EmailTask extends AbstractTaskProvider {
 			}
 		}
 		
-		String replyToName = processTokenReplacements(repository.getValue(task, "email.replyToName"), event);
-		String replyToEmail = processTokenReplacements(repository.getValue(task, "email.replyToEmail"), event);
-		boolean track = repository.getBooleanValue(task, "email.track");
-		boolean archive = repository.getBooleanValue(task, "email.archive");
-		String templateStr = repository.getValue(task, "email.htmlTemplate");
+		var replyToName = processTokenReplacements(repository.getValue(task, "email.replyToName"), event);
+		var replyToEmail = processTokenReplacements(repository.getValue(task, "email.replyToEmail"), event);
+		var track = repository.getBooleanValue(task, "email.track");
+		var archive = repository.getBooleanValue(task, "email.archive");
+		var templateStr = repository.getValue(task, "email.htmlTemplate");
 		HtmlTemplateResource template = null;
 		if(StringUtils.isNotBlank(templateStr) && StringUtils.isNumeric(templateStr)) {
 			template = htmlTemplateRepository.getResourceById(Long.parseLong(templateStr));
@@ -226,20 +233,26 @@ public class EmailTask extends AbstractTaskProvider {
 		}
 		
 		int delay = repository.getIntValue(task, "email.delay");
-		
-		emailService.enableSynchronousEmail();
-		try {
-			emailService.sendEmail(currentRealm, subject, body, bodyHtml,
-					replyToName, replyToEmail, 
-					recipients.toArray(new RecipientHolder[0]), archive, track, delay, null, attachments.toArray(new EmailAttachment[0]));
 
-			return new EmailTaskResult(this, currentRealm, task);
+		var builder = provider.newBuilder(currentRealm);
+		builder.subject(subject);
+		builder.text(body);
+		builder.html(bodyHtml);
+		builder.replyToName(replyToName);
+		builder.replyToEmail(replyToEmail);
+		builder.addRecipientAddresses(recipients);
+		builder.archive(archive);
+		builder.track(track);
+		builder.delay(delay);
+		builder.attachments(attachments);
+		
+		try {
+			var result = builder.send();
+			return new EmailTaskResult(this, currentRealm, result.getId().orElse(""), task);
 		} catch (Exception ex) {
 			log.error("Failed to send email", ex);
 			return new EmailTaskResult(this, currentRealm, task, ex);
-		} finally {
-			emailService.disableSynchronousEmail();
-		}
+		} 
 		
 		
 	}
@@ -305,17 +318,6 @@ public class EmailTask extends AbstractTaskProvider {
 		return EmailEvent.EVENT_RESOURCE_KEY;
 	}
 
-	private String populateEmailList(Task task,
-			String attributeName, List<RecipientHolder> recipients,
-			RecipientType type, List<SystemEvent> event)
-			throws ValidationException {
-
-		String value = processTokenReplacements(repository.getValue(task, attributeName), event);
-		String[] emails = ResourceUtils.explodeValues(value);
-		return emailService.populateEmailList(emails, recipients, type);
-	}
-
-	
 
 	@Override
 	public ResourceTemplateRepository getRepository() {

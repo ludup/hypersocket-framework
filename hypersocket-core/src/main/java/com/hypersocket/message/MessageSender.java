@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,10 +26,13 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailBatchService;
-import com.hypersocket.email.EmailNotificationService;
+import com.hypersocket.email.EmailNotificationBuilder;
 import com.hypersocket.email.RecipientHolder;
+import com.hypersocket.messagedelivery.AbstractEMailMessageDeliveryProvider;
+import com.hypersocket.messagedelivery.MessageDeliveryService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.ResourceUtils;
+import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -57,7 +61,7 @@ public class MessageSender {
 	private final RealmService realmService;
 	private final FreeMarkerService templateService;
 	private final EmailBatchService batchService;
-	private final EmailNotificationService emailService;
+	private final MessageDeliveryService messageDeliveryService;
 	private final FileUploadService uploadService;
 	private final MessageResourceService messageResourceService;
 	
@@ -71,17 +75,41 @@ public class MessageSender {
 	private String context;
 	private Date schedule;
 	private Iterator<String> recipientAddresses;
+	private Optional<String> providerResourceKey = Optional.empty();
+	private boolean ignoreDisabledFlag;
 
-	MessageSender(Realm realm, RealmService realmService, FreeMarkerService templateService, EmailBatchService batchService, EmailNotificationService emailService, FileUploadService uploadService, MessageResourceService messageResourceService) {
+	MessageSender(Realm realm, RealmService realmService, FreeMarkerService templateService, EmailBatchService batchService, MessageDeliveryService messageDeliveryService, FileUploadService uploadService, MessageResourceService messageResourceService) {
 		this.realm = realm;
 		this.realmService = realmService;
 		this.templateService = templateService;
 		this.batchService = batchService;
-		this.emailService = emailService;
+		this.messageDeliveryService = messageDeliveryService;
 		this.uploadService = uploadService;
 		this.messageResourceService = messageResourceService;
 	}
 	
+	public boolean isIgnoreDisabledFlag() {
+		return ignoreDisabledFlag;
+	}
+
+	public MessageSender ignoreDisabledFlag(boolean ignoreDisabledFlag) {
+		this.ignoreDisabledFlag = ignoreDisabledFlag;
+		return this;
+	}
+
+	public Optional<String> provider() {
+		return providerResourceKey;
+	}
+
+	public MessageSender provider(String providerResourceKey) {
+		return provider(StringUtils.isBlank(providerResourceKey) ? Optional.empty() : Optional.of(providerResourceKey));
+	}
+
+	public MessageSender provider(Optional<String> providerResourceKey) {
+		this.providerResourceKey = providerResourceKey;
+		return this;
+	}
+
 	public Date schedule() {
 		return schedule;
 	}
@@ -231,22 +259,22 @@ public class MessageSender {
 	
 	public void sendOrError() throws Exception {
 		try {
-			if(messageResource == null) {
+			var message = messageResource;
+			if(message == null) {
 				if(messageResourceKey == null)
 					throw new IllegalStateException("Must set either a messageResourceKey or a messageResource to be able to send a message.");
 					
-				var message = messageResourceService.getMessageById(messageResourceKey, realm);
+				message = messageResourceService.getMessageById(messageResourceKey, realm);
 				if (message == null) {
 					throw new IllegalStateException(String.format("Invalid message id %s", messageResourceKey));
 				}
-				
-				sendMessage(message);
 			}
+				
+			sendMessage(message);
 		}
 		catch(IOException | TemplateException | ValidationException | AccessDeniedException | ResourceException | IllegalStateException e) {
 			log.error("Failed to send email.", e);
 			throw e;
-				
 		}
 	}
 
@@ -327,7 +355,7 @@ public class MessageSender {
 			}) {
 				@Override
 				protected RecipientHolder transform(String email) {
-					return new RecipientHolder(email.toLowerCase());
+					return RecipientHolder.ofEmailAddressSpec(email.toLowerCase());
 				}
 			});
 		}
@@ -337,7 +365,7 @@ public class MessageSender {
 
 	private void sendMessage(MessageResource message, Iterator<RecipientHolder> recipients) throws IOException, TemplateException, ValidationException, AccessDeniedException, ResourceException {
 
-		if (!message.getEnabled()) {
+		if (!ignoreDisabledFlag && !message.getEnabled()) {
 			log.info(String.format("Message template %s has been disabled", message.getName()));
 			return;
 		}
@@ -349,7 +377,7 @@ public class MessageSender {
 			cit.addIterator(new TransformingIterator<String, RecipientHolder>(additionalRecipients.iterator()) {
 				@Override
 				protected RecipientHolder transform(String from) {
-					return new RecipientHolder("", from);
+					return RecipientHolder.ofAddress(from);
 				}
 			});
 			recipients = cit;
@@ -364,21 +392,21 @@ public class MessageSender {
 			while (recipients.hasNext()) {
 				RecipientHolder recipient = recipients.next();
 
-				if(StringUtils.isBlank(recipient.getEmail())) {
+				if(StringUtils.isBlank(recipient.getAddress())) {
 					log.warn("Detected empty email in a RecipientHolder! Skipping");
 					continue;
 				}
 				
-				if(processedEmails.contains(recipient.getEmail().toLowerCase())) {
-					log.info("Skipping {} because we already sent this message to that address", recipient.getEmail());
+				if(processedEmails.contains(recipient.getAddress().toLowerCase())) {
+					log.info("Skipping {} because we already sent this message to that address", recipient.getAddress());
 					continue;
 				}
 				
-				processedEmails.add(recipient.getEmail().toLowerCase());
+				processedEmails.add(recipient.getAddress().toLowerCase());
 				
 				Map<String, Object> data = tokenResolver.getData();
 				data.putAll(new ServerResolver(realm).getData());
-				data.put("email", recipient.getEmail());
+				data.put("email", recipient.getAddress());
 				data.put("firstName", recipient.getFirstName());
 				data.put("fullName", recipient.getName());
 				data.put("principalId", recipient.getPrincipalId());
@@ -471,20 +499,28 @@ public class MessageSender {
 							log.error(String.format("Unable to locate upload %s", uuid), e);
 						}
 					}
-
-					emailService.sendEmail(realm, subjectWriter.toString(), bodyWriter.toString(),
-							htmlWriter.toString(), 
-							replyTo != null ? replyTo.getName() : message.getReplyToName(),
-							replyTo != null ? replyTo.getEmail() : message.getReplyToEmail(),
-							new RecipientHolder[] { recipient }, message.getArchive(), message.getTrack(), 50,
-							context, emailAttachments.toArray(new EmailAttachment[0]));
+					
+					var provider = (AbstractEMailMessageDeliveryProvider<EmailNotificationBuilder>)messageDeliveryService.getProviderOrBest(MediaType.EMAIL, providerResourceKey.orElse(""), EmailNotificationBuilder.class);
+					var builder = provider.newBuilder(realm);
+					builder.subject(subjectWriter.toString());
+					builder.text(bodyWriter.toString());
+					builder.html(htmlWriter.toString());
+					builder.replyToName(replyTo != null ? replyTo.getName() : message.getReplyToName());
+					builder.replyToEmail(replyTo != null ? replyTo.getAddress() : message.getReplyToEmail());
+					builder.recipient(recipient);
+					builder.archive(message.getArchive());
+					builder.track(message.getTrack());
+					builder.delay(50);
+					builder.context(context);
+					builder.attachments(emailAttachments);
+					builder.send();
 				} else {
 					attachmentsListString = ResourceUtils.implodeValues(attachmentUUIDs);
 
-					batchService.scheduleEmail(realm, subjectWriter.toString(), bodyWriter.toString(),
+					batchService.scheduleEmail(realm, providerResourceKey, subjectWriter.toString(), bodyWriter.toString(),
 							htmlWriter.toString(), replyTo != null ? replyTo.getName() : message.getReplyToName(),
-							replyTo != null ? replyTo.getEmail() : message.getReplyToEmail(), recipient.getName(),
-							recipient.getEmail(), message.getArchive(), message.getTrack(), attachmentsListString, schedule, context);
+							replyTo != null ? replyTo.getAddress() : message.getReplyToEmail(), recipient.getName(),
+							recipient.getAddress(), message.getArchive(), message.getTrack(), attachmentsListString, schedule, context);
 
 				}
 			}

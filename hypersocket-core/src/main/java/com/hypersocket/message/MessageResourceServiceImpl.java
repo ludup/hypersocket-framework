@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailBatchService;
-import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.email.RecipientHolder;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;
@@ -34,6 +33,7 @@ import com.hypersocket.message.events.MessageResourceCreatedEvent;
 import com.hypersocket.message.events.MessageResourceDeletedEvent;
 import com.hypersocket.message.events.MessageResourceEvent;
 import com.hypersocket.message.events.MessageResourceUpdatedEvent;
+import com.hypersocket.messagedelivery.MessageDeliveryService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
@@ -86,7 +86,7 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	private EmailBatchService batchService;
 
 	@Autowired
-	private EmailNotificationService emailService;
+	private MessageDeliveryService messageDeliveryService;
 
 	@Autowired
 	private FileUploadService uploadService;
@@ -394,15 +394,16 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 	
 	@Override
 	public MessageSender newMessageSender(Realm realm) {
-		return new MessageSender(realm, realmService, templateService, batchService, emailService, uploadService, this);
+		return new MessageSender(realm, realmService, templateService, batchService, messageDeliveryService, uploadService, this);
 	}
 
 	@Override
 	@Transactional
 	public void test(MessageResource message, String email) throws ResourceNotFoundException, AccessDeniedException {
 		try {
-			newMessageSender(message.getRealm()).messageResource(message).tokenResolver(new PrincipalWithoutPasswordResolver((UserPrincipal<?>)realmService.getPrincipalByEmail(message.getRealm(), email))).recipientAddress(email).sendOrError();
+			newMessageSender(message.getRealm()).messageResource(message).tokenResolver(new PrincipalWithoutPasswordResolver((UserPrincipal<?>)realmService.getPrincipalByEmail(message.getRealm(), email))).recipientAddress(email).ignoreDisabledFlag(true).sendOrError();
 		} catch (Exception e) {
+			log.error("Failed to send test.", e);
 			throw new IllegalStateException("Failed to send test email. ", e);
 		}
 	}

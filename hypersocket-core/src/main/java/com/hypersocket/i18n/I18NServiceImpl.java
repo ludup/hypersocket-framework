@@ -255,7 +255,6 @@ public class I18NServiceImpl implements I18NService {
 		
 		registerBundle(RESOURCE_BUNDLE);
 		registerBundle(ConfigurationService.RESOURCE_BUNDLE);
-		registerBundle(EmailNotificationService.RESOURCE_BUNDLE);
 		registerBundle(PermissionService.RESOURCE_BUNDLE);
 		registerBundle(RealmService.RESOURCE_BUNDLE);
 		registerBundle(SessionService.RESOURCE_BUNDLE);
