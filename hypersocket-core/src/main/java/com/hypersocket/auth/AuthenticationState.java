@@ -7,6 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.auth;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,8 +34,10 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 
-public class AuthenticationState {
+public class AuthenticationState implements Serializable {
 
+	private static final long serialVersionUID = -6246407082032014021L;
+	
 	private static final String PREVIOUS_AUTHENTICATION_SCHEME = "previousAuthenticationScheme";
 	private static final String AUTHENTICATION_STATE = "authenticationState";
 	private static final String COOKIES = "cookies";
