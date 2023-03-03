@@ -26,9 +26,9 @@ import org.slf4j.LoggerFactory;
 
 import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailBatchService;
+import com.hypersocket.email.EmailMessageDeliveryProvider;
 import com.hypersocket.email.EmailNotificationBuilder;
 import com.hypersocket.email.RecipientHolder;
-import com.hypersocket.messagedelivery.AbstractEMailMessageDeliveryProvider;
 import com.hypersocket.messagedelivery.MessageDeliveryService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.ResourceUtils;
@@ -500,7 +500,7 @@ public class MessageSender {
 						}
 					}
 					
-					var provider = (AbstractEMailMessageDeliveryProvider<EmailNotificationBuilder>)messageDeliveryService.getProviderOrBest(MediaType.EMAIL, providerResourceKey.orElse(""), EmailNotificationBuilder.class);
+					var provider = (EmailMessageDeliveryProvider<EmailNotificationBuilder>)messageDeliveryService.getProviderOrBest(MediaType.EMAIL, providerResourceKey.orElse(""), EmailNotificationBuilder.class);
 					var builder = provider.newBuilder(realm);
 					builder.subject(subjectWriter.toString());
 					builder.text(bodyWriter.toString());

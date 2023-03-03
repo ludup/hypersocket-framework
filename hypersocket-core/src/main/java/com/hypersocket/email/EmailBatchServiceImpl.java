@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.batch.BatchProcessingItemRepository;
 import com.hypersocket.batch.BatchProcessingServiceImpl;
-import com.hypersocket.messagedelivery.AbstractEMailMessageDeliveryProvider;
 import com.hypersocket.messagedelivery.MessageDeliveryException;
 import com.hypersocket.messagedelivery.MessageDeliveryService;
 import com.hypersocket.properties.ResourceUtils;
@@ -82,7 +81,7 @@ public class EmailBatchServiceImpl extends BatchProcessingServiceImpl<EmailBatch
 
 			@SuppressWarnings("unchecked")
 			var provider = StringUtils.isNotBlank(item.getProvider()) ? 
-						(AbstractEMailMessageDeliveryProvider<EmailNotificationBuilder>)messageDeliveryService.getProvider(item.getProvider()) : 
+						(EmailMessageDeliveryProvider<EmailNotificationBuilder>)messageDeliveryService.getProvider(item.getProvider()) : 
 							messageDeliveryService.getBestProvider(MediaType.EMAIL, EmailNotificationBuilder.class);
 			var builder = provider.newBuilder(realmService.getRealmById(item.getRealm()));
 			builder.subject(item.getSubject());
