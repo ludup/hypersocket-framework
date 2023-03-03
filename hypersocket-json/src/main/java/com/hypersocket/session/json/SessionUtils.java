@@ -38,7 +38,7 @@ import com.hypersocket.session.SessionService;
 @Component
 public class SessionUtils {
 
-	public static String COOKIE_SAME_SITE_DEFAULT = "Strict";
+	public static String COOKIE_SAME_SITE_DEFAULT = "Lax";
 	static Logger log = LoggerFactory.getLogger(SessionUtils.class);
 	
 	static boolean debugCSRF = "true".equals(System.getProperty("hypersocket.csrfDebugRequests"));
