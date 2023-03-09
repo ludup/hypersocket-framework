@@ -114,7 +114,7 @@ public class MessageSender {
 		return schedule;
 	}
 
-	public MessageSender sendNow() {
+	public MessageSender immediate() {
 		this.schedule = null;
 		return this;
 	}
