@@ -548,7 +548,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	}
 
 	protected void assertPrincipalAssignment(T resource, PermissionType permission) throws AccessDeniedException {
-		if(Collections.disjoint(getPersonalResources(), Arrays.asList(resource))) {
+		if(Collections.disjoint(getPersonalResources(), Set.of(resource))) {
 			assertPermission(permission);
 		}
 	}
