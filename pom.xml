@@ -194,6 +194,16 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
+				    <groupId>org.codehaus.mojo</groupId>
+				    <artifactId>build-helper-maven-plugin</artifactId>
+				    <version>3.3.0</version>
+				</plugin>
+				<plugin>
+				    <groupId>org.codehaus.mojo</groupId>
+				    <artifactId>versions-maven-plugin</artifactId>
+				    <version>2.15.0</version>
+				</plugin>
+				<plugin>
 				    <groupId>org.apache.maven.plugins</groupId>
 				    <artifactId>maven-javadoc-plugin</artifactId>
 				    <version>3.2.0</version>
@@ -324,6 +334,64 @@
 						</plugin>
 					</plugins>
 				</pluginManagement>
+			</build>
+		</profile>
+		<profile>
+			<id>set-release-build-number</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>build-number-property</id>
+								<goals>
+									<goal>regex-property</goal>
+								</goals>
+								<phase>initialize</phase>
+								<configuration>
+									<name>product.version</name>
+									<value>${project.version}</value>
+									<regex>^([0-9]+)\.([0-9]+)\.([0-9]+)-([0-9A-Za-z]+)$</regex>
+									<replacement>$1.$2.$3</replacement>
+									<failIfNoMatch>false</failIfNoMatch>
+								</configuration>
+							</execution>
+							<execution>
+								<id>product-version-property</id>
+								<goals>
+									<goal>regex-property</goal>
+								</goals>
+								<phase>initialize</phase>
+								<configuration>
+									<name>build.number</name>
+									<value>0${env.BUILD_NUMBER}</value>
+									<regex>^(?:0?)([0-9]+)(?:\$\{env\.BUILD_NUMBER\})?$</regex>
+									<replacement>$1</replacement>
+									<failIfNoMatch>false</failIfNoMatch>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>					
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>versions-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>set-release-build-number-on-pom</id>
+								<goals>
+									<goal>set</goal>
+								</goals>
+								<phase>initialize</phase>
+								<configuration>
+									<newVersion>${product.version}-${build.number}</newVersion>
+									<generateBackupPoms>false</generateBackupPoms>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
 			</build>
 		</profile>
 	</profiles>
