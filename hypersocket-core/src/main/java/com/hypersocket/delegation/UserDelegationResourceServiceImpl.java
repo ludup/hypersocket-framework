@@ -226,12 +226,14 @@ public class UserDelegationResourceServiceImpl extends
 		if(delegations.isEmpty()) {
 			return;
 		}
+		
 		for(UserDelegationResource delegation : delegations) {
 			roles.addAll(delegation.getRoleDelegates());
 			users.addAll(delegation.getUserDelegates());
-			groups.addAll(delegation.getGroupDelegates());
+			for(var g : delegation.getGroupDelegates()) {
+				groups.addAll(realmService.getAssociatedPrincipals(g, PrincipalType.GROUP));
+			}
 		}
-		
 		if(users.contains(principal)) {
 			return;
 		}
