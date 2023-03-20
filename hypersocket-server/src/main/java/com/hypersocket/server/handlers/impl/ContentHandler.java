@@ -7,6 +7,8 @@ import java.io.InputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.hypersocket.server.handlers.impl.ContentHandlerImpl.CSPFilter;
+
 public interface ContentHandler {
 
 	boolean handlesRequest(HttpServletRequest request);
@@ -32,5 +34,7 @@ public interface ContentHandler {
 	void addDynamicPage(String path);
 
 	boolean hasAlias(String alias);
+
+	void addCSPFilter(CSPFilter filter);
 
 }

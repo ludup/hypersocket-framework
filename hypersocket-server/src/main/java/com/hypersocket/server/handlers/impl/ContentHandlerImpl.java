@@ -14,6 +14,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,6 +50,13 @@ import com.hypersocket.session.json.SessionUtils;
 import com.hypersocket.utils.HypersocketUtils;
 
 public abstract class ContentHandlerImpl extends HttpRequestHandler implements ContentHandler {
+	
+	public interface CSPFilter {
+
+		void filter(List<String> defaultSources, List<String> styleSources, List<String> scriptSources,
+				List<String> imageSources, List<String> frameSources);
+		
+	}
 
 	private static Logger LOG = LoggerFactory.getLogger(ContentHandlerImpl.class);
 	
@@ -130,6 +138,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
     private Map<String,String> aliases = new HashMap<String,String>();
     private Set<String> dynamic = new HashSet<String>();
     private List<ContentFilter> filters = new ArrayList<ContentFilter>();
+    private List<CSPFilter> cspFilters = new ArrayList<>();
     
     protected ContentHandlerImpl(String name, int priority) {
     	super(name, priority);
@@ -271,7 +280,7 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 			CacheUtils.setDateAndCacheHeaders(response, getLastModified(path), true, path);
 			
 			if (requri.endsWith(".js") || requri.endsWith(".css") || requri.endsWith(".xml") || requri.endsWith(".html") || requri.indexOf('.') == -1) {
-				addDefaultCSPHeaders(response);
+				addDefaultCSPHeaders(response, cspFilters.toArray(new CSPFilter[0]));
 			}
 			
 			response.setStatus(HttpStatus.SC_OK);
@@ -295,12 +304,27 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 		}
 	}
 
-	public static void addDefaultCSPHeaders(HttpServletResponse response) {
+	public static void addDefaultCSPHeaders(HttpServletResponse response, CSPFilter... filters) {
 		response.addHeader("Referrer-Policy", "no-referrer");
 		
 		response.addHeader("Permissions-Policy", PERMISSIONS_POLICY_HEADER_OPTIONS);
 		response.addHeader("Feature-Policy", FEATURE_POLICY_HEADER_OPTIONS);
-		response.addHeader("Content-Security-Policy", "default-src 'self';  style-src 'self' 'unsafe-inline' 'unsafe-hashes'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src * data:");
+		
+		List<String> defaultSources = new ArrayList<>(Arrays.asList("'self'"));
+		List<String> styleSources = new ArrayList<>(Arrays.asList("'self'", "'unsafe-inline'", "'unsafe-hashes'"));
+		List<String> scriptSources = new ArrayList<>(Arrays.asList("'self'", "'unsafe-inline'", "'unsafe-eval'"));
+		List<String> imageSources = new ArrayList<>(Arrays.asList("*", "data:"));
+		List<String> frameSources = new ArrayList<>();
+		
+		for(var filter : filters) {
+			filter.filter(defaultSources, styleSources, scriptSources, imageSources, frameSources);
+		}
+
+		response.addHeader("Content-Security-Policy", String.format("default-src %s;  style-src %s; "
+				+ "script-src %s; "
+				+ "img-src %s ; frame-src %s", String.join(" ", defaultSources), String.join(" ", styleSources)
+				, String.join(" ", scriptSources), String.join(" ", imageSources), String.join(" ", frameSources)));
+		
 	}
 	
 	protected String processReplacements(String path) {
@@ -384,6 +408,10 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 				return o1.getWeight().compareTo(o2.getWeight());
 			}
 		});
+	}
+	@Override
+	public void addCSPFilter(CSPFilter filter) {
+		cspFilters.add(filter);
 	}
 	
 	protected String sanitizeUri(String uri) {
