@@ -36,7 +36,6 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedKeyManager;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -505,11 +504,12 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	public DispatcherServlet getDispatcherServlet() {
 		return dispatcherServlet;
 	}
+	
+	public String getSessionCookieName() {
+		return sessionCookieName;
+	}
 
-	public HypersocketSession setupHttpSession(List<String> cookies,
-			boolean secure,
-			String domain,
-			HttpServletResponse servletResponse) {
+	public HypersocketSession setupHttpSession(List<String> cookies) {
 
 		HypersocketSession session = null;
 
@@ -536,23 +536,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 				}
 			}
 		}
-		if (session == null) {
-			session = HypersocketSessionFactory.getInstance().createSession(
-					servletContext);
-		}
-
-		Cookie cookie = new Cookie(sessionCookieName, session.getId());
-		
-		cookie.setPath("/");
-		cookie.setSecure(secure);
-		cookie.setHttpOnly(true);
-		cookie.setDomain(domain);
-		var cfg = System.getProperty("hypersocket.cookie.sameSite", SessionUtils.COOKIE_SAME_SITE_DEFAULT);
-		if(!cfg.equalsIgnoreCase("Omit")) {
-			cookie.setComment("; SameSite=" + cfg);
-		}
-		cookie = sessionUtils.decorateCookie(cookie);
-		servletResponse.addCookie(cookie);
 
 		return session;
 	}

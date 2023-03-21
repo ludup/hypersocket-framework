@@ -27,8 +27,10 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ReaderInputStream;
@@ -75,6 +77,7 @@ import com.hypersocket.server.interfaces.http.HTTPProtocol;
 import com.hypersocket.server.websocket.WebsocketClient;
 import com.hypersocket.server.websocket.WebsocketClientCallback;
 import com.hypersocket.servlet.HypersocketSession;
+import com.hypersocket.servlet.HypersocketSessionFactory;
 import com.hypersocket.servlet.request.Request;
 import com.hypersocket.session.json.SessionUtils;
 import com.hypersocket.utils.ITokenResolver;
@@ -146,7 +149,6 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 		ChannelHandlerContext ctx;
 		HttpRequest nettyRequest;
 		HttpRequestServletWrapper servletRequest;
-		HypersocketSession session;
 		HttpResponseServletWrapper nettyResponse;
 		HTTPInterfaceResource interfaceResource;
 		
@@ -216,17 +218,43 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 				}
 			}
 			
-			session = server.setupHttpSession(
-					nettyRequest.headers().getAll("Cookie"), 
-					interfaceResource.getProtocol()==HTTPProtocol.HTTPS,
-					StringUtils.substringBefore(nettyRequest.headers().get("Host"), ":"),
-					nettyResponse);
-			
 			servletRequest = new HttpRequestServletWrapper(
 					nettyRequest, (InetSocketAddress) ctx.getChannel()
 							.getLocalAddress(), remoteAddressResolver.getInetSocketAddress(), 
 							interfaceResource.getProtocol()==HTTPProtocol.HTTPS, 
-							server.getServletContext(), session);
+							server.getServletContext()) {
+
+				HttpSession thisSession;
+				
+				@Override
+				public HttpSession getSession(boolean create) {
+					if (thisSession == null) {
+						thisSession = server.setupHttpSession(
+								nettyRequest.headers().getAll("Cookie"));
+						if(thisSession == null && create) {
+							thisSession = HypersocketSessionFactory.getInstance().createSession(server.getServletContext());
+							thisSession.setMaxInactiveInterval(300); // should be polling more often than this
+
+							Cookie cookie = new Cookie(server.getSessionCookieName(), thisSession.getId());
+							
+							cookie.setPath("/");
+							cookie.setSecure(interfaceResource.getProtocol()==HTTPProtocol.HTTPS);
+							cookie.setHttpOnly(true);
+							cookie.setDomain(StringUtils.substringBefore(nettyRequest.headers().get("Host"), ":"));
+							var cfg = System.getProperty("hypersocket.cookie.sameSite", SessionUtils.COOKIE_SAME_SITE_DEFAULT);
+							if(!cfg.equalsIgnoreCase("Omit")) {
+								cookie.setComment("; SameSite=" + cfg);
+							}
+							nettyResponse.addCookie(cookie);
+						}
+						else if(thisSession != null) {
+							((HypersocketSession)thisSession).access();
+						}
+					}
+					return thisSession;
+				}
+				
+			};
 			
 
 			

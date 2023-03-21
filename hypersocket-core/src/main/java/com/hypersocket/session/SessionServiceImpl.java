@@ -117,8 +117,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	private Map<String, Session> nonCookieSessions = new HashMap<String, Session>();
 	private Session systemSession;
 	private List<SessionReaperListener> listeners = new ArrayList<SessionReaperListener>();
-	private List<CookieDecorator> cookieDecorators = Collections
-			.synchronizedList(new ArrayList<>());
 	
 	@Autowired
 	private HttpUtils httpUtils;
@@ -961,16 +959,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Realm getRealmByHost(String serverName) {
 		return realmService.getRealmByHost(serverName);
-	}
-
-	@Override
-	public void registerCookieDecorator(CookieDecorator decorator) {
-		cookieDecorators.add(decorator);
-	}
-
-	@Override
-	public List<CookieDecorator> getCookieDecorators() {
-		return Collections.unmodifiableList(cookieDecorators);
 	}
 
 }

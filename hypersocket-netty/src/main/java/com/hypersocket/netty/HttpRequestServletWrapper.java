@@ -50,10 +50,8 @@ import org.slf4j.LoggerFactory;
 import com.hypersocket.netty.util.ChannelBufferServletInputStream;
 import com.hypersocket.servlet.HypersocketServletConfig;
 import com.hypersocket.servlet.HypersocketServletContext;
-import com.hypersocket.servlet.HypersocketSession;
-import com.hypersocket.servlet.HypersocketSessionFactory;
 
-public class HttpRequestServletWrapper implements HttpServletRequest {
+public abstract class HttpRequestServletWrapper implements HttpServletRequest {
 
 	static Logger log = LoggerFactory.getLogger(HttpRequestServletWrapper.class);
 	
@@ -68,7 +66,6 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	private InetSocketAddress remoteAddress;
 	private Cookie[] cookies;
 	private boolean secure;
-	private HttpSession session;
 	private ServletContext context;
 	private HttpRequestChunkStream chunkedInputStream = null;
 	private String servletPath;
@@ -76,7 +73,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	private Date timestamp;
 
 	public HttpRequestServletWrapper(HttpRequest request, InetSocketAddress localAddress,
-			InetSocketAddress remoteAddress, boolean secure, ServletContext context, HttpSession session) {
+			InetSocketAddress remoteAddress, boolean secure, ServletContext context) {
 		this.request = request;
 		this.localAddress = localAddress;
 		this.remoteAddress = remoteAddress;
@@ -85,7 +82,6 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 		this.secure = secure;
 		this.context = context;
-		this.session = session;
 
 		parseUri(request.getUri());
 	}
@@ -560,7 +556,7 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public String getRequestedSessionId() {
-		return session.getId();
+		return getSession().getId();
 	}
 
 	@Override
@@ -579,20 +575,11 @@ public class HttpRequestServletWrapper implements HttpServletRequest {
 	}
 
 	@Override
-	public HttpSession getSession(boolean create) {
-		if (session == null && create) {
-			session = HypersocketSessionFactory.getInstance().createSession(context);
-		}
-		return session;
-	}
+	public abstract HttpSession getSession(boolean create);
 
 	@Override
 	public HttpSession getSession() {
-		return session;
-	}
-
-	public void setSession(HypersocketSession session) {
-		this.session = session;
+		return getSession(true);
 	}
 
 	@Override

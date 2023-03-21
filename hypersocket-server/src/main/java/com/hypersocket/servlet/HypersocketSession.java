@@ -32,7 +32,7 @@ public class HypersocketSession implements HttpSession {
 		this.context = context;
 	}
 
-	void access() {
+	public void access() {
 		lastAccessedTime = System.currentTimeMillis();
 		isNew = false;
 	}
@@ -120,6 +120,10 @@ public class HypersocketSession implements HttpSession {
 
 	public boolean isNew() {
 		return isNew;
+	}
+
+	public boolean expired() {
+		return System.currentTimeMillis() > lastAccessedTime + (getMaxInactiveInterval() * 1000);
 	}
 
 }

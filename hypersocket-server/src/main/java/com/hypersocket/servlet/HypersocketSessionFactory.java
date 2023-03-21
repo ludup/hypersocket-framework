@@ -7,17 +7,39 @@
  ******************************************************************************/
 package com.hypersocket.servlet;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class HypersocketSessionFactory {
+	
+	static Logger log = LoggerFactory.getLogger(HypersocketServletContext.class);
 
 	static HypersocketSessionFactory instance = new HypersocketSessionFactory();
 	
 	private Map<String,HypersocketSession> sessions = Collections.synchronizedMap(new HashMap<String,HypersocketSession>());
+
+	{
+		Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> {
+			var copy = new ArrayList<>(sessions.values());
+			var it = copy.iterator();
+			while(it.hasNext()) {
+				var session = it.next();
+				if(session.expired()) {
+					session.invalidate();
+				}
+			}
+		}, 1, 1, TimeUnit.MINUTES);
+	}
 	
 	public static HypersocketSessionFactory getInstance() {
 		return instance;
@@ -32,7 +54,10 @@ public class HypersocketSessionFactory {
 			@Override
 			public void invalidate() {
 				super.invalidate();
-				sessions.remove(getId());
+				synchronized(sessions) {
+					log.info("Invalidating session {} of {}", getId(), sessions.size());
+					sessions.remove(getId());
+				}
 			}
 		};
 		sessions.put(session.getId(), session);

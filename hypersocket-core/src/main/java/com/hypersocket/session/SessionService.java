@@ -142,8 +142,5 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 
 	Realm getRealmByHost(String serverName); 
 	
-	void registerCookieDecorator(CookieDecorator decorator);
-
-	List<CookieDecorator> getCookieDecorators();
 }
 
