@@ -10,6 +10,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
+import com.hypersocket.json.JsonResource;
 import com.hypersocket.json.JsonResourceList;
 import com.hypersocket.json.JsonResourceStatus;
 import com.hypersocket.json.PropertyItem;
@@ -55,7 +56,8 @@ public class AbstractPermissionsTest extends AbstractServerTest {
 	public void tryCurrentRealmUsersGroup() throws ClientProtocolException,
 			IOException {
 
-		JsonResourceList<?> json = getMapper().readValue(
+		@SuppressWarnings("unchecked")
+		JsonResourceList<? extends JsonResource> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
@@ -107,7 +109,8 @@ public class AbstractPermissionsTest extends AbstractServerTest {
 	@Test
 	public void tryCurrentRealmIdGroup() throws ClientProtocolException,
 			IOException {
-		JsonResourceList<?> json = getMapper().readValue(
+		@SuppressWarnings("unchecked")
+		JsonResourceList<? extends JsonResource> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 

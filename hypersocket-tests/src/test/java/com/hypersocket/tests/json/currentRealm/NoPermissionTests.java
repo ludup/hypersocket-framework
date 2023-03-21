@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.hypersocket.auth.AuthenticationPermission;
+import com.hypersocket.json.JsonResource;
 import com.hypersocket.json.JsonResourceList;
 import com.hypersocket.json.PropertyItem;
 import com.hypersocket.realm.json.CredentialsUpdate;
@@ -68,7 +69,8 @@ public class NoPermissionTests extends AbstractServerTest {
 	public void tryNoPermissionCurrentRealmUsersGroup()
 			throws ClientProtocolException, IOException {
 
-		JsonResourceList<?> json = getMapper().readValue(
+		@SuppressWarnings("unchecked")
+		JsonResourceList<? extends JsonResource> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
@@ -114,7 +116,8 @@ public class NoPermissionTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryNoPermissionCurrentRealmIdGroup()
 			throws ClientProtocolException, IOException {
-		JsonResourceList<?> json = getMapper().readValue(
+		@SuppressWarnings("unchecked")
+		JsonResourceList<? extends JsonResource> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
@@ -143,7 +146,8 @@ public class NoPermissionTests extends AbstractServerTest {
 	public void tryNoPermissionCurrentRealmGroupDelete()
 			throws ClientProtocolException, IOException {
 
-		JsonResourceList<?> json = getMapper().readValue(
+		@SuppressWarnings("unchecked")
+		JsonResourceList<? extends JsonResource> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 

@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import org.apache.http.client.ClientProtocolException;
 import org.junit.Test;
 
+import com.hypersocket.json.JsonResource;
 import com.hypersocket.json.JsonResourceList;
 import com.hypersocket.json.PropertyItem;
 import com.hypersocket.realm.json.CredentialsUpdate;
@@ -50,7 +51,8 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedCurrentRealmUsersGroup()
 			throws ClientProtocolException, IOException {
 
-		JsonResourceList<?> json = getMapper().readValue(
+		@SuppressWarnings("unchecked")
+		JsonResourceList<? extends JsonResource> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
@@ -96,7 +98,8 @@ public class UnauthorizedTests extends AbstractServerTest {
 	@Test(expected = ClientProtocolException.class)
 	public void tryUnauthorizedCurrentRealmIdGroup()
 			throws ClientProtocolException, IOException {
-		JsonResourceList<?> json = getMapper().readValue(
+		@SuppressWarnings("unchecked")
+		JsonResourceList<? extends JsonResource> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
@@ -125,7 +128,8 @@ public class UnauthorizedTests extends AbstractServerTest {
 	public void tryUnauthorizedCurrentRealmGroupDelete()
 			throws ClientProtocolException, IOException {
 
-		JsonResourceList<?> json = getMapper().readValue(
+		@SuppressWarnings("unchecked")
+		JsonResourceList<? extends JsonResource> json = getMapper().readValue(
 				doGet("/hypersocket/api/currentRealm/groups/list"),
 				JsonResourceList.class);
 
