@@ -69,7 +69,6 @@ public class GenerateLotsOfSerialsTest {
 	"x-hypersocket-scripting",
 	"x-hypersocket-secure-node",
 	"x-hypersocket-syslog",
-	"x-hypersocket-tasks-aws",
 	"x-hypersocket-tasks-csv",
 	"x-hypersocket-tasks-http",
 	"x-hypersocket-tasks-xml",
