@@ -224,16 +224,18 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 							interfaceResource.getProtocol()==HTTPProtocol.HTTPS, 
 							server.getServletContext()) {
 
-				HttpSession thisSession;
+//				HttpSession thisSession;
 				
 				@Override
 				public HttpSession getSession(boolean create) {
+					HttpSession thisSession = (HttpSession)getAttribute(Request.CURRENT_HTTP_SESSION);
 					if (thisSession == null) {
 						thisSession = server.setupHttpSession(
 								nettyRequest.headers().getAll("Cookie"));
 						if(thisSession == null && create) {
 							thisSession = HypersocketSessionFactory.getInstance().createSession(server.getServletContext());
 							thisSession.setMaxInactiveInterval(300); // should be polling more often than this
+							setAttribute(Request.CURRENT_HTTP_SESSION, thisSession);
 
 							Cookie cookie = new Cookie(server.getSessionCookieName(), thisSession.getId());
 							
@@ -248,6 +250,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 							nettyResponse.addCookie(cookie);
 						}
 						else if(thisSession != null) {
+							setAttribute(Request.CURRENT_HTTP_SESSION, thisSession);
 							((HypersocketSession)thisSession).access();
 						}
 					}

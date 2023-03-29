@@ -9,6 +9,8 @@ import javax.servlet.http.HttpSession;
 
 public class Request {
 
+	public static final String CURRENT_HTTP_SESSION = Request.class.getName() + "_currentHttpSession";
+	
 	private static ThreadLocal<HttpServletRequest> threadRequests = new ThreadLocal<HttpServletRequest>();
 	private static ThreadLocal<HttpServletResponse> threadResponses = new ThreadLocal<HttpServletResponse>();
 	
@@ -47,11 +49,13 @@ public class Request {
 	
 	public static void cleanSessionOnLogin() {
 		if (isAvailable()) {
-			var session = get().getSession(false);
+			var request = get();
+			var session = request.getSession(false);
 			if (session != null) {
 				var copy = copyCurrentSessionAttributes(session);
 				session.invalidate();
-				session = get().getSession(true);
+				request.removeAttribute(CURRENT_HTTP_SESSION);
+				session = request.getSession(true);
 				if (copy != null) {
 					copy.forEach(session::setAttribute);
 				}

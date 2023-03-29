@@ -15,6 +15,8 @@ import java.util.Vector;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionContext;
 
 @SuppressWarnings("deprecation")
@@ -94,7 +96,18 @@ public class HypersocketSession implements HttpSession {
 
 	@Override
 	public void setAttribute(String name, Object value) {
-		attributes.put(name, value);
+		if(value == null) {
+			removeValue(name);
+		}
+		else {
+			var original = attributes.put(name, value);
+			if(original instanceof HttpSessionBindingListener) {
+				((HttpSessionBindingListener)original).valueUnbound(new HttpSessionBindingEvent(this, name));
+			}
+			if(value instanceof HttpSessionBindingListener) {
+				((HttpSessionBindingListener)value).valueBound(new HttpSessionBindingEvent(this, name));
+			}
+		}
 
 	}
 
@@ -105,7 +118,10 @@ public class HypersocketSession implements HttpSession {
 
 	@Override
 	public void removeAttribute(String name) {
-		attributes.remove(name);
+		var original = attributes.remove(name);
+		if(original instanceof HttpSessionBindingListener) {
+			((HttpSessionBindingListener)original).valueUnbound(new HttpSessionBindingEvent(this, name));
+		}
 	}
 
 	@Override
@@ -115,7 +131,9 @@ public class HypersocketSession implements HttpSession {
 
 	@Override
 	public void invalidate() {
-
+		while(!attributes.isEmpty()) {
+			removeAttribute(attributes.keySet().iterator().next());
+		}
 	}
 
 	public boolean isNew() {
