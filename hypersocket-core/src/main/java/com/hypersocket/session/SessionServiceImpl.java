@@ -517,12 +517,16 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public Boolean hasConcurrentSession() throws AccessDeniedException {
 		
 		var currentSession = getCurrentSession();
+		var currentPrincipal = getCurrentPrincipal();
+		var currentRealm = getCurrentRealm();
 		
 		if (currentSession == null) {
 			throw new IllegalStateException("Current sesion found to be null cannot proceed.");
 		}
 		
-		var activeSessions = getPrincipalActiveSessions(getCurrentPrincipal());
+		var activeSessions = silentlyCallAsSystemContext(() -> {
+			return getPrincipalActiveSessions(currentPrincipal);
+		}, currentRealm);
 		
 		var otherActiveSessions = Collections.<Session>emptyList();
 		if (activeSessions != null) {
