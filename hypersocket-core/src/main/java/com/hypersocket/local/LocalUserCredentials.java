@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.hypersocket.local;
 
+import java.util.Optional;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,12 +21,13 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.hypersocket.auth.PasswordEncryptionType;
+import com.hypersocket.realm.PrincipalCredentials;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Entity
 @Table(name="local_user_credentials")
-public class LocalUserCredentials extends AbstractEntity<Long> {
+public class LocalUserCredentials extends AbstractEntity<Long> implements PrincipalCredentials {
 
 	private static final long serialVersionUID = -3299749715239030009L;
 
@@ -47,6 +50,15 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 	
 	@Column(name="encoded_salt")
 	private String encodedSalt;
+	
+	@Column(name="rfc2307")
+	private String rfc2307Password;
+	
+	@Column(name="ntlm")
+	private String ntlmPassword;
+	
+	@Column(name="lm")
+	private String lmPassword;
 	
 	@Column(name="encryption_type", nullable=false)
 	private PasswordEncryptionType encryptionType;
@@ -126,5 +138,31 @@ public class LocalUserCredentials extends AbstractEntity<Long> {
 	
 	void setSalt(byte[] salt) {
 		this.salt = salt;
+	}
+
+	@Override
+	public Optional<String> getEncodedPassword(Encoding encoding) {
+		switch(encoding) {
+		case NTLM:
+			return Optional.ofNullable(ntlmPassword);
+		case RFC2307:
+			return Optional.ofNullable(rfc2307Password);
+		case LM:
+			return Optional.ofNullable(lmPassword);
+		default:
+			return Optional.empty();
+		}
+	}
+
+	public void setRFC2307Password(String rfc2307Password) {
+		this.rfc2307Password = rfc2307Password;
+	}
+
+	public void setNTLMPassword(String ntlmPassword) {
+		this.ntlmPassword = ntlmPassword;
+	}
+
+	public void setLMPassword(String lmPassword) {
+		this.lmPassword = lmPassword;
 	}
 }

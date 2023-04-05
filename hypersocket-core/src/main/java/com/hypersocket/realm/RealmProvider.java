@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.hypersocket.permissions.AccessDeniedException;
@@ -146,6 +147,10 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	String getUserProperty(Principal principal, String resourceKey);
 	
 	Principal getPrincipalByEmail(Realm realm, String email);
+	
+	default Optional<PrincipalCredentials> getCredentials(Principal principal) {
+		return Optional.empty();
+	}
 
 	List<Principal> getUserGroups(Principal principal);
 

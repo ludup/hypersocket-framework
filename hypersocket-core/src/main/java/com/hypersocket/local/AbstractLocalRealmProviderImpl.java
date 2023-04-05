@@ -8,6 +8,7 @@
 package com.hypersocket.local;
 
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -17,11 +18,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +46,12 @@ import com.hypersocket.realm.MediaNotFoundException;
 import com.hypersocket.realm.MediaType;
 import com.hypersocket.realm.PasswordCreator;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalCredentials;
 import com.hypersocket.realm.PrincipalSuspension;
 import com.hypersocket.realm.PrincipalSuspensionService;
 import com.hypersocket.realm.PrincipalSuspensionType;
 import com.hypersocket.realm.PrincipalType;
+import com.hypersocket.realm.RFC2307EncodingScheme;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserPrincipal;
@@ -58,6 +66,10 @@ import com.hypersocket.util.CompoundIterator;
 
 public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvider implements
 		 ApplicationListener<SessionOpenEvent> {
+	  /**
+	   * Magic string to be used as salt.
+	   */
+	  private static final String MAGIC_STR = "KGS!@#$%";
 
 	private static Logger log = LoggerFactory
 			.getLogger(AbstractLocalRealmProviderImpl.class);
@@ -167,6 +179,11 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	@Override
 	public UserPrincipal<?> getPrincipalByFullName(Realm realm, String fullName) {
 		return userRepository.getUserByFullName(fullName, realm);
+	}
+
+	@Override
+	public Optional<PrincipalCredentials> getCredentials(Principal principal) {
+		return Optional.of(userRepository.getCredentials((LocalUser) principal));
 	}
 
 	@Override
@@ -398,6 +415,70 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			creds.setPasswordChangeRequired(forceChangeAtNextLogon);
 			creds.setPassword(encryptedPassword);
 			creds.setSalt(salt);
+			
+			if(configurationService.getBooleanValue(principal.getRealm(), "password.rfc2307")) {
+				/* https://github.com/apache/directory-ldap-api/blob/master/ldap/model/src/main/java/org/apache/directory/api/ldap/model/password/PasswordUtil.java 
+				 * is a good place for inspiration here
+				 */
+				var scheme = RFC2307EncodingScheme.valueOf(configurationService.getValue(principal.getRealm(), "password.rfc2307.encoding"));
+				switch(scheme) {
+				case MD5:
+					creds.setRFC2307Password(standardHash("MD5", scheme, password));
+					break;
+				case SHA:
+					creds.setRFC2307Password(standardHash("SHA", scheme, password));
+					break;
+				case SHA512:
+					creds.setRFC2307Password(standardHash("SHA-512", scheme, password));
+					break;
+				case SHA384:
+					creds.setRFC2307Password(standardHash("SHA-384", scheme, password));
+					break;
+				case SHA256:
+					creds.setRFC2307Password(standardHash("SHA-256", scheme, password));
+					break;
+				case SMD5:
+					creds.setRFC2307Password(saltedStandardHash(salt, "MD5", scheme, password));
+					break;
+				case SSHA:
+					creds.setRFC2307Password(saltedStandardHash(salt, "SHA", scheme, password));
+					break;
+				case SSHA512:
+					creds.setRFC2307Password(saltedStandardHash(salt, "SHA-512", scheme, password));
+					break;
+				case SSHA384:
+					creds.setRFC2307Password(saltedStandardHash(salt, "SHA-384", scheme, password));
+					break;
+				case SSHA256:
+					creds.setRFC2307Password(saltedStandardHash(salt, "SHA-256", scheme, password));
+					break;
+				case CLEAR:
+					creds.setRFC2307Password(new String(password));
+					break;
+				default:
+					creds.setRFC2307Password("{x-" + passwordEncoding.name() + "}" + creds.getEncodedPassword());
+					break;
+				}
+			}
+			else {
+				creds.setRFC2307Password(null);
+			}
+			
+			if(configurationService.getBooleanValue(principal.getRealm(), "password.ntlm")) {
+				MessageDigest md4 = MessageDigest.getInstance("MD4");
+				md4.update(new String(password).getBytes("UnicodeLittleUnmarked"));
+				creds.setNTLMPassword(Hex.encodeHexString(md4.digest()).toLowerCase());
+			}
+			else {
+				creds.setNTLMPassword(null);
+			}
+			
+			if(configurationService.getBooleanValue(principal.getRealm(), "password.lm")) {
+				creds.setLMPassword(lmHash(new String(password)));
+			}
+			else {
+				creds.setLMPassword(null);
+			}
 			
 			userRepository.saveCredentials(creds);
 
@@ -997,5 +1078,109 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			}
 			
 		}));
+	}
+
+	private static String saltedStandardHash(byte[] salt, final String javaHashAlgo, RFC2307EncodingScheme scheme, final char[] password) throws Exception {
+		MessageDigest md = MessageDigest.getInstance(javaHashAlgo);
+		md.update(new String(password).getBytes("UTF-8"));
+		md.update(salt);
+		return "{" + scheme.name() + "}" + Base64.encodeBase64String(join(salt, md.digest()));		
+	}
+
+	private static String standardHash(final String javaHashAlgo, RFC2307EncodingScheme scheme, final char[] password) throws Exception {
+		MessageDigest md = MessageDigest.getInstance(javaHashAlgo);
+		md.update(new String(password).getBytes("UTF-8"));
+		return "{" + scheme.name() + "}" + Base64.encodeBase64String(md.digest());		
+	}
+	
+	private static String lmHash(final String password) throws Exception {
+		// Password has to be OEM encoded and in upper case
+		final byte[] oemPass = password.toUpperCase().getBytes("US-ASCII");
+
+		// It shouldn't be longer then 14 bytes
+		int length = 14;
+		if (oemPass.length < length) {
+			length = oemPass.length;
+		}
+
+		// The password should be divided into two 7-byte keys
+		final byte[] key1 = new byte[7];
+		final byte[] key2 = new byte[7];
+		if (length <= 7) {
+			System.arraycopy(oemPass, 0, key1, 0, length);
+		} else {
+			System.arraycopy(oemPass, 0, key1, 0, 7);
+			System.arraycopy(oemPass, 7, key2, 0, length - 7);
+		}
+
+		// We create two DES keys using key1 and key2 to on the magic string
+		final SecretKey lowKey = new SecretKeySpec(addParity(key1), "DES");
+		final SecretKey highKey = new SecretKeySpec(addParity(key2), "DES");
+		final Cipher des = Cipher.getInstance("DES/ECB/NoPadding");
+		des.init(Cipher.ENCRYPT_MODE, lowKey);
+		final byte[] lowHash = des.doFinal(MAGIC_STR.getBytes());
+		des.init(Cipher.ENCRYPT_MODE, highKey);
+		final byte[] highHash = des.doFinal(MAGIC_STR.getBytes());
+
+		// We finally merge hashes and return them to the client
+
+		final byte[] lmHash = new byte[16];
+		System.arraycopy(lowHash, 0, lmHash, 0, 8);
+		System.arraycopy(highHash, 0, lmHash, 8, 8);
+		return Hex.encodeHexString(lmHash);
+	}
+
+	/**
+	 * Add the parity to the 56-bit key converting it to 64-bit key.
+	 *
+	 * @param key56 56-bit key.
+	 * @return 64-bit key.
+	 */
+	private static byte[] addParity(final byte[] key56) {
+		final byte[] key64 = new byte[8];
+		final int[] key7 = new int[7];
+		final int[] key8 = new int[8];
+
+		for (int i = 0; i < 7; i++) {
+			key7[i] = key56[i] & 0xFF;
+		}
+
+		key8[0] = key7[0];
+		key8[1] = ((key7[0] << 7) & 0xFF | (key7[1] >> 1));
+		key8[2] = ((key7[1] << 6) & 0xFF | (key7[2] >> 2));
+		key8[3] = ((key7[2] << 5) & 0xFF | (key7[3] >> 3));
+		key8[4] = ((key7[3] << 4) & 0xFF | (key7[4] >> 4));
+		key8[5] = ((key7[4] << 3) & 0xFF | (key7[5] >> 5));
+		key8[6] = ((key7[5] << 2) & 0xFF | (key7[6] >> 6));
+		key8[7] = (key7[6] << 1);
+
+		for (int i = 0; i < 8; i++) {
+			key64[i] = (byte) (setOddParity(key8[i]));
+		}
+
+		return key64;
+
+	}
+
+	/**
+	 * Set the parity bit for an integer.
+	 *
+	 * @param integer to add the parity bit for.
+	 * @return integer with the parity bit set.
+	 */
+	private static int setOddParity(final int parity) {
+		final boolean hasEvenBits = ((parity >>> 7) ^ (parity >>> 6) ^ (parity >>> 5) ^ (parity >>> 4) ^ (parity >>> 3)
+				^ (parity >>> 2) ^ (parity >>> 1) & 0x01) == 0;
+		if (hasEvenBits) {
+			return parity | 0x01;
+		} else {
+			return parity & 0xFE;
+		}
+	}
+	private static byte[] join(byte[] a1, byte[] a2) {
+		byte[] b = new byte[a1.length + a2.length];
+		System.arraycopy(a1, 0, b, 0, a1.length);
+		System.arraycopy(a2, 0, b, a1.length, a2.length);
+		return b;
 	}
 }

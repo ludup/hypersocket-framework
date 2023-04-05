@@ -96,11 +96,24 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.security"
 		 resourceBundle="RealmService" weight="500" group="authentication">
+		<property resourceKey="password.onChangePromptCurrent" inputType="switch"
+		    	defaultValue="true" weight="10" />	
+	</propertyCategory>
+	<propertyCategory resourceKey="category.passwords"
+		 resourceBundle="RealmService" weight="501" group="authentication">
 		<property resourceKey="password.encoding" inputType="select"
 		    		url="enum/com.hypersocket.auth.PasswordEncryptionType/"
 						defaultValue="PBKDF2_SHA256_50000" weight="0" nameAttr="name" valueAttr="name"/>	
-		<property resourceKey="password.onChangePromptCurrent" inputType="switch"
-		    	defaultValue="true" weight="0" />	
+		<property resourceKey="password.rfc2307" inputType="switch"
+		    	defaultValue="false" weight="20" />	
+		<property resourceKey="password.rfc2307.encoding" inputType="select"
+				url="enum/com.hypersocket.realm.RFC2307EncodingScheme/"
+				visibilityDependsOn="password.rfc2307" visibilityDependsValue="true"
+				defaultValue="SSHA512" weight="30" nameAttr="name" valueAttr="name"/>	
+		<property resourceKey="password.ntlm" inputType="switch"
+		    	defaultValue="false" weight="40" />	
+		<property resourceKey="password.lm" inputType="switch"
+		    	defaultValue="false" weight="50" />		
 	</propertyCategory>
 	<propertyCategory resourceKey="category.cors"
 		 resourceBundle="PermissionService" weight="999998" group="sessions">
