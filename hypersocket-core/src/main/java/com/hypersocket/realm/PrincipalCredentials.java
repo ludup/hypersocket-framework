@@ -11,7 +11,7 @@ public interface PrincipalCredentials {
 	/**
 	 * Get the password in a specified format (if stored). 
 	 * 
-	 * @param encodding encoding
+	 * @param encoding encoding
 	 * @return optional encoded password
 	 */
 	Optional<String> getEncodedPassword(Encoding encoding);
