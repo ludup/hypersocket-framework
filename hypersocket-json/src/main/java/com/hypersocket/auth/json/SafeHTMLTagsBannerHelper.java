@@ -3,7 +3,7 @@ package com.hypersocket.auth.json;
 import org.owasp.html.HtmlPolicyBuilder;
 import org.owasp.html.PolicyFactory;
 
-public class LogonBannerHelper {
+public class SafeHTMLTagsBannerHelper {
 
 	public static final PolicyFactory HTML_SANITIZE_POLICY = allowCommonInlineFormattingElements()
 			.and(allowCommonBlockElements());

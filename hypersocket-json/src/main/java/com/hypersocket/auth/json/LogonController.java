@@ -324,7 +324,7 @@ public class LogonController extends AuthenticatedController {
 				
 //				try {
 					return new LogonRequiredResult(
-							LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state.getRealm(),
+							SafeHTMLTagsBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state.getRealm(),
 									"logon.banner")),
 							flash!=null ? flash : state.getLastErrorMsg(),
 							flashStyle!=null ? flashStyle : state.getLastErrorType(),
@@ -366,7 +366,7 @@ public class LogonController extends AuthenticatedController {
 		} catch(JsonRedirectException e) {
 			try(var c = tryWithSystemContext()) {
 				return new LogonRedirectResult(
-						LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state==null ? sessionUtils.getCurrentRealmOrDefault(request) : state.getRealm(),
+						SafeHTMLTagsBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state==null ? sessionUtils.getCurrentRealmOrDefault(request) : state.getRealm(),
 								"logon.banner")),
 						flash!=null ? flash : state==null ? "" : state.getLastErrorMsg(),
 						flashStyle!=null ? flashStyle : state==null ? "" : state.getLastErrorType(),
@@ -382,7 +382,7 @@ public class LogonController extends AuthenticatedController {
 			state.setLastErrorIsResourceKey(false);
 			
 			return new LogonRequiredResult(
-					LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state.getRealm(),
+					SafeHTMLTagsBannerHelper.HTML_SANITIZE_POLICY.sanitize(configurationService.getValue(state.getRealm(),
 							"logon.banner")),
 					state.getLastErrorMsg(),
 					state.getLastErrorType(),
@@ -406,7 +406,7 @@ public class LogonController extends AuthenticatedController {
 			if(!k.equalsIgnoreCase("username") && !k.equalsIgnoreCase("password")) {
 				var a = new String[v.length];
 				for(int i = 0 ; i < a.length ; i++)
-					a[i] = LogonBannerHelper.HTML_SANITIZE_POLICY.sanitize(v[i]);
+					a[i] = SafeHTMLTagsBannerHelper.HTML_SANITIZE_POLICY.sanitize(v[i]);
 				m.put(k, a);
 			}
 		});
