@@ -753,23 +753,32 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	private void sendNewUserTemporaryPasswordNofification(Principal principal, String password)
 			throws ResourceException, AccessDeniedException {
-		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password,
-				true);
-		messageService.sendMessage(MESSAGE_NEW_USER_TMP_PASSWORD, principal.getRealm(), resolver, principal);
+		messageService.newMessageSender(principal.getRealm()).
+			messageResourceKey(MESSAGE_NEW_USER_TMP_PASSWORD).
+			tokenResolver(new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password,
+					true)).
+			principals(principal).
+			send();
 	}
 
 	private void sendNewUserSelfCreatedNofification(Principal principal, String password)
 			throws ResourceException, AccessDeniedException {
-		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password,
-				false);
-		messageService.sendMessage(MESSAGE_NEW_USER_SELF_CREATED, principal.getRealm(), resolver, principal);
+		messageService.newMessageSender(principal.getRealm()).
+			messageResourceKey(MESSAGE_NEW_USER_SELF_CREATED).
+			tokenResolver(new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password,
+					false)).
+			principals(principal).
+			send();
 	}
 
 	private void sendNewUserFixedPasswordNotification(Principal principal, String password)
 			throws ResourceException, AccessDeniedException {
-		PrincipalWithPasswordResolver resolver = new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password,
-				false);
-		messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, principal.getRealm(), resolver, principal);
+		messageService.newMessageSender(principal.getRealm()).
+			messageResourceKey(MESSAGE_NEW_USER_NEW_PASSWORD).
+			tokenResolver(new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password,
+					false)).
+			principals(principal).
+			send();
 	}
 
 	@Override
@@ -1025,8 +1034,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					eventService.publishEvent(new ChangePasswordEvent(this, getCurrentSession(), 
 							getCurrentRealm(), provider, newPassword, principal));
 
-					messageService.sendMessageNow(MESSAGE_PASSWORD_CHANGED, principal.getRealm(),
-							new PrincipalWithoutPasswordResolver((UserPrincipal<?>) principal), Arrays.asList(principal));
+					messageService.newMessageSender(principal.getRealm()).
+						messageResourceKey(MESSAGE_PASSWORD_CHANGED).
+						tokenResolver(new PrincipalWithoutPasswordResolver((UserPrincipal<?>) principal)).
+						principals(principal).
+						send();
 					
 					return principal;
 				} catch (Throwable t) {
@@ -1098,30 +1110,31 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				eventService.publishEvent(new SetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider,
 						principal, password));
 
+				var bldr = messageService.newMessageSender(principal.getRealm());
+				transactionService.doInTransaction((status) ->
+				bldr.tokenResolver(new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password, forceChangeAtNextLogon)));
+				bldr.principals(principal);
 				if (resendNewUserNotification) {
-					messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, principal.getRealm(), transactionService.doInTransaction((status) -> 
-						new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password, forceChangeAtNextLogon)
-							), principal);
+					bldr.messageResourceKey(MESSAGE_NEW_USER_NEW_PASSWORD);
 				} else {
-					messageService.sendMessageNow(MESSAGE_PASSWORD_RESET, principal.getRealm(),
-							transactionService.doInTransaction((status) -> 
-								new PrincipalWithPasswordResolver((UserPrincipal<?>) principal, password, forceChangeAtNextLogon)
-									),
-							Arrays.asList(principal));
+					bldr.messageResourceKey(MESSAGE_PASSWORD_RESET);
 				}
+				bldr.send();
 			} else {
 
 				eventService.publishEvent(new ResetPasswordEvent(this, getCurrentSession(), getCurrentRealm(), provider,
 						principal, password));
 
-				PrincipalWithoutPasswordResolver resolver = new PrincipalWithoutPasswordResolver((UserPrincipal<?>) principal);
-				
+
+				var bldr = messageService.newMessageSender(principal.getRealm());
+				bldr.tokenResolver(new PrincipalWithoutPasswordResolver((UserPrincipal<?>) principal));
+				bldr.principals(principal);
 				if (resendNewUserNotification) {
-					messageService.sendMessage(MESSAGE_NEW_USER_NEW_PASSWORD, principal.getRealm(), resolver, principal);
+					bldr.messageResourceKey(MESSAGE_NEW_USER_NEW_PASSWORD);
 				} else {
-					messageService.sendMessage(MESSAGE_PASSWORD_CHANGED, principal.getRealm(),
-						resolver, Arrays.asList(principal));
+					bldr.messageResourceKey(MESSAGE_PASSWORD_CHANGED);
 				}
+				bldr.send();
 			}
 			
 

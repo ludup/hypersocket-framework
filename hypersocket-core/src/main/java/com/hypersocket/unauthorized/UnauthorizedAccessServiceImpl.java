@@ -128,10 +128,10 @@ public class UnauthorizedAccessServiceImpl implements UnauthorizedAccessService 
 										PrincipalSuspensionType.MANUAL);
 								
 								if(principal!=null) {
-									messageService.sendMessage(MESSAGE_ACCOUNT_SUSPENDED, 
-											principal.getRealm(), 
-										   new AccountSuspensionResolver((UserPrincipal<?>)principal, failedAttempts, lockoutTime, period),
-										   principal);
+									messageService.newMessageSender(principal.getRealm()).
+										messageResourceKey(MESSAGE_ACCOUNT_SUSPENDED).
+										tokenResolver(new AccountSuspensionResolver((UserPrincipal<?>)principal, failedAttempts, lockoutTime, period)).
+										principals(principal).send();
 								}
 							} catch (ResourceException e) {
 								log.error("Failed to create suspension", e);

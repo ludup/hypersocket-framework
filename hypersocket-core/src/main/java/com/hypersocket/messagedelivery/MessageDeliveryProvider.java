@@ -13,6 +13,10 @@ public interface MessageDeliveryProvider<B extends MessageDeliveryBuilder> {
 	
 	String getResourceKey();
 	
+	default B newBuilder() {
+		return newBuilder(null);
+	}
+	
 	B newBuilder(Realm realm);
 
 	boolean isEnabled();

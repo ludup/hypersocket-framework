@@ -952,9 +952,13 @@ public class CertificateResourceServiceImpl extends
 		
 		if(ApplicationContextServiceImpl.getInstance().getBean("upgradeService", UpgradeService.class).isDone()) {
 			try {
-		        messageService.sendMessage(message, resource.getRealm(), new CertificateResolver(resource, getX509Certificate(resource)), permissionService.iteratePrincipalsByRole(resource.getRealm(), 
-						permissionService.getSystemAdministratorRole(),
-						permissionService.getRealmAdministratorRole(resource.getRealm())));
+				messageService.newMessageSender(resource.getRealm()).
+				 	messageResourceKey(message).
+				 	tokenResolver(new CertificateResolver(resource, getX509Certificate(resource))).
+				 	principals(permissionService.iteratePrincipalsByRole(resource.getRealm(), 
+							permissionService.getSystemAdministratorRole(),
+							permissionService.getRealmAdministratorRole(resource.getRealm()))).
+					send();
 			} catch (AccessDeniedException | CertificateException | ResourceException e) {
 				log.error("Failed to send certificate message", e);
 			}

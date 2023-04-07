@@ -3,10 +3,7 @@ package com.hypersocket.message;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -23,9 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hypersocket.email.EmailAttachment;
 import com.hypersocket.email.EmailBatchService;
-import com.hypersocket.email.RecipientHolder;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18N;
 import com.hypersocket.i18n.I18NService;
@@ -40,7 +35,6 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
-import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalWithoutPasswordResolver;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmAdapter;
@@ -53,8 +47,6 @@ import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.upload.FileUpload;
 import com.hypersocket.upload.FileUploadService;
-import com.hypersocket.util.TransformingIterator;
-import com.hypersocket.utils.ITokenResolver;
 
 @Service
 public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<MessageResource>
@@ -408,121 +400,6 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 		}
 	}
 
-	@Override
-	@Deprecated
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, Principal... principals)
-			throws ResourceException {
-		sendMessage(resourceKey, realm, tokenResolver, Arrays.asList(principals));
-	}
-
-	@Override
-	@Deprecated
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			List<EmailAttachment> attachments, Iterator<Principal> principals, String context) {
-		sendMessage(resourceKey, realm, tokenResolver, replyTo, attachments, principals,
-				Collections.<String>emptyList(), null);
-	}
-	
-	@Override
-	@Deprecated
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder recipient) {
-		sendMessage(resourceKey, realm, tokenResolver, recipient, Collections.emptyList());
-	}
-
-	@Override
-	@Deprecated
-	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver,
-			String... principals) {
-		sendMessageToEmailAddress(resourceKey, realm, tokenResolver, Arrays.asList(principals), null, null);
-	}
-
-	@Override
-	@Deprecated
-	public void sendMessageToEmailAddress(String resourceKey, Realm realm, ITokenResolver tokenResolver,
-			Collection<String> emails, List<EmailAttachment> attachments, String context) {
-		newMessageSender(realm).messageResourceKey(resourceKey).tokenResolver(tokenResolver).recipients(new TransformingIterator<String, RecipientHolder>(emails.iterator()) {
-			@Override
-			protected RecipientHolder transform(String email) {
-				return new RecipientHolder(ResourceUtils.getNamePairKey(email),
-						ResourceUtils.getNamePairValue(email));
-			}
-		}).attachments(attachments).context(context).send();
-	}
-
-	@Override
-	@Deprecated
-	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
-			RecipientHolder replyTo, ITokenResolver tokenResolver, List<EmailAttachment> attachments, String context) {
-		newMessageSender(realm).messageResourceKey(resourceKey).recipients(recipients).replyTo(replyTo).tokenResolver(tokenResolver).attachments(attachments).context(context).send();
-	}
-
-	@Override
-	@Deprecated
-	public void sendMessageToEmailAddress(String resourceKey, Realm realm, Collection<RecipientHolder> recipients,
-			ITokenResolver tokenResolver) {
-		sendMessageToEmailAddress(resourceKey, realm, recipients, null, tokenResolver, null, null);
-	}
-
-	@Override
-	public void sendMessageNow(String resourceKey, Realm realm, ITokenResolver tokenResolver,
-			Collection<Principal> principals) {
-		sendMessage(resourceKey, realm, tokenResolver, principals.iterator(), Collections.<String>emptyList(), null);
-	}
-
-	@Override
-	@Deprecated
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			List<EmailAttachment> attachments, Iterator<Principal> principals, Collection<String> emails, String context) {
-		sendMessage(resourceKey, realm, tokenResolver, replyTo, principals, emails, new Date(), attachments);
-	}
-
-	@Override
-	@Deprecated
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver,
-			Collection<Principal> principals) throws ResourceException {
-		sendMessage(resourceKey, realm, tokenResolver, principals.iterator(), Collections.<String>emptyList(),
-				new Date());
-	}
-
-	@Override
-	@Deprecated
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver,
-			Iterator<Principal> principals) throws ResourceException {
-		sendMessage(resourceKey, realm, tokenResolver, principals, Collections.<String>emptyList(), new Date());
-	}
-
-	@Override
-	@Deprecated
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver,
-			Iterator<Principal> principals, Collection<String> emails, Date schedule) {
-		sendMessage(resourceKey, realm, tokenResolver, null, principals, emails, schedule, null);
-	}
-
-	@Override
-	@Deprecated
-	public void sendMessage(String resourceKey, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			Iterator<Principal> principals, Collection<String> emails, Date schedule,
-			List<EmailAttachment> attachments) {
-		newMessageSender(realm).messageResourceKey(resourceKey).tokenResolver(tokenResolver).replyTo(replyTo).principals(principals).recipientAddresses(emails).batchFor(schedule).attachments(attachments).send();
-	}
-	
-	@Override
-	@Deprecated
-	public void sendMessage(String resourceKey, Realm realm, 
-			ITokenResolver tokenResolver, RecipientHolder replyTo,
-			Collection<Principal> principals) {
-		newMessageSender(realm).messageResourceKey(resourceKey).tokenResolver(tokenResolver).replyTo(replyTo).principals(principals).send();
-	}
-	
-	@Override
-	@Deprecated
-	public void sendMessage(MessageResource message, Realm realm, ITokenResolver tokenResolver, RecipientHolder replyTo,
-			Iterator<Principal> principals, Collection<String> emails, Date schedule,
-			List<EmailAttachment> attachments, String context) {
-
-		newMessageSender(realm).messageResource(message).tokenResolver(tokenResolver).replyTo(replyTo).principals(principals).recipientAddresses(emails).batchFor(schedule).attachments(attachments).context(context).send(); 
-	}
-
 	class MessageRegistration {
 		Set<String> variables;
 		String resourceBundle;
@@ -550,18 +427,5 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 		return repository.getMessageById(resourceKey, realm);
 	}
 
-	@Override
-	@Deprecated
-	public void sendMessage(String resourceKey, Realm currentRealm, ITokenResolver ticketResolver,
-			Iterator<Principal> principals, Collection<String> emails) {
-		sendMessage(resourceKey, currentRealm, ticketResolver, principals, emails, new Date());
-	}
-	
-	@Override
-	@Deprecated
-	public void sendMessageNow(String resourceKey, Realm currentRealm, ITokenResolver ticketResolver,
-			Iterator<Principal> principals, Collection<String> emails) {
-		sendMessage(resourceKey, currentRealm, ticketResolver, principals, emails, null);
-	}
 
 }

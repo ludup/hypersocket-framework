@@ -127,7 +127,7 @@ public class EmailTask extends AbstractTaskProvider {
 			String[] emails = ResourceUtils.explodeValues(value);
 			for (String email : emails) {
 				if(!ResourceUtils.isReplacementVariable(email)) {
-					if (!provider.validateEmailAddress(email)) {
+					if (!provider.newBuilder().validate(email)) {
 						invalidAttributes.add(new TriggerValidationError(
 								ATTR_TO_ADDRESSES, email));
 					}
