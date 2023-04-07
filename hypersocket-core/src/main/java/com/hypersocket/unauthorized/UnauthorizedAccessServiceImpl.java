@@ -28,7 +28,6 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserPrincipal;
 import com.hypersocket.resource.ResourceException;
-import com.hypersocket.transactions.TransactionService;
 
 @Service
 public class UnauthorizedAccessServiceImpl implements UnauthorizedAccessService {
@@ -45,9 +44,6 @@ public class UnauthorizedAccessServiceImpl implements UnauthorizedAccessService 
 	
 	@Autowired
 	private PrincipalSuspensionService suspensionService; 
-	
-	@Autowired
-	private TransactionService transactionService; 
 	
 	@Autowired
 	private RealmService realmService; 

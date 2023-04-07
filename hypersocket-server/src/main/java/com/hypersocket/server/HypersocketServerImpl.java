@@ -78,7 +78,6 @@ import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 import com.hypersocket.session.Session;
-import com.hypersocket.session.json.SessionUtils;
 
 public abstract class HypersocketServerImpl implements HypersocketServer, 
 				ApplicationListener<SystemEvent> {
@@ -94,9 +93,6 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	@Autowired 
 	private RealmService realmService;
 	
-	@Autowired 
-	private SessionUtils sessionUtils;
-
 	private Map<String, Object> attributes = new HashMap<String, Object>();
 
 	private String sessionCookieName;

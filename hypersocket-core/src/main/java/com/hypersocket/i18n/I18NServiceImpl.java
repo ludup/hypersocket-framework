@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.cache.CacheService;
 import com.hypersocket.config.ConfigurationService;
-import com.hypersocket.email.EmailNotificationService;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.secret.SecretKeyServiceImpl;
