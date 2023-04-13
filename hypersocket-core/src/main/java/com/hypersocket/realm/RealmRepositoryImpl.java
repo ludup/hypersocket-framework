@@ -335,4 +335,10 @@ public class RealmRepositoryImpl extends
 		save(realm);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public Realm getFakeRealm() {
+		return get("name", RealmService.FAKE_REALM_NAME, Realm.class, false);
+	}
+
 }

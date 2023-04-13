@@ -160,7 +160,7 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	}
 	
 	private RealmProvider getProviderForPrincipal(Principal principal) {
-		if (principal instanceof LocalUser || principal instanceof FakePrincipal) {
+		if (principal instanceof LocalUser || principal instanceof FakePrincipal || principal.isFake()) {
 			return realmService.getLocalProvider();
 		}
 		return realmService.getProviderForRealm(principal.getRealm());

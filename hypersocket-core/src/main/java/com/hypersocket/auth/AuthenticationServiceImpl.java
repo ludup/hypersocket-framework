@@ -505,8 +505,9 @@ public class AuthenticationServiceImpl extends
 				throw new FallbackAuthenticationRequired();
 			}
 
-			if (authenticator.isSecretModule()
-					&& state.getPrincipal() instanceof FakePrincipal) {
+			if (!authenticator.isTwoFactoryAuthenticationEntryPoint() 
+					&& authenticator.isSecretModule()
+					&& state.isFakePrincipal()) {
 				state.setLastErrorMsg("error.genericLogonError");
 				state.setLastErrorIsResourceKey(true);
 				eventService.publishEvent(new AuthenticationAttemptEvent(this,
@@ -516,7 +517,7 @@ public class AuthenticationServiceImpl extends
 				if(checkSuspensions(state, authenticator)) {
 				
 					AuthenticatorResult result;
-					if(state.getPrincipal()!=null && state.getPrincipal() instanceof FakePrincipal) {
+					if(state.isFakePrincipal()) {
 						result = AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_PRINCIPAL;
 					} else {
 						preProcess(authenticator, state, parameterMap);
@@ -544,7 +545,7 @@ public class AuthenticationServiceImpl extends
 					case AUTHENTICATION_FAILURE_DISPLAY_ERROR: 
 					{
 						if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
-							state.fakeCredentials();
+							state.fakeCredentials(realmService.getFakePrincipal());
 							state.nextModule();
 						} else {
 							eventService
@@ -554,9 +555,8 @@ public class AuthenticationServiceImpl extends
 						break;
 					}
 					case AUTHENTICATION_FAILURE_INVALID_CREDENTIALS: {
-	
-						if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
-							state.fakeCredentials();
+						 if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
+							state.fakeCredentials(realmService.getFakePrincipal());
 							state.nextModule();
 						} else {
 							state.setLastErrorMsg("error.genericLogonError");
@@ -571,8 +571,11 @@ public class AuthenticationServiceImpl extends
 					}
 					case AUTHENTICATION_FAILURE_INVALID_PRINCIPAL: {
 	
-						if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
-							state.fakeCredentials();
+						if (authenticator.isTwoFactoryAuthenticationEntryPoint()) {
+							authenticator.authenticate(state, parameterMap);
+							authenticator = nextAuthenticator (state);
+						} else if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
+							state.fakeCredentials(realmService.getFakePrincipal());
 							state.nextModule();
 						} else {
 							state.setLastErrorMsg("error.genericLogonError");
@@ -587,7 +590,7 @@ public class AuthenticationServiceImpl extends
 					case AUTHENTICATION_FAILURE_INVALID_REALM: {
 	
 						if (authenticator.isIdentityModule() && !authenticator.isSecretModule() && state.hasNextStep()) {
-							state.fakeCredentials();
+							state.fakeCredentials(realmService.getFakePrincipal());
 							state.nextModule();
 						} else {
 							state.setLastErrorMsg("error.genericLogonError");

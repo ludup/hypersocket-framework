@@ -222,7 +222,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	
 	private List<RealmOwnershipResolver> ownershipResolvers = new ArrayList<RealmOwnershipResolver>();
 	private Principal systemPrincipal;
+	private Principal fakePrincipal;
 	private Realm systemRealm;
+	private Realm fakeRealm;
 	private Cache<String, Object> realmCache;
 
 	public static final String MESSAGE_NEW_USER_NEW_PASSWORD = "realmService.newUserNewPassword";
@@ -408,7 +410,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	protected RealmProvider getProviderForPrincipal(Principal principal) {
-		if (principal instanceof LocalUser || principal instanceof FakePrincipal) {
+		if (principal instanceof LocalUser || principal instanceof FakePrincipal || principal.isFake()) {
 			return getLocalProvider();
 		}
 		return getProviderForRealm(principal.getRealm());
@@ -3212,5 +3214,33 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		
 		return allViews;
+	}
+
+	@Override
+	public Principal getFakePrincipal() {
+		if (fakePrincipal == null) {
+			fakePrincipal = getPrincipalByName(realmRepository.getFakeRealm(), 
+					FAKE_PRINCIPAL_NAME,
+					PrincipalType.FAKE);
+			
+			if (fakePrincipal != null && fakePrincipal.getRealm() == null) {
+				fakePrincipal.setRealm(getFakeRealm());
+			}
+			
+			var currentFakeRealmName = fakePrincipal.getRealm().getName();
+			
+			if (!RealmService.FAKE_REALM_NAME.equals(currentFakeRealmName)) {
+				throw new IllegalStateException("Fake user's realm is not fake.");
+			}
+		}
+		return fakePrincipal;
+	}
+
+	@Override
+	public Realm getFakeRealm() {
+		if (fakeRealm == null) {
+			fakeRealm = realmRepository.getFakeRealm();
+		}
+		return fakeRealm;
 	}
 }

@@ -13,8 +13,9 @@ public enum PrincipalType {
 	GROUP,
 	SERVICE,
 	SYSTEM,
-	TEMPLATE;
+	TEMPLATE,
+	FAKE;
 	
-	public static final PrincipalType[] ALL_TYPES = { USER, GROUP, SERVICE, SYSTEM };
+	public static final PrincipalType[] ALL_TYPES = { USER, GROUP, SERVICE, SYSTEM, FAKE };
 	
 }

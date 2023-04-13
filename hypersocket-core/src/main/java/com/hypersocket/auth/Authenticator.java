@@ -52,4 +52,8 @@ public interface Authenticator {
 	String getCredentialsResourceKey();
 	
 	AuthenticationModuleCategory getAuthenticationModuleCategory();
+	
+	default boolean isTwoFactoryAuthenticationEntryPoint() {
+        return false;
+    }
 }

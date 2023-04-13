@@ -136,6 +136,7 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 				break;
 			case SERVICE:
 			case SYSTEM:
+			case FAKE:
 			case TEMPLATE:
 				break;
 			}
@@ -162,6 +163,8 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 			case TEMPLATE:
 				principal = userRepository.getUserByNameAndType(principalName,
 						realm, type);
+				break;
+			case FAKE:
 				break;
 				
 			}
@@ -505,18 +508,20 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		Principal principal = null;
 		for (PrincipalType type : acceptTypes) {
 			switch (type) {
-			case USER:
-				principal = userRepository.getUserById(id, realm, false);
-				break;
-			case GROUP:
-				principal = groupRepository.getGroupById(id, realm, false);
-				break;
-			case SERVICE:
-			case SYSTEM:
-			case TEMPLATE:
-				principal = userRepository.getUserByIdAndType(id, realm,
-						PrincipalType.SYSTEM);
-				break;
+				case USER:
+					principal = userRepository.getUserById(id, realm, false);
+					break;
+				case GROUP:
+					principal = groupRepository.getGroupById(id, realm, false);
+					break;
+				case SERVICE:
+				case SYSTEM:
+				case TEMPLATE:
+					principal = userRepository.getUserByIdAndType(id, realm,
+							PrincipalType.SYSTEM);
+					break;
+				case FAKE:
+					break;
 			}
 			if (principal != null)
 				break;
@@ -532,16 +537,17 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 		Principal principal = null;
 		for (PrincipalType type : acceptTypes) {
 			switch (type) {
-			case USER:
-				principal = userRepository.getUserById(id, realm, true);
-				break;
-			case GROUP:
-				principal = groupRepository.getGroupById(id, realm, true);
-				break;
-			case SERVICE:
-			case SYSTEM:
-			case TEMPLATE:
-				break;
+				case USER:
+					principal = userRepository.getUserById(id, realm, true);
+					break;
+				case GROUP:
+					principal = groupRepository.getGroupById(id, realm, true);
+					break;
+				case SERVICE:
+				case SYSTEM:
+				case FAKE:
+				case TEMPLATE:
+					break;
 			}
 			if (principal != null)
 				break;

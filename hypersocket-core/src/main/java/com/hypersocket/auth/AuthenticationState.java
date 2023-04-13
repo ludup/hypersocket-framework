@@ -360,11 +360,16 @@ public class AuthenticationState implements Serializable {
 		return (V)environment.get(key);
 	}
 
-	public void fakeCredentials() {
-		setPrincipal(new FakePrincipal(lastPrincipalName));
-		Realm realm = new Realm();
-		realm.setId(-1L);
-		realm.setName("Fake");
+	public void fakeCredentials(Principal fakePrincipal) {
+		
+		Objects.requireNonNull(fakePrincipal, "Fake principal cannot be null.");
+		
+		if (!fakePrincipal.isFake()) {
+			throw new IllegalArgumentException("Principal type is not fake.");
+		}
+		
+		setPrincipal(fakePrincipal);
+		setRealm(fakePrincipal.getRealm());
 	}
 	
 	public boolean hasNextStep() {
@@ -550,5 +555,13 @@ public class AuthenticationState implements Serializable {
 	public static AuthenticationState createAuthenticationState(String scheme, HttpServletRequest request,
 			Realm currentRealm) throws AccessDeniedException {
 		return createAuthenticationState(scheme, request, currentRealm, null, null);
+	}
+	
+	public boolean isFakePrincipal() {
+		return principal != null && principal.isFake();
+	}
+	
+	public boolean isNormalPrincipal() {
+		return !isFakePrincipal();
 	}
 }

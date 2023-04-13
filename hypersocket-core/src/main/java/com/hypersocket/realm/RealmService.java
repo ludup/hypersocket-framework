@@ -33,6 +33,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	//static final String SYSTEM_REALM = "System";
 	static final String SYSTEM_PRINCIPAL = "system";
 	static final String MODULE = "realms";
+	
+	static final String FAKE_REALM_NAME = "logonbox_fake_realm";
+	public static final String FAKE_PRINCIPAL_NAME = "logonbox_fake_principal";
 
 	public final static String KNOWN_HOSTS_ATTR = "realm.knownHosts";
 
@@ -89,6 +92,8 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 			throws AccessDeniedException, ResourceException;
 
 	Principal getSystemPrincipal();
+	
+	Principal getFakePrincipal();
 
 	List<RealmProvider> getProviders() throws AccessDeniedException;
 
@@ -171,6 +176,8 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	Principal unlockAccount(Principal principal) throws ResourceException, AccessDeniedException;
 
 	Realm getSystemRealm();
+	
+	Realm getFakeRealm();
 
 	void registerRealmListener(RealmListener listener);
 

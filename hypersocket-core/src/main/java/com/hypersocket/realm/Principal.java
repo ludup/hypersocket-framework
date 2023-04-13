@@ -212,6 +212,11 @@ public abstract class Principal extends RealmResource {
 	public void setSuspended(Boolean suspended) {
 		this.suspended = suspended;
 	}
+	
+	@JsonIgnore
+	public boolean isFake() {
+		return principalType == PrincipalType.FAKE;
+	}
 
 	@Override
 	public String toString() {
