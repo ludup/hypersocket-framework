@@ -51,7 +51,7 @@
 	<properties>
 		<org.springframework.version>4.3.1.RELEASE</org.springframework.version>
 		<aspectj.version>1.8.13</aspectj.version>
-		<project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		
 		<!-- Also in hypersocket.enterprise, hypersocket-json-client and I4J -->
 		<jackson.version>2.10.5</jackson.version>
@@ -117,6 +117,28 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+	
+	<profiles>
+		<profile>
+			<id>translate</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.nervepoint</groupId>
+						<artifactId>google-translate-v2-java-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>translate</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<build>
 		<directory>target</directory>
@@ -149,18 +171,6 @@
 					<target>11</target>
 					<encoding>UTF-8</encoding>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>com.nervepoint</groupId>
-				<artifactId>google-translate-v2-java-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>translate</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -216,10 +226,9 @@
 					<configuration>
 						<encoding>UTF-8</encoding>
 						<excludePackageNames>**.impl.*</excludePackageNames>
-						<detectJavaApiLink>false</detectJavaApiLink>
-						<!-- https://bugs.openjdk.java.net/browse/JDK-8212233 -->
-						<source>11</source>
-						<additionalparam>-Xdoclint:none</additionalparam>
+						<doclint>-html,-syntax,-accessibility,-missing</doclint>
+					  	<failOnError>false</failOnError>
+					  	<quiet>true</quiet>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -310,28 +319,6 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-
-	<profiles>
-		<profile>
-			<activation>
-				<jdk>[9,)</jdk>
-			</activation>
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-javadoc-plugin</artifactId>
-							<configuration>
-								<!-- TODO: Why is this STILL broken! -->
-								<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
-							</configuration>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-			</build>
-		</profile>
-	</profiles>
 
 	<repositories>
 		<repository>
