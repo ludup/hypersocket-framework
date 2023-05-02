@@ -921,7 +921,9 @@ public class AuthenticationServiceImpl extends
 					"completeLogon called without a principal in the AuthenticationState!");
 		}
 		
-		Request.cleanSessionOnLogin();
+		if(System.getProperty("hypersocket.cleanSessionOnLogin", "true").equals("true")) {
+			Request.cleanSessionOnLogin();
+		}
 
 		Session session = sessionService.openSession(state.getRemoteAddress(),
 				state.getPrincipal(), state.getScheme(), state.getUserAgent(),
