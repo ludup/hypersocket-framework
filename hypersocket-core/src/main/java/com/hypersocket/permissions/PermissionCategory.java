@@ -36,10 +36,10 @@ public class PermissionCategory extends AbstractEntity<Long> {
 	@Column(name="id")
 	private Long id;
 
-	@Column(name="resource_bundle", nullable=false, length = 512)	
+	@Column(name="resource_bundle", nullable=false, length = 191)	
 	private String resourceBundle;
 	
-	@Column(name="resource_key", nullable=false, length = 512)	
+	@Column(name="resource_key", nullable=false, length = 191)	
 	private String resourceKey;
 
 	@OneToMany(mappedBy="category", fetch=FetchType.EAGER)
