@@ -350,6 +350,13 @@ public class SessionUtils {
 		return (session.getTimeout() > 0 ? 60 * session.getTimeout() : Integer.MAX_VALUE);
 	}
 	
+	public Cookie decorateCookie(Cookie cookie) {
+		for(var d : sessionService.getCookieDecorators()) {
+			cookie = d.decorate(cookie);
+		}
+		return cookie;
+	}
+	
 	public void addAPISession(HttpServletRequest request,
 			HttpServletResponse response, Session session) {
 
@@ -363,6 +370,7 @@ public class SessionUtils {
 		if(!cfg.equalsIgnoreCase("Omit")) {
 			cookie.setComment("; SameSite=" + cfg);
 		}
+		cookie = decorateCookie(cookie);
 		response.addCookie(cookie);
 		
 		cookie = new Cookie(HYPERSOCKET_CSRF_TOKEN, session.getCsrfToken());
@@ -374,6 +382,7 @@ public class SessionUtils {
 		if(!cfg.equalsIgnoreCase("Omit")) {
 			cookie.setComment("; SameSite=" + cfg);
 		}
+		cookie = decorateCookie(cookie);
 		response.addCookie(cookie);
 	
 	}
@@ -417,6 +426,7 @@ public class SessionUtils {
 		if(!cfg.equalsIgnoreCase("Omit")) {
 			cookie.setComment("; SameSite=" + cfg);
 		}
+		cookie = decorateCookie(cookie);
 		response.addCookie(cookie);
 
 	}

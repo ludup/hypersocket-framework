@@ -247,6 +247,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 							if(!cfg.equalsIgnoreCase("Omit")) {
 								cookie.setComment("; SameSite=" + cfg);
 							}
+							cookie = server.decorateCookie(cookie);
 							nettyResponse.addCookie(cookie);
 						}
 						else if(thisSession != null) {

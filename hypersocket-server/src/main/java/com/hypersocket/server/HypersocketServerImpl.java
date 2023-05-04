@@ -36,6 +36,7 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedKeyManager;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -78,6 +79,7 @@ import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 import com.hypersocket.session.Session;
+import com.hypersocket.session.json.SessionUtils;
 
 public abstract class HypersocketServerImpl implements HypersocketServer, 
 				ApplicationListener<SystemEvent> {
@@ -86,6 +88,9 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 
 	@Autowired
 	private EventService eventService;
+	
+	@Autowired
+	private SessionUtils sessionUtils;
 	
 	@Autowired
 	private SystemConfigurationService configurationService;
@@ -167,6 +172,10 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 	@Override
 	public void addUrlRewrite(String regex, String rewrite) {
 		urlRewrite.put(Pattern.compile(regex), rewrite);
+	}
+	
+	public Cookie decorateCookie(Cookie cookie) {
+		return sessionUtils.decorateCookie(cookie);
 	}
 	
 	@Override

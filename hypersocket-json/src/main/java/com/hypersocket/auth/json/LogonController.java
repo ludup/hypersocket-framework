@@ -179,14 +179,15 @@ public class LogonController extends AuthenticatedController {
 
 		AuthenticationState state = AuthenticationState.getCurrentState(request);
 
-		String flash = (String) request.getSession().getAttribute("flash");
-		String flashStyle = (String) request.getSession().getAttribute("flashStyle");
+		var httpSession = request.getSession();
+		String flash = (String) httpSession.getAttribute("flash");
+		String flashStyle = (String) httpSession.getAttribute("flashStyle");
 		
 		Session session;
 		
 		boolean requireRedirect = request.getParameterMap().containsKey("rr");
 		
-		request.getSession().removeAttribute("flash");
+		httpSession.removeAttribute("flash");
 
 		try {
 			
@@ -211,7 +212,7 @@ public class LogonController extends AuthenticatedController {
 			 * LDP - This allows the scheme to be preset in a previous API call so that we don't have to 
 			 * specify the scheme when we start the login flow.
 			 */
-			scheme = (String) request.getSession().getAttribute(AuthenticationService.AUTHENTICATION_SCHEME);
+			scheme = (String) httpSession.getAttribute(AuthenticationService.AUTHENTICATION_SCHEME);
 		}
 		try {
 
@@ -246,13 +247,13 @@ public class LogonController extends AuthenticatedController {
 //				}
 			}
 
-			String redirectHome = (String) request.getSession().getAttribute("redirectHome");
+			String redirectHome = (String) httpSession.getAttribute("redirectHome");
 			if(redirectHome==null && request.getParameterMap().containsKey("redirectHome")) {
 				redirectHome = request.getParameter("redirectHome");
 			}
 			if(redirectHome!=null) {
 				state.setHomePage(redirectHome);
-				request.getSession().removeAttribute("redirectHome");
+				httpSession.removeAttribute("redirectHome");
 			}
 
 			
@@ -301,8 +302,8 @@ public class LogonController extends AuthenticatedController {
 						String redirect = state.getInitialScheme().getResourceKey().equals(AuthenticationServiceImpl.AUTHENTICATION_SCHEME_USER_LOGIN_RESOURCE_KEY) 
 								? System.getProperty("hypersocket.appPath", "/app") + "/ui"
 								: System.getProperty("hypersocket.appPath", "/app") + "/" + state.getInitialSchemeResourceKey();
-						request.getSession().setAttribute("flash", i18nService.getResource("error.genericLogonError", state.getLocale()));
-						request.getSession().setAttribute("flashStyle", "danger");
+						httpSession.setAttribute("flash", i18nService.getResource("error.genericLogonError", state.getLocale()));
+						httpSession.setAttribute("flashStyle", "danger");
 						throw new RedirectException(redirect);
 					}
 					else
@@ -320,7 +321,7 @@ public class LogonController extends AuthenticatedController {
 							authenticationService.nextAuthenticationTemplate(state, request.getParameterMap());
 				}
 				
-				request.getSession().setAttribute("lastFormTemplate", template);
+				httpSession.setAttribute("lastFormTemplate", template);
 				
 //				try {
 					return new LogonRequiredResult(
