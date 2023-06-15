@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class EncryptionServiceImpl implements EncryptionService {
 	
 	@Autowired
 	@Qualifier("defaultEncryptor")
+	@Lazy
 	private Encryptor encryptor;
 
 	@Autowired
