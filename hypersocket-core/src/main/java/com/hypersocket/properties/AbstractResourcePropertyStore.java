@@ -198,7 +198,9 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		}
 
 		if(value != null && template.isEncrypted() && !ResourceUtils.isEncrypted(value) && Objects.nonNull(resource)) {
-			value = encryptValue(resource.getUUID(), value, resolveRealm(resource));
+			var realm = resolveRealm(resource);
+			log.info("REMOVEME setPropertyValue for encrypted key {}. Ref is {}, Realm is {}", template.getName(), resource.getUUID(), realm.getName());
+			value = encryptValue(resource.getUUID(), value, realm);
 			doSetProperty(template, resource, value);
 		} else {
 			doSetProperty(template, resource, value);
