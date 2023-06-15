@@ -11,6 +11,7 @@ import javax.cache.Cache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.cache.CacheService;
@@ -25,14 +26,10 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	
 	private Map<String, PropertyTemplate> templates = new HashMap<String, PropertyTemplate>();
 	private Map<String, List<PropertyTemplate>> templatesByModule = new HashMap<String, List<PropertyTemplate>>();
+	private final ApplicationContext applicationContext;
 
-	protected EncryptionService encryptionService; 
-	
-	public AbstractResourcePropertyStore() {
-	}
-	
-	protected void setEncryptionService(EncryptionService encryptionService) {
-		this.encryptionService = encryptionService;
+	protected AbstractResourcePropertyStore(ApplicationContext applicationContext) {
+		this.applicationContext = applicationContext;
 	}
 	
 	protected abstract String getCacheName();
@@ -199,7 +196,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 
 		if(value != null && template.isEncrypted() && !ResourceUtils.isEncrypted(value) && Objects.nonNull(resource)) {
 			var realm = resolveRealm(resource);
-			log.info("REMOVEME setPropertyValue for encrypted key {}. Ref is {}, Realm is {}", template.getName(), resource.getUUID(), realm.getName());
+			log.info("REMOVEME setPropertyValue for resource key {}. Ref is {}, Realm is {}", template.getResourceKey(), resource.getUUID(), realm.getName());
 			value = encryptValue(resource.getUUID(), value, realm);
 			doSetProperty(template, resource, value);
 		} else {
@@ -207,18 +204,22 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		}
 	}
 	
-	private String encryptValue(String cacheKey, String value, Realm realm) {
+	protected String encryptValue(String cacheKey, String value, Realm realm) {
 		try {
-			return encryptionService.encryptString(cacheKey, value, realm);
+			var encr = applicationContext.getBean(EncryptionService.class);
+			log.info("REMOVEME encryptValue for cache key {}. Realm is {}, Encrypter {}", cacheKey, realm.getName(), encr.getClass().getName());
+			return encr.encryptString(cacheKey, value, realm);
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not encrypt property value. Check the logs for more detail.", e);
 		}
 	}
 	
-	private String decryptValue(String cacheKey, String value, Realm realm) {
+	protected String decryptValue(String cacheKey, String value, Realm realm) {
 		try {
 			String e =  value.substring(5);
-			return encryptionService.decryptString(cacheKey, e, realm);
+			var decr = applicationContext.getBean(EncryptionService.class);
+			log.info("REMOVEME decryptValue for cache key {}. Realm is {}, Encrypter {}", cacheKey, realm.getName(), decr.getClass().getName());
+			return decr.decryptString(cacheKey, e, realm);
 		} catch(Exception e) {
 			log.warn("Unable to decrypt " + cacheKey + "; returning encrypted", e);
 			return value;

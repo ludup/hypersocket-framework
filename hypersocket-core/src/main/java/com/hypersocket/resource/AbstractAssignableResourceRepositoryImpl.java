@@ -31,12 +31,12 @@ import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.bulk.BulkAssignment;
 import com.hypersocket.bulk.BulkAssignmentMode;
-import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
@@ -62,11 +62,11 @@ public abstract class AbstractAssignableResourceRepositoryImpl<T extends Assigna
 	protected EntityResourcePropertyStore entityPropertyStore;
 
 	@Autowired
-	private EncryptionService encryptionService;
+	private ApplicationContext applicationContext;
 	
 	@PostConstruct
 	private void postConstruct() {
-		entityPropertyStore = new EntityResourcePropertyStore(encryptionService, getResourceClass().getCanonicalName());
+		entityPropertyStore = new EntityResourcePropertyStore(applicationContext, getResourceClass().getCanonicalName());
 	}
 
 	protected void beforeDelete(T resource) throws ResourceException {

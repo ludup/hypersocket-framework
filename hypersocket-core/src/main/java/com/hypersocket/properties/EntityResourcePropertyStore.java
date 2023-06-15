@@ -18,10 +18,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Element;
 
 import com.hypersocket.ApplicationContextServiceImpl;
-import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
@@ -45,7 +45,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	String attributeField;
 	String name;
 	
-	public EntityResourcePropertyStore(EncryptionService encryptionService, String name) {
+	public EntityResourcePropertyStore(ApplicationContext applicationContext, String name) {
+		super(applicationContext);
 		
 		this.name = name;
 		primitiveParsers.put(Boolean.class, new BooleanValue());
@@ -56,8 +57,6 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		primitiveParsers.put(int.class, new IntegerValue());
 		primitiveParsers.put(long.class, new LongValue());
 		primitiveParsers.put(boolean.class, new BooleanValue());
-		
-		setEncryptionService(encryptionService);
 	}
 	
 	public static Collection<FindableResourceRepository<?>> getRepositories() {
@@ -513,8 +512,8 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 			if(template.isEncrypted()) {
 				if(!ResourceUtils.isEncrypted(value)) {
 					try {
-						value = encryptionService.encryptString(uuid, value, realm);
-					} catch (IOException e) {
+						value = encryptValue(uuid, value, realm);
+					} catch (IllegalStateException e) {
 						return value;
 					}
 				}

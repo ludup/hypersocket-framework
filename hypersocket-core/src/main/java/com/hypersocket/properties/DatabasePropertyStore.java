@@ -2,18 +2,18 @@ package com.hypersocket.properties;
 
 import java.io.IOException;
 
+import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Element;
 
-import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.resource.SimpleResource;
 
 public class DatabasePropertyStore extends AbstractResourcePropertyStore {
 
 	PropertyRepository repository;
 	
-	public DatabasePropertyStore(PropertyRepository repository, EncryptionService encryptionService) {
+	public DatabasePropertyStore(PropertyRepository repository, ApplicationContext applicationContext) {
+		super(applicationContext);
 		this.repository = repository;
-		setEncryptionService(encryptionService);
 	}
 
 	public boolean isDefaultStore() {

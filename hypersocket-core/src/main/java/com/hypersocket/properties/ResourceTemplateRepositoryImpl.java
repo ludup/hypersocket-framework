@@ -38,7 +38,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.hypersocket.ApplicationContextServiceImpl;
-import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.replace.ReplacementUtils;
 import com.hypersocket.resource.SimpleResource;
 import com.hypersocket.triggers.ValidationException;
@@ -50,9 +49,6 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	static Logger log = LoggerFactory.getLogger(ResourceTemplateRepositoryImpl.class);
 
 	private DatabasePropertyStore configPropertyStore;
-
-	@Autowired
-	private EncryptionService encryptionService;
 
 	@Autowired
 	private ApplicationContext applicationContext;
@@ -84,7 +80,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	private void postConstruct() {
 		configPropertyStore = new DatabasePropertyStore(
 				(PropertyRepository) applicationContext.getBean("systemConfigurationRepositoryImpl"),
-				encryptionService);
+				applicationContext);
 		propertyStoresById.put("db", configPropertyStore);
 		propertyStoresById.put("transient", new TransientPropertyStore());
 	}

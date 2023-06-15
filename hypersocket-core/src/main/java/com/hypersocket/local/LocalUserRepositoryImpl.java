@@ -24,11 +24,11 @@ import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.config.SystemConfigurationService;
-import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
 import com.hypersocket.properties.ResourcePropertyStore;
@@ -54,7 +54,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 			.getLogger(LocalUserRepositoryImpl.class);
 	
 	@Autowired
-	private EncryptionService encryptionService;
+	private ApplicationContext applicationContext;
 
 	@Autowired
 	private SystemConfigurationService systemConfigurationService;
@@ -68,7 +68,7 @@ public class LocalUserRepositoryImpl extends ResourceTemplateRepositoryImpl impl
 	
 	@PostConstruct
 	private void postConstruct() {
-		entityPropertyStore = new EntityResourcePropertyStore(encryptionService, "localUserRepository");
+		entityPropertyStore = new EntityResourcePropertyStore(applicationContext, "localUserRepository");
 	}
 	
 	@Override

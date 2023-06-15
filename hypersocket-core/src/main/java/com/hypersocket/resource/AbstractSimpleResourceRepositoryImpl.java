@@ -16,6 +16,7 @@ import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,6 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hypersocket.auth.AuthenticationService;
-import com.hypersocket.encrypt.EncryptionService;
 import com.hypersocket.properties.AbstractPropertyTemplate;
 import com.hypersocket.properties.EntityResourcePropertyStore;
 import com.hypersocket.properties.PropertyTemplate;
@@ -48,13 +48,13 @@ public abstract class AbstractSimpleResourceRepositoryImpl<T extends SimpleResou
 	private PlatformTransactionManager txManager;
 	
 	@Autowired
-	private EncryptionService encryptionService;
+	private ApplicationContext applicationContext;
 	
 	private List<TransactionOperation<T>> defaultOperations = new ArrayList<TransactionOperation<T>>();
 	
 	@PostConstruct
 	private void postConstruct() {
-		entityPropertyStore = new EntityResourcePropertyStore(encryptionService, getResourceClass().getCanonicalName());
+		entityPropertyStore = new EntityResourcePropertyStore(applicationContext, getResourceClass().getCanonicalName());
 	}
 	
 	protected void addDefaultOperation(TransactionOperation<T> op) {

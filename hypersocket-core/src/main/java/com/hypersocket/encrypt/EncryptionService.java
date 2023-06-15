@@ -6,9 +6,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface EncryptionService extends Encryptor {
 
-	void setEncryptor(Encryptor encryptor);
-
-	Encryptor getEncryptor();
+	Encryptor setEncryptor(Encryptor encryptor);
 	
 	void onContextStartedEvent(ContextStartedEvent event);
 
