@@ -196,7 +196,6 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 
 		if(value != null && template.isEncrypted() && !ResourceUtils.isEncrypted(value) && Objects.nonNull(resource)) {
 			var realm = resolveRealm(resource);
-			log.info("REMOVEME setPropertyValue for resource key {}. Ref is {}, Realm is {}", template.getResourceKey(), resource.getUUID(), realm.getName());
 			value = encryptValue(resource.getUUID(), value, realm);
 			doSetProperty(template, resource, value);
 		} else {
@@ -207,7 +206,6 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 	protected String encryptValue(String cacheKey, String value, Realm realm) {
 		try {
 			var encr = applicationContext.getBean(EncryptionService.class);
-			log.info("REMOVEME encryptValue for cache key {}. Realm is {}, Encrypter {}", cacheKey, realm.getName(), encr.getClass().getName());
 			return encr.encryptString(cacheKey, value, realm);
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not encrypt property value. Check the logs for more detail.", e);
@@ -218,7 +216,6 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		try {
 			String e =  value.substring(5);
 			var decr = applicationContext.getBean(EncryptionService.class);
-			log.info("REMOVEME decryptValue for cache key {}. Realm is {}, Encrypter {}", cacheKey, realm.getName(), decr.getClass().getName());
 			return decr.decryptString(cacheKey, e, realm);
 		} catch(Exception e) {
 			log.warn("Unable to decrypt " + cacheKey + "; returning encrypted", e);

@@ -38,14 +38,11 @@ public class EncryptionServiceImpl implements EncryptionService {
 	@Override
 	public String encryptString(String reference, String data, Realm realm) throws IOException {
 
-		log.info("REMOVEME about to encrypt (using {}) data of {} bytes for reference of {} on realm {}", encryptor.getClass().getName(), data.getBytes().length, reference, realm.getName());
-		
 		return ResourceUtils.addEncryptedTag(encryptor.encryptString(reference, data, realm));
 	}
 	
 	@Override
 	public String decryptString(String reference, String data, Realm realm) throws IOException{
-		log.info("REMOVEME about to decrypt (using {}) data of {} bytes for reference of {} on realm {}", encryptor.getClass().getName(),data.getBytes().length, reference, realm.getName());	
 		return encryptor.decryptString(reference, ResourceUtils.removeEncryptedTag(data), realm);
 	}
 
