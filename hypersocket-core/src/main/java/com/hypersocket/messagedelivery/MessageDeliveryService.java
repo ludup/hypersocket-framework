@@ -9,8 +9,6 @@ import com.hypersocket.email.MessageDeliveryController;
 import com.hypersocket.realm.MediaType;
 
 public interface MessageDeliveryService  {
-	
-	void setSenderContext(SenderContext senderContext);
 
 	MessageDeliveryController getController();
 
@@ -55,6 +53,4 @@ public interface MessageDeliveryService  {
 	default List<MessageDeliveryProvider<?>> getProviders(MediaType type) {
 		return getProviders().stream().filter(p -> p.getSupportedMedia().equals(type)).collect(Collectors.toList());
 	}
-
-	SenderContext getSenderContext();
 }
