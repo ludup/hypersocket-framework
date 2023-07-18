@@ -11,6 +11,7 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,9 @@ import com.hypersocket.utils.HypersocketUtils;
 public class UserPrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<UserPrincipal<GroupPrincipal<?,?>>> implements UserPrincipalRepository {
 	
 	final static Logger LOG = LoggerFactory.getLogger(UserPrincipalRepositoryImpl.class);
+
+	@Autowired
+	private DelegationCriteria delegationCriteria;
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -40,7 +44,7 @@ public class UserPrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<
 	public List<UserPrincipal<GroupPrincipal<?,?>>> getNeverLoggedInSearch(Realm realm, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) {
 		
-		return super.search(realm, searchColumn, searchPattern, start, length, sorting, new DeletedCriteria(false), new CriteriaConfiguration() {
+		return super.search(realm, searchColumn, searchPattern, start, length, sorting, new DeletedCriteria(false), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -55,7 +59,7 @@ public class UserPrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<
 	@Transactional(readOnly = true)
 	public long getNeverLoggedInCount(Realm realm, String searchColumn, String searchPattern) {
 		
-		return searchCount(UserPrincipal.class, searchColumn, searchPattern, new RealmCriteria(realm), new DeletedCriteria(false), new CriteriaConfiguration() {
+		return searchCount(UserPrincipal.class, searchColumn, searchPattern, new RealmCriteria(realm), new DeletedCriteria(false), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -70,7 +74,7 @@ public class UserPrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<
 	public List<UserPrincipal<GroupPrincipal<?,?>>> getNeverLoggedInDaysSearch(Realm realm, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting, int days) {
 
-		return super.search(realm, searchColumn, searchPattern, start, length, sorting, new DeletedCriteria(false), new CriteriaConfiguration() {
+		return super.search(realm, searchColumn, searchPattern, start, length, sorting, new DeletedCriteria(false), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
@@ -87,7 +91,7 @@ public class UserPrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<
 	@Transactional(readOnly = true)
 	public long getNeverLoggedInDaysCount(Realm realm, String searchColumn, String searchPattern, int days) {
 		
-		return searchCount(UserPrincipal.class, searchColumn, searchPattern, new RealmCriteria(realm), new DeletedCriteria(false), new CriteriaConfiguration() {
+		return searchCount(UserPrincipal.class, searchColumn, searchPattern, new RealmCriteria(realm), new DeletedCriteria(false), delegationCriteria, new CriteriaConfiguration() {
 
 			@Override
 			public void configure(Criteria criteria) {
