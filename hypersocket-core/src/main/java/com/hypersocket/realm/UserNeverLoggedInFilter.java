@@ -18,6 +18,9 @@ public class UserNeverLoggedInFilter extends DefaultTableFilter {
 	@Autowired
 	private UserPrincipalRepository userPrincipalRepository;
 	
+	@Autowired
+	private DelegationCriteria delegationCriteria; 
+	
 	@Override
 	public String getResourceKey() {
 		return "filter.user.never.logged.in";
@@ -26,12 +29,12 @@ public class UserNeverLoggedInFilter extends DefaultTableFilter {
 	@Override
 	public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) {
-		return userPrincipalRepository.getNeverLoggedInSearch(realm, searchColumn, searchPattern, start, length, sorting);
+		return userPrincipalRepository.getNeverLoggedInSearch(realm, searchColumn, searchPattern, start, length, sorting, delegationCriteria);
 	}
 
 	@Override
 	public Long searchResourcesCount(Realm realm, String searchColumn, String searchPattern) {
-		return userPrincipalRepository.getNeverLoggedInCount(realm, searchColumn, searchPattern);
+		return userPrincipalRepository.getNeverLoggedInCount(realm, searchColumn, searchPattern, delegationCriteria);
 	}
 
 	@Override
