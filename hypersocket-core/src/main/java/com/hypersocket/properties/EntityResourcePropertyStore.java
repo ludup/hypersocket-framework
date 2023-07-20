@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +14,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -22,7 +26,9 @@ import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Element;
 
 import com.hypersocket.ApplicationContextServiceImpl;
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.FindableResourceRepository;
@@ -30,6 +36,7 @@ import com.hypersocket.resource.RealmResource;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.SimpleResource;
+import com.hypersocket.servlet.request.Request;
 import com.hypersocket.utils.HypersocketUtils;
 
 public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
@@ -133,7 +140,6 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 	@Override
 	protected String lookupPropertyValue(AbstractPropertyTemplate template,
 			SimpleResource entity) {
-		
 		if(entity==null || "true".equalsIgnoreCase(template.getAttributes().get("transient"))) {
 			return template.getDefaultValue();
 		}
@@ -234,6 +240,21 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 				} else {
 					throw new IllegalStateException("Unhandled Collection type for " + template.getResourceKey() + "! Type " + m.getReturnType() + " is not an enum, nor is it assignable as a Resource.");
 				}
+			} else if(Date.class.isAssignableFrom(m.getReturnType())) {
+				Object obj = m.invoke(resource);
+				if(obj==null) {
+					return null;
+				}
+				var req = Request.get();
+				if(req != null) {
+					var dateFormat =  DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.LONG, req.getLocale());
+					try {
+						dateFormat.setTimeZone(getTimeZone(req));
+						return dateFormat.format(obj);
+					} catch (Exception e) {
+					}
+				}
+				return obj.toString();
 			} else {
 				Object obj = m.invoke(resource);
 				if(obj==null) {
@@ -256,7 +277,38 @@ public class EntityResourcePropertyStore extends AbstractResourcePropertyStore {
 		log.error(methodName + " not found", t);
 		return null;
 	}
+
 	
+	TimeZone getTimeZone(HttpServletRequest request) throws Exception {
+		var realmService = getApplicationContext().getBean(RealmService.class);
+		var configurationService = getApplicationContext().getBean(ConfigurationService.class);
+		var princ = (Principal)request.getUserPrincipal();
+		return realmService.callAsSystemContext(() -> {
+			var tz = TimeZone.getDefault();
+			var realm = realmService.getSystemRealm(); 
+			try {
+				try {
+					if(princ == null)
+						throw new IllegalStateException();
+					realm = princ.getRealm();
+					var tzStr = realmService.getUserProperty(princ, "user.timezone");
+					if(tzStr.equals(""))
+						throw new IllegalStateException();
+					tz = TimeZone.getTimeZone(tzStr);
+				}
+				catch(Exception e) {
+					try {
+						tz = TimeZone.getTimeZone(configurationService.getValue(realm, "realm.defaultTimezone"));
+					}
+					catch(Exception e2) {	
+					}
+				}
+			}
+			catch(Exception e) {
+			}
+			return tz;
+		});
+	}
 	
 
 	public void setField(AbstractPropertyTemplate template,

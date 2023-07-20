@@ -9,6 +9,6 @@
 	<propertyCategory resourceKey="category.timezone" store="db"
 		resourceBundle="UserInterface" weight="999999">
 		<property resourceKey="user.timezone" inputType="dropdown" ldapAttributeName="userTimezone"
-		       url="server/timezones" weight="0" defaultValue="" ldapIgnore="true"/>
+		       url="server/timezones" weight="0" defaultValue="" ldapIgnore="true" allowEmpty="true"/>
 	</propertyCategory>
 </propertyTemplates>

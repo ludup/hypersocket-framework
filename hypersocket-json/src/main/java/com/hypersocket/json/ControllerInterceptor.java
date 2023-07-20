@@ -7,9 +7,6 @@
  ******************************************************************************/
 package com.hypersocket.json;
 
-import java.util.Locale;
-import java.util.TimeZone;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,14 +15,10 @@ import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.i18n.SimpleTimeZoneAwareLocaleContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.LocaleContextResolver;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
-import org.springframework.web.servlet.support.RequestContextUtils;
 
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationState;
@@ -54,8 +47,6 @@ public class ControllerInterceptor implements HandlerInterceptor {
 	private RealmService realmService;
 	@Autowired
 	private SystemConfigurationService systemConfigurationService;
-	@Autowired
-	private ConfigurationService configurationService;
 
 	private boolean setupMode;
 	
@@ -73,17 +64,6 @@ public class ControllerInterceptor implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
-
-//		AcceptHeaderLocaleResolver localeResolver =
-//                (AcceptHeaderLocaleResolver) RequestContextUtils.getLocaleResolver(request);
-//        LocaleContextResolver localeResolver =
-//                  (LocaleContextResolver) RequestContextUtils.getLocaleResolver(request);
-        
-//        var locale = getLocale(request);
-//		var tz = getTimeZone(request);
-//		localeResolver.setLocaleContext(request, response,
-//                new SimpleTimeZoneAwareLocaleContext(
-//                          locale, tz));
 		
 		if (handler instanceof HandlerMethod) {
 
@@ -142,33 +122,6 @@ public class ControllerInterceptor implements HandlerInterceptor {
 
 		return true;
 
-	}
-	
-	Locale getLocale(HttpServletRequest request) throws Exception {
-		return sessionUtils.getLocale(request);
-	}
-	
-	TimeZone getTimeZone(HttpServletRequest request) throws Exception {
-		return realmService.callAsSystemContext(() -> {
-			var tz = TimeZone.getDefault();
-			try {
-				var princ = sessionUtils.getPrincipal(request);
-				try {
-					tz = TimeZone.getTimeZone(realmService.getUserProperty(princ, "user.timezone"));
-				}
-				catch(Exception e) {
-					var realm = sessionUtils.getCurrentRealm(request);
-					try {
-						tz = TimeZone.getTimeZone(configurationService.getValue(realm, "realm.defaultTimezone"));
-					}
-					catch(Exception e2) {	
-					}
-				}
-			}
-			catch(Exception e) {
-			}
-			return tz;
-		});
 	}
 
 	protected void checkMethod(HandlerMethod method) {

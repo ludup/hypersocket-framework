@@ -40,7 +40,7 @@ import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name = "principals")
-public abstract class Principal extends RealmResource {
+public abstract class Principal extends RealmResource implements java.security.Principal {
 
 	private static final long serialVersionUID = -2289438956153713201L;
 

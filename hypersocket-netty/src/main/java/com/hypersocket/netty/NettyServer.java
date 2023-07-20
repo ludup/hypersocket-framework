@@ -13,6 +13,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,6 +66,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SystemEvent;
@@ -89,6 +91,7 @@ import com.hypersocket.server.interfaces.http.events.HTTPInterfaceStartedEvent;
 import com.hypersocket.server.interfaces.http.events.HTTPInterfaceStoppedEvent;
 import com.hypersocket.server.websocket.TCPForwardingClientCallback;
 import com.hypersocket.session.SessionService;
+import com.hypersocket.session.json.SessionUtils;
 
 @Component
 public class NettyServer extends HypersocketServerImpl implements ObjectSizeEstimator  {
@@ -118,6 +121,9 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	@Autowired
 	private RealmService realmService;
+
+	@Autowired
+	private SessionUtils sessionUtils;
 
 	private ClientBootstrap clientBootstrap = null;
 	private ServerBootstrap serverBootstrap = null;
@@ -786,5 +792,9 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	@Override
 	public void removeLoggingOutputListener(LoggingOutputListener listener) {
 		UIAppender.getInstance().removeListener(listener);
+	}
+
+	public Principal getUserPrinicpal(HttpServletRequest req) throws UnauthorizedException {
+		return sessionUtils.getPrincipal(req);
 	}
 }

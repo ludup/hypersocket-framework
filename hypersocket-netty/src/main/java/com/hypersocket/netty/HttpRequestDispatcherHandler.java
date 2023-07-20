@@ -18,6 +18,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
@@ -256,6 +257,15 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 						}
 					}
 					return thisSession;
+				}
+
+				@Override
+				public Principal getUserPrincipal() {
+					try {
+						return server.getUserPrinicpal(this);
+					} catch (UnauthorizedException e) {
+						return null;
+					}
 				}
 				
 			};
