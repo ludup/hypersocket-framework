@@ -1841,7 +1841,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						processor.afterUpdate(principal, properties);
 					}
 
-					log.info(String.format("Created group %s in realm %s", principal.getName(), realm.getName()));
+					log.info(String.format("Updated group %s in realm %s", principal.getName(), realm.getName()));
 					eventService.publishEvent(new GroupUpdatedEvent(this, getCurrentSession(), realm, provider,
 							principal, all, assigned, unassigned));
 
