@@ -1,6 +1,7 @@
 package com.hypersocket.realm.events;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ public class UserUpdatedEvent extends UserEvent {
 			List<? extends Principal> associatedPrincipals, Map<String,String> properties,
 			List<? extends Principal> previouslyAssociatedPrincipals, Map<String,String> oldProperties) {
 		super(source, "event.userUpdated", session, realm, provider, principal,
-				associatedPrincipals, properties);
+				associatedPrincipals, Collections.emptyMap());
 
 		List<String> changes = new ArrayList<>();
 		
