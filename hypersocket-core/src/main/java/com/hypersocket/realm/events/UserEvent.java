@@ -28,12 +28,6 @@ public abstract class UserEvent extends PrincipalEvent {
 		super(source, resourceKey, true, session, realm);
 		this.principal = principal;
 		addAttribute(UserEvent.ATTR_USER_NAME, principal.getPrincipalName());
-		Map<String,String> properties=  principal.getProperties();
-		if(properties!=null) {
-			for (String prop : properties.keySet()) {
-				addAttribute(prop, properties.get(prop));
-			}
-		}
 	}
 
 	public UserEvent(Object source, String resourceKey, Session session,

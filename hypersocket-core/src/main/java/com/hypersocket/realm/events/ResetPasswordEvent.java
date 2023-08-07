@@ -1,5 +1,7 @@
 package com.hypersocket.realm.events;
 
+import java.util.Map;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.hypersocket.events.ChargeableEvent;
@@ -20,6 +22,12 @@ public class ResetPasswordEvent extends UserEvent implements ChargeableEvent {
 			RealmProvider provider, Principal principal, String password) {
 		super(source, EVENT_RESOURCE_KEY, session, realm, provider, principal);
 		this.password = password;
+		Map<String,String> properties=  principal.getProperties();
+		if(properties!=null) {
+			for (String prop : properties.keySet()) {
+				addAttribute(prop, properties.get(prop));
+			}
+		}
 	}
 
 	public ResetPasswordEvent(Object source, Throwable t, Session session,
