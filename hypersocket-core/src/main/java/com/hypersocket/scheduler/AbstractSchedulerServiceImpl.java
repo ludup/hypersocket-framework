@@ -529,6 +529,9 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 					if (s.getColumn() == SchedulerResourceColumns.NAME) {
 						v1 = o1.getName() == null ? null : o1.getName().toLowerCase();
 						v2 = o2.getName() == null ? null : o2.getName().toLowerCase();
+					} else if (s.getColumn() == SchedulerResourceColumns.DESCRIPTION) {
+						v1 = o1.getDescription() == null ? null : o1.getDescription().toLowerCase();
+						v2 = o2.getDescription() == null ? null : o2.getDescription().toLowerCase();
 					} else if (s.getColumn() == SchedulerResourceColumns.GROUP) {
 						v1 = o1.getGroup();
 						v2 = o2.getGroup();
