@@ -567,6 +567,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					}
 				}
 			}
+			realmCache.put(host, defaultRealm);
 			return defaultRealm;
 		}
 

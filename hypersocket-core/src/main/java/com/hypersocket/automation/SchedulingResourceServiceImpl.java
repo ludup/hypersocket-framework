@@ -15,8 +15,8 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.RealmResource;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
+import com.hypersocket.scheduler.JobData;
 import com.hypersocket.scheduler.NotScheduledException;
-import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Service
@@ -144,8 +144,7 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 			}
 		}
 		
-		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm(), resource.getName());
-		data.put("resourceId", resource.getId());
+		var data = JobData.ofResource(resource);
 
 		try {
 
@@ -180,8 +179,7 @@ public class SchedulingResourceServiceImpl implements SchedulingResourceService 
 	@Override
 	public <T extends RealmResource> void scheduleNow(T resource, Class<? extends Job> clz) {
 
-		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm(), resource.getName());
-		data.put("resourceId", resource.getId());
+		var data = JobData.ofResource(resource);
 
 		try {
 			if(log.isInfoEnabled()) {

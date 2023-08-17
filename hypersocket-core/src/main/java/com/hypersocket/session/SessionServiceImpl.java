@@ -29,7 +29,6 @@ import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
 
 import org.apache.commons.lang3.StringUtils;
-import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +59,7 @@ import com.hypersocket.realm.events.UserImpersonatedEvent;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
+import com.hypersocket.scheduler.JobData;
 import com.hypersocket.session.events.ConcurrentSessionEvent;
 import com.hypersocket.session.events.SessionClosedEvent;
 import com.hypersocket.session.events.SessionEvent;
@@ -777,17 +777,10 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 			try {
 				if (schedulerService.jobDoesNotExists(SESSION_REAPER_JOB)) {
-					JobDataMap data = new JobDataMap();
-					data = new JobDataMap();
-					data.put("jobName", SESSION_REAPER_JOB);
-
-					schedulerService.scheduleIn(SessionReaperJob.class, SESSION_REAPER_JOB, data, 60000, 60000);
+					schedulerService.scheduleIn(SessionReaperJob.class, SESSION_REAPER_JOB, JobData.of(SESSION_REAPER_JOB), 60000, 60000);
 				}
 				if (schedulerService.jobDoesNotExists(SESSION_CLEAN_UP_JOB)) {
-					JobDataMap data = new JobDataMap();
-					data = new JobDataMap();
-					data.put("jobName", SESSION_CLEAN_UP_JOB);
-					schedulerService.scheduleIn(SessionCleanUpJob.class, SESSION_CLEAN_UP_JOB, data, (int)TimeUnit.DAYS.toMillis(1), (int)TimeUnit.DAYS.toMillis(1));
+					schedulerService.scheduleIn(SessionCleanUpJob.class, SESSION_CLEAN_UP_JOB, JobData.of(SESSION_CLEAN_UP_JOB), (int)TimeUnit.DAYS.toMillis(1), (int)TimeUnit.DAYS.toMillis(1));
 				}
 			} catch (SchedulerException e) {
 				log.error("Failed to schedule session reaper job", e);

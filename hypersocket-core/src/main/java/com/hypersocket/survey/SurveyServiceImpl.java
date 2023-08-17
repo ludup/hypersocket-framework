@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.properties.ResourceUtils;
@@ -52,6 +53,8 @@ public class SurveyServiceImpl implements SurveyService {
 
 	private static final String SURVEYS_READY = "surveys.ready";
 
+	private static final String RESOURCE_BUNDLE = "SurveyService";
+
 	@Autowired
 	private HttpUtils httpUtils;
 	@Autowired
@@ -59,6 +62,9 @@ public class SurveyServiceImpl implements SurveyService {
 
 	@Autowired
 	private ClusteredSchedulerService schedulerService;
+
+	@Autowired
+	private I18NService i18nService;
 
 	@Autowired
 	private PermissionService permissionService;
@@ -319,6 +325,7 @@ public class SurveyServiceImpl implements SurveyService {
 
 	@Override
 	public Survey reject(String resourceKey) throws AccessDeniedException {
+		i18nService.registerBundle(RESOURCE_BUNDLE);
 		synchronized (ready) {
 			permissionService.assertAdministrativeAccess();
 			Survey survey = getSurvey(resourceKey);

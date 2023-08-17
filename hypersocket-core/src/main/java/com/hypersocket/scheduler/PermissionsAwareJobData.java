@@ -12,28 +12,28 @@ public class PermissionsAwareJobData extends JobDataMap {
 
 	private static final long serialVersionUID = -2512176436464687235L;
 		
-	public PermissionsAwareJobData(String jobResourceKey) {
-		this(null, null, null, null, jobResourceKey);
+	public PermissionsAwareJobData(String jobResourceKey, Object... args) {
+		this(null, null, null, null, jobResourceKey, args);
 	}
 	
-	public PermissionsAwareJobData(Realm currentRealm, String jobResourceKey) {
-		this(null, currentRealm, null, null, jobResourceKey);
+	public PermissionsAwareJobData(Realm currentRealm, String jobResourceKey, Object... args) {
+		this(null, currentRealm, null, null, jobResourceKey, args);
 	}
 	
-	public PermissionsAwareJobData(Session session, String jobResourceKey) {
-		this(session, null, null, null, jobResourceKey);
+	public PermissionsAwareJobData(Session session, String jobResourceKey, Object... args) {
+		this(session, null, null, null, jobResourceKey, args);
 	}
-	public PermissionsAwareJobData(Realm currentRealm, Principal principal, Locale locale, String jobResourceKey) {
-		this(null, currentRealm, principal, locale, jobResourceKey);
+	public PermissionsAwareJobData(Realm currentRealm, Principal principal, Locale locale, String jobResourceKey, Object... args) {
+		this(null, currentRealm, principal, locale, jobResourceKey, args);
 	}
 	
 	public String getJobName() {
 		return getString("jobName");
 	}
 	
-	public PermissionsAwareJobData(Session session, Realm currentRealm, Principal principal, Locale locale, String jobResourceKey) {
-		
-		put("jobName", jobResourceKey);
+	public PermissionsAwareJobData(Session session, Realm currentRealm, Principal principal, Locale locale, String jobResourceKey, Object... args) {
+		put(JobData.KEY_JOB_NAME, jobResourceKey);
+		put(JobData.KEY_JOB_ARGS, args);
 		put("permissions", Boolean.TRUE);
 		
 		if(session!=null) {

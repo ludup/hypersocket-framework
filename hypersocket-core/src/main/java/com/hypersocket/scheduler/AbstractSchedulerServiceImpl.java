@@ -2,6 +2,8 @@ package com.hypersocket.scheduler;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +19,8 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.StringUtils;
+import org.quartz.CronExpression;
+import org.quartz.CronScheduleBuilder;
 import org.quartz.DateBuilder;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
@@ -43,6 +47,7 @@ import org.springframework.context.event.EventListener;
 
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
 import com.hypersocket.events.SystemEvent;
+import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.SystemPermission;
@@ -73,6 +78,8 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	private Scheduler scheduler;
 	@Autowired
 	private PermissionService permissionService;
+	@Autowired
+	private I18NService i18nService;
 	@Autowired
 	private RealmService realmService;
 	@Autowired
@@ -145,6 +152,34 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 	public void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data, Date start)
 			throws SchedulerException {
 		schedule(clz, scheduleId, data, start, 0, 0, null);
+	}
+
+	@Override
+	public void scheduleExpression(Class<? extends Job> clz, String scheduleId,  JobDataMap data, CronTriggerData... expr)
+			throws SchedulerException, ParseException {
+		if (scheduleId == null) {
+			throw new IllegalArgumentException("Schedule id cannot be null");
+		}
+
+		if (jobExists(scheduleId)) {
+			if (log.isInfoEnabled()) {
+				log.info(String.format(
+						"The job with identity %s already exists so will not be scheduled again !!!!!!!.", scheduleId));
+			}
+		}
+
+		if (log.isInfoEnabled()) {
+			log.info("Scheduling job " + clz.getSimpleName() + " with id " + scheduleId + " with expression "
+					+ expr);
+		}
+		JobDetail job = JobBuilder.newJob(clz).withIdentity(scheduleId).build();
+
+		Set<Trigger> triggers = createTriggers(data, expr);
+		try {
+			scheduler.scheduleJob(job, triggers, true);
+		} catch (Exception e) {
+			log.error("Error in create resource for schedule ", e);
+		}
 	}
 
 	@Override
@@ -340,6 +375,26 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 
 		return triggerBuilder.build();
 	}
+	
+	protected Set<Trigger> createTriggers(JobDataMap data, CronTriggerData... triggerDatas) throws ParseException {
+		
+		Set<Trigger> l = new LinkedHashSet<>();
+
+		for(var triggerData : triggerDatas) {
+			TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger();
+			if (data != null) {
+				triggerBuilder.usingJobData(data);
+			}
+			triggerData.getData().ifPresent(d -> triggerBuilder.usingJobData(d));
+			CronScheduleBuilder schedule = CronScheduleBuilder.cronSchedule(new CronExpression(triggerData.getExpression()));
+			
+			triggerBuilder.withSchedule(schedule);
+	
+			l.add(triggerBuilder.build());
+		}
+		
+		return l;
+	}
 
 	protected void reschedule(String id, Date start, long interval, int repeat, Date end)
 			throws SchedulerException, NotScheduledException {
@@ -405,8 +460,30 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		if (triggersOfJob.isEmpty()) {
 			throw new NotScheduledException();
 		}
-		Trigger trigger = triggersOfJob.get(0);
-		return trigger.getNextFireTime();
+		return getEarliestNextFireTime(triggersOfJob);
+	}
+
+	public static Date getEarliestNextFireTime(List<? extends Trigger> triggersOfJob) {
+		Date next = null;
+		for(Trigger trigger : triggersOfJob) {
+			var ttime = trigger.getNextFireTime(); 
+			if(next == null || (ttime != null && ttime.before(next)))
+				next = ttime;
+		}
+		return next;
+	}
+
+	public static Trigger getNextTriggerToFire(List<? extends Trigger> triggersOfJob) {
+		Trigger next = null;
+		for(Trigger trigger : triggersOfJob) {
+			var ttime = trigger.getNextFireTime(); 
+			if(next == null || ( ttime != null && ttime.before(next.getNextFireTime())))
+				next = trigger;
+		}
+		if(next == null && !triggersOfJob.isEmpty()) {
+			next= triggersOfJob.get(0);
+		}
+		return next;
 	}
 
 	@Override
@@ -415,8 +492,17 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		if (triggersOfJob.isEmpty()) {
 			throw new NotScheduledException();
 		}
-		Trigger trigger = triggersOfJob.get(0);
-		return trigger.getPreviousFireTime();
+		return getLatestPreviousFireTime(triggersOfJob);
+	}
+
+	public static Date getLatestPreviousFireTime(List<? extends Trigger> triggersOfJob) {
+		Date next = null;
+		for(Trigger trigger : triggersOfJob) {
+			var ttime = trigger.getPreviousFireTime(); 
+			if(next == null || (ttime != null && ttime.after(next)))
+				next = ttime;
+		}
+		return next;
 	}
 
 	@Override
@@ -544,7 +630,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		if (triggersOfJob.isEmpty()) {
 			throw new NotScheduledException();
 		}
-		Trigger trigger = triggersOfJob.get(0);
+		Trigger trigger = getNextTriggerToFire(triggersOfJob);
 
 		SchedulerJobState state = SchedulerJobState.MISSING;
 		if (interrupting.contains(key.toString())) {
@@ -590,7 +676,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 			}
 		}
 
-		SchedulerResource sr = new SchedulerResource(trigger, state);
+		SchedulerResource sr = new SchedulerResource(getEarliestNextFireTime(triggersOfJob), getLatestPreviousFireTime(triggersOfJob), key, state);
 		JobDetail detail = scheduler.getJobDetail(key);
 		if (detail != null) {
 			JobDataMap map = trigger.getJobDataMap();
@@ -619,7 +705,20 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 		if (timers.containsKey(key)) {
 			sr.setTimeTaken(timers.get(key).took());
 		}
-		sr.setDescription(trigger.getJobDataMap().getString("jobName"));
+		
+		var jobNameKey = trigger.getJobDataMap().getString(JobData.KEY_JOB_NAME);
+		var args = (Object[])trigger.getJobDataMap().get(JobData.KEY_JOB_ARGS);
+		var jobName = i18nService.getResource("job." + jobNameKey);
+		if(jobName == null) {
+			sr.setDescription(jobName);	
+		}
+		else {
+			if(args == null || args.length == 0)
+				sr.setDescription(jobName);
+			else
+				sr.setDescription(MessageFormat.format(jobName, args));
+		}
+		
 		sr.setError(exceptionMessage);
 		sr.setTrace(exceptionTrace);
 		return sr;

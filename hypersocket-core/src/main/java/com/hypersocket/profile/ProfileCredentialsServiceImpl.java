@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
-import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +45,7 @@ import com.hypersocket.realm.events.UserUndeletedEvent;
 import com.hypersocket.realm.events.UserUpdatedEvent;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
+import com.hypersocket.scheduler.JobData;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.session.events.SessionOpenEvent;
 import com.hypersocket.transactions.TransactionService;
@@ -100,7 +100,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		
 		try {
 			if(schedulerService.jobDoesNotExists("profileReporting")) {
-				schedulerService.scheduleAt(ProfileReportingJob.class, "profileReporting", new JobDataMap(), HypersocketUtils.today(), TimeUnit.DAYS.toMillis(1));
+				schedulerService.scheduleAt(ProfileReportingJob.class, "profileReporting", JobData.of("profileReporting"), HypersocketUtils.today(), TimeUnit.DAYS.toMillis(1));
 			}
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule exchange rate job", e);
@@ -415,9 +415,9 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	
 	private void fireProfileCreationJob(Principal targetPrincipal) {
 		
-		Profile profile = profileRepository.getEntityById(targetPrincipal.getId());
+		var profile = profileRepository.getEntityById(targetPrincipal.getId());
 		if(profile==null) {
-			PermissionsAwareJobData data = new PermissionsAwareJobData(targetPrincipal.getRealm(), "profileCreationJob");
+			var data = new PermissionsAwareJobData(targetPrincipal.getRealm(), "profileCreationJob", targetPrincipal.getName());
 			data.put("targetPrincipalId", targetPrincipal.getId());
 			
 			try {
@@ -451,7 +451,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 
 	private void fireProfileUpdateJob(Principal targetPrincipal) {
 		
-		PermissionsAwareJobData data = new PermissionsAwareJobData(targetPrincipal.getRealm(), "profileUpdateJob");
+		var data = new PermissionsAwareJobData(targetPrincipal.getRealm(), "profileUpdateJob", targetPrincipal.getName());
 		data.put("targetPrincipalId", targetPrincipal.getId());
 		
 		try {
@@ -511,7 +511,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 			return;
 		}
 		
-		PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm, "profileBatchUpdateJob");
+		var data = new PermissionsAwareJobData(currentRealm, "profileBatchUpdateJob");
 		
 		try {
 			schedulerService.scheduleNow(ProfileBatchUpdateJob.class, UUID.randomUUID().toString(), data);
