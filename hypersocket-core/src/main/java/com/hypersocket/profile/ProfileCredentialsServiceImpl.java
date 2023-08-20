@@ -139,12 +139,14 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		
 		List<AuthenticationScheme> userSchemes = new ArrayList<AuthenticationScheme>();
 		for(AuthenticationScheme scheme : schemes) {
-			if(!scheme.getAllowedRoles().isEmpty()) {
-				if(permissionService.hasRole(principal, scheme.getAllowedRoles())) {
+			var allowedRoles = authenticationService.getAllowedRoles(scheme);
+			var deniedRoles = authenticationService.getDeniedRoles(scheme);
+			if(!allowedRoles.isEmpty()) {
+				if(permissionService.hasRole(principal, allowedRoles)) {
 					userSchemes.add(scheme);
 				}
-			} else if(!scheme.getDeniedRoles().isEmpty()) {
-				if(!permissionService.hasRole(principal, scheme.getAllowedRoles())) {
+			} else if(!deniedRoles.isEmpty()) {
+				if(!permissionService.hasRole(principal, deniedRoles)) {
 					userSchemes.add(scheme);
 				}
 			} else {

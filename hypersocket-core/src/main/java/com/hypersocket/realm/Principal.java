@@ -58,7 +58,7 @@ public abstract class Principal extends RealmResource implements java.security.P
 	private Set<Role> roles = new HashSet<Role>();
 
 	@Fetch(FetchMode.SELECT)
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "principal")
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "principal")
 	@JsonIgnore
 	private Set<PrincipalSuspension> suspensions;
 

@@ -56,13 +56,13 @@ public class AuthenticationScheme extends RealmResource {
 	@Column(name = "last_button_resource_key")
 	private String lastButtonResourceKey;
 
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "scheme_allowed_roles", joinColumns = {
 			@JoinColumn(name = "resource_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
 	private Set<Role> allowedRoles = new HashSet<Role>();
 
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "scheme_denied_roles", joinColumns = { @JoinColumn(name = "resource_id") }, inverseJoinColumns = {
 			@JoinColumn(name = "role_id") })
@@ -162,6 +162,14 @@ public class AuthenticationScheme extends RealmResource {
 	@JsonIgnore
 	public Set<Role> getAllowedRoles() {
 		return allowedRoles;
+	}
+
+	public void setAllowedRoles(Set<Role> allowedRoles) {
+		this.allowedRoles = allowedRoles;
+	}
+
+	public void setDeniedRoles(Set<Role> deniedRoles) {
+		this.deniedRoles = deniedRoles;
 	}
 
 	@JsonIgnore

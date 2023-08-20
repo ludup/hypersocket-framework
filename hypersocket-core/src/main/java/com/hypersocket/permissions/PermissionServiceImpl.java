@@ -103,9 +103,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@SuppressWarnings("rawtypes")
 	private Cache<Object, Set> permissionsCache;
-
 	@SuppressWarnings("rawtypes")
 	private Cache<Object, Set> roleCache;
+	private Cache<Long, Role> personalRoleCache;
 
 	@Autowired
 	private TransactionService transactionService;
@@ -120,6 +120,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	private RoleAttributeRepository attributeRepository;
 
 	private Map<Class<? extends AssignableResource>, AbstractAssignableResourceRepository<?>> repositories = new HashMap<Class<? extends AssignableResource>, AbstractAssignableResourceRepository<?>>();
+
 
 	@PostConstruct
 	private void postConstruct() {
@@ -136,8 +137,8 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		});
 
 		permissionsCache = cacheService.getCacheOrCreate("permissionsCache", Object.class, Set.class);
-
 		roleCache = cacheService.getCacheOrCreate("roleCache", Object.class, Set.class);
+		personalRoleCache = cacheService.getCacheOrCreate("personalRoleCache", Long.class, Role.class);
 
 		realmService.registerRealmListener(new RealmAdapter() {
 
@@ -1067,9 +1068,13 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@Override
 	public Role getPersonalRole(Principal principal) {
-		Role role = repository.getPersonalRole(principal);
-		if(role == null)
-			role = repository.createPersonalRole(principal);
+		Role role = personalRoleCache.get(principal.getId());
+		if(role == null) {
+			role = repository.getPersonalRole(principal);
+			if(role == null)
+				role = repository.createPersonalRole(principal);
+			personalRoleCache.put(principal.getId(), role);
+		}
 		return role;
 	}
 
@@ -1332,6 +1337,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	protected void deletePrincipalRole(Principal principal) {
 		if (principal.isPrimaryAccount()) {
 			try {
+				personalRoleCache.remove(principal.getId());
 				Role role = repository.getPersonalRole(principal);
 				if (role != null) {
 					deleteRole(role, false);

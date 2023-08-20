@@ -42,6 +42,7 @@ import com.hypersocket.permissions.PermissionCategory;
 import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.PermissionStrategy;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
@@ -643,8 +644,14 @@ public class AuthenticationServiceImpl extends
 							}
 							
 							if(state.getPrincipal()!=null) {
-								if(!state.getScheme().getAllowedRoles().isEmpty()) {
-									boolean found = permissionService.hasRole(state.getPrincipal(), state.getScheme().getAllowedRoles());
+//								var allowedRoles =   state.getScheme().getAllowedRoles();
+//								var deniedRoles = state.getScheme().getDeniedRoles();
+
+								var allowedRoles =  schemeRepository.getAllowedRoles(state.getScheme());
+								var deniedRoles =  schemeRepository.getDeniedRoles(state.getScheme());
+								
+								if(!allowedRoles.isEmpty()) {
+									boolean found = permissionService.hasRole(state.getPrincipal(), allowedRoles);
 									
 									if(!found) {
 										state.clean();
@@ -656,8 +663,8 @@ public class AuthenticationServiceImpl extends
 									}
 								}
 								
-								if(!state.getScheme().getDeniedRoles().isEmpty()) {
-									boolean found = permissionService.hasRole(state.getPrincipal(), state.getScheme().getDeniedRoles());
+								if(!deniedRoles.isEmpty()) {
+									boolean found = permissionService.hasRole(state.getPrincipal(), deniedRoles);
 									
 									if(found) {
 										state.clean();
@@ -1105,5 +1112,15 @@ public class AuthenticationServiceImpl extends
 	@Override
 	public boolean isAuthenticatorInUse(Realm realm, String resourceKey) {
 		return repository.isAuthenticatorInUse(realm, resourceKey);
+	}
+
+	@Override
+	public Set<Role> getAllowedRoles(AuthenticationScheme scheme) {
+		return schemeRepository.getAllowedRoles(scheme);
+	}
+
+	@Override
+	public Set<Role> getDeniedRoles(AuthenticationScheme scheme) {
+		return schemeRepository.getDeniedRoles(scheme);
 	}
 }

@@ -314,6 +314,12 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		if (session == null)
 			return false;
 
+		/**
+		 * TODO
+		 * 
+		 * This is very inefficient and meals we will forcibly reload sessions from the database
+		 * potentially hundreds of times per full page load (with all resources). 
+		 */
 		repository.refresh(session);
 
 		if (session.getSignedOut() == null) {

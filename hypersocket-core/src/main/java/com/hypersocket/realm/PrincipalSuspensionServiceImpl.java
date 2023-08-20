@@ -77,6 +77,12 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	@Override
 	public PrincipalSuspension createPrincipalSuspension(Principal principal, String name, Realm realm,
 			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceException {
+		var startMin = Calendar.getInstance();
+		startMin.set(Calendar.SECOND, 0);
+		startMin.set(Calendar.MILLISECOND, 0);
+		var minTime = startMin.getTime();
+		if(startDate.before(minTime))
+			throw new ResourceCreationException(RealmServiceImpl.RESOURCE_BUNDLE, "error.suspensionInThePast");
 
 		try {
 			return transactionService.doInTransaction(new TransactionCallback<PrincipalSuspension>() {

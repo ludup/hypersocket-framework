@@ -243,6 +243,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	
 	private List<PrincipalCommunicationDataViewProvider> principalCommunicationDataViewProviders
 		= new ArrayList<>();
+	private Realm defaultRealm;
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -1286,6 +1287,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	private void clearCache(Realm realm) {
+		if(realm.equals(defaultRealm)) {
+			defaultRealm = null;
+		}
 		RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
 
 		String[] hosts = realmProvider.getValues(realm, "realm.host");
@@ -1645,7 +1649,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Realm setDefaultRealm(Realm realm) throws AccessDeniedException {
 		assertPermission(SystemPermission.SYSTEM_ADMINISTRATION);
-
+		this.defaultRealm = realm;
 		return realmRepository.setDefaultRealm(realm);
 	}
 
@@ -1680,7 +1684,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Principal getPrincipalById(Long id) {
-
 		Principal principal = principalRepository.getResourceById(id);
 		return principal;
 	}
@@ -2549,7 +2552,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Realm getDefaultRealm() {
-		return realmRepository.getDefaultRealm();
+		if(defaultRealm == null || !defaultRealm.isDefaultRealm()) {
+			defaultRealm = realmRepository.getDefaultRealm();
+		}
+		return defaultRealm;
 	}
 
 	class RealmPropertyCollector implements EventPropertyCollector {

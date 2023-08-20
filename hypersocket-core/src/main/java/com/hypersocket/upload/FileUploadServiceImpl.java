@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.cache.Cache;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,6 +28,7 @@ import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.hypersocket.cache.CacheService;
 import com.hypersocket.cache.CacheUtils;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -59,8 +61,12 @@ public class FileUploadServiceImpl extends
 
 	@Autowired
 	private I18NService i18nService;
+
+	@Autowired
+	private CacheService cacheService;
 	
 	private FileStore defaultStore = new DefaultFileStore();
+	private Cache<String, FileUpload> cache;
 
 
 	public FileUploadServiceImpl() {
@@ -69,7 +75,7 @@ public class FileUploadServiceImpl extends
 	
 	@PostConstruct
 	private void postConstruct() {
-
+		cache = cacheService.getCacheOrCreate("fileUploads", String.class, FileUpload.class);
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 		EntityResourcePropertyStore.registerResourceService(FileUpload.class, repository);
 		setAssertPermissions(false);
@@ -212,7 +218,9 @@ public class FileUploadServiceImpl extends
 
 	@Override
 	public FileUpload getFileUpload(String uuid) throws ResourceNotFoundException {
-		FileUpload upload = repository.getFileUpload(uuid);
+		var upload = (FileUpload)cacheService.getOrGet(cache, "uuid_" + uuid, () -> {
+			return repository.getFileUpload(uuid);
+		});
 		if(upload==null) {
 			throw new ResourceNotFoundException(RESOURCE_BUNDLE, "error.fileNotFound", uuid);
 		}
@@ -222,9 +230,9 @@ public class FileUploadServiceImpl extends
 	@Override
 	public void deleteFile(FileUpload fileUpload)
 			throws ResourceException, AccessDeniedException {
-
 		
 		try {
+			cache.remove("uuid_" + fileUpload.getUUID());
 			defaultStore.delete(String.format("%d/%s", 
 					fileUpload.getRealm().getId(), fileUpload.getName()));
 			
