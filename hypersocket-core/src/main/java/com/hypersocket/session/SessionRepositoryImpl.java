@@ -78,18 +78,9 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 
 	@Override
-	@Transactional
-	public void updateSession(Session session) {
-		
-		if(log.isDebugEnabled()) {
-			log.debug("Updating session " + session.getId() + " lastUpdated=" + session.getLastUpdated().getTime());
-		}
-		save(session);
-	}
-
-	@Override
 	@Transactional(readOnly=true)
 	public Session getSessionById(String id) {
+		System.out.println("getSessionById " + id);
 		return get("id", id, Session.class);
 	}
 

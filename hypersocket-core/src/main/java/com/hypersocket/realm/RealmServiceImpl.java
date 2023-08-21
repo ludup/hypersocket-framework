@@ -103,7 +103,6 @@ import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.ResourcePassthroughException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.session.SessionService;
-import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.TableFilter;
 import com.hypersocket.transactions.TransactionCallbackWithError;
@@ -909,13 +908,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		 */
 
 		try(var c = tryAs(principal.getRealm())) {
-			String pwd = new String(password);
-			if (pwd.startsWith(SessionServiceImpl.TOKEN_PREFIX)) {
-				Principal tokenPrincipal = sessionService.getSessionTokenResource(pwd, Principal.class);
-				return tokenPrincipal != null && tokenPrincipal.equals(principal);
-			} else {
-				return getProviderForPrincipal(principal).verifyPassword(principal, password);
-			}
+			return getProviderForPrincipal(principal).verifyPassword(principal, password);
 		} catch (LogonException e) {
 			if (configurationService.getBooleanValue(principal.getRealm(), "logon.verboseErrors")) {
 				throw e;

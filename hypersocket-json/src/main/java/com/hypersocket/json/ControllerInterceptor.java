@@ -114,8 +114,9 @@ public class ControllerInterceptor implements HandlerInterceptor {
 				} else if (acAnnotation.realmHost()) {
 					contrl.setupSystemContext(realmService.getRealmByHost(request.getServerName()));
 				} else {
-					contrl.setCurrentSession(sessionUtils.getSession(request), sessionUtils.getCurrentRealm(request),
-							sessionUtils.getPrincipal(request), sessionUtils.getLocale(request));
+					var session = sessionUtils.getSession(request);
+					contrl.setCurrentSession(session , session.getCurrentRealm(),
+							session.getCurrentPrincipal(), sessionUtils.getLocale(request));
 				}
 			}
 		}

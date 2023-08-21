@@ -70,10 +70,6 @@ public class BrowserLaunchableController extends BootstrapTableController<Void> 
 				new HashMap<String,String>(),
 				resourceService.getPersonalResources(sessionUtils
 						.getPrincipal(request)));
-		list.getProperties().put(
-				"authCode",
-				sessionService.createSessionToken(
-						sessionUtils.getSession(request)).getShortCode());
 		return list;
 	}
 
