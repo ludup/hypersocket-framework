@@ -178,7 +178,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setRemoteAddress("");
 		session.setSystem(true);
 
-		store.saveEntity(session);
+		store.saveSession(session);
 		return session;
 	}
 
@@ -187,7 +187,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		if(log.isDebugEnabled()) {
 			log.debug("Updating session " + session.getId() + " lastUpdated=" + session.getLastUpdated().getTime());
 		}
-		store.saveEntity(session);
+		store.saveSession(session);
 	}
 
 	@Override

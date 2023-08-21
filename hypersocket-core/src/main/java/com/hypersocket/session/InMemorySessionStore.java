@@ -75,7 +75,7 @@ public class InMemorySessionStore implements SessionStore {
 	}
 
 	@Override
-	public void saveEntity(Session session) {
+	public void saveSession(Session session) {
 		if(session.getId() == null) {
 			repository.saveEntity(session);
 			sessions.put(session.getId(), session);

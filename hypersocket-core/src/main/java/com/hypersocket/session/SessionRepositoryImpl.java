@@ -459,4 +459,9 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		query.executeUpdate();
 		
 	}
+
+	@Override
+	public void saveSession(Session session) {
+		saveEntity(session);
+	}
 }

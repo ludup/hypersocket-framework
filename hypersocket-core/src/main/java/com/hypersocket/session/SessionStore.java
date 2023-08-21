@@ -39,7 +39,7 @@ public interface SessionStore {
 			session.setStateParameters(parameters);
 		}
 		
-		saveEntity(session);
+		saveSession(session);
 		return session;
 	}
 	
@@ -59,7 +59,7 @@ public interface SessionStore {
 
 	void deleteRealm(Realm realm);
 
-	void saveEntity(Session session);
+	void saveSession(Session session);
 
 	List<Session> search(Realm realm, String searchPattern, int start, int length, ColumnSort[] sorting,
 			CriteriaConfiguration... configs);
