@@ -26,7 +26,6 @@ import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.AuthenticationRequiredButDontTouchSession;
 import com.hypersocket.auth.json.Cacheable;
-import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.realm.RealmService;

@@ -284,6 +284,7 @@ public class FileUploadServiceImpl extends
 
 		// Let the HTTP server handle it.
 		request.setAttribute(CONTENT_INPUTSTREAM, in);
+		request.setAttribute(CacheUtils.IGNORE_CACHE, true);
 		CacheUtils.setDateAndCacheHeaders(response, fileUpload.getModifiedDate().getTime(), true, request.getRequestURI());
 	}
 	

@@ -189,6 +189,7 @@ public abstract class IconResourceController<T extends Resource> extends Resourc
 		// Respond
 		String contentType = mimeTypesMap.getContentType(spec + "." + ext);
 		response.setContentType(contentType);
+		request.setAttribute(CacheUtils.IGNORE_CACHE, true);
 		CacheUtils.setDateAndCacheHeaders(response, resource.getModifiedDate().getTime(), true, url);
 		ImageIO.write(builder.build(BufferedImage.class), ext.toUpperCase(), response.getOutputStream());
 		response.flushBuffer();
