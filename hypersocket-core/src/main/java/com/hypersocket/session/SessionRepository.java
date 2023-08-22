@@ -34,4 +34,6 @@ public interface SessionRepository extends AbstractEntityRepository<Session,Stri
 	Map<String, Long> getPrincipalUsage(Realm realm, int maximumUsers, Date startDate, Date endDate);
 
 	void cleanUp(Date maxDate);
+
+	void signOutActive();
 }

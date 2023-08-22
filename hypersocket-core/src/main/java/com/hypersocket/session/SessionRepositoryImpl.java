@@ -426,6 +426,16 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		
 		return results;
 	}
+
+	
+
+	@Override
+	@Transactional
+	public void signOutActive() {
+		Query query = createQuery("update Session s set signedOut = :signedOut where signedOut is null", true);
+		query.setTimestamp("signedOut", new Date());
+		query.executeUpdate();
+	}
 	
 
 	@Override

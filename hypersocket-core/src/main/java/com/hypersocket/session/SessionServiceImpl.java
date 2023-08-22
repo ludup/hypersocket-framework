@@ -155,6 +155,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		else {
 			store = new InMemorySessionStore(repository);
+			repository.signOutActive();
 		}
 
 	}
@@ -925,6 +926,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void touch(Session session) {
 		if (session.isReadyForUpdate()) {
+			session.updated();
 			updateSession(session);
 			if (log.isDebugEnabled()) {
 				log.debug("Session "

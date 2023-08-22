@@ -199,36 +199,38 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public String[] getValues(String name) {
-		return (String[])cacheService.getOrGet(cache, createRealmKey(null, name), () -> repository.getValues(getCurrentRealm(), name));
+		var realm = getCurrentRealm();
+		return (String[])cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getValues(realm, name));
 	}
 
 	@Override
 	public void setValues(Map<String, String> values)
 			throws AccessDeniedException, ResourceException {
 
+		var realm = getCurrentRealm();
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
 			
 			Map<String,String> oldValues = new HashMap<String,String>();
 			for(String resourceKey : values.keySet()) {
-				oldValues.put(resourceKey, repository.getValue(getCurrentRealm(), resourceKey));
-				cache.remove(createRealmKey(null, resourceKey));
+				oldValues.put(resourceKey, repository.getValue(realm, resourceKey));
+				cache.remove(createRealmKey(realm, resourceKey));
 			}
-			repository.setValues(getCurrentRealm(), values);
+			repository.setValues(realm, values);
 			
 			for(String resourceKey : values.keySet()) {
-				fireChangeEvent(getCurrentRealm(), resourceKey, oldValues.get(resourceKey), values.get(resourceKey), repository.getPropertyTemplate(getCurrentRealm(), resourceKey).isHidden());
+				fireChangeEvent(realm, resourceKey, oldValues.get(resourceKey), values.get(resourceKey), repository.getPropertyTemplate(realm, resourceKey).isHidden());
 			}
 			
-			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), getCurrentRealm()));
+			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), realm));
 		} catch (AccessDeniedException e) {
 			for(String resourceKey : values.keySet()) {
-				fireChangeEvent(getCurrentRealm(), resourceKey, e);
+				fireChangeEvent(realm, resourceKey, e);
 			}
 			throw e;
 		} catch (Throwable t) {
 			for(String resourceKey : values.keySet()) {
-				fireChangeEvent(getCurrentRealm(), resourceKey, t);
+				fireChangeEvent(realm, resourceKey, t);
 			}
 			throw new ResourceChangeException(ConfigurationService.RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
 		}
