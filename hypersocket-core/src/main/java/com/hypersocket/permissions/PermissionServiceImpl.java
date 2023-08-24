@@ -120,7 +120,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	private RoleAttributeRepository attributeRepository;
 
 	private Map<Class<? extends AssignableResource>, AbstractAssignableResourceRepository<?>> repositories = new HashMap<Class<? extends AssignableResource>, AbstractAssignableResourceRepository<?>>();
-
+	private Object syncLock = new Object();
 
 	@PostConstruct
 	private void postConstruct() {
@@ -283,10 +283,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 							}
 
 						});
-				synchronized (permissionsCache) {
-					permissionsCache.removeAll();
-					roleCache.removeAll();
-				}
+				invalidateCaches();
 				eventService.publishEvent(new RoleCreatedEvent(this, getCurrentSession(), realm, role, principals));
 				return role;
 			} catch (Throwable te) {
@@ -316,10 +313,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot assign a personal role to any principal");
 			}
 			repository.assignRole(role, principal);
-			synchronized (permissionsCache) {
-				permissionsCache.removeAll();
-				roleCache.removeAll();	
-			}
+			invalidateCaches();
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					Arrays.asList(principal), new ArrayList<Principal>()));
 		} catch (Throwable e) {
@@ -339,16 +333,21 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot assign a personal role to any principal");
 			}
 			repository.assignRole(role, principals);
-			synchronized (permissionsCache) {
-				permissionsCache.removeAll();
-				roleCache.removeAll();
-			}
+			invalidateCaches();
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					Arrays.asList(principals), new ArrayList<Principal>()));
 		} catch (Throwable e) {
 			eventService
 					.publishEvent(new RoleUpdatedEvent(this, role.getName(), e, getCurrentSession(), role.getRealm()));
 			throw e;
+		}
+	}
+
+	protected void invalidateCaches() {
+		synchronized (syncLock) {
+			personalRoleCache.removeAll();
+			permissionsCache.removeAll();
+			roleCache.removeAll();
 		}
 	}
 
@@ -364,10 +363,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot unassign a personal role from any principal");
 			}
 			repository.unassignRole(role, principal);
-			synchronized (permissionsCache) {
-				permissionsCache.removeAll();
-				roleCache.removeAll();
-			}
+			invalidateCaches();
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					new ArrayList<Principal>(), Arrays.asList(principal)));
 		} catch (Throwable e) {
@@ -398,10 +394,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 				throw new AccessDeniedException("You cannot unassign a personal role from any principal");
 			}
 			repository.unassignRole(role, principals);
-			synchronized (permissionsCache) {
-				permissionsCache.removeAll();
-				roleCache.removeAll();
-			}
+			invalidateCaches();
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					new ArrayList<Principal>(), Arrays.asList(principals)));
 		} catch (Throwable e) {
@@ -424,7 +417,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		boolean needPerms = false;		
 		Set<Permission> permissions = null;
 		
-		synchronized (permissionsCache) {
+		synchronized (syncLock) {
 			/* We do this up front to only keep the permission cache lock held for a short time */
 			if (!CACHE_PERMISSIONS || !permissionsCache.containsKey(cacheKey) || ( permissions = permissionsCache.get(cacheKey))==null) {
 				needPerms = true;
@@ -434,7 +427,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		if(needPerms) {
 			/* Load the roles, make take a while, so do it outside of the lock */
 			Set<Role> roles = getPrincipalRoles(principal);
-			synchronized (permissionsCache) {
+			synchronized (syncLock) {
 				/* Now check again inside the lock. If things have changed since then, then
 				 * we have waste a call to getPrincipalRoles() but at least we won't be holding up other threads
 				 */
@@ -504,28 +497,35 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<Role> getPrincipalRolesForRealm(Principal principal, Realm realm) {
-		
-		synchronized(roleCache) {
-			String cacheKey = String.format("%d:::%d", principal.getId(), realm.getId());
-			if (!roleCache.containsKey(cacheKey)) {
-				roleCache.put(cacheKey, repository.getPrincipalRolesForRealm(realmService.getAssociatedPrincipals(principal), realm));
+		String cacheKey = String.format("%d:::%d", principal.getId(), realm.getId());
+		synchronized(syncLock) {
+			var roles = (Set<Role>) roleCache.get(cacheKey);
+			if (roles != null) {
+				return roles;
 			}
-	
-			return (Set<Role>) roleCache.get(cacheKey);
 		}
+		var roles = repository.getPrincipalRolesForRealm(realmService.getAssociatedPrincipals(principal), realm);
+		synchronized(syncLock) {
+			roleCache.put(cacheKey, roles);
+		}
+		return roles;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<Role> getPrincipalRoles(Principal principal) {
 
-		synchronized(roleCache) {
-			if (!roleCache.containsKey(principal)) {
-				roleCache.put(principal, repository.getRolesForPrincipal(realmService.getAssociatedPrincipals(principal)));
-			}
+		synchronized(syncLock) {
+			var roles = (Set<Role>) roleCache.get(principal);
+			if (roles != null) {
+				return roles;
+			} 
 		}
-
-		return (Set<Role>) roleCache.get(principal);
+		var roles = repository.getRolesForPrincipal(realmService.getAssociatedPrincipals(principal));
+		synchronized(syncLock) {
+			roleCache.put(principal, roles);
+		}
+		return roles;
 	}
 
 	@Override
@@ -817,10 +817,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			role.getPermissions().clear();
 			repository.saveRole(role);
 			repository.deleteRole(role);
-			synchronized (permissionsCache) {
-				permissionsCache.removeAll();
-				roleCache.removeAll();
-			}
+			invalidateCaches();
 			if(needEvent) {
 				eventService.publishEvent(new RoleDeletedEvent(
 						this, getCurrentSession(), role.getRealm(), role, revoked));
@@ -871,10 +868,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 		try {
 			repository.grantPermission(role, permission);
-			synchronized (permissionsCache) {
-				permissionsCache.removeAll();
-				roleCache.removeAll();
-			}
+			invalidateCaches();
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					new ArrayList<Principal>(), new ArrayList<Principal>()));
 		} catch (Throwable e) {
@@ -963,10 +957,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 						}
 
 					});
-			synchronized (permissionsCache) {
-				permissionsCache.removeAll();
-				roleCache.removeAll();
-			}
+			invalidateCaches();
 			eventService.publishEvent(new RoleUpdatedEvent(this, getCurrentSession(), role.getRealm(), role,
 					assignPrincipals, unassignPrincipals));
 			return role;
@@ -1068,11 +1059,16 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 
 	@Override
 	public Role getPersonalRole(Principal principal) {
-		Role role = personalRoleCache.get(principal.getId());
-		if(role == null) {
-			role = repository.getPersonalRole(principal);
-			if(role == null)
-				role = repository.createPersonalRole(principal);
+		synchronized (syncLock) {
+			Role role = personalRoleCache.get(principal.getId());
+			if(role != null) {
+				return role;
+			}
+		}
+		var role = repository.getPersonalRole(principal);
+		if(role == null)
+			role = repository.createPersonalRole(principal);
+		synchronized(syncLock) {
 			personalRoleCache.put(principal.getId(), role);
 		}
 		return role;
@@ -1082,10 +1078,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	public void onApplicationEvent(SystemEvent event) {
 
 		if (event instanceof GroupEvent || event instanceof UserEvent) {
-			synchronized (permissionsCache) {
-				permissionsCache.removeAll();
-				roleCache.removeAll();
-			}
+			invalidateCaches();
 		}
 
 	}
@@ -1148,6 +1141,7 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		}
 		
 		deletePrincipalRole(principal);
+		invalidateCaches();
 		
 	}
 
@@ -1337,7 +1331,9 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	protected void deletePrincipalRole(Principal principal) {
 		if (principal.isPrimaryAccount()) {
 			try {
-				personalRoleCache.remove(principal.getId());
+				synchronized(syncLock) {
+					personalRoleCache.remove(principal.getId());
+				}
 				Role role = repository.getPersonalRole(principal);
 				if (role != null) {
 					deleteRole(role, false);
@@ -1409,17 +1405,20 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 		
 		String cacheKey = String.format("%d:::permissionRealms", principal.getId());
 		
-		synchronized(roleCache) {
-			if (!roleCache.containsKey(cacheKey)) {
-				Set<Realm> realms = new HashSet<Realm>();
-				for(Role r : repository.getRolesForPrincipal(realmService.getAssociatedPrincipals(principal))) {
-					realms.addAll(r.getPermissionRealms());
-				}
-				roleCache.put(cacheKey, realms);
-			}
-	
-			return (Set<Realm>) roleCache.get(cacheKey);
+		synchronized(syncLock) {
+			var realms = (Set<Realm>) roleCache.get(cacheKey);
+			if(realms != null)
+				return realms;
 		}
+			
+		Set<Realm> realms = new HashSet<Realm>();
+		for(Role r : repository.getRolesForPrincipal(realmService.getAssociatedPrincipals(principal))) {
+			realms.addAll(r.getPermissionRealms());
+		}
+		synchronized(syncLock) {
+			roleCache.put(cacheKey, realms);
+		}
+		return realms;
 	}
 
 	@Override

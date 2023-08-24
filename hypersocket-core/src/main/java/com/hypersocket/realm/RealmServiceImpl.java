@@ -1432,6 +1432,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				if (reconfigured) {
 					log.info("A realm property that was tagged with 'reconfigure' has been changed, the next sync. will rebuild the cache and retrieve all filtered objects.");
 					realmProvider.setValue(realm, "realm.reconcileRebuildCache", "true");
+					realmProvider.setValue(realm, "realm.forceNextReconcileFull", "true");
 					realmProvider.setValue(realm, "realm.upToDate", "false");
 				}
 			} 
