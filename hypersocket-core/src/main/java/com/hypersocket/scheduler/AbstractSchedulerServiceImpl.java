@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -170,7 +171,7 @@ public abstract class AbstractSchedulerServiceImpl extends AbstractAuthenticated
 
 		if (log.isInfoEnabled()) {
 			log.info("Scheduling job " + clz.getSimpleName() + " with id " + scheduleId + " with expression "
-					+ expr);
+					+ String.join(" : ", Arrays.asList(expr).stream().map(e -> e.getExpression()).collect(Collectors.toList())));
 		}
 		JobDetail job = JobBuilder.newJob(clz).withIdentity(scheduleId).build();
 
