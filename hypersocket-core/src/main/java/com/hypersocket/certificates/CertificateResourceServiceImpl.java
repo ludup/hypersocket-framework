@@ -724,9 +724,10 @@ public class CertificateResourceServiceImpl extends
 		} catch (IOException | CertificateException | UnrecoverableKeyException
 				| KeyStoreException | NoSuchAlgorithmException
 				| NoSuchProviderException | MismatchedCertificateException e) {
+			log.error("Failed to import PFX", e);
 			throw new ResourceCreationException(
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
-					"error.genericError", e.getMessage());
+					"error.genericError", e.getMessage(), e);
 
 		}
 
@@ -747,15 +748,17 @@ public class CertificateResourceServiceImpl extends
 			updateResource(resource, new HashMap<String, String>());
 			return resource;
 		} catch (KeyStoreException ke) {
+			log.error("Failed to import PFX", ke);
 			throw new ResourceChangeException(
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
-					"error.keyError", ke.getMessage());
+					"error.keyError", ke.getMessage(), ke);
 		} catch (IOException | CertificateException | UnrecoverableKeyException
 				| NoSuchAlgorithmException | NoSuchProviderException
 				| MismatchedCertificateException e) {
+			log.error("Failed to import PFX", e);
 			throw new ResourceChangeException(
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
-					"error.genericError", e.getMessage());
+					"error.genericError", e.getMessage(), e);
 
 		}
 	}
