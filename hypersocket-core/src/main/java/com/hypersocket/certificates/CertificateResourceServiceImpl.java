@@ -731,7 +731,7 @@ public class CertificateResourceServiceImpl extends
 				| NoSuchProviderException | MismatchedCertificateException e) {
 			throw new ResourceCreationException(
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
-					"error.genericError", e.getMessage());
+					"error.genericError", e.getMessage(), e);
 
 		}
 
@@ -754,13 +754,13 @@ public class CertificateResourceServiceImpl extends
 		} catch (KeyStoreException ke) {
 			throw new ResourceChangeException(
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
-					"error.keyError", ke.getMessage());
+					"error.keyError", ke.getMessage(), ke);
 		} catch (IOException | CertificateException | UnrecoverableKeyException
 				| NoSuchAlgorithmException | NoSuchProviderException
 				| MismatchedCertificateException e) {
 			throw new ResourceChangeException(
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE,
-					"error.genericError", e.getMessage());
+					"error.genericError", e.getMessage(), e);
 
 		}
 	}
