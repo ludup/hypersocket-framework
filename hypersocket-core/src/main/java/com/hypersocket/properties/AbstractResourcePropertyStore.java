@@ -56,7 +56,7 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		if(!ApplicationContextServiceImpl.isReady()) {
 			throw new CacheUnavailableException();
 		}
-		CacheService cacheService = ApplicationContextServiceImpl.getInstance().getBean(CacheService.class);
+		var cacheService = ApplicationContextServiceImpl.getInstance().getBean(CacheService.class);
 		return cacheService.getCacheOrCreate(getCacheName(), String.class, String.class);
 	}
 	
@@ -129,14 +129,14 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		Cache<String, String> cachedValues;
 		try {
 			cachedValues = getCache();
-//			if ("false".equals(cache) || !cachedValues.containsKey(cacheKey)) {
+			if ("false".equals(cache) || !cachedValues.containsKey(cacheKey)) {
 				c = lookupPropertyValue(template, resource);
 				if(c!=null) {
 					cachedValues.put(cacheKey, c);
 				}
-//			} else {
-//				c = cachedValues.get(cacheKey);
-//			}
+			} else {
+				c = cachedValues.get(cacheKey);
+			}
 		} catch (CacheUnavailableException e) {
 			c = lookupPropertyValue(template, resource);
 		}
@@ -158,12 +158,12 @@ public abstract class AbstractResourcePropertyStore implements ResourcePropertyS
 		Cache<String, String> cachedValues;
 		try {
 			cachedValues = getCache();
-//			if (!cachedValues.containsKey(cacheKey)) {
+			if (!cachedValues.containsKey(cacheKey)) {
 				c = lookupPropertyValue(template, resource);
 				cachedValues.put(cacheKey, c);
-//			} else {
-//				c = cachedValues.get(cacheKey);
-//			}
+			} else {
+				c = cachedValues.get(cacheKey);
+			}
 		} catch (CacheUnavailableException e) {
 			c = lookupPropertyValue(template, resource);
 		}

@@ -10,6 +10,7 @@ package com.hypersocket.auth;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,6 +23,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.OnDelete;
@@ -34,6 +36,8 @@ import com.hypersocket.resource.RealmResource;
 
 @Entity
 @Table(name = "auth_schemes")
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthenticationScheme extends RealmResource {
 
 	private static final long serialVersionUID = 96922791807675582L;
@@ -56,13 +60,13 @@ public class AuthenticationScheme extends RealmResource {
 	@Column(name = "last_button_resource_key")
 	private String lastButtonResourceKey;
 
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "scheme_allowed_roles", joinColumns = {
 			@JoinColumn(name = "resource_id") }, inverseJoinColumns = { @JoinColumn(name = "role_id") })
 	private Set<Role> allowedRoles = new HashSet<Role>();
 
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	@Fetch(FetchMode.SELECT)
 	@JoinTable(name = "scheme_denied_roles", joinColumns = { @JoinColumn(name = "resource_id") }, inverseJoinColumns = {
 			@JoinColumn(name = "role_id") })
@@ -162,6 +166,14 @@ public class AuthenticationScheme extends RealmResource {
 	@JsonIgnore
 	public Set<Role> getAllowedRoles() {
 		return allowedRoles;
+	}
+
+	public void setAllowedRoles(Set<Role> allowedRoles) {
+		this.allowedRoles = allowedRoles;
+	}
+
+	public void setDeniedRoles(Set<Role> deniedRoles) {
+		this.deniedRoles = deniedRoles;
 	}
 
 	@JsonIgnore

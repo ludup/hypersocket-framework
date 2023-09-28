@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.SessionFactory;
-import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +20,7 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.events.SynchronousEvent;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
-import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
 import com.hypersocket.scheduler.LocalSchedulerService;
@@ -72,7 +69,7 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 	public void scheduleOrExecuteTrigger(TriggerResource trigger, List<SystemEvent> sourceEvents)
 			throws ValidationException {
 
-		SystemEvent sourceEvent = sourceEvents.get(sourceEvents.size() - 1);
+		var sourceEvent = sourceEvents.get(sourceEvents.size() - 1);
 
 		if (sourceEvent instanceof SynchronousEvent || sourceEvent instanceof TaskResultCallback) {
 			try {
@@ -87,9 +84,9 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 
 		} else {
 
-			Principal principal = realmService.getSystemPrincipal();
+			var principal = realmService.getSystemPrincipal();
 
-			Realm currentRealm = sourceEvent.getCurrentRealm();
+			var currentRealm = sourceEvent.getCurrentRealm();
 			if (sourceEvent.hasAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME)) {
 				principal = realmService.getPrincipalByName(currentRealm,
 						sourceEvent.getAttribute(CommonAttributes.ATTR_PRINCIPAL_NAME), PrincipalType.USER);
@@ -97,16 +94,16 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 				principal = getCurrentPrincipal();
 			}
 
-			JobDataMap data = new PermissionsAwareJobData(currentRealm, principal,
+			var data = new PermissionsAwareJobData(currentRealm, principal,
 					hasAuthenticatedContext() ? getCurrentLocale() : configurationService.getDefaultLocale(),
-					"triggerExecutionJob");
+					"triggerExecutionJob", trigger.getName());
 
 			data.put("event", sourceEvent);
 			data.put("sourceEvent", sourceEvents);
 			data.put("trigger", trigger);
 
 			try {
-				String scheduleId = UUID.randomUUID().toString();
+				var scheduleId = UUID.randomUUID().toString();
 
 				schedulerService.scheduleNow(TriggerJob.class, scheduleId, data);
 			} catch (SchedulerException e) {

@@ -5,7 +5,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobKey;
-import org.quartz.Trigger;
 
 import com.hypersocket.utils.HypersocketUtils;
 
@@ -32,13 +31,13 @@ public class SchedulerResource {
 		group = k.getGroup();
 	}
 
-	public SchedulerResource(Trigger trigger, SchedulerJobState status) {
+	public SchedulerResource(Date nextFire, Date lastFire, JobKey jobKey, SchedulerJobState status) {
 		/* NOTE: At the moment, job groups are not used, so ID is same as Name */
-		setId(HypersocketUtils.base64Encode(trigger.getJobKey().getName()));
-		setGroup(trigger.getJobKey().getGroup());
-		setName(trigger.getJobKey().getName());
-		setLastFire(trigger.getPreviousFireTime());
-		setNextFire(trigger.getNextFireTime());
+		setId(HypersocketUtils.base64Encode(jobKey.getName()));
+		setGroup(jobKey.getGroup());
+		setName(jobKey.getName());
+		setLastFire(lastFire);
+		setNextFire(nextFire);
 		this.status = status;
 	}
 	

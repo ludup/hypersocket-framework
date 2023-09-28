@@ -153,6 +153,9 @@ public class MessageResourceServiceImpl extends AbstractResourceServiceImpl<Mess
 								message.setSupportedVariables(vars);
 								repository.saveResource(message);
 							}
+							if (r.repository != null) {
+								r.repository.onUpdated(getMessageById(r.getMessageId(), realm));
+							}
 						}
 					} catch (Exception e) {
 						log.error("Faied to create message template", e);

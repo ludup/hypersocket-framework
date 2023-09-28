@@ -19,6 +19,7 @@ public class CacheUtils {
 	public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
 	public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
 	public static final int HTTP_CACHE_SECONDS = getDefaultCacheSeconds();
+	public static final String IGNORE_CACHE = "ignoreCache";
 
 	protected static int getDefaultCacheSeconds() {
 		return Integer.parseInt(System.getProperty("hypersocket.cacheMaxAgeSeconds", String.valueOf(System.getProperty("hypersocket.development", "false").equals("true")

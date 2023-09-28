@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
-import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +42,7 @@ import com.hypersocket.resource.ResourceException;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
+import com.hypersocket.scheduler.JobData;
 import com.hypersocket.scheduler.PermissionsAwareJobData;
 import com.hypersocket.session.SessionService;
 import com.hypersocket.tasks.TaskDefinition;
@@ -250,10 +250,10 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	@Override
 	public void runNow(AutomationResource resource) throws SchedulerException {
 		
-		PermissionsAwareJobData data = new PermissionsAwareJobData(resource.getRealm(), resource.getName());
+		var data = new PermissionsAwareJobData(resource.getRealm(), "automationResourceJob", resource.getName());
 		data.put("resourceId", resource.getId());
 		
-		String scheduleId = String.format("run_now_%s_%s", UUID.randomUUID().toString(),resource.getId().toString());
+		var scheduleId = String.format("run_now_%s_%s", UUID.randomUUID().toString(),resource.getId().toString());
 		
 		schedulerService.scheduleNow(AutomationJob.class, scheduleId, data);
 	}
@@ -413,10 +413,8 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 				c.set(Calendar.HOUR, 0);
 				c.set(Calendar.MINUTE, 0);
 				c.add(Calendar.DAY_OF_MONTH, 1);
-				JobDataMap data = new JobDataMap();
-				data.put("jobName", "automationDailyJob");
 				
-				schedulerService.scheduleAt(DailySchedulerJob.class, "automationDailyJob", data, c.getTime(), HypersocketUtils.ONE_DAY);
+				schedulerService.scheduleAt(DailySchedulerJob.class, "automationDailyJob", JobData.of("automationDailyJob"), c.getTime(), HypersocketUtils.ONE_DAY);
 			}
 		} catch (SchedulerException e) {
 			log.error("Failed to schedule daily automation jobs", e);

@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -404,12 +405,15 @@ public class MessageSender {
 				
 				processedEmails.add(recipient.getAddress().toLowerCase());
 				
-				Map<String, Object> data = tokenResolver.getData();
-				data.putAll(new ServerResolver(realm).getData());
+				Map<String, Object> data = new HashMap<>();
 				data.put("email", recipient.getAddress());
 				data.put("firstName", recipient.getFirstName());
 				data.put("fullName", recipient.getName());
 				data.put("principalId", recipient.getPrincipalId());
+				data.putAll(new ServerResolver(realm).getData());
+				if(tokenResolver != null) {
+					data.putAll(tokenResolver.getData());
+				}
 
 				if(recipient.hasPrincipal()) {
 					

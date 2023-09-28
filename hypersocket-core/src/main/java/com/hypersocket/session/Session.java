@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -28,6 +29,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
@@ -49,6 +51,8 @@ import com.hypersocket.utils.HypersocketUtils;
 @Entity
 @Table(name = "sessions")
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Session extends AbstractEntity<String> {
 
 	private static final long serialVersionUID = -830036435585689895L;
@@ -229,18 +233,8 @@ public class Session extends AbstractEntity<String> {
 		this.currentRealm = currentRealm;
 	}
 
-	public void touch() {
+	public void updated() {
 		lastUpdated = new Date();
-		
-		if (isReadyForUpdate()) {
-			ApplicationContextServiceImpl.getInstance().getBean(SessionRepository.class).updateSession(this);
-			if (log.isDebugEnabled()) {
-				log.debug("Session "
-						+ getPrincipal().getPrincipalName()
-						+ "/" + getId()
-						+ " state has been updated");
-			}
-		}
 	}
 
 	public Date getLastUpdated() {

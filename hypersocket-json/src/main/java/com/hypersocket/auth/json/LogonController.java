@@ -463,37 +463,10 @@ public class LogonController extends AuthenticatedController {
 	private void attachSession(Session session, HttpServletRequest request, HttpServletResponse response) {
 		
 		request.getSession().setAttribute(
-				SessionUtils.AUTHENTICATED_SESSION, session);
+				SessionUtils.AUTHENTICATED_SESSION, session.getId());
 
 		sessionUtils.addAPISession(request, response,
 				session);
-	}
-	
-	@RequestMapping(value = "attach/{authCode}/{sessionId}")
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	public void attachSession(HttpServletRequest request,
-			HttpServletResponse response, @PathVariable String authCode,
-			@PathVariable String sessionId, @RequestParam String location)
-			throws UnauthorizedException, SessionTimeoutException, RedirectException, IOException {
-
-		Session session = sessionService.getSession(sessionId);
-		Session authSession = sessionService.getSessionTokenResource(authCode, Session.class);
-		
-		if(!authSession.equals(session)) {
-			throw new UnauthorizedException();
-		}
-		
-		try(var c = tryAs(session, sessionUtils.getLocale(request))) {
-			attachSession(authSession, request, response);
-			
-			if(StringUtils.isEmpty(location)) {
-				throw new RedirectException(System.getProperty(
-						"hypersocket.uiPath", "/hypersocket/ui"));
-			} else {
-				throw new RedirectException(location);
-			}
-		} 
 	}
 	
 	@RequestMapping(value = "logoff/{id}", method = { RequestMethod.GET,

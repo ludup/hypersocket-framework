@@ -56,14 +56,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	List<Session> getPrincipalActiveSessions(Principal principal) throws AccessDeniedException;
 	
 	Boolean hasConcurrentSession() throws AccessDeniedException;
-
-	<T> SessionResourceToken<T> createSessionToken(T resource);
-
-	<T> SessionResourceToken<T> getSessionToken(String shortCode,
-			Class<T> resourceClz);
-
-	<T> T getSessionTokenResource(String shortCode,
-			Class<T> resourceClz);
 	
 	Session getNonCookieSession(String remoteAddr, String requestHeader,
 			String authenticationSchemeResourceKey)
@@ -110,7 +102,7 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	Map<String, Long> getIPCount(Date startDate, Date endDate)
 			throws AccessDeniedException;
 
-	List<?> searchResources(Realm currentRealm, String searchPattern, int start, int length, ColumnSort[] sorting) throws AccessDeniedException;
+//	List<?> searchResources(Realm currentRealm, String searchPattern, int start, int length, ColumnSort[] sorting) throws AccessDeniedException;
 	
 	List<?> searchResourcesWithStateParameters(Realm currentRealm, String searchPattern, int start, int length, ColumnSort[] sorting, Set<String> stateParamNames) throws AccessDeniedException;
 
@@ -144,6 +136,8 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	
 	void registerCookieDecorator(CookieDecorator decorator);
 
-	List<CookieDecorator> getCookieDecorators();	
+	List<CookieDecorator> getCookieDecorators();
+	
+	void touch(Session session);
 }
 

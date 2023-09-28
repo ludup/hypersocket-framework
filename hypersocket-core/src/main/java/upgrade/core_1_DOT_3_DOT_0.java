@@ -8,13 +8,12 @@
 package upgrade;
 
 
-import org.quartz.JobDataMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hypersocket.scheduler.ClusteredSchedulerService;
-import com.hypersocket.session.Session;
+import com.hypersocket.scheduler.JobData;
 import com.hypersocket.session.SessionReaperJob;
 import com.hypersocket.session.SessionService;
 
@@ -38,13 +37,12 @@ public class core_1_DOT_3_DOT_0 implements Runnable {
 		
 		try {
 			if(schedulerService.jobDoesNotExists("firstRunSessionReaperJob")){
-				JobDataMap data = new JobDataMap();
-				data.put("jobName", "firstRunSessionReaperJob");
-				data.put("firstRun", true);
-				
-				Session session = sessionService.getSystemSession();
+				var session = sessionService.getSystemSession();
 				try(var c = sessionService.tryAs(session, session.getCurrentRealm(), session.getCurrentPrincipal(), null)) {
-					schedulerService.scheduleNow(SessionReaperJob.class, "firstRunSessionReaperJob", data);
+					schedulerService.scheduleNow(SessionReaperJob.class, "firstRunSessionReaperJob", JobData.of(
+						"firstRunSessionReaperJob",
+						"firstRun", true
+					));
 				}
 			}
 

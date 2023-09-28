@@ -32,7 +32,6 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
-import com.hypersocket.session.SessionResourceToken;
 import com.hypersocket.session.SessionService;
 
 @Component
@@ -79,14 +78,14 @@ public class SessionUtils {
 		}
 		
 		if (request.getAttribute(AUTHENTICATED_SESSION) != null) {
-			session = (Session) request.getAttribute(AUTHENTICATED_SESSION);
+			session = sessionService.getSession((String) request.getAttribute(AUTHENTICATED_SESSION));
 			if(sessionService.isLoggedOn(session, false)) {
 				return session;
 			}
 		}
 		if (Objects.nonNull(request.getSession()) && request.getSession().getAttribute(AUTHENTICATED_SESSION) != null) {
-			session = (Session) request.getSession().getAttribute(
-					AUTHENTICATED_SESSION);
+			session =  sessionService.getSession((String) request.getSession().getAttribute(
+					AUTHENTICATED_SESSION));
 			if(sessionService.isLoggedOn(session, false)) {
 				return session;
 			}
@@ -165,8 +164,8 @@ public class SessionUtils {
 				throw new SessionTimeoutException();
 			}
 		} else {
-			session = (Session) request.getSession().getAttribute(
-					AUTHENTICATED_SESSION);
+			session = sessionService.getSession((String) request.getSession().getAttribute(
+					AUTHENTICATED_SESSION));
 			if (!sessionService.isLoggedOn(session, true)) {
 				throw new UnauthorizedException();
 			}
@@ -176,8 +175,8 @@ public class SessionUtils {
 			verifySameSiteRequest(request, session);
 		}
 		// Preserve the session for future lookups in this request and session
-		request.setAttribute(AUTHENTICATED_SESSION, session);
-		request.getSession().setAttribute(AUTHENTICATED_SESSION, session);
+		request.setAttribute(AUTHENTICATED_SESSION, session.getId());
+		request.getSession().setAttribute(AUTHENTICATED_SESSION, session.getId());
 
 		addAPISession(request, response, session);
 
@@ -204,15 +203,15 @@ public class SessionUtils {
 		}
 		
 		if (request.getAttribute(AUTHENTICATED_SESSION) != null) {
-			session = (Session) request.getAttribute(AUTHENTICATED_SESSION);
+			session = sessionService.getSession((String) request.getAttribute(AUTHENTICATED_SESSION));
 			if(sessionService.isLoggedOn(session, false)) {
 				return session;
 			}
 		}
 		
 		if (request.getSession().getAttribute(AUTHENTICATED_SESSION) != null) {
-			session = (Session) request.getSession().getAttribute(
-					AUTHENTICATED_SESSION);
+			session = sessionService.getSession((String) request.getSession().getAttribute(
+					AUTHENTICATED_SESSION));
 			if(sessionService.isLoggedOn(session, false)) {
 				return session;
 			}
@@ -436,46 +435,6 @@ public class SessionUtils {
 		if (!sessionService.isLoggedOn(session, true)) {
 			throw new SessionTimeoutException();
 		}
-	}
-
-	public <T> SessionResourceToken<T> authenticateSessionToken(
-			HttpServletRequest request, HttpServletResponse response, String shortCode, Class<T> resourceClz)
-			throws UnauthorizedException, SessionTimeoutException {
-
-		SessionResourceToken<T> token = sessionService.getSessionToken(
-				shortCode, resourceClz);
-
-		if(token!=null) {
-
-			if (!request.getRemoteAddr().equals(
-					token.getSession().getRemoteAddress())) {
-				if(log.isInfoEnabled()) {
-					log.info(String.format("Session token %s for %s does not belong to %s", 
-							shortCode, 
-							request.getRemoteAddr(),
-							token.getSession().getRemoteAddress()));
-				}
-				throw new UnauthorizedException();
-			}
-			
-			if(log.isInfoEnabled()) {
-				log.info(String.format("Session token %s is valid", shortCode));
-			}
-			
-			// Preserve the session for future lookups in this request and session
-			request.setAttribute(AUTHENTICATED_SESSION, token.getSession());
-			request.getSession().setAttribute(AUTHENTICATED_SESSION, token.getSession());
-
-			addAPISession(request, response, token.getSession());
-			
-			return token;
-			
-		}
-
-		if(log.isInfoEnabled()) {
-			log.info(String.format("Session token %s is invalid", shortCode));
-		}
-		throw new UnauthorizedException();
 	}
 
 	public boolean hasActiveSession(HttpServletRequest request) {

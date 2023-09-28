@@ -26,7 +26,6 @@ import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.AuthenticationRequiredButDontTouchSession;
 import com.hypersocket.auth.json.Cacheable;
-import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.realm.RealmService;
@@ -114,8 +113,9 @@ public class ControllerInterceptor implements HandlerInterceptor {
 				} else if (acAnnotation.realmHost()) {
 					contrl.setupSystemContext(realmService.getRealmByHost(request.getServerName()));
 				} else {
-					contrl.setCurrentSession(sessionUtils.getSession(request), sessionUtils.getCurrentRealm(request),
-							sessionUtils.getPrincipal(request), sessionUtils.getLocale(request));
+					var session = sessionUtils.getSession(request);
+					contrl.setCurrentSession(session , session.getCurrentRealm(),
+							session.getCurrentPrincipal(), sessionUtils.getLocale(request));
 				}
 			}
 		}

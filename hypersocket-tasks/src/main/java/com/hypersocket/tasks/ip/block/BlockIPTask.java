@@ -129,10 +129,10 @@ public class BlockIPTask extends AbstractTaskProvider {
 								log.info("Scheduling unblock for IP address " + ipAddress + " in " + val + " minutes");
 							}
 							
-							PermissionsAwareJobData data = new PermissionsAwareJobData(currentRealm, "unblockIP");
+							var data = new PermissionsAwareJobData(currentRealm, "unblockIP", ipAddress);
 							data.put("addr", ipAddress);
 		
-							String scheduleId = currentRealm.getName() + "_" + ipAddress;
+							var scheduleId = currentRealm.getName() + "_" + ipAddress;
 									
 							schedulerService.scheduleIn(UnblockIPJob.class, scheduleId, data, val * 60000, 0);
 							

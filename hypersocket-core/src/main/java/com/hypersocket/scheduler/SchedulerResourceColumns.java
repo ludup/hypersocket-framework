@@ -4,12 +4,14 @@ import com.hypersocket.tables.Column;
 
 public enum SchedulerResourceColumns implements Column {
 
-	ID, GROUP, REALM, NAME, STATUS, NEXTFIRE, LASTFIRE, TIMETAKEN;
+	ID, GROUP, REALM, NAME, DESCRIPTION, STATUS, NEXTFIRE, LASTFIRE, TIMETAKEN;
 	
 	public String getColumnName() {
 		switch(this) {
 		case ID:
 			return "id";
+		case DESCRIPTION:
+			return "description";
 		case GROUP:
 			return "group";
 		case STATUS:

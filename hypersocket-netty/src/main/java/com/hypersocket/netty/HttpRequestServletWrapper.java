@@ -334,7 +334,10 @@ public abstract class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public String getServerName() {
-		String host = getHeader(HttpHeaders.HOST);
+		String host = getHeader("X-Forwarded-Host");
+		if(host == null || host.length() == 0)
+			host = getHeader(HttpHeaders.HOST);
+		
 		if(host!=null) {
 			int idx;
 			if ((idx = host.indexOf(":")) > -1) {

@@ -21,6 +21,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.RealmService;
+import com.hypersocket.scheduler.JobData;
 import com.hypersocket.scheduler.NotScheduledException;
 import com.hypersocket.scheduler.SchedulerResource;
 import com.hypersocket.scheduler.SchedulerService;
@@ -119,7 +120,7 @@ public class Survey implements Closeable {
 
 		@Override
 		public void schedule() {
-			JobDataMap jdm = new JobDataMap();
+			JobDataMap jdm = JobData.of("survey");
 			jdm.put(SurveyTriggerJob.SURVEY_RESOURCE_KEY, survey.resourceKey);
 			try {
 

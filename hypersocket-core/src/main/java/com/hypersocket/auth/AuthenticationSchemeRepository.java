@@ -9,7 +9,9 @@ package com.hypersocket.auth;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
+import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceRepository;
 
@@ -52,5 +54,7 @@ public interface AuthenticationSchemeRepository extends AbstractResourceReposito
 
 	AuthenticationSchemeRegistration getRegistration(String scheme);
 
-	
+	Set<Role> getAllowedRoles(AuthenticationScheme scheme);
+
+	Set<Role> getDeniedRoles(AuthenticationScheme scheme);
 }

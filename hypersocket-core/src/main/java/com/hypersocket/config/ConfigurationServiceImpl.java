@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.cache.Cache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.auth.AbstractAuthenticatedServiceImpl;
+import com.hypersocket.cache.CacheService;
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -50,9 +52,14 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	private EventService eventPublisher;
 
 	@Autowired
+	private CacheService cacheService;
+
+	@Autowired
 	private I18NService i18nService; 
 	
 	private Locale defaultLocale = null;
+
+	private Cache<String, Object> cache;
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -64,40 +71,41 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 			permissionService.registerPermission(p,cat);
 		}
 
+		cache = cacheService.getCacheOrCreate("configurationService", String.class, Object.class);
 		repository.loadPropertyTemplates("propertyTemplates.xml");
 		
 	}
 
 	@Override
 	public String getValue(Realm realm, String resourceKey) {
-		return repository.getValue(realm, resourceKey);
+		return (String)cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getValue(realm, resourceKey));
 	}
 	
 	@Override
 	public String getValueOrSystemDefault(Realm realm, String resourceKey) {
-		return repository.getValueOrDefault(realm, 
+		return (String)cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getValueOrDefault(realm, 
 				resourceKey, 
 				getValue(
 						ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm(), 
-						resourceKey));
+						resourceKey)));
 	}
 	
 	@Override
 	public Integer getIntValueOrSystemDefault(Realm realm, String resourceKey) {
-		return repository.getIntValueOrDefault(realm, 
+		return (Integer)cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getIntValueOrDefault(realm, 
 				resourceKey, 
 				getIntValue(
 						ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm(), 
-						resourceKey));
+						resourceKey)));
 	}
 	
 	@Override
 	public Boolean getBooleanValueOrSystemDefault(Realm realm, String resourceKey) {
-		return repository.getBooleanValueOrDefault(realm, 
+		return (Boolean)cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getBooleanValueOrDefault(realm, 
 				resourceKey, 
 				getBooleanValue(
 						ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm(), 
-						resourceKey));
+						resourceKey)));
 	}
 	
 	@Override
@@ -107,7 +115,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public Integer getIntValue(Realm realm, String name) throws NumberFormatException {
-		return repository.getIntValue(realm, name);
+		return (Integer)cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getIntValue(realm, name));
 	}
 	
 	@Override
@@ -117,7 +125,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	
 	@Override
 	public Boolean getBooleanValue(Realm realm, String name) {
-		return repository.getBooleanValue(realm, name);
+		return (Boolean)cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getBooleanValue(realm, name));
 	}
 	
 	@Override 
@@ -127,11 +135,12 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	
 	@Override 
 	public Double getDoubleValue(Realm realm, String name) {
-		return repository.getDoubleValue(realm, name);
+		return (Double)cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getDoubleValue(realm, name));
 	}
 	
 	@Override
 	public void setDoubleValue(Realm realm, String name, Double value) {
+		cache.remove(createRealmKey(realm, name));
 		repository.setDoubleValue(realm, name, value);
 	}
 	
@@ -154,6 +163,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 			PropertyTemplate template = repository.getPropertyTemplate(realm, resourceKey);
 			if(template!=null) {
 				String oldValue = repository.getValue(realm, resourceKey);
+				cache.remove(createRealmKey(realm, resourceKey));
 				repository.setValue(realm, resourceKey, value);
 				fireChangeEvent(realm, resourceKey, oldValue, value, template.isHidden());
 				eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), realm));
@@ -189,35 +199,38 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public String[] getValues(String name) {
-		return repository.getValues(getCurrentRealm(), name);
+		var realm = getCurrentRealm();
+		return (String[])cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getValues(realm, name));
 	}
 
 	@Override
 	public void setValues(Map<String, String> values)
 			throws AccessDeniedException, ResourceException {
 
+		var realm = getCurrentRealm();
 		try {
 			assertPermission(ConfigurationPermission.UPDATE);
 			
 			Map<String,String> oldValues = new HashMap<String,String>();
 			for(String resourceKey : values.keySet()) {
-				oldValues.put(resourceKey, getValue(resourceKey));
+				oldValues.put(resourceKey, repository.getValue(realm, resourceKey));
+				cache.remove(createRealmKey(realm, resourceKey));
 			}
-			repository.setValues(getCurrentRealm(), values);
+			repository.setValues(realm, values);
 			
 			for(String resourceKey : values.keySet()) {
-				fireChangeEvent(getCurrentRealm(), resourceKey, oldValues.get(resourceKey), values.get(resourceKey), repository.getPropertyTemplate(getCurrentRealm(), resourceKey).isHidden());
+				fireChangeEvent(realm, resourceKey, oldValues.get(resourceKey), values.get(resourceKey), repository.getPropertyTemplate(realm, resourceKey).isHidden());
 			}
 			
-			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), getCurrentRealm()));
+			eventPublisher.publishEvent(new ConfigurationChangedEvent(this, true, getCurrentSession(), realm));
 		} catch (AccessDeniedException e) {
 			for(String resourceKey : values.keySet()) {
-				fireChangeEvent(getCurrentRealm(), resourceKey, e);
+				fireChangeEvent(realm, resourceKey, e);
 			}
 			throw e;
 		} catch (Throwable t) {
 			for(String resourceKey : values.keySet()) {
-				fireChangeEvent(getCurrentRealm(), resourceKey, t);
+				fireChangeEvent(realm, resourceKey, t);
 			}
 			throw new ResourceChangeException(ConfigurationService.RESOURCE_BUNDLE, "error.unexpectedError", t.getMessage());
 		}
@@ -250,7 +263,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public String[] getValues(Realm realm, String name) {
-		return repository.getValues(realm, name);
+		return (String[])cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getValues(realm, name));
 	}
 	
 	@Override
@@ -290,7 +303,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public Long getLongValue(Realm realm, String val) {
-		return repository.getLongValue(realm, val);
+		return (Long)cacheService.getOrGet(cache, createRealmKey(realm, val), () -> repository.getLongValue(realm, val));
 	}
 
 	@Override
@@ -300,7 +313,12 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public void deleteRealm(Realm realm) {
+		cache.clear();
 		repository.deleteRealm(realm);
+	}
+	
+	private String createRealmKey(Realm realm, String resourceKey) {
+		return ( realm == null ? "null" : String.valueOf(realm.getId()) ) + "_" + resourceKey;
 	}
 	
 }

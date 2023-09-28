@@ -52,6 +52,7 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 
+import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.certificates.CertificateResourceService;
 import com.hypersocket.certificates.events.CertificateResourceCreatedEvent;
 import com.hypersocket.certificates.events.CertificateResourceUpdatedEvent;
@@ -79,6 +80,7 @@ import com.hypersocket.servlet.HypersocketServletContext;
 import com.hypersocket.servlet.HypersocketSession;
 import com.hypersocket.servlet.HypersocketSessionFactory;
 import com.hypersocket.session.Session;
+import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
 
 public abstract class HypersocketServerImpl implements HypersocketServer, 
@@ -794,7 +796,12 @@ public abstract class HypersocketServerImpl implements HypersocketServer,
 		}
 		
 		HttpSession session = request.getSession(false);
-		Session state = session == null ? null : (Session)session.getAttribute("authenticatedSession");
+		String stateId = session == null ? null : (String)session.getAttribute(SessionUtils.AUTHENTICATED_SESSION);
+		Session state = null;
+		try {
+			state = stateId == null ? null : sessionUtils.getSession(request);
+		} catch (UnauthorizedException | SessionTimeoutException e) {
+		}
 		boolean authenticated = state != null && !state.isClosed();
 		
 		/* First look for the most recently added specific resolver for this authentication state */

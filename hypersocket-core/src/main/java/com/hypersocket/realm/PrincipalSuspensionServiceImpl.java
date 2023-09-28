@@ -77,6 +77,12 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	@Override
 	public PrincipalSuspension createPrincipalSuspension(Principal principal, String name, Realm realm,
 			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceException {
+		var startMin = Calendar.getInstance();
+		startMin.set(Calendar.SECOND, 0);
+		startMin.set(Calendar.MILLISECOND, 0);
+		var minTime = startMin.getTime();
+		if(startDate.before(minTime))
+			throw new ResourceCreationException(RealmServiceImpl.RESOURCE_BUNDLE, "error.suspensionInThePast");
 
 		try {
 			return transactionService.doInTransaction(new TransactionCallback<PrincipalSuspension>() {
@@ -198,7 +204,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	private void scheduleResume(String username, Realm realm, Date startDate, long duration) {
 		
 		try {
-			Calendar c = Calendar.getInstance();
+			var c = Calendar.getInstance();
 			c.setTime(startDate);
 			c.add(Calendar.MINUTE, (int) duration); 
 			
@@ -208,11 +214,10 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 				}
 				return;
 			}
-			PermissionsAwareJobData data = new PermissionsAwareJobData(
-					realm, "resumeUserJob");
+			var data = new PermissionsAwareJobData(realm, "resumeUserJob", username);
 			data.put("name", username);
 
-			String scheduleId = username + "/" + realm.getId();
+			var scheduleId = username + "/" + realm.getId();
 			
 			try {
 				schedulerService.scheduleAt(ResumeUserJob.class, scheduleId, data, c.getTime());
@@ -229,7 +234,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	private void scheduleSuspend(String username, Realm realm, Date startDate, long duration) {
 		
 		try {
-			Calendar c = Calendar.getInstance();
+			var c = Calendar.getInstance();
 			c.setTime(startDate);
 			
 			if(new Date().after(c.getTime())) {
@@ -238,8 +243,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 				}
 				return;
 			}
-			PermissionsAwareJobData data = new PermissionsAwareJobData(
-					realm, "resumeUserJob");
+			var data = new PermissionsAwareJobData(realm, "suspendUserJob", username);
 			data.put("name", username);
 			data.put("duration", duration);
 

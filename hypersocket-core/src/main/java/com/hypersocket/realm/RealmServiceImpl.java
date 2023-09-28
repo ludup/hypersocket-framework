@@ -103,7 +103,6 @@ import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.resource.ResourcePassthroughException;
 import com.hypersocket.resource.TransactionAdapter;
 import com.hypersocket.session.SessionService;
-import com.hypersocket.session.SessionServiceImpl;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.TableFilter;
 import com.hypersocket.transactions.TransactionCallbackWithError;
@@ -243,6 +242,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	
 	private List<PrincipalCommunicationDataViewProvider> principalCommunicationDataViewProviders
 		= new ArrayList<>();
+	private Realm defaultRealm;
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -567,6 +567,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					}
 				}
 			}
+			realmCache.put(host, defaultRealm);
 			return defaultRealm;
 		}
 
@@ -907,13 +908,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		 */
 
 		try(var c = tryAs(principal.getRealm())) {
-			String pwd = new String(password);
-			if (pwd.startsWith(SessionServiceImpl.TOKEN_PREFIX)) {
-				Principal tokenPrincipal = sessionService.getSessionTokenResource(pwd, Principal.class);
-				return tokenPrincipal != null && tokenPrincipal.equals(principal);
-			} else {
-				return getProviderForPrincipal(principal).verifyPassword(principal, password);
-			}
+			return getProviderForPrincipal(principal).verifyPassword(principal, password);
 		} catch (LogonException e) {
 			if (configurationService.getBooleanValue(principal.getRealm(), "logon.verboseErrors")) {
 				throw e;
@@ -1285,6 +1280,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	private void clearCache(Realm realm) {
+		if(realm.equals(defaultRealm)) {
+			defaultRealm = null;
+		}
 		RealmProvider realmProvider = getProviderForRealm(realm.getResourceCategory());
 
 		String[] hosts = realmProvider.getValues(realm, "realm.host");
@@ -1434,6 +1432,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				if (reconfigured) {
 					log.info("A realm property that was tagged with 'reconfigure' has been changed, the next sync. will rebuild the cache and retrieve all filtered objects.");
 					realmProvider.setValue(realm, "realm.reconcileRebuildCache", "true");
+					realmProvider.setValue(realm, "realm.forceNextReconcileFull", "true");
 					realmProvider.setValue(realm, "realm.upToDate", "false");
 				}
 			} 
@@ -1644,7 +1643,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public Realm setDefaultRealm(Realm realm) throws AccessDeniedException {
 		assertPermission(SystemPermission.SYSTEM_ADMINISTRATION);
-
+		this.defaultRealm = realm;
 		return realmRepository.setDefaultRealm(realm);
 	}
 
@@ -1679,7 +1678,6 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Principal getPrincipalById(Long id) {
-
 		Principal principal = principalRepository.getResourceById(id);
 		return principal;
 	}
@@ -2548,7 +2546,10 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 
 	@Override
 	public Realm getDefaultRealm() {
-		return realmRepository.getDefaultRealm();
+		if(defaultRealm == null || !defaultRealm.isDefaultRealm()) {
+			defaultRealm = realmRepository.getDefaultRealm();
+		}
+		return defaultRealm;
 	}
 
 	class RealmPropertyCollector implements EventPropertyCollector {

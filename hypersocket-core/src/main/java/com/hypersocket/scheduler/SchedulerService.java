@@ -1,8 +1,10 @@
 package com.hypersocket.scheduler;
 
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -14,6 +16,28 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.tables.ColumnSort;
 
 public interface SchedulerService {
+	
+	public final static class CronTriggerData {
+		private final String expression;
+		private final Optional<JobDataMap> data;
+		
+		public CronTriggerData(String expression) {
+			this.expression = expression;
+			this.data = Optional.empty();
+		}
+		public CronTriggerData(String expression, JobDataMap data) {
+			this.expression = expression;
+			this.data = Optional.of(data);			
+		}
+		
+		public String getExpression() {
+			return expression;
+		}
+		
+		public Optional<JobDataMap> getData() {
+			return data;
+		}
+	}
 
 	public static final String RESOURCE_BUNDLE = "SchedulerService";
 
@@ -25,6 +49,9 @@ public interface SchedulerService {
 
 	void scheduleNow(Class<? extends Job> clz, String scheduleId, JobDataMap data)
 			throws SchedulerException;
+
+	void scheduleExpression(Class<? extends Job> clz, String scheduleId, JobDataMap data, CronTriggerData... expr)
+			throws SchedulerException, ParseException;
 
 	void scheduleAt(Class<? extends Job> clz, String scheduleId, JobDataMap data, Date start)
 			throws SchedulerException;

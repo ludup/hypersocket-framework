@@ -1,0 +1,125 @@
+<div id="contentCacheInfo">
+	<div class="modal" id="addCacheInfoForm" tabindex="-1" role="dialog" dialog-for="contentCacheInfo">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header lb-modal-header-text-reverse">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title"></h4>
+				</div>
+				<div class="modal-body">
+					<div id="cacheInfoProperties"></div>
+					<input type="hidden" id="resourceId" name="resourceId" value="" />
+				</div>
+				<div class="modal-footer"></div>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<script type="text/javascript">
+	function cacheDateFormatter(value, row, index) {
+		if (!value) {
+			return getResource("cache.never.text");
+		}
+		var today = new Date();
+		var yesterday = (function (d) {d.setDate(d.getDate() - 1); return d})(new Date);
+		var fileDate = new Date(value);
+		var todayStr = today.format('yyyy-mm-dd');
+		var yesterdayStr = yesterday.format('yyyy-mm-dd');
+		var fileStr = fileDate.format('yyyy-mm-dd');
+		if (todayStr === fileStr) {
+			return getResource("cache.today.text") + " " + fileDate.format("HH:MM");
+		} else if (yesterdayStr === fileStr) {
+			return getResource("cache.yesterday.text") + " " + fileDate.format("HH:MM");
+		} else {
+			return fileDate.format("d mmmm yyyy HH:MM");
+		}
+	}
+
+	legacyjQueryReadyFix(function () {
+		$('#contentCacheInfo').localize();
+
+		$('#cacheInfoProperties').propertyPage({
+			url: 'cacheInfo/template',
+			showButtons: false,
+			useTemplates: true,
+			canUpdate: currentMenu.canUpdate
+		});
+
+		$('#contentCacheInfo').ajaxResourcePage({
+			id: "CacheInfo",
+			tableUrl: "cacheInfo/table",
+			title: getResource("cacheInfo.label"),
+			infoHtml: getResource('cacheInfo.help'),
+			icon: 'fa-cog',
+			resourceUrl: "cacheInfo/cache",
+			sortName: 'id',
+			fields: [
+				{
+					name: "id",
+					sortable: true
+				}, {
+					name: "hits",
+					sortable: true
+				}, {
+					name: "hitPercentage",
+					sortable: false
+				}, {
+					name: "misses",
+					sortable: true,
+				}, {
+					name: 'missPercentage',
+					sortable: true,
+				}, {
+					name: 'size',
+					sortable: true,
+				}, {
+					name: 'lastAccessTime',
+					sortable: true,
+					formatter: cacheDateFormatter
+				}
+			],
+			resourceKey: "cache",
+			canCreate: false,
+			canUpdate: false,
+			canCopy: false,
+			canDelete: true,
+			clearDialog: function (create) {
+
+				$('#resourceId').val('');
+				$('#resourceName').val('');
+
+				$('#cacheInfoProperties').clearProperties();
+				if (create) {
+					$('#cacheInfoProperties').propertyPage({
+						url: 'cacheInfo/template/',
+						showButtons: false,
+						i18nNamespace: 'cache',
+						canUpdate: currentMenu.canUpdate,
+						useTemplates: true
+					});
+				}
+
+				$('.tabPropertiesTab').first().trigger('click');
+			},
+			displayResource: function (resource, readOnly) {
+
+				$('#resourceId').val(resource.id);
+				$('#resourceName').val(resource.name);
+
+				$('#cacheInfoProperties').propertyPage({
+					url: 'cacheInfo/properties/' + resource.id,
+					showButtons: false,
+					i18nNamespace: 'cache',
+					canUpdate: currentMenu.canUpdate && !readOnly
+				});
+
+			},
+			complete: function () {
+				loadComplete();
+			}
+		});
+
+	});
+</script>

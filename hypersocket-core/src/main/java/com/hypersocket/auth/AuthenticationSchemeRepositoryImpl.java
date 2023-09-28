@@ -10,8 +10,10 @@ package com.hypersocket.auth;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hypersocket.annotation.HypersocketExtension;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmRestriction;
 import com.hypersocket.repository.CriteriaConfiguration;
@@ -76,6 +79,18 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 			criteria.addOrder(Order.asc("priority"));
 		}
 	};
+
+	@Override
+	@Transactional(readOnly=true)
+	public Set<Role> getAllowedRoles(AuthenticationScheme scheme) {
+		return new LinkedHashSet<>(getSchemeById(scheme.getId()).getAllowedRoles());
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public Set<Role> getDeniedRoles(AuthenticationScheme scheme) {
+		return new LinkedHashSet<>(getSchemeById(scheme.getId()).getDeniedRoles());
+	}
 
 	@Override
 	@Transactional

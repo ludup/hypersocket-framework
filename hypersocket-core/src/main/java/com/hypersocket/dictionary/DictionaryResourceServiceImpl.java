@@ -191,11 +191,11 @@ public class DictionaryResourceServiceImpl extends AbstractAuthenticatedServiceI
 		resource.setText(word);
 		resource.setLocale(locale);
 
-		assertPermission(DictionaryResourcePermission.CREATE);
+//		assertPermission(DictionaryResourcePermission.CREATE);
 
 		try {
 			repository.saveResource(resource);
-			fireResourceCreationEvent(resource);
+//			fireResourceCreationEvent(resource);
 		} catch (Throwable t) {
 			log.error("Failed to create resource", t);
 			ResourcePassthroughException.maybeRethrow(t);

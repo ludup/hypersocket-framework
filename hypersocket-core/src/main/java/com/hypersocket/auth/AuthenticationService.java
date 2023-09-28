@@ -10,9 +10,11 @@ package com.hypersocket.auth;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -74,5 +76,9 @@ public interface AuthenticationService extends PasswordEnabledAuthenticatedServi
 	void registerAuthenticatorSelector(AuthenticatorSelector selector);
 
 	Authenticator nextAuthenticator(AuthenticationState state);
+
+	Set<Role> getAllowedRoles(AuthenticationScheme scheme);
+
+	Set<Role> getDeniedRoles(AuthenticationScheme scheme);
 
 }

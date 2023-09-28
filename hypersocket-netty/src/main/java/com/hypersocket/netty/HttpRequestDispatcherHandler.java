@@ -766,8 +766,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 			servletResponse.setCloseOnComplete(true);
 		}
 		
-		var cc = (Boolean)request.getAttribute(ControllerInterceptor.CACHEABLE);
-		CacheUtils.setDateAndCacheHeaders(servletResponse, -1, ( cc == null && !disableCache) || (cc != null && cc), request.getRequestURI());
+		var ignoreCC = (Boolean)request.getAttribute(CacheUtils.IGNORE_CACHE);
+		if(!Boolean.TRUE.equals(ignoreCC)) {
+			var cc = (Boolean)request.getAttribute(ControllerInterceptor.CACHEABLE);
+			CacheUtils.setDateAndCacheHeaders(servletResponse, -1, ( cc == null && !disableCache) || (cc != null && cc), request.getRequestURI());
+		}
 	}
 
 	@Override

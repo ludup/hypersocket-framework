@@ -1,45 +1,59 @@
 package com.hypersocket.cache;
 
+import java.util.Map;
+import java.util.function.Supplier;
+
 import javax.cache.Cache;
 import javax.cache.CacheManager;
-import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.Factory;
-import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.ExpiryPolicy;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.hazelcast.cache.ICache;
 
-@Service
-public class CacheService {
+public interface CacheService {
+	
+	public final static class CacheRegistration {
+		private ICache<?,?> cache;
+		private Class<?> keyClass;
+		private String name;
+		private Class<?> valueClass;
+		
+		CacheRegistration(String name, Class<?> keyClass, Class<?> valueClass, ICache<?,?> cache) {
+			super();
+			this.name = name;
+			this.keyClass = keyClass;
+			this.valueClass = valueClass;
+			this.cache = cache;
+		}
 
-	@Autowired
-	private CacheManager cacheManager;
-	
-	
-	public <K,V> Cache<K, V> getCacheOrCreate(String name,Class<K> key, Class<V> value){
-		return cache(name, key, value, baseConfiguration(key, value));
+		public ICache<?, ?> getCache() {
+			return cache;
+		}
+
+		public Class<?> getKeyClass() {
+			return keyClass;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public Class<?> getValueClass() {
+			return valueClass;
+		}
 	}
-	
-	public <K,V> Cache<K, V> getCacheOrCreate(String name,Class<K> key, Class<V> value,Factory<? extends ExpiryPolicy> expiryPolicyFactory){
-		return cache(name, key, value, ((MutableConfiguration<K, V>)baseConfiguration(key, value)).setExpiryPolicyFactory(expiryPolicyFactory));
-	}
-	
-	public <K,V> Cache<K, V> getCacheIfExists(String name, Class<K> key, Class<V> value){
-		return cacheManager.getCache(name,key,value);
-	}
-	
-	public CacheManager getCacheManager(){
-		return this.cacheManager;
-	}
-	
-	private <K,V> CompleteConfiguration<K, V> baseConfiguration(Class<K> key, Class<V> value){
-		return new MutableConfiguration<K, V>().setReadThrough(true).setWriteThrough(true).setTypes(key, value);
-	} 
-	
-	private <K,V> Cache<K, V> cache(String name, Class<K> key, Class<V> value, CompleteConfiguration<K, V> config){
-		Cache<K, V> cache = cacheManager.getCache(name,key,value);
-		return cache == null ? cacheManager.createCache(name, config) : cache;
-	}
-	
+
+	<K, V> Cache<K, V> getCacheOrCreate(String name, Class<K> keyClass, Class<V> valClass);
+
+	<K, V> Cache<K, V> getCacheOrCreate(String name, Class<K> keyClass, Class<V> valClass,
+			Factory<? extends ExpiryPolicy> expiryPolicyFactory);
+
+	CacheManager getCacheManager();
+
+	<K, V> V getOrGet(Cache<K, V> cache, K key, Supplier<V> supplier);
+
+	<K, V> Cache<K, V> getCacheIfExists(String name, Class<K> key, Class<V> value);
+
+	Map<String, CacheRegistration> getCaches();
+
 }
