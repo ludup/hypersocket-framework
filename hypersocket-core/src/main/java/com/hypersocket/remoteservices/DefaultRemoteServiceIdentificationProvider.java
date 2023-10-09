@@ -35,4 +35,13 @@ public class DefaultRemoteServiceIdentificationProvider implements RemoteService
 	public String getAccountEmail(Realm realm) {
 		return realmService.getRealmProperty(realm, "registration.email");
 	}
+
+	@Override
+	public InstanceType getInstanceType(Realm realm) {
+		if(realm.equals(realmService.getSystemRealm()))
+			return InstanceType.SYSTEM_REALM;
+		else {
+			return InstanceType.OTHER_REALM;
+		}
+	}
 }

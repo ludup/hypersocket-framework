@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -166,7 +167,13 @@ public class ControllerInterceptor implements HandlerInterceptor {
 	@Override
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
 			throws Exception {
-
+		Throwable thrw = ex;
+		if(thrw== null) {
+			thrw = (Throwable)request.getAttribute(DispatcherServlet.EXCEPTION_ATTRIBUTE);
+		}
+		if(thrw != null) {
+			log.error("API failure.", thrw);
+		}
 	}
 
 }
