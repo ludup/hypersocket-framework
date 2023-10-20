@@ -20,7 +20,7 @@
            http://www.springframework.org/schema/tx 
      	   http://www.springframework.org/schema/tx/spring-tx-4.3.xsd" >
 
-		<context:component-scan base-package="com.hypersocket.server.interfaces.**,com.hypersocket.server.forward.**">
+		<context:component-scan base-package="com.hypersocket.server.interfaces.**,com.hypersocket.server.forward.**,com.hypersocket.server.handlers.impl.**">
              <context:exclude-filter type="annotation"
                     expression="org.springframework.stereotype.Controller" />
         </context:component-scan>

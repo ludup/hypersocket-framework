@@ -63,6 +63,12 @@ public class RestApiControllerAdvice {
         return new ResponseEntity<ErrorEntity>(new ErrorEntity("You do not have access to the resource.", incidentId), HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(ResponseEntityException.class)
+    public ResponseEntity<?> responseEntityException(ResponseEntityException e){
+        log.error("Custom error in fetching resource", e);
+        return e.getEntity();
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorEntity> exception(Exception e){
         String incidentId = getIncidentId();
