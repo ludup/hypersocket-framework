@@ -104,7 +104,7 @@ public class UnauthorizedAccessServiceImpl implements UnauthorizedAccessService 
 			
 			final int failedAttempts = configurationService.getIntValue(realm, "lock.threshold");
 			final int lockoutTime = configurationService.getIntValue(realm, "lock.timeout");
-			final int period = configurationService.getIntValue(realm, "lock.period");
+			final long period = configurationService.getLongValue(realm, "lock.period");
 			
 			alertService.processAlert(
 					scheme, 
@@ -124,7 +124,7 @@ public class UnauthorizedAccessServiceImpl implements UnauthorizedAccessService 
 							
 							try {
 								suspensionService.createPrincipalSuspension(principal, principalName, realm, new Date(), 
-										configurationService.getLongValue(realm, "lock.period"), 
+										period, 
 										PrincipalSuspensionType.MANUAL);
 								
 								if(principal!=null) {

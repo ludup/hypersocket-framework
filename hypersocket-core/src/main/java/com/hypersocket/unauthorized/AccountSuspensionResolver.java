@@ -7,7 +7,7 @@ import com.hypersocket.realm.UserPrincipal;
 
 public class AccountSuspensionResolver extends PrincipalWithoutPasswordResolver {
 
-	public AccountSuspensionResolver(UserPrincipal<?> principal, int failedAttempts, int lockoutTime, int period) {
+	public AccountSuspensionResolver(UserPrincipal<?> principal, int failedAttempts, int lockoutTime, long period) {
 		super(principal);
 		addToken("failedAttempts", failedAttempts);
 		addToken("lockoutTime", lockoutTime);
