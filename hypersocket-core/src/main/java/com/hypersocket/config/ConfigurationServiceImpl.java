@@ -92,11 +92,11 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	
 	@Override
 	public Integer getIntValueOrSystemDefault(Realm realm, String resourceKey) {
-		return (Integer)cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getIntValueOrDefault(realm, 
+		return ((Number)cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getIntValueOrDefault(realm, 
 				resourceKey, 
 				getIntValue(
 						ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm(), 
-						resourceKey)));
+						resourceKey)))).intValue();
 	}
 	
 	@Override
@@ -135,7 +135,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	
 	@Override 
 	public Double getDoubleValue(Realm realm, String name) {
-		return (Double)cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getDoubleValue(realm, name));
+		return ((Number)cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getDoubleValue(realm, name))).doubleValue();
 	}
 	
 	@Override
@@ -303,7 +303,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public Long getLongValue(Realm realm, String val) {
-		return (Long)cacheService.getOrGet(cache, createRealmKey(realm, val), () -> repository.getLongValue(realm, val));
+		return ((Number)cacheService.getOrGet(cache, createRealmKey(realm, val), () -> repository.getLongValue(realm, val))).longValue();
 	}
 
 	@Override
