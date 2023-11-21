@@ -12,7 +12,6 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.realm.Principal;
 import com.hypersocket.resource.AbstractResourceRepository;
 
 public interface Authenticator {
@@ -47,7 +46,7 @@ public interface Authenticator {
 
 	boolean requiresUserInput(AuthenticationState state) throws AccessDeniedException;
 
-	boolean canAuthenticate(Principal principal) throws AccessDeniedException;
+	boolean canAuthenticate(AuthenticationState state) throws AccessDeniedException;
 
 	String getCredentialsResourceKey();
 	

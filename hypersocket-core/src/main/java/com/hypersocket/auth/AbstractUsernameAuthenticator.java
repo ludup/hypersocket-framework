@@ -126,7 +126,7 @@ public abstract class AbstractUsernameAuthenticator implements Authenticator {
 	}
 	
 	@Override
-	public boolean canAuthenticate(Principal principal) throws AccessDeniedException {
+	public boolean canAuthenticate(AuthenticationState state) throws AccessDeniedException {
 		return true;
 	}
 
