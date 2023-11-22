@@ -148,6 +148,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		eventService.registerEvent(SessionEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionOpenEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SessionClosedEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(UserImpersonatedEvent.class, RESOURCE_BUNDLE);
 		
 		
 		if(Boolean.getBoolean("logonbox.persistentSessions")) {
