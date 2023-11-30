@@ -78,34 +78,42 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public String getValue(Realm realm, String resourceKey) {
-		return (String)cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getValue(realm, resourceKey));
+		return stringValue(cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getValue(realm, resourceKey)));
 	}
 	
 	@Override
 	public String getValueOrSystemDefault(Realm realm, String resourceKey) {
-		return (String)cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getValueOrDefault(realm, 
+		return stringValue(cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getValueOrDefault(realm, 
 				resourceKey, 
 				getValue(
 						ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm(), 
-						resourceKey)));
+						resourceKey))));
 	}
 	
 	@Override
 	public Integer getIntValueOrSystemDefault(Realm realm, String resourceKey) {
-		return ((Number)cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getIntValueOrDefault(realm, 
+		var obj = cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getIntValueOrDefault(realm, 
 				resourceKey, 
 				getIntValue(
 						ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm(), 
-						resourceKey)))).intValue();
+						resourceKey)));
+		if(obj instanceof Number)
+			return ((Number)obj).intValue();
+		else
+			return Integer.parseInt(stringValue(obj));
 	}
 	
 	@Override
 	public Boolean getBooleanValueOrSystemDefault(Realm realm, String resourceKey) {
-		return (Boolean)cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getBooleanValueOrDefault(realm, 
+		var obj = cacheService.getOrGet(cache, createRealmKey(realm, resourceKey), () -> repository.getBooleanValueOrDefault(realm, 
 				resourceKey, 
 				getBooleanValue(
 						ApplicationContextServiceImpl.getInstance().getBean(RealmService.class).getSystemRealm(), 
 						resourceKey)));
+		if(obj instanceof Boolean)
+			return (Boolean)obj;
+		else
+			return Boolean.valueOf(stringValue(obj));
 	}
 	
 	@Override
@@ -115,7 +123,11 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public Integer getIntValue(Realm realm, String name) throws NumberFormatException {
-		return (Integer)cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getIntValue(realm, name));
+		var obj = cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getIntValue(realm, name));
+		if(obj instanceof Integer)
+			return (Integer)obj;
+		else
+			return Integer.parseInt(stringValue(obj));
 	}
 	
 	@Override
@@ -125,7 +137,11 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	
 	@Override
 	public Boolean getBooleanValue(Realm realm, String name) {
-		return (Boolean)cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getBooleanValue(realm, name));
+		var val = cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getBooleanValue(realm, name));
+		if(val instanceof Boolean)
+			return (Boolean)val;
+		else 
+			return Boolean.valueOf(String.valueOf(val));
 	}
 	
 	@Override 
@@ -135,7 +151,11 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	
 	@Override 
 	public Double getDoubleValue(Realm realm, String name) {
-		return ((Number)cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getDoubleValue(realm, name))).doubleValue();
+		var obj = cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getDoubleValue(realm, name));
+		if(obj instanceof Number)
+			return ((Number)obj).doubleValue();
+		else
+			return Double.valueOf(stringValue(obj));
 	}
 	
 	@Override
@@ -200,7 +220,11 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	@Override
 	public String[] getValues(String name) {
 		var realm = getCurrentRealm();
-		return (String[])cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getValues(realm, name));
+		var obj = cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getValues(realm, name));
+		if(obj instanceof String[])
+			return (String[])obj;
+		else
+			return new String[] { stringValue(obj) };
 	}
 
 	@Override
@@ -263,7 +287,11 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public String[] getValues(Realm realm, String name) {
-		return (String[])cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getValues(realm, name));
+		var obj = cacheService.getOrGet(cache, createRealmKey(realm, name), () -> repository.getValues(realm, name));
+		if(obj instanceof String[])
+			return (String[])obj;
+		else
+			return new String[] { stringValue(obj) };
 	}
 	
 	@Override
@@ -303,7 +331,11 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 
 	@Override
 	public Long getLongValue(Realm realm, String val) {
-		return ((Number)cacheService.getOrGet(cache, createRealmKey(realm, val), () -> repository.getLongValue(realm, val))).longValue();
+		var obj = cacheService.getOrGet(cache, createRealmKey(realm, val), () -> repository.getLongValue(realm, val));
+		if(obj instanceof Number)
+			return ((Number)obj).longValue();
+		else
+			return Long.parseLong(stringValue(obj));
 	}
 
 	@Override
@@ -319,6 +351,10 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 	
 	private String createRealmKey(Realm realm, String resourceKey) {
 		return ( realm == null ? "null" : String.valueOf(realm.getId()) ) + "_" + resourceKey;
+	}
+	
+	private String stringValue(Object val) {
+		return val == null ? (String)val : val.toString();
 	}
 	
 }
