@@ -288,6 +288,11 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 		public boolean isEnabled() {
 			return true;
 		}
+
+		@Override
+		public boolean isAuthenticating() {
+			return true;
+		}
 		
 	}
 

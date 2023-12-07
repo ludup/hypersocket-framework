@@ -9,6 +9,8 @@ public interface AuthenticationSchemeRegistration {
 	String getResourceKey();
 	
 	boolean isEnabled();
+	
+	boolean isAuthenticating();
 
 	default void validate(List<String> modules) throws ResourceException {  };
 }
