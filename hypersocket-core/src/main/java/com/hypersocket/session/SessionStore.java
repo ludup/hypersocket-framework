@@ -65,4 +65,8 @@ public interface SessionStore {
 			CriteriaConfiguration... configs);
 
 	long getResourceCount(Realm realm, String searchPattern, CriteriaConfiguration... configs);
+
+	void updateRealmSessions(Realm realm);
+
+	void updatePrincipalSessions(Principal realm);
 }

@@ -63,4 +63,6 @@ public interface ConfigurationService extends AuthenticatedService, PropertyTemp
 
 	void deleteRealm(Realm realm);
 
+	void resetCache(Realm realm);
+
 }

@@ -348,6 +348,11 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 		cache.clear();
 		repository.deleteRealm(realm);
 	}
+
+	@Override
+	public void resetCache(Realm realm) {
+		cache.clear();
+	}
 	
 	private String createRealmKey(Realm realm, String resourceKey) {
 		return ( realm == null ? "null" : String.valueOf(realm.getId()) ) + "_" + resourceKey;

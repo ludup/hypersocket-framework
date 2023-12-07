@@ -144,4 +144,27 @@ public class InMemorySessionStore implements SessionStore {
 	private boolean matches(Session r, String searchPattern) {
 		return !r.isSystem() && r.getSignedOut() == null && r.getPrincipal() != null && r.getPrincipal().getName().toLowerCase().contains(searchPattern.toLowerCase());
 	}
+
+	@Override
+	public void updateRealmSessions(Realm realm) {
+		synchronized(sessions) {
+			for(var s : getActiveSessions().stream().filter(s -> ( s.getPrincipalRealm() != null && realm.getId().equals(s.getPrincipalRealm().getId())) || ( s.getCurrentRealm() != null && realm.getId().equals(s.getCurrentRealm().getId()))).collect(Collectors.toList())) {
+				if(s.getPrincipalRealm() != null && s.getPrincipalRealm().getId().equals(realm.getId())) {
+					s.setPrincipalRealm(realm);	
+				}
+				if(s.getCurrentRealm() != null && s.getCurrentRealm().getId().equals(realm.getId())) {
+					s.setCurrentRealm(realm);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void updatePrincipalSessions(Principal principal) {
+		synchronized(sessions) {
+			for(var s : getActiveSessions().stream().filter(s -> s.getPrincipal() != null && principal.getId().equals(s.getPrincipal().getId())).collect(Collectors.toList())) {
+				s.setPrincipal(principal);
+			}
+		}
+	}
 }

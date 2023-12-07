@@ -32,6 +32,7 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,8 @@ import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.RolePermission;
 import com.hypersocket.realm.UserPermission;
+import com.hypersocket.realm.events.RealmEvent;
+import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserImpersonatedEvent;
 import com.hypersocket.resource.Resource;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -68,7 +71,7 @@ import com.hypersocket.utils.HttpUtils;
 
 @Service
 public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
-		implements SessionService, ApplicationListener<ContextStartedEvent> {
+		implements SessionService, ApplicationListener<ApplicationEvent> {
 
 	public static final String LOCATION_REGION_CODE = "location_region_code";
 
@@ -706,47 +709,55 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	}
 
 	@Override
-	public void onApplicationEvent(ContextStartedEvent event) {
+	public void onApplicationEvent(ApplicationEvent event) {
+		if(event instanceof ContextStartedEvent) {
 
-		runAsSystemContext(() -> {
-			if (log.isInfoEnabled()) {
-				log.info("Scheduling session reaper job");
-			}
-
-			for (Session session : store.getSystemSessions()) {
-				if (systemSession != null && systemSession.equals(session)) {
-					continue;
+			runAsSystemContext(() -> {
+				if (log.isInfoEnabled()) {
+					log.info("Scheduling session reaper job");
 				}
-				closeSession(session);
-			}
-
-			for (Session session : store.getActiveSessions()) {
-				if (session.isTransient()) {
-					closeSession(session);
-				} else if (!session.isSystem()) {
-					if (isLoggedOn(session, false)) {
-						if (realmService.getRealmPropertyBoolean(session.getPrincipalRealm(),
-								"session.closeOnShutdown")) {
-							closeSession(session);
-							continue;
-						}
+	
+				for (Session session : store.getSystemSessions()) {
+					if (systemSession != null && systemSession.equals(session)) {
+						continue;
 					}
-					notifyReaperListeners(session);
+					closeSession(session);
 				}
-			}
+	
+				for (Session session : store.getActiveSessions()) {
+					if (session.isTransient()) {
+						closeSession(session);
+					} else if (!session.isSystem()) {
+						if (isLoggedOn(session, false)) {
+							if (realmService.getRealmPropertyBoolean(session.getPrincipalRealm(),
+									"session.closeOnShutdown")) {
+								closeSession(session);
+								continue;
+							}
+						}
+						notifyReaperListeners(session);
+					}
+				}
+	
+				try {
+					if (schedulerService.jobDoesNotExists(SESSION_REAPER_JOB)) {
+						schedulerService.scheduleIn(SessionReaperJob.class, SESSION_REAPER_JOB, JobData.of(SESSION_REAPER_JOB), 60000, 60000);
+					}
+					if (schedulerService.jobDoesNotExists(SESSION_CLEAN_UP_JOB)) {
+						schedulerService.scheduleIn(SessionCleanUpJob.class, SESSION_CLEAN_UP_JOB, JobData.of(SESSION_CLEAN_UP_JOB), (int)TimeUnit.DAYS.toMillis(1), (int)TimeUnit.DAYS.toMillis(1));
+					}
+				} catch (SchedulerException e) {
+					log.error("Failed to schedule session reaper job", e);
+				}
+			});
+		}
+		else if(event instanceof RealmEvent) {
+			store.updateRealmSessions(((RealmEvent)event).getRealm());
+		}
+		else if(event instanceof UserEvent) {
+			store.updatePrincipalSessions(((UserEvent)event).getTargetPrincipal());
+		}
 
-			try {
-				if (schedulerService.jobDoesNotExists(SESSION_REAPER_JOB)) {
-					schedulerService.scheduleIn(SessionReaperJob.class, SESSION_REAPER_JOB, JobData.of(SESSION_REAPER_JOB), 60000, 60000);
-				}
-				if (schedulerService.jobDoesNotExists(SESSION_CLEAN_UP_JOB)) {
-					schedulerService.scheduleIn(SessionCleanUpJob.class, SESSION_CLEAN_UP_JOB, JobData.of(SESSION_CLEAN_UP_JOB), (int)TimeUnit.DAYS.toMillis(1), (int)TimeUnit.DAYS.toMillis(1));
-				}
-			} catch (SchedulerException e) {
-				log.error("Failed to schedule session reaper job", e);
-			}
-
-		});
 
 	}
 	
