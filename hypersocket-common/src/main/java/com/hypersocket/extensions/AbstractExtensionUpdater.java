@@ -101,7 +101,10 @@ public abstract class AbstractExtensionUpdater {
 					for(String depend : v.getDependsOn()) {
 						if(StringUtils.isNotBlank(depend)) {
 							ExtensionVersion dep = allExtensions.get(depend);
-							updates.add(dep);
+							if(dep == null)
+								log.warn("Extension {} declared dependency of {}, but no such extension exists.", v.getId(), depend );
+							else
+								updates.add(dep);
 						}
 					}
 				}
@@ -118,7 +121,10 @@ public abstract class AbstractExtensionUpdater {
 						for(String depend : v.getDependsOn()) {
 							if(StringUtils.isNotBlank(depend)) {
 								ExtensionVersion dep = allExtensions.get(depend);
-								updates.add(dep);
+								if(dep == null)
+									log.warn("Extension {} declared dependency of {}, but no such extension exists.", v.getId(), depend );
+								else
+									updates.add(dep);
 							}
 						}
 					}
