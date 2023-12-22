@@ -275,7 +275,12 @@ public abstract class HttpRequestServletWrapper implements HttpServletRequest {
 
 	@Override
 	public int getContentLength() {
-		return (int) org.jboss.netty.handler.codec.http.HttpHeaders.getContentLength(request);
+		try {
+			return (int) org.jboss.netty.handler.codec.http.HttpHeaders.getContentLength(request);
+		}
+		catch(Exception e) {
+			return -1;
+		}
 	}
 
 	@Override
