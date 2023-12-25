@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.hypersocket.auth.AuthenticationState;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.UnauthorizedException;
@@ -43,6 +44,7 @@ import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.properties.PropertyCategory;
+import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceChangeException;
 import com.hypersocket.session.json.SessionTimeoutException;
 
@@ -121,10 +123,20 @@ public class ConfigurationController extends AuthenticatedController {
 			HttpServletResponse response, @PathVariable String resourceKeys)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
+		Realm realm = null;
 		var results = new HashMap<String, String>();
+		var authState = AuthenticationState.getCurrentState(request);
+		if (authState != null && authState.getRealm() != null) {
+			realm = authState.getRealm();
+		}
+		 
+		if (realm == null) {
+			realm = sessionUtils.getCurrentRealm(request);
+		}
+		
 		for (var resourceKey : resourceKeys.split(",")) {
 			results.put(resourceKey,
-					configurationService.getValue(sessionUtils.getCurrentRealm(request), resourceKey));
+				configurationService.getValue(realm, resourceKey));
 		}
 
 		return new ResourceStatus<Map<String, String>>(results);
