@@ -1289,6 +1289,7 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		for (String host : hosts) {
 			realmCache.remove(host);
 		}
+		configurationService.resetCache(realm);
 	}
 
 	@Override

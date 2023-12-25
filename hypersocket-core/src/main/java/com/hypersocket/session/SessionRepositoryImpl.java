@@ -80,7 +80,6 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	@Override
 	@Transactional(readOnly=true)
 	public Session getSessionById(String id) {
-		System.out.println("getSessionById " + id);
 		return get("id", id, Session.class);
 	}
 
@@ -471,7 +470,18 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	}
 
 	@Override
+	@Transactional
 	public void saveSession(Session session) {
 		saveEntity(session);
+	}
+
+	@Override
+	public void updateRealmSessions(Realm realm) {
+		/* Managed by hibernate */
+	}
+
+	@Override
+	public void updatePrincipalSessions(Principal principal) {
+		/* Managed by hibernate */
 	}
 }
