@@ -44,7 +44,7 @@ public class FallbackAuthenticator extends UsernameAndPasswordAuthenticator {
 			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_CREDENTIALS;
 		}
 		
-		if(!state.getRemoteAddress().equals("127.0.0.1")) {
+		if(!state.getRemoteAddress().equals("127.0.0.1") && !!state.getRemoteAddress().equals("0:0:0:0:0:0:0:1")) {
 			log.warn("Recovery denied for IP address {}", state.getRemoteAddress());
 			return AuthenticatorResult.AUTHENTICATION_FAILURE_INVALID_CREDENTIALS;
 		}
