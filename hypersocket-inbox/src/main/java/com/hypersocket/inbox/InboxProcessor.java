@@ -204,7 +204,6 @@ public class InboxProcessor {
 					InputStream in = part.getInputStream();
 					try {
 						IOUtils.copy(in, out);
-						attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
 					} finally {
 						IOUtils.closeQuietly(out);
 						IOUtils.closeQuietly(in);
