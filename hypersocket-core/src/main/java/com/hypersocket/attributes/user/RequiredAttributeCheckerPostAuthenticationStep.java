@@ -61,7 +61,7 @@ public class RequiredAttributeCheckerPostAuthenticationStep implements PostAuthe
 	
 	@Override
 	public boolean requiresProcessing(AuthenticationState state) throws AccessDeniedException {
-		if(state.getInitialSchemeResourceKey().equals(AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY)) {
+		if(Boolean.getBoolean("hypersocket.noRequiredAttributesLoginCheck") || state.getInitialSchemeResourceKey().equals(AuthenticationServiceImpl.BASIC_AUTHENTICATION_RESOURCE_KEY)) {
 			return false;
 		}
 		Collection<PropertyCategory> propertyCategories = realmService.getUserPropertyTemplates(state.getPrincipal());
