@@ -93,29 +93,119 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	@Override
 	@Transactional(readOnly = true)
 	public Collection<Principal> getPrincpalsByName(final String username, final PrincipalType... types) {
-		return list(Principal.class, new DeletedCriteria(false), new PrincipalTypesCriteria(types),
-				new CriteriaConfiguration() {
+		if (Boolean.getBoolean("hypersocket.alternativePrincipalLookup")) {
+			var res = list(Principal.class, new DeletedCriteria(false),
+					new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
 
-					@Override
-					public void configure(Criteria criteria) {
-						criteria.add(Restrictions.or(Restrictions.eq("name", username).ignoreCase(),
-								Restrictions.eq("primaryEmail", username).ignoreCase()));
-					}
-				});
+						@Override
+						public void configure(Criteria criteria) {
+							if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+								criteria.add(Restrictions.eq("name", username));
+							} else {
+								criteria.add(Restrictions.eq("name", username).ignoreCase());
+							}
+						}
+					});
+			if (res.isEmpty() && !Boolean.getBoolean("hypersocket.noEmailPrinicpalLookup")) {
+				res = list(Principal.class, new DeletedCriteria(false),
+						new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
+
+							@Override
+							public void configure(Criteria criteria) {
+								if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+									criteria.add(Restrictions.eq("primaryEmail", username));
+								} else {
+									criteria.add(Restrictions.eq("primaryEmail", username).ignoreCase());
+								}
+							}
+						});
+			}
+			return res;
+		} else {
+			return list(Principal.class, new DeletedCriteria(false),
+					new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
+
+						@Override
+						public void configure(Criteria criteria) {
+							if(Boolean.getBoolean("hypersocket.noEmailPrinicpalLookup")) {
+
+								if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+									criteria.add(Restrictions.eq("name", username));
+								} else {
+									criteria.add(Restrictions.eq("name", username).ignoreCase());
+								}
+							}
+							else {
+								if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+									criteria.add(Restrictions.or(Restrictions.eq("name", username),
+											Restrictions.eq("primaryEmail", username)));
+								} else {
+									criteria.add(Restrictions.or(Restrictions.eq("name", username).ignoreCase(),
+											Restrictions.eq("primaryEmail", username).ignoreCase()));
+								}
+							}
+						}
+					});
+		}
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Collection<Principal> getPrincpalsByName(final String username, Realm realm, final PrincipalType... types) {
-		return list(Principal.class, new RealmCriteria(realm), new DeletedCriteria(false),
-				new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
+		if (Boolean.getBoolean("hypersocket.alternativePrincipalLookup")) {
+			var res = list(Principal.class, new RealmCriteria(realm), new DeletedCriteria(false),
+					new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
 
-					@Override
-					public void configure(Criteria criteria) {
-						criteria.add(Restrictions.or(Restrictions.eq("name", username).ignoreCase(),
-								Restrictions.eq("primaryEmail", username).ignoreCase()));
-					}
-				});
+						@Override
+						public void configure(Criteria criteria) {
+							if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+								criteria.add(Restrictions.eq("name", username));
+							} else {
+								criteria.add(Restrictions.eq("name", username).ignoreCase());
+							}
+						}
+					});
+			if (res.isEmpty() && !Boolean.getBoolean("hypersocket.noEmailPrinicpalLookup")) {
+				res = list(Principal.class, new RealmCriteria(realm), new DeletedCriteria(false),
+						new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
+
+							@Override
+							public void configure(Criteria criteria) {
+								if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+									criteria.add(Restrictions.eq("primaryEmail", username));
+								} else {
+									criteria.add(Restrictions.eq("primaryEmail", username).ignoreCase());
+								}
+							}
+						});
+			}
+			return res;
+		} else {
+			return list(Principal.class, new RealmCriteria(realm), new DeletedCriteria(false),
+					new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
+
+						@Override
+						public void configure(Criteria criteria) {
+							if(Boolean.getBoolean("hypersocket.noEmailPrinicpalLookup")) {
+
+								if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+									criteria.add(Restrictions.eq("name", username));
+								} else {
+									criteria.add(Restrictions.eq("name", username).ignoreCase());
+								}
+							}
+							else {
+								if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+									criteria.add(Restrictions.or(Restrictions.eq("name", username),
+											Restrictions.eq("primaryEmail", username)));
+								} else {
+									criteria.add(Restrictions.or(Restrictions.eq("name", username).ignoreCase(),
+											Restrictions.eq("primaryEmail", username).ignoreCase()));
+								}
+							}
+						}
+					});
+		}
 	}
 
 	@Override
