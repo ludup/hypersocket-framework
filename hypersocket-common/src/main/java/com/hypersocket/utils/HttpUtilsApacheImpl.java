@@ -3,8 +3,10 @@ package com.hypersocket.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.HostnameVerifier;
 
@@ -186,11 +188,12 @@ public class HttpUtilsApacheImpl implements HttpUtils {
 	}
 	
 	@Override
-	public String doHttpGetContent(String uri, boolean allowSelfSigned, Map<String, String> headers)
+	public String doHttpGetContent(String uri, boolean allowSelfSigned, Map<String, String> headers, int... acceptableResponses)
 			throws IOException {
 		CloseableHttpResponse response = doHttpGet(uri, allowSelfSigned, headers);
 		try {
-			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+			if ((acceptableResponses.length == 0 && response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) ||
+			    !(Arrays.stream(acceptableResponses).boxed().collect(Collectors.toList()).contains(response.getStatusLine().getStatusCode()))) {
 				throw new IOException("Received " + response.getStatusLine().toString());
 			}
 			HttpEntity entity = response.getEntity();

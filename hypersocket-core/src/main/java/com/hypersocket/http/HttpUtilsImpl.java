@@ -10,10 +10,12 @@ import java.net.URI;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.naming.InvalidNameException;
@@ -487,11 +489,12 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 	}
 
 	@Override
-	public String doHttpGetContent(String uri, boolean allowSelfSigned, Map<String, String> headers)
+	public String doHttpGetContent(String uri, boolean allowSelfSigned, Map<String, String> headers, int... acceptableResponses)
 			throws IOException {
 		CloseableHttpResponse response = doHttpGet(uri, allowSelfSigned, headers);
 		try {
-			if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+			if ((acceptableResponses.length == 0 && response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) ||
+			    !(Arrays.stream(acceptableResponses).boxed().collect(Collectors.toList()).contains(response.getStatusLine().getStatusCode()))) {
 				throw new IOException("Received " + response.getStatusLine().toString());
 			}
 			HttpEntity entity = response.getEntity();
