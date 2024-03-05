@@ -28,6 +28,7 @@ import javax.mail.search.FlagTerm;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -175,7 +176,7 @@ public class InboxProcessor {
 		for (int x = 0; x < multiPart.getCount(); x++) {
 			MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(x);
 			String contentType = part.getContentType().toLowerCase();
-
+			contentType = StringUtils.substringBefore(contentType, ";");
 			if (isInlineButNotEmailBodyContent(part, textContent, htmlContent)) {
 				
 				String id = part.getContentID();
@@ -196,19 +197,29 @@ public class InboxProcessor {
 						htmlContent.setLength(0);
 						htmlContent.append(doc.toString());
 					} 
-					
-					File attachment = File.createTempFile("email", "attachment");
-					OutputStream out = new FileOutputStream(attachment);
-					InputStream in = part.getInputStream();
-					try {
-						IOUtils.copy(in, out);
-					} finally {
-						IOUtils.closeQuietly(out);
-						IOUtils.closeQuietly(in);
-					}
-					attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
+				} 
 				
+				String encodedImage = String.format("\r\n\r\n<img src=\"data:%s;base64,%s\"/>\r\n\r\n", contentType, Base64.encodeBase64String(IOUtils.toByteArray(part.getInputStream())));
+				
+				String imageTag = String.format("[image: %s]", part.getFileName());
+				int idx;
+				if((idx = textContent.indexOf(imageTag)) > -1) {
+					textContent.replace(idx, idx + imageTag.length(), encodedImage);
+				} else {
+					textContent.append(encodedImage);
 				}
+				
+				File attachment = File.createTempFile("email", "attachment");
+				OutputStream out = new FileOutputStream(attachment);
+				InputStream in = part.getInputStream();
+				try {
+					IOUtils.copy(in, out);
+				} finally {
+					IOUtils.closeQuietly(out);
+					IOUtils.closeQuietly(in);
+				}
+				attachments.add(new EmailAttachment(part.getFileName(), part.getContentType(), attachment));
+			
 				
 			} else if(Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
 				File attachment = File.createTempFile("email", "attachment");
