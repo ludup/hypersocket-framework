@@ -179,37 +179,37 @@ public class InboxProcessor {
 			contentType = StringUtils.substringBefore(contentType, ";");
 			if (isInlineButNotEmailBodyContent(part, textContent, htmlContent)) {
 				
-				String id = part.getContentID();
-				if(Objects.nonNull(id)) {
-					if(id.startsWith("<")) {
-						id = id.substring(1);
-					}
-					if(id.endsWith(">")) {
-						id = id.substring(0, id.length()-1);
-					}
-					
-					Document doc = Jsoup.parse(htmlContent.toString());
-					Elements els = doc.getElementsByAttributeValueContaining("src", "cid:" + id);
-					Element img = els.first();
-					if(Objects.nonNull(img)) {
-						String content = Base64.encodeBase64String(IOUtils.toByteArray(part.getInputStream()));
-						img.attr("src", String.format("data:%s;base64,%s", part.getContentType(), content));
-						htmlContent.setLength(0);
-						htmlContent.append(doc.toString());
-					} 
-				} 
+//				String id = part.getContentID();
+//				if(Objects.nonNull(id)) {
+//					if(id.startsWith("<")) {
+//						id = id.substring(1);
+//					}
+//					if(id.endsWith(">")) {
+//						id = id.substring(0, id.length()-1);
+//					}
+//					
+//					Document doc = Jsoup.parse(htmlContent.toString());
+//					Elements els = doc.getElementsByAttributeValueContaining("src", "cid:" + id);
+//					Element img = els.first();
+//					if(Objects.nonNull(img)) {
+//						String content = Base64.encodeBase64String(IOUtils.toByteArray(part.getInputStream()));
+//						img.attr("src", String.format("data:%s;base64,%s", part.getContentType(), content));
+//						htmlContent.setLength(0);
+//						htmlContent.append(doc.toString());
+//					} 
+//				} 
 				
-				String encodedImage = String.format("\r\n\r\n<img src=\"data:%s;base64,%s\"/>\r\n\r\n", contentType, Base64.encodeBase64String(IOUtils.toByteArray(part.getInputStream())));
+//				String encodedImage = String.format("\r\n\r\n<img src=\"data:%s;base64,%s\"/>\r\n\r\n", contentType, Base64.encodeBase64String(IOUtils.toByteArray(part.getInputStream())));
+//				
+//				String imageTag = String.format("[image: %s]", part.getFileName());
+//				int idx;
+//				if((idx = textContent.indexOf(imageTag)) > -1) {
+//					textContent.replace(idx, idx + imageTag.length(), encodedImage);
+//				} else {
+//					textContent.append(encodedImage);
+//				}
 				
-				String imageTag = String.format("[image: %s]", part.getFileName());
-				int idx;
-				if((idx = textContent.indexOf(imageTag)) > -1) {
-					textContent.replace(idx, idx + imageTag.length(), encodedImage);
-				} else {
-					textContent.append(encodedImage);
-				}
-				
-				File attachment = File.createTempFile("email", "attachment");
+				File attachment = File.createTempFile("inline", "attachment");
 				OutputStream out = new FileOutputStream(attachment);
 				InputStream in = part.getInputStream();
 				try {
