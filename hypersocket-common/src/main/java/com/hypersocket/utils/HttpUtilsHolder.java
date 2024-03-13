@@ -56,9 +56,9 @@ public class HttpUtilsHolder implements HttpUtils {
 	}
 	
 	@Override
-	public String doHttpGetContent(String uri, boolean allowSelfSigned, Map<String, String> headers)
+	public String doHttpGetContent(String uri, boolean allowSelfSigned, Map<String, String> headers, int... acceptableResponses)
 			throws IOException {
-		return instance.doHttpGetContent(uri, allowSelfSigned, headers);
+		return instance.doHttpGetContent(uri, allowSelfSigned, headers, acceptableResponses);
 	}
 
 	@Override

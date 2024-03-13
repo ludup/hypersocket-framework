@@ -29,7 +29,7 @@ public interface HttpUtils {
 			boolean allowSelfSigned, Map<String,String> additionalHeaders)
 					throws IOException;
 
-	String doHttpGetContent(String uri, boolean allowSelfSigned, Map<String, String> headers) throws IOException;
+	String doHttpGetContent(String uri, boolean allowSelfSigned, Map<String, String> headers, int... acceptableResponses) throws IOException;
 
 	CloseableHttpResponse execute(HttpUriRequest request, boolean allowSelfSigned) throws IOException;
 
