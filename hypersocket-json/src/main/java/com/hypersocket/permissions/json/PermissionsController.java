@@ -33,6 +33,7 @@ import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.Permission;
 import com.hypersocket.permissions.PermissionService;
+import com.hypersocket.permissions.PermissionStatus;
 
 @Controller
 public class PermissionsController extends ResourceController {
@@ -94,5 +95,28 @@ public class PermissionsController extends ResourceController {
 		} else{
 			return new RequestStatus(false);
 		}
+	}
+	
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "permissions/status/{permissions}", method = RequestMethod.GET,
+			produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
+	public ResourceStatus<List<PermissionStatus>> getPermissionStatus(HttpServletRequest request,
+											  HttpServletResponse response,
+											  @PathVariable String[] permissions) throws AccessDeniedException,
+			UnauthorizedException, IOException {
+
+		var perms = permissionService.getPermissions(permissions);
+		if(perms == null) {
+			throw new IOException("Unexpected permission resource key" + Arrays.toString(permissions));
+		}
+
+		var permissionStatusList = permissionService.getPermissionStatus(perms);
+		
+		return new ResourceStatus<List<PermissionStatus>>(permissionStatusList);
+		
 	}
 }

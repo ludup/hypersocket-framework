@@ -17,7 +17,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
@@ -1438,6 +1440,21 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 	@Override
 	public Set<Role> getPersonalRoles(Realm realm) {
 		return repository.getPersonalRoles(realm);
+	}
+
+	@Override
+	public List<PermissionStatus> getPermissionStatus(List<Permission> perms) {
+		
+		Objects.requireNonNull(perms, "Permission List passed cannot be null");
+		
+		return perms
+				.stream()
+				.map(p -> {
+					var name = p.getResourceKey();
+					var status = hasPermission(getCurrentPrincipal(), p);
+					return new PermissionStatus(name, status);
+				})
+				.collect(Collectors.toList());
 	}
 	
 }

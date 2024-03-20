@@ -11,6 +11,11 @@ import com.hypersocket.permissions.PermissionType;
 
 public enum UserPermission implements PermissionType {
 	
+	/**
+	 * Note: There is concept of secondary users, in case new permissions are added please 
+	 * consider checking secondary users also
+	 */
+	
 	READ("user.read"),
 	CREATE("user.create", READ),
 	UPDATE("user.update", READ),

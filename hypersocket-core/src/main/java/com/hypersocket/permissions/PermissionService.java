@@ -179,4 +179,6 @@ public interface PermissionService extends AuthenticatedService {
 	
 	Set<Role> getPersonalRoles(Realm realm);
 
+	List<PermissionStatus> getPermissionStatus(List<Permission> perms);
+
 }
