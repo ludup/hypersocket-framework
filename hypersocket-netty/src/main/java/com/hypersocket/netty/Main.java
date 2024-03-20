@@ -29,6 +29,7 @@ import org.jboss.netty.logging.InternalLoggerFactory;
 import org.jboss.netty.logging.Slf4JLoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.SpringVersion;
@@ -50,6 +51,9 @@ public class Main {
 	
 	static {
 		PluginManager.addPackage(XYamlConfigurationFactory.class.getPackageName());
+
+		SLF4JBridgeHandler.removeHandlersForRootLogger();
+		SLF4JBridgeHandler.install();
 	}
 
 	private static final String STARTUP_TOOK = "startupTook";
@@ -113,26 +117,6 @@ public class Main {
 
 		System.setProperty("hypersocket.conf", conf.getPath());
 
-		/* JULI Configuration */
-		String juliConfigPath = System.getProperty("hypersocket.juliConfiguration", "");
-		if(juliConfigPath.equals("")) {
-			/* Load default */
-			try(InputStream in = Main.class.getResourceAsStream("/default-juli.properties")) {
-				LogManager.getLogManager().readConfiguration(in);
-			}
-			catch(Exception e) {
-				log.error("Failed to configure JULI.", e);
-			}
-		}
-		else {
-			try(InputStream in = new FileInputStream(new File(juliConfigPath))) {
-				LogManager.getLogManager().readConfiguration(in);
-			}
-			catch(Exception e) {
-				log.error("Failed to configure JULI.", e);
-			}
-		}
-		
 		classLoader = getClass().getClassLoader();
 		if (log.isInfoEnabled()) {
 			log.info("Using class loader " + classLoader.getClass().getName());
@@ -189,7 +173,6 @@ public class Main {
 					var kmf = KeyManagerFactory.getInstance("SunX509");
 					kmf.init(ks, kspassword);
 				}
-
 				var took = PREFS.getLong(STARTUP_TOOK, TimeUnit.MINUTES.toMillis(5));
 				miniServer = UHTTPD.server().
 						withHttpAddress("0.0.0.0").

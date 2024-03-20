@@ -9,17 +9,11 @@ Configuration:
       PatternLayout:
         Pattern: "%d{dd MMM yyyy HH:mm:ss,SSS} [%t] %-5p %c{1} %x - %m%n"
         
-    RollingFile:
-      - name: LogToRollingFile
+    File:
+      - name: LogToFile
         fileName: logs/hypersocket.log
-        filePattern: "logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz"
         PatternLayout:
-          pattern: "%d{dd MMM yyyy HH:mm:ss,SSS} [%t] %-5p %c{1} %x - %m%n"
-        Policies:
-          SizeBasedTriggeringPolicy:
-            size: 20MB
-        DefaultRollOverStrategy:
-          max: 10
+            Pattern: "%d{dd MMM yyyy HH:mm:ss,SSS} [%t] %-5p %c{1} %x - %m%n"
     
     UIAppender:
       - name: LogToUI
@@ -33,27 +27,23 @@ Configuration:
         level: warn
         additivity: false
         AppenderRef:
-          - ref: LogToConsole
-          - ref: LogToRollingFile
+          - ref: LogToFile
           - ref: LogToUI
       - name: com.mchange.v2.c3p0.stmt.GooGooStatementCache
         level: warn
         additivity: false
         AppenderRef:
-          - ref: LogToConsole
-          - ref: LogToRollingFile
+          - ref: LogToFile
           - ref: LogToUI
       - name: org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
         level: warn
         additivity: false
         AppenderRef:
-          - ref: LogToConsole
-          - ref: LogToRollingFile
+          - ref: LogToFile
           - ref: LogToUI
 
     Root:
       level: info
       AppenderRef:
-        - ref: LogToConsole
-        - ref: LogToRollingFile
+        - ref: LogToFile
         - ref: LogToUI
