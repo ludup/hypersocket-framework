@@ -523,6 +523,10 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		var currentPrincipal = getCurrentPrincipal();
 		var currentRealm = getCurrentRealm();
 		
+		if(isVpnClient(currentSession)) {
+			return false;
+		}
+		
 		if (currentSession == null) {
 			throw new IllegalStateException("Current sesion found to be null cannot proceed.");
 		}
@@ -535,6 +539,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		if (activeSessions != null) {
 			otherActiveSessions = activeSessions
 										.stream()
+										.filter(s -> !isVpnClient(currentSession))
 										.filter(s -> !s.getId().equals(currentSession.getId()))
 										.collect(Collectors.toList());
 		}
@@ -947,6 +952,10 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 						+ " state has been updated");
 			}
 		}
+	}
+
+	private boolean isVpnClient(Session session) {
+		return session.getUserAgent() != null && session.getUserAgent().contains("LogonBoxVPNClient");
 	}
 
 }
