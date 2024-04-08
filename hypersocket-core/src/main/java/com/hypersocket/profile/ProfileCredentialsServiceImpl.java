@@ -82,11 +82,11 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	
 	private Map<String,ProfileCredentialsProvider> providers = new HashMap<String,ProfileCredentialsProvider>();
 	
-	Set<Realm> disabledRealms = new HashSet<>();
+	private Set<Realm> disabledRealms = new HashSet<>();
+	private ThreadLocal<Boolean> immediateProfileUpdates = new ThreadLocal<>();
 	
 	@PostConstruct
 	private void postConstruct() {
-		
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 		
 		realmService.registerRealmListener(new RealmAdapter() {
@@ -332,17 +332,6 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	}
 	
 	@Override
-	public Profile updateOrGenerate(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException {
-		Profile profile = profileRepository.getEntityById(target.getId());
-		if(profile!=null) {
-			updateProfile(profile, target, ctx);
-			return profile;
-		} else {
-			return generateProfile(target, ctx);
-		}
-	}
-	
-	@Override
 	public void updateProfile(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException {
 		Profile profile = profileRepository.getEntityById(target.getId());
 		if(profile==null) {
@@ -450,16 +439,32 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 			}
 		}
 	}
+	
+	@Override
+	public boolean immediateProfileUpdates(boolean immediate) {
+		var was = immediateProfileUpdates.get();
+		immediateProfileUpdates.set(immediate);
+		return was == null ? false : was;
+	}
 
 	private void fireProfileUpdateJob(Principal targetPrincipal) {
-		
-		var data = new PermissionsAwareJobData(targetPrincipal.getRealm(), "profileUpdateJob", targetPrincipal.getName());
-		data.put("targetPrincipalId", targetPrincipal.getId());
-		
-		try {
-			schedulerService.scheduleNow(ProfileUpdateJob.class, UUID.randomUUID().toString(), data);
-		} catch (SchedulerException e) {
-			log.error("Failed to schedule profile update job", e);
+		if(immediateProfileUpdates.get()) {
+			try {
+				updateProfile(targetPrincipal,  new AuthenticationModulesOperationContext());
+			}
+			catch (Exception e) {
+				log.error("Failed to update profile.", e);
+			}
+		}
+		else {
+			var data = new PermissionsAwareJobData(targetPrincipal.getRealm(), "profileUpdateJob", targetPrincipal.getName());
+			data.put("targetPrincipalId", targetPrincipal.getId());
+			
+			try {
+				schedulerService.scheduleNow(ProfileUpdateJob.class, UUID.randomUUID().toString(), data);
+			} catch (SchedulerException e) {
+				log.error("Failed to schedule profile update job", e);
+			}
 		}
 	}
 	
