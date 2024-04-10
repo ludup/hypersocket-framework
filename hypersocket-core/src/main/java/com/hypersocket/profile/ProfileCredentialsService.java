@@ -38,8 +38,6 @@ public interface ProfileCredentialsService {
 
 	Profile generateProfile(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException;
 
-	Profile updateOrGenerate(Principal target, AuthenticationModulesOperationContext ctx) throws AccessDeniedException;
-
 	Profile getProfileForUser(Principal target) throws AccessDeniedException;
 
 	void resetProfile(Principal principal) throws AccessDeniedException, ResourceException;
@@ -61,5 +59,7 @@ public interface ProfileCredentialsService {
 	boolean calculateCompleteness(Profile profile);
 
 	boolean areCredentialsRequired(Principal principal, String module) throws AccessDeniedException;
+
+	boolean immediateProfileUpdates(boolean immediate);
 
 }
