@@ -751,7 +751,7 @@ public class AuthenticationServiceImpl extends
 						break;
 					}
 					}
-				}
+				} 
 			}
 			state.authAttempted();
 
@@ -894,15 +894,20 @@ public class AuthenticationServiceImpl extends
 		
 		if(StringUtils.isNotBlank(state.getLastPrincipalName()) && authenticator.isSecretModule()) {
 			if (!realmService.verifyPrincipal(state.getLastPrincipalName(), state.getRealm())) {
-				state.clean();
-				state.setLastErrorMsg("error.accountSuspended");
-				state.setLastErrorIsResourceKey(true);
 				
 				eventService.publishEvent(new AuthenticationAttemptEvent(
 						this, state, authenticator,
 						"hint.accountSuspended"));
 				
-				
+				if(Objects.nonNull(state.getSuspensionHandler())) {
+					state.setLastErrorMsg("error.accountSuspended");
+					state.setLastErrorIsResourceKey(true);
+					state.getSuspensionHandler().userSuspended(state);
+				} else {
+					state.clean();
+					state.setLastErrorMsg("error.accountSuspended");
+					state.setLastErrorIsResourceKey(true);
+				}
 				return false;
 			} 
 		}
