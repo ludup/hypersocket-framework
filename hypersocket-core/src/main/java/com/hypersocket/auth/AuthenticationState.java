@@ -71,7 +71,7 @@ public class AuthenticationState implements Serializable {
 	private Map<String, String> parameters = new HashMap<String, String>();
 	private Map<String, Object> environment = new HashMap<String, Object>();
 	private PrincipalType principalType = PrincipalType.USER;
-	
+	private SuspensionHandler suspensionHandler;
 	
 	AuthenticationState(String remoteAddress, Map<String,Object> environment, Locale locale) {
 		this.remoteAddress = remoteAddress;
@@ -563,5 +563,18 @@ public class AuthenticationState implements Serializable {
 	
 	public boolean isNormalPrincipal() {
 		return !isFakePrincipal();
+	}
+	
+	public SuspensionHandler getSuspensionHandler() {
+		return suspensionHandler;
+	}
+
+	public void setSuspensionHandler(SuspensionHandler suspensionHandler) {
+		this.suspensionHandler = suspensionHandler;
+	}
+
+	public interface SuspensionHandler {
+		
+		void userSuspended(AuthenticationState state);
 	}
 }

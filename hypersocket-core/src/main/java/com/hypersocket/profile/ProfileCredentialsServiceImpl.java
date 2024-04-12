@@ -448,7 +448,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	}
 
 	private void fireProfileUpdateJob(Principal targetPrincipal) {
-		if(immediateProfileUpdates.get()) {
+		if(Boolean.TRUE.equals(immediateProfileUpdates.get())) {
 			try {
 				updateProfile(targetPrincipal,  new AuthenticationModulesOperationContext());
 			}

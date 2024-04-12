@@ -243,7 +243,9 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 							cookie.setPath("/");
 							cookie.setSecure(interfaceResource.getProtocol()==HTTPProtocol.HTTPS);
 							cookie.setHttpOnly(true);
-							cookie.setDomain(StringUtils.substringBefore(nettyRequest.headers().get("Host"), ":"));
+							var domain = StringUtils.substringBefore(nettyRequest.headers().get("Host"), ":");
+							if(domain != null) 
+								cookie.setDomain(domain);
 							var cfg = System.getProperty("hypersocket.cookie.sameSite", SessionUtils.COOKIE_SAME_SITE_DEFAULT);
 							if(!cfg.equalsIgnoreCase("Omit")) {
 								cookie.setComment("; SameSite=" + cfg);
