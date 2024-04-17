@@ -388,6 +388,10 @@ public class FileUploadServiceImpl extends
 			File f = new File(
 					System.getProperty("hypersocket.uploadPath", DEFAULT_UPLOAD_PATH)
 					+ path);
+			
+			if(Boolean.getBoolean("hypersocket.debugFilePaths") && log.isInfoEnabled()) {
+				log.info("Returning file from {}", f.getPath());
+			}
 			return new FileInputStream(f);
 		}
 
