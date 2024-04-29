@@ -30,6 +30,10 @@ import com.hypersocket.util.ConfigurableComboPooledDataSource;
 
 @Repository
 public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Principal> implements PrincipalRepository {
+	private static final boolean NO_EMAIL_PRINCIPAL_LOOKUP = Boolean.getBoolean("hypersocket.noEmailPrincipalLookup");
+	private static final boolean CASE_SENSITIVE_PRINCIPAL_LOOKUP = "true".equalsIgnoreCase(System.getProperty("hypersocket.caseSensitivePrincipalLookup", "true"));
+	private static final boolean ALT_PRINCIPAL_LOOKUP = "true".equalsIgnoreCase(System.getProperty("hypersocket.alternativePrincipalLookup", "true"));
+
 	final static Logger LOG = LoggerFactory.getLogger(PrincipalRepositoryImpl.class);
 
 	@Autowired
@@ -93,26 +97,26 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	@Override
 	@Transactional(readOnly = true)
 	public Collection<Principal> getPrincpalsByName(final String username, final PrincipalType... types) {
-		if (Boolean.getBoolean("hypersocket.alternativePrincipalLookup")) {
+		if (ALT_PRINCIPAL_LOOKUP) {
 			var res = list(Principal.class, new DeletedCriteria(false),
 					new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
 
 						@Override
 						public void configure(Criteria criteria) {
-							if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+							if (CASE_SENSITIVE_PRINCIPAL_LOOKUP) {
 								criteria.add(Restrictions.eq("name", username));
 							} else {
 								criteria.add(Restrictions.eq("name", username).ignoreCase());
 							}
 						}
 					});
-			if (res.isEmpty() && !Boolean.getBoolean("hypersocket.noEmailPrinicpalLookup")) {
+			if (res.isEmpty() && !NO_EMAIL_PRINCIPAL_LOOKUP) {
 				res = list(Principal.class, new DeletedCriteria(false),
 						new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
 
 							@Override
 							public void configure(Criteria criteria) {
-								if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+								if (CASE_SENSITIVE_PRINCIPAL_LOOKUP) {
 									criteria.add(Restrictions.eq("primaryEmail", username));
 								} else {
 									criteria.add(Restrictions.eq("primaryEmail", username).ignoreCase());
@@ -127,16 +131,16 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 
 						@Override
 						public void configure(Criteria criteria) {
-							if(Boolean.getBoolean("hypersocket.noEmailPrinicpalLookup")) {
+							if(NO_EMAIL_PRINCIPAL_LOOKUP) {
 
-								if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+								if (CASE_SENSITIVE_PRINCIPAL_LOOKUP) {
 									criteria.add(Restrictions.eq("name", username));
 								} else {
 									criteria.add(Restrictions.eq("name", username).ignoreCase());
 								}
 							}
 							else {
-								if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
+								if (CASE_SENSITIVE_PRINCIPAL_LOOKUP) {
 									criteria.add(Restrictions.or(Restrictions.eq("name", username),
 											Restrictions.eq("primaryEmail", username)));
 								} else {
@@ -165,7 +169,7 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 							}
 						}
 					});
-			if (res.isEmpty() && !Boolean.getBoolean("hypersocket.noEmailPrinicpalLookup")) {
+			if (res.isEmpty() && !NO_EMAIL_PRINCIPAL_LOOKUP) {
 				res = list(Principal.class, new RealmCriteria(realm), new DeletedCriteria(false),
 						new PrincipalTypesCriteria(types), new CriteriaConfiguration() {
 
@@ -186,7 +190,7 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 
 						@Override
 						public void configure(Criteria criteria) {
-							if(Boolean.getBoolean("hypersocket.noEmailPrinicpalLookup")) {
+							if(NO_EMAIL_PRINCIPAL_LOOKUP) {
 
 								if (Boolean.getBoolean("hypersocket.caseSensitivePrincipalLookup")) {
 									criteria.add(Restrictions.eq("name", username));
