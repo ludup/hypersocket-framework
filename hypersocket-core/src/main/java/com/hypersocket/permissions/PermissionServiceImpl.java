@@ -818,7 +818,23 @@ public class PermissionServiceImpl extends AuthenticatedServiceImpl
 			role.getPrincipals().clear();
 			role.getPermissions().clear();
 			repository.saveRole(role);
+			/**
+			 * Flush required here as it will d-link any association of the personal role with its principal.
+			 * Id not d-linked, the link with associated principal would cascade back save, leading to error from hibernate 
+			 * deleted object would be re-saved by cascade (remove deleted object from associations) 
+			 * 
+			 * Note: Main issue being we are deleting the personal role, however before the delete, we are d-linking any association,
+			 * and calling save operation on it, but the association cascades save back to personal, hence above save role call and below delete role call 
+			 * both contradict each other in a single transaction, flush kind of separates them into different batch within a transaction.
+			 */
+			repository.flush();
+			
+			/**
+			 * Above flush would d-link personal role with any association and can be deleted.
+			 */
 			repository.deleteRole(role);
+			
+			
 			invalidateCaches();
 			if(needEvent) {
 				eventService.publishEvent(new RoleDeletedEvent(
