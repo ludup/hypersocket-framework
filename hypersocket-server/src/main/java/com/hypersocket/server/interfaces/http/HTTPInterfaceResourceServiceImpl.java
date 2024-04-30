@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -349,7 +350,7 @@ public class HTTPInterfaceResourceServiceImpl extends
 		var additionalCertificates = properties.get("additionalCertificates");
 		
 		if (additionalCertificates != null) {
-			var certificateIds = ResourceUtils.explodeNamePairs(additionalCertificates).stream().map(p-> Long.parseLong(p.getValue())).collect(Collectors.toList());
+			var certificateIds = ResourceUtils.explodeNamePairs(additionalCertificates).stream().map(p-> Long.parseLong(p.getName())).collect(Collectors.toList());
 			checkInterfaceCertificatesAreProductionReady(certificateIds.toArray(new Long[0]));
 		}
 	}
@@ -357,12 +358,8 @@ public class HTTPInterfaceResourceServiceImpl extends
 	private void checkCertificate(Map<String, String> properties) throws ResourceException {
 		var certificateId = properties.get("certificate");
 		
-		if (certificateId != null) {
-			try {
-				checkInterfaceCertificatesAreProductionReady(Long.parseLong(certificateId));
-			} catch (NumberFormatException e) {
-				throw new IllegalStateException(e.getMessage(), e);
-			}
+		if (NumberUtils.isDigits(certificateId)) {
+			checkInterfaceCertificatesAreProductionReady(Long.parseLong(certificateId));
 		}
 	}
 	
