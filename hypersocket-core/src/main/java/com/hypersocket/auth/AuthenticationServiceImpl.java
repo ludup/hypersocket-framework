@@ -1099,7 +1099,7 @@ public class AuthenticationServiceImpl extends
 			}
 			
 			if(principal==null) {
-				throw new PrincipalNotFoundException(String.format("%s is not a valid username", username));
+				throw new PrincipalNotFoundException("Invalid username.");
 			}
 			
 		}
