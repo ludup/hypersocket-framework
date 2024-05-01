@@ -10,6 +10,7 @@ package com.hypersocket.realm;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -3137,19 +3138,19 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		
 		String propertyChangesCSV = "";
 		if (!changes.isEmpty()) {
-			String template = i18nService.getResource("realm.update.propertyChangeRecordTemplate", getCurrentLocale());
+			var template = i18nService.getResource("realm.update.propertyChangeRecordTemplate", getCurrentLocale());
+			var templateFormatter = new MessageFormat(template);
+			
 			List<String> records = new ArrayList<>();
 			
 			for (PropertyChange propertyChange : changes) {
-				String record = String.format(template, 
-						propertyChange.getId(), 
-						propertyChange.getOldValue(), 
-						propertyChange.getNewValue());
+				var record = templateFormatter.format(new Object[] { 
+							propertyChange.getId(), 
+							propertyChange.getOldValue(), 
+							propertyChange.getNewValue()
+						});
 				
 				records.add(record);
-				
-				
-				
 			}
 			
 			propertyChangesCSV = StringUtils.join(records, ", ");
