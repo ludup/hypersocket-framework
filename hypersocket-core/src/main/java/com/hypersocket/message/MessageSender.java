@@ -496,7 +496,7 @@ public class MessageSender {
 									.add(new EmailAttachment(upload.getFileName(), uploadService.getContentType(uuid)) {
 										@Override
 										public InputStream getInputStream() throws IOException {
-											return uploadService.getInputStream(getName());
+											return uploadService.getInputStream(uuid);
 										}
 									});
 						} catch (ResourceNotFoundException | IOException e) {
