@@ -80,6 +80,8 @@ import com.hypersocket.realm.events.GroupEvent;
 import com.hypersocket.realm.events.GroupUpdatedEvent;
 import com.hypersocket.realm.events.PasswordUpdateEvent;
 import com.hypersocket.realm.events.PrincipalEvent;
+import com.hypersocket.realm.events.PrincipalLockedAuthEvent;
+import com.hypersocket.realm.events.PrincipalLockedChangeEvent;
 import com.hypersocket.realm.events.ProfileUpdatedEvent;
 import com.hypersocket.realm.events.RealmCreatedEvent;
 import com.hypersocket.realm.events.RealmDeletedEvent;
@@ -305,6 +307,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		eventService.registerEvent(ExternalPasswordEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(SetPasswordEvent.class, RESOURCE_BUNDLE);
 		eventService.registerEvent(ResetPasswordEvent.class, RESOURCE_BUNDLE);
+		
+		eventService.registerEvent(PrincipalLockedAuthEvent.class, RESOURCE_BUNDLE);
+		eventService.registerEvent(PrincipalLockedChangeEvent.class, RESOURCE_BUNDLE);
 
 		upgradeService.registerListener(this);
 
