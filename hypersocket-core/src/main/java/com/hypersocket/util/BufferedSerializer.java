@@ -127,7 +127,7 @@ public class BufferedSerializer<S> implements Closeable {
 							} catch (IOException e) {
 							}
 							next = null;
-							return;
+							in = null;
 						} catch (ClassNotFoundException | IOException e) {
 							throw new IllegalStateException("Failed to read cache file.", e);
 						}
@@ -166,7 +166,7 @@ public class BufferedSerializer<S> implements Closeable {
 				buffer.clear();
 			}
 		} catch (IOException ioe) {
-			throw new IllegalStateException(String.format("Failed to flush to %s", bufferFile));
+			throw new IllegalStateException(String.format("Failed to flush to %s", bufferFile), ioe);
 		}
 	}
 

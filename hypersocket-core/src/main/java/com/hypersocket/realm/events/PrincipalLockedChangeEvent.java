@@ -1,7 +1,6 @@
 package com.hypersocket.realm.events;
 
 import com.hypersocket.realm.Principal;
-import com.hypersocket.session.Session;
 
 public class PrincipalLockedChangeEvent extends AbstractPrincipalLockedEvent {
 
@@ -10,14 +9,14 @@ public class PrincipalLockedChangeEvent extends AbstractPrincipalLockedEvent {
 	public static final String EVENT_RESOURCE_KEY = "event.principalLockedChange";
 
 	
-	public PrincipalLockedChangeEvent(Object source, Session session, Principal principal, 
+	public PrincipalLockedChangeEvent(Object source, Principal principal, 
 				Principal lockedPrincipal) {
-		super(EVENT_RESOURCE_KEY, source, session, principal, lockedPrincipal);
+		super(EVENT_RESOURCE_KEY, source, principal, lockedPrincipal);
 	}
 	
-	public PrincipalLockedChangeEvent(Object source, Throwable e, Session session, Principal principal, 
+	public PrincipalLockedChangeEvent(Object source, Throwable e, Principal principal, 
 			Principal lockedPrincipal) {
-		super(EVENT_RESOURCE_KEY, source, e, session, principal, lockedPrincipal);
+		super(EVENT_RESOURCE_KEY, source, e, principal, lockedPrincipal);
 	}
 
 
