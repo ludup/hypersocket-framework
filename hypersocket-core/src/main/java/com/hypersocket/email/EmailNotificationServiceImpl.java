@@ -386,11 +386,19 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 		var fromAddress = mailerService.getSMTPValue(builder.realm(), MailerServiceImpl.SMTP_FROM_ADDRESS);
 		if (r.getAddress().equalsIgnoreCase(fromAddress)) {
-			if (log.isInfoEnabled()) {
-				log.info("Email loopback detected. The from address {} is the same as the destination", fromAddress,
-						r.getAddress());
+			if(Boolean.getBoolean("hypersocket.development")) {
+				if (log.isInfoEnabled()) {
+					log.info("Email loopback detected. The from address {} is the same as the destination. As you have development mode on, this will be allowed.", fromAddress,
+							r.getAddress());
+				}
 			}
-			return;
+			else {
+				if (log.isInfoEnabled()) {
+					log.info("Email loopback detected. The from address {} is the same as the destination", fromAddress,
+							r.getAddress());
+				}
+				return;
+			}
 		}
 
 		var blocked = Arrays.asList(configurationService.getValues(builder.realm(), "email.blocked"));
