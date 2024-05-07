@@ -11,9 +11,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.cache.Cache;
+import javax.cache.expiry.CreatedExpiryPolicy;
+import javax.cache.expiry.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +74,7 @@ public class ConfigurationServiceImpl extends AbstractAuthenticatedServiceImpl
 			permissionService.registerPermission(p,cat);
 		}
 
-		cache = cacheService.getCacheOrCreate("configurationService", String.class, Object.class);
+		cache = cacheService.getCacheOrCreate("configurationService", String.class, Object.class, CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.HOURS, 1)));
 		repository.loadPropertyTemplates("propertyTemplates.xml");
 		
 	}

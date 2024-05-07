@@ -47,3 +47,4 @@ Configuration:
       AppenderRef:
         - ref: LogToFile
         - ref: LogToUI
+        - ref: LogToConsole
