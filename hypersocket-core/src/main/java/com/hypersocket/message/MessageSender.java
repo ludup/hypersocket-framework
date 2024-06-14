@@ -235,13 +235,13 @@ public class MessageSender {
 				if(messageResourceKey == null)
 					throw new IllegalStateException("Must set either a messageResourceKey or a messageResource to be able to send a message.");
 					
-				var message = messageResourceService.getMessageById(messageResourceKey, realm);
-				if (message == null) {
+				messageResource = messageResourceService.getMessageById(messageResourceKey, realm);
+				if (messageResource == null) {
 					throw new IllegalStateException(String.format("Invalid message id %s", messageResourceKey));
 				}
-				
-				sendMessage(message);
 			}
+			
+			sendMessage(messageResource);
 		}
 		catch(IOException | TemplateException | ValidationException | AccessDeniedException | ResourceException | IllegalStateException e) {
 			log.error("Failed to send email.", e);
