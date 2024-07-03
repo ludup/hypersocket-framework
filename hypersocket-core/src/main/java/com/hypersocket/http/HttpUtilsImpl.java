@@ -493,10 +493,13 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 			throws IOException {
 		CloseableHttpResponse response = doHttpGet(uri, allowSelfSigned, headers);
 		try {
-			if ((acceptableResponses.length == 0 && response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) ||
-			    !(Arrays.stream(acceptableResponses).boxed().collect(Collectors.toList()).contains(response.getStatusLine().getStatusCode()))) {
-				throw new IOException("Received " + response.getStatusLine().toString());
+			
+			int statusCode = response.getStatusLine().getStatusCode();
+			
+			if (isNotHttp200OK(acceptableResponses, statusCode) || isNotCustomHttpOK(acceptableResponses, statusCode)) {
+				throw new IOException("Received error response with status code " + statusCode);
 			}
+			
 			HttpEntity entity = response.getEntity();
 			return EntityUtils.toString(entity);
 
@@ -512,5 +515,14 @@ public class HttpUtilsImpl implements HttpUtils, HostnameVerifier, TrustStrategy
 	public CloseableHttpResponse execute(HttpUriRequest request, boolean allowSelfSigned) throws IOException {
 		CloseableHttpClient client = createHttpClient(allowSelfSigned);
 		return client.execute(request);
+	}
+	
+	private static boolean isNotHttp200OK(int[] acceptableResponses, int statusCode) {
+		return acceptableResponses.length == 0 && statusCode != HttpStatus.SC_OK;
+	}
+	
+	private static boolean isNotCustomHttpOK(int[] acceptableResponses, int statusCode) {
+		return acceptableResponses.length != 0 && !Arrays.stream(acceptableResponses).boxed()
+				.collect(Collectors.toSet()).contains(statusCode);
 	}
 }
