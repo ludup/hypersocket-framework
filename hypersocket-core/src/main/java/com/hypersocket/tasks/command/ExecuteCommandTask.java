@@ -71,6 +71,18 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 				"command.exe"), event);
 		String[] args = repository.getValues(task, "command.args");
 		for(int i=0;i<args.length;i++) {
+			var arg = args[i];
+			/**
+			 * Special handling for % as shell/bash scripts might have this value as part of args.
+			 * If not escaped, the decode call below would try to decode it again, leading to exception.
+			 * 
+			 * e.g. %val, the decode below will try to decode %v, hence % => %25, decode will then
+			 *  parse %25val => %val
+			 */
+			if (arg.contains("%")) {
+				arg = arg.replaceAll("%", "%25");
+			}
+			args[i] = arg;
 			args[i] = processTokenReplacements(HypersocketUtils.urlDecode(args[i]), event);
 		}
 		CommandExecutor exe = new CommandExecutor(command);
@@ -101,4 +113,5 @@ public class ExecuteCommandTask extends AbstractTaskProvider {
 	public boolean isSystem() {
 		return true;
 	}
+	
 }
