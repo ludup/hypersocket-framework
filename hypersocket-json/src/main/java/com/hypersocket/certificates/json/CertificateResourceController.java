@@ -490,10 +490,11 @@ public class CertificateResourceController extends ResourceController {
 	public CertificateStatus uploadKey(HttpServletRequest request, HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file,
 			@RequestPart(value = "bundle", required = false) MultipartFile bundle,
-			@RequestPart(value = "key") MultipartFile key, @RequestParam(value = "passphrase") String passphrase)
+			@RequestPart(value = "key") MultipartFile key, @RequestParam(value = "passphrase") String passphrase, 
+			@RequestParam(value = "replaceCertificate") Long replaceCertificate)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		return replaceKey(request, response, file, bundle, key, passphrase, null);
+		return replaceKey(request, response, file, bundle, key, passphrase, replaceCertificate, null);
 	}
 
 	@AuthenticationRequired
@@ -505,6 +506,7 @@ public class CertificateResourceController extends ResourceController {
 			@RequestPart(value = "file") MultipartFile file,
 			@RequestPart(value = "bundle", required = false) MultipartFile bundle,
 			@RequestPart(value = "key") MultipartFile key, @RequestParam(value = "passphrase") String passphrase,
+			@RequestParam(value = "replaceCertificate") Long replaceCertificate,
 			@PathVariable Long id) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		CertificateStatus status = new CertificateStatus();
@@ -512,7 +514,17 @@ public class CertificateResourceController extends ResourceController {
 		try {
 
 			if (id == null) {
-				status.setResource(resourceService.importPrivateKey(key, passphrase, file, bundle));
+				if (replaceCertificate != -1) {
+					var certificateResource = resourceService.getResourceById(replaceCertificate);
+					if (certificateResource == null) {
+						throw new IllegalStateException("Missing certificate, is null.");
+					}
+					LOG.info(String.format("Replacing certificate resource with id %s.", replaceCertificate));
+					status.setResource(resourceService.replacePrivateKey(certificateResource, key,
+							passphrase, file, bundle));
+				} else {
+					status.setResource(resourceService.importPrivateKey(key, passphrase, file, bundle));	
+				}
 			} else {
 				status.setResource(resourceService.replacePrivateKey(resourceService.getResourceById(id), key,
 						passphrase, file, bundle));
@@ -537,9 +549,10 @@ public class CertificateResourceController extends ResourceController {
 	@ResponseBody
 	@AuthenticatedContext
 	public CertificateStatus uploadPfx(HttpServletRequest request, HttpServletResponse response,
-			@RequestPart(value = "key") MultipartFile key, @RequestParam(value = "passphrase") String passphrase)
+			@RequestPart(value = "key") MultipartFile key, @RequestParam(value = "passphrase") String passphrase,
+			@RequestParam(value = "replaceCertificate") Long replaceCertificate)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
-		return replacePfx(request, response, key, passphrase, null);
+		return replacePfx(request, response, key, passphrase, replaceCertificate, null);
 	}
 
 	@AuthenticationRequired
@@ -549,13 +562,24 @@ public class CertificateResourceController extends ResourceController {
 	@AuthenticatedContext
 	public CertificateStatus replacePfx(HttpServletRequest request, HttpServletResponse response,
 			@RequestPart(value = "key") MultipartFile key, @RequestParam(value = "passphrase") String passphrase,
+			@RequestParam(value = "replaceCertificate") Long replaceCertificate,
 			@PathVariable Long id) throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		CertificateStatus status = new CertificateStatus();
 		status.setSuccess(false);
 		try {
 			if (id == null) {
-				status.setResource(resourceService.importPfx(key, passphrase));
+				if (replaceCertificate != -1) {
+					var certificateResource = resourceService.getResourceById(replaceCertificate);
+					if (certificateResource == null) {
+						throw new IllegalStateException("Missing certificate, is null.");
+					}
+					LOG.info(String.format("Replacing certificate resource with id %s.", replaceCertificate));
+					status.setResource(resourceService.replacePfx(certificateResource, key, passphrase));
+				} else {
+					status.setResource(resourceService.importPfx(key, passphrase));
+				}
+				
 			} else {
 				CertificateResource resource = resourceService.getResourceById(id);
 				status.setResource(resourceService.replacePfx(resource, key, passphrase));
