@@ -71,9 +71,17 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 		String confirmPassword = ArrayValueHashMap.getSingle(parameters, ChangePasswordTemplate.CONFIRM_PASSWORD_FIELD);
 		
 		if(password==null || password.trim().equals("")) { 
-			state.setLastErrorMsg("error.emptyPassword");
-			state.setLastErrorIsResourceKey(true);
-			return AuthenticatorResult.INSUFFICIENT_DATA;
+		
+			if (state.hasEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED) 
+					&& (Boolean) state.getEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED)) {
+				state.setLastErrorMsg("error.haveIBeenPwnedChangePassword");
+				state.setLastErrorIsResourceKey(true);
+				return AuthenticatorResult.INSUFFICIENT_DATA;
+			} else {
+				state.setLastErrorMsg("error.emptyPassword");
+				state.setLastErrorIsResourceKey(true);
+				return AuthenticatorResult.INSUFFICIENT_DATA;
+			}
 		}
 		
 		if(!password.equals(confirmPassword)) {
@@ -124,8 +132,8 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	@Override
 	public FormTemplate createTemplate(AuthenticationState state) {
 		FormTemplate t = new ChangePasswordTemplate(state, "changePassword.text", state.getLastErrorMsg(), state.getLastErrorIsResourceKey());
-		state.setLastErrorIsResourceKey(false);
-		state.setLastErrorMsg(null);
+		//state.setLastErrorIsResourceKey(false);
+		//state.setLastErrorMsg(null);
 		return t;
 	}
 
