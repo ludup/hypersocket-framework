@@ -35,6 +35,7 @@ import com.hypersocket.server.interfaces.http.HTTPInterfaceResource;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceColumns;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceService;
 import com.hypersocket.server.interfaces.http.HTTPInterfaceResourceServiceImpl;
+import com.hypersocket.server.interfaces.http.HTTPProtocol;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.tables.BootstrapTableResult;
 import com.hypersocket.tables.Column;
@@ -59,6 +60,42 @@ public class HTTPInterfaceResourceController extends ResourceController {
 		return new ResourceList<HTTPInterfaceResource>(
 				resourceService.getResources(sessionUtils
 						.getCurrentRealm(request)));
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "httpInterfaces/list/{protocol}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
+	public ResourceList<HTTPInterfaceResource> getResourcesWithProtocol(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable("protocol") String protocol) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		try {
+			return new ResourceList<HTTPInterfaceResource>(
+					resourceService.getHTTPInterfaceResourceByProtocol(sessionUtils
+							.getCurrentRealm(request), HTTPProtocol.valueOf(protocol)));
+		} catch (AccessDeniedException | ResourceException | UnauthorizedException e) {
+			return new ResourceList<HTTPInterfaceResource>(false, e.getMessage());
+		}
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "httpInterfaces/sameCertificate/{id}", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
+	public ResourceList<HTTPInterfaceResource> getResourcesWithSameCertificate(HttpServletRequest request,
+			HttpServletResponse response, @PathVariable("id") Long id) throws AccessDeniedException,
+			UnauthorizedException, SessionTimeoutException {
+
+		try {
+			return new ResourceList<HTTPInterfaceResource>(
+					resourceService.getHTTPInterfaceResourcesWithSameCertificate(sessionUtils
+							.getCurrentRealm(request), id));
+		} catch (UnauthorizedException e) {
+			return new ResourceList<HTTPInterfaceResource>(false, e.getMessage());
+		}
 	}
 	
 	@AuthenticationRequired

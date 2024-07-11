@@ -25,5 +25,10 @@ public interface HTTPInterfaceResourceService extends
 			throws AccessDeniedException;
 
 	void httpInterfaceUpdated(HTTPInterfaceResourceUpdatedEvent resourceUpdated) throws AccessDeniedException, ResourceException;
+	
+	Collection<HTTPInterfaceResource> getHTTPInterfaceResourceByProtocol(Realm realm, 
+			HTTPProtocol protocol) throws AccessDeniedException, ResourceException;
+
+	Collection<HTTPInterfaceResource> getHTTPInterfaceResourcesWithSameCertificate(Realm realm, Long id);
 
 }

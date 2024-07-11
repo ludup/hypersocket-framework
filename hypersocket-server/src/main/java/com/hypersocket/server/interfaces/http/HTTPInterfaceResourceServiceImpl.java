@@ -395,4 +395,15 @@ public class HTTPInterfaceResourceServiceImpl extends
 		
 	}
 
+	@Override
+	public Collection<HTTPInterfaceResource> getHTTPInterfaceResourceByProtocol(Realm realm, HTTPProtocol protocol)
+			throws AccessDeniedException, ResourceException {
+		return repository.getHTTPInterfaceResourceByProtocol(realm, protocol);
+	}
+
+	@Override
+	public Collection<HTTPInterfaceResource> getHTTPInterfaceResourcesWithSameCertificate(Realm realm, Long id) {
+		return repository.getHTTPInterfaceResourcesWithSameCertificate(realm, id);
+	}
+
 }

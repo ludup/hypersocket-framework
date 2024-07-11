@@ -385,6 +385,11 @@ public class CertificateResourceServiceImpl extends
 
 		return getResourceKeystore(resource, "hypersocket", "changeit");
 	}
+	
+	@Override
+	public CertificateResource getDefaultCertificateResource() throws ResourceNotFoundException {
+		return getResourceByName(DEFAULT_CERTIFICATE_NAME);
+	}
 
 	protected KeyStore loadPEMCertificate(InputStream keyStream,
 			InputStream certStream, InputStream caStream, String alias,

@@ -17,6 +17,7 @@ import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.AbstractResourceService;
 import com.hypersocket.resource.ResourceException;
+import com.hypersocket.resource.ResourceNotFoundException;
 
 public interface CertificateResourceService extends
 		AbstractResourceService<CertificateResource> {
@@ -41,6 +42,8 @@ public interface CertificateResourceService extends
 
 	KeyStore getDefaultCertificate() throws ResourceException,
 			AccessDeniedException;
+	
+	CertificateResource getDefaultCertificateResource() throws ResourceNotFoundException;
 
 	String generateCSR(CertificateResource resourceById)
 			throws UnsupportedEncodingException, Exception;
