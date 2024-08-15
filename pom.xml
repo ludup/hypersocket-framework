@@ -249,8 +249,9 @@
 				<plugin>
 					<groupId>com.nervepoint</groupId>
 					<artifactId>google-translate-v2-java-maven-plugin</artifactId>
-					<version>0.9.0-SNAPSHOT</version>
+					<version>0.9.1-SNAPSHOT</version>
 					<configuration>
+						<distributedCache>mcp.hypersocket.io</distributedCache>
 						<apikey>${googleAPIKey}</apikey>
 						<cacheTag>main</cacheTag>
 						<sourceDirectory>${basedir}/src/main/resources/i18n</sourceDirectory>
