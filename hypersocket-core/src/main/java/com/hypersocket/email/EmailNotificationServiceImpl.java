@@ -88,7 +88,7 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 	
 	public final static String SMTP_DO_NOT_SEND_TO_NO_REPLY = "smtp.doNotSendToNoReply";
 	
-	public static final String EMAIL_PATTERN = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+	public static final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
 	
 	public static final String EMAIL_NAME_PATTERN = "(.*?)<([^>]+)>\\s*,?";
 
@@ -617,5 +617,10 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 		}
 		
 		throw new InvalidCredentialsException();
+	}
+	
+	public static void main(String[] args) {
+		
+		System.out.println("Sean_O'Sullvan@rush.edu".matches(EMAIL_PATTERN));
 	}
 }
