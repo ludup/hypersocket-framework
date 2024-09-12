@@ -369,6 +369,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 							log.debug("Redirecting to " + redirPath + " for " + reverseUri);
 						}
 						nettyResponse.sendRedirect(redirPath, false /* Don't use a permanent redirection as the alias target may change */);
+						ContentHandlerImpl.addDefaultCSPHeaders(nettyResponse);
 						sendResponse(servletRequest, nettyResponse, false, true);
 						return;
 					} else {
@@ -539,6 +540,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 		request.setAttribute(HypersocketServer.CONTENT_INPUTSTREAM + ".trace", traceStr.toString());
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void send500(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse) throws IOException {
 		ContentHandlerImpl.addDefaultCSPHeaders(servletResponse);
 		servletResponse.sendError(HttpStatus.SC_NOT_FOUND);
