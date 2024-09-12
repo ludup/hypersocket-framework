@@ -2882,7 +2882,9 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public boolean isLocked(Principal principal) throws ResourceException {
 
 		RealmProvider provider = getProviderForPrincipal(principal);
-		principal = provider.reconcileUser(principal);
+		if(!Boolean.getBoolean("logonbox.unlockAccount.noReconcileBeforeCheck")) {
+			principal = provider.reconcileUser(principal, false);
+		}
 
 		return principal.getPrincipalStatus() == PrincipalStatus.LOCKED;
 	}

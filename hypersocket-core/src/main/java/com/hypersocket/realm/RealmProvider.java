@@ -166,7 +166,11 @@ public interface RealmProvider extends ResourceTemplateRepository {
 
 	void setUserProperty(Principal principal, String resourceKey, String val);
 
-	Principal reconcileUser(Principal principal) throws ResourceException;
+	default Principal reconcileUser(Principal principal) throws ResourceException {
+		return reconcileUser(principal, true);
+	}
+
+	Principal reconcileUser(Principal principal, boolean withGroups) throws ResourceException;
 
 	void resetRealm(Realm realm) throws ResourceNotFoundException, AccessDeniedException;
 

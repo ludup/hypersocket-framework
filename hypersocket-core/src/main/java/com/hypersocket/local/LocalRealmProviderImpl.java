@@ -152,7 +152,7 @@ public class LocalRealmProviderImpl extends AbstractLocalRealmProviderImpl imple
 	}
 
 	@Override
-	public Principal reconcileUser(Principal principal) throws ResourceException {
+	public Principal reconcileUser(Principal principal, boolean withGroups) throws ResourceException {
 		return principal;
 	}
 
