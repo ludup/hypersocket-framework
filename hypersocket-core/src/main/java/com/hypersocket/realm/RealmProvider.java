@@ -193,5 +193,7 @@ public interface RealmProvider extends ResourceTemplateRepository {
 	default boolean isSupportsOptimizedReconcile(Realm realm) {
 		return false;
 	}
+	
+	default void logoff(Realm realm, String username) throws ResourceException {	}
 
 }
