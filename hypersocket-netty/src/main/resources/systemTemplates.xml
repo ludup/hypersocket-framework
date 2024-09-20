@@ -16,5 +16,8 @@
 			defaultValue="0" weight="800" restart="true" />
 		<property resourceKey="netty.maxTotalMemory" inputType="integer" minValue="0" maxValue="99999999999"
 			defaultValue="0" weight="900" restart="true" />
+		<property resourceKey="netty.enableGzip" inputType="switch" defaultValue="true" weight="1000" />
+		<property resourceKey="netty.enableGzipBreachProtection" inputType="switch" defaultValue="false" weight="1100" 
+			visibilityDependsOn="netty.enableGzip" visibilityDependsValue="true"/>
 	</propertyCategory>
 </propertyTemplates>
