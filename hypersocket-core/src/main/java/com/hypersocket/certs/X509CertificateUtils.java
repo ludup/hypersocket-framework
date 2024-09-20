@@ -482,7 +482,7 @@ public class X509CertificateUtils {
 			PublicKey publicKey, String CN, String OU, String O, String L,
 			String S, String C, String[] SAN) throws Exception {
 
-		JcaContentSignerBuilder csb = new JcaContentSignerBuilder("SHA1withRSA");
+		JcaContentSignerBuilder csb = new JcaContentSignerBuilder("SHA512WithRSA");
 		ContentSigner cs = csb.build(privateKey);
 
 		X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
