@@ -65,9 +65,11 @@ import org.slf4j.LoggerFactory;
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.cache.CacheUtils;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.json.ControllerInterceptor;
 import com.hypersocket.json.RestApi;
 import com.hypersocket.netty.forwarding.NettyWebsocketClient;
+import com.hypersocket.netty.util.GzipBreachHandlerByteArrayOutputStream;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.server.HypersocketServer;
 import com.hypersocket.server.handlers.HttpRequestHandler;
@@ -733,18 +735,27 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 				if (acceptEncodings != null) {
 					doGzip = acceptEncodings.indexOf("gzip") > -1;
 				}
-
+				 
 				if (doGzip) {
-					try {
-						ByteArrayOutputStream gzipped = new ByteArrayOutputStream();
-						GZIPOutputStream gzip = new GZIPOutputStream(gzipped);
-						gzip.write(buffer.array(), 0, buffer.readableBytes());
-						gzip.finish();
-						buffer = ChannelBuffers.wrappedBuffer(gzipped
-								.toByteArray());
-						servletResponse.setHeader("Content-Encoding", "gzip");
-					} catch (IOException e) {
-						log.error("Failed to gzip response", e);
+					var configurationService = ApplicationContextServiceImpl.getInstance().getBean(SystemConfigurationService.class);
+					var gzipEnabled = configurationService.getBooleanValue("netty.enableGzip"); 
+					
+					if (gzipEnabled) {
+						try {
+							var breachProtectionEnabled = configurationService.getBooleanValue("netty.enableGzipBreachProtection");
+							
+							ByteArrayOutputStream gzipped = breachProtectionEnabled ? new GzipBreachHandlerByteArrayOutputStream()
+									: new ByteArrayOutputStream();
+							
+							GZIPOutputStream gzip = new GZIPOutputStream(gzipped);
+							gzip.write(buffer.array(), 0, buffer.readableBytes());
+							gzip.finish();
+							buffer = ChannelBuffers.wrappedBuffer(gzipped
+									.toByteArray());
+							servletResponse.setHeader("Content-Encoding", "gzip");
+						} catch (IOException e) {
+							log.error("Failed to gzip response", e);
+						}
 					}
 				}
 			}
