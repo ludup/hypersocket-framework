@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,14 +50,20 @@ import com.hypersocket.servlet.request.Request;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
+import com.hypersocket.session.scope.SessionScope;
+import com.hypersocket.session.scope.SessionScopeRegistry;
 
 @Controller
 public class LogonController extends AuthenticatedController {
 
 	@Autowired
 	private PermissionService permissionService;
+	
 	@Autowired
 	private I18NService i18nService;
+	
+	@Autowired
+	private SessionScopeRegistry sessionScopeRegistry; 
 	
 	@RequestMapping(value = "logon/reset", method = { RequestMethod.GET, RequestMethod.POST}, produces = "application/json")
 	@ResponseBody
@@ -258,7 +265,19 @@ public class LogonController extends AuthenticatedController {
 			}
 			
 			
-			if (Objects.isNull(httpSession.getAttribute("sessionScope")) && Objects.nonNull(sessionScope)) {
+			if (Objects.isNull(httpSession.getAttribute("sessionScope")) && StringUtils.isNotBlank(sessionScope)) {
+				
+				Optional<SessionScope> scopeOptional = sessionScopeRegistry.get(sessionScope);
+				
+				if (scopeOptional.isEmpty()) {
+					log.error("Illegal session scope {}.", sessionScope);
+					throw new IllegalStateException("Illegal session scope.");
+				}
+				
+				SessionScope scope = scopeOptional.get();
+				
+				log.info("Marking session with scope {} from source {}.", scope.getScope(), scope.getSource());
+				
 				httpSession.setAttribute("sessionScope", sessionScope);
 			}
 
