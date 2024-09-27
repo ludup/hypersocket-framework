@@ -330,12 +330,13 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 					}
 				}
 					
-				String reverseUri = servletRequest.getRequestURI();
-				reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
-				reverseUri = reverseUri.replace(server.getUiPath(), "${uiPath}");
-				reverseUri = reverseUri.replace(server.getBasePath(), "${basePath}");
+				String requestUri = servletRequest.getRequestURI();
 				
-				if(server.isProtectedPage(reverseUri)) {
+				requestUri = requestUri.replace(server.getApiPath(), "${apiPath}");
+				requestUri = requestUri.replace(server.getUiPath(), "${uiPath}");
+				requestUri = requestUri.replace(server.getBasePath(), "${basePath}");
+				
+				if(server.isProtectedPage(requestUri)) {
 					if(!ApplicationContextServiceImpl.getInstance().getBean(SessionUtils.class).hasActiveSession(servletRequest)) {
 						nettyResponse.setStatus(HttpStatus.SC_NOT_FOUND);
 						sendResponse(servletRequest, nettyResponse, false, true);
@@ -345,30 +346,30 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 				
 				Map<Pattern,String> rewrites = server.getUrlRewrites();
 				for(Pattern regex : rewrites.keySet()) {
-					Matcher matcher = regex.matcher(reverseUri);
+					Matcher matcher = regex.matcher(requestUri);
 					if(matcher.matches()) {
 						String uri = processReplacements(rewrites.get(regex));
 						uri = matcher.replaceAll(uri);
 						servletRequest.setAttribute(HypersocketServer.BROWSER_URI, nettyRequest.getUri());
 						servletRequest.parseUri(uri);
-						reverseUri = servletRequest.getRequestURI();
-						reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
-						reverseUri = reverseUri.replace(server.getUiPath(), "${uiPath}");
-						reverseUri = reverseUri.replace(server.getBasePath(), "${basePath}");
+						requestUri = servletRequest.getRequestURI();
+						requestUri = requestUri.replace(server.getApiPath(), "${apiPath}");
+						requestUri = requestUri.replace(server.getUiPath(), "${uiPath}");
+						requestUri = requestUri.replace(server.getBasePath(), "${basePath}");
 						break;
 					}
 				}
 				
 				Map<String,String> aliases = server.getAliases();
-				while(aliases.containsKey(reverseUri)) {
-					String path = processReplacements(aliases.get(reverseUri));
+				while(aliases.containsKey(requestUri)) {
+					String path = processReplacements(aliases.get(requestUri));
 					if(path.startsWith("redirect:")) {
 						String redirPath = path.substring(9);
 						if(StringUtils.isNotBlank(servletRequest.getQueryString())) {
 							redirPath += "?" + servletRequest.getQueryString();
 						}
 						if(log.isDebugEnabled()) {
-							log.debug("Redirecting to " + redirPath + " for " + reverseUri);
+							log.debug("Redirecting to " + redirPath + " for " + requestUri);
 						}
 						nettyResponse.sendRedirect(redirPath, false /* Don't use a permanent redirection as the alias target may change */);
 						ContentHandlerImpl.addDefaultCSPHeaders(nettyResponse);
@@ -376,14 +377,14 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 						return;
 					} else {
 						if(log.isDebugEnabled()) {
-							log.debug("Using alias " + path + " for path " + reverseUri);
+							log.debug("Using alias " + path + " for path " + requestUri);
 						}
 						servletRequest.setAttribute(HypersocketServer.BROWSER_URI, nettyRequest.getUri());
 						servletRequest.parseUri(path);
-						reverseUri = path;
-						reverseUri = reverseUri.replace(server.getApiPath(), "${apiPath}");
-						reverseUri = reverseUri.replace(server.getUiPath(), "${uiPath}");
-						reverseUri = reverseUri.replace(server.getBasePath(), "${basePath}");
+						requestUri = path;
+						requestUri = requestUri.replace(server.getApiPath(), "${apiPath}");
+						requestUri = requestUri.replace(server.getUiPath(), "${uiPath}");
+						requestUri = requestUri.replace(server.getBasePath(), "${basePath}");
 					}
 				}
 				
@@ -467,7 +468,7 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 						}
 						if (handler.handlesRequest(servletRequest)) {
 							if(log.isDebugEnabled()) {
-								log.debug(String.format("%s is processing HTTP request for %s", handler.getName(), reverseUri));
+								log.debug(String.format("%s is processing HTTP request for %s", handler.getName(), requestUri));
 							}
 							server.processDefaultResponse(servletRequest, nettyResponse, handler.getDisableCache());
 							try {

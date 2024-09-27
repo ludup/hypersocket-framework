@@ -186,6 +186,7 @@ public class LogonController extends AuthenticatedController {
 		Session session;
 		
 		boolean requireRedirect = request.getParameterMap().containsKey("rr");
+		String sessionScope = request.getParameter("sessionScope");
 		
 		httpSession.removeAttribute("flash");
 
@@ -254,6 +255,11 @@ public class LogonController extends AuthenticatedController {
 			if(redirectHome!=null) {
 				state.setHomePage(redirectHome);
 				httpSession.removeAttribute("redirectHome");
+			}
+			
+			
+			if (Objects.isNull(httpSession.getAttribute("sessionScope")) && Objects.nonNull(sessionScope)) {
+				httpSession.setAttribute("sessionScope", sessionScope);
 			}
 
 			
