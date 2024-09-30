@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.google.common.net.HttpHeaders;
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationServiceImpl;
 import com.hypersocket.auth.AuthenticationState;
@@ -50,8 +50,6 @@ import com.hypersocket.servlet.request.Request;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
-import com.hypersocket.session.scope.SessionScope;
-import com.hypersocket.session.scope.SessionScopeRegistry;
 
 @Controller
 public class LogonController extends AuthenticatedController {
@@ -62,8 +60,6 @@ public class LogonController extends AuthenticatedController {
 	@Autowired
 	private I18NService i18nService;
 	
-	@Autowired
-	private SessionScopeRegistry sessionScopeRegistry; 
 	
 	@RequestMapping(value = "logon/reset", method = { RequestMethod.GET, RequestMethod.POST}, produces = "application/json")
 	@ResponseBody
@@ -190,10 +186,12 @@ public class LogonController extends AuthenticatedController {
 		String flash = (String) httpSession.getAttribute("flash");
 		String flashStyle = (String) httpSession.getAttribute("flashStyle");
 		
+		
+		
+		
 		Session session;
 		
 		boolean requireRedirect = request.getParameterMap().containsKey("rr");
-		String sessionScope = request.getParameter("sessionScope");
 		
 		httpSession.removeAttribute("flash");
 
@@ -254,7 +252,11 @@ public class LogonController extends AuthenticatedController {
 					}
 //				}
 			}
-
+			
+			if (isWinLoginScheme(scheme) && !isCredentialWizard(request)) {
+				throw new RedirectException("/");
+			}
+			
 			String redirectHome = (String) httpSession.getAttribute("redirectHome");
 			if(redirectHome==null && request.getParameterMap().containsKey("redirectHome")) {
 				redirectHome = request.getParameter("redirectHome");
@@ -263,25 +265,7 @@ public class LogonController extends AuthenticatedController {
 				state.setHomePage(redirectHome);
 				httpSession.removeAttribute("redirectHome");
 			}
-			
-			
-			if (Objects.isNull(httpSession.getAttribute("sessionScope")) && StringUtils.isNotBlank(sessionScope)) {
-				
-				Optional<SessionScope> scopeOptional = sessionScopeRegistry.get(sessionScope);
-				
-				if (scopeOptional.isEmpty()) {
-					log.error("Illegal session scope {}.", sessionScope);
-					throw new IllegalStateException("Illegal session scope.");
-				}
-				
-				SessionScope scope = scopeOptional.get();
-				
-				log.info("Marking session with scope {} from source {}.", scope.getScope(), scope.getSource());
-				
-				httpSession.setAttribute("sessionScope", sessionScope);
-			}
 
-			
 			boolean success = authenticationService.logon(state, request.getParameterMap());
 			
 			if(state.getSession()!=null) {
@@ -524,8 +508,17 @@ public class LogonController extends AuthenticatedController {
 				getCurrentRole(session));
 		
 	}
+	
+	private boolean isCredentialWizard(HttpServletRequest request) {
+		return request.getHeader(HttpHeaders.USER_AGENT).contains("CredentialsWizard/");
+	}
+
+	private boolean isWinLoginScheme(String scheme) {
+		return Objects.equals("winlogin", scheme);
+	}
 
 	private Role getCurrentRole(Session session) {
 		return configurationService.getBooleanValue(session.getCurrentRealm(), "feature.roleSelection") ? session.getCurrentRole() : null;
 	}
+	
 }
