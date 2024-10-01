@@ -510,7 +510,8 @@ public class LogonController extends AuthenticatedController {
 	}
 	
 	private boolean isCredentialWizard(HttpServletRequest request) {
-		return request.getHeader(HttpHeaders.USER_AGENT).contains("CredentialsWizard/");
+		String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
+		return Objects.nonNull(userAgent) && userAgent.contains("CredentialsWizard/");
 	}
 
 	private boolean isWinLoginScheme(String scheme) {
