@@ -43,7 +43,11 @@ public interface ResourceTemplateRepository extends PropertyRepository {
 	
 	Map<String,String> getProperties(SimpleResource resource);
 
-	PropertyTemplate getPropertyTemplate(SimpleResource resource, String resourceKey);
+	default PropertyTemplate getPropertyTemplate(SimpleResource resource, String resourceKey) {
+		return getPropertyTemplate(resource, resourceKey, true);
+	}
+
+	PropertyTemplate getPropertyTemplate(SimpleResource resource, String resourceKey, boolean withResolvers);
 
 	boolean hasPropertyTemplate(SimpleResource resource, String key);
 

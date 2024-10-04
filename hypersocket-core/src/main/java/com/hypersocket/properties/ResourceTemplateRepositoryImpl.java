@@ -373,11 +373,13 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	}
 
 	@Override
-	public PropertyTemplate getPropertyTemplate(SimpleResource resource, String resourceKey) {
+	public final PropertyTemplate getPropertyTemplate(SimpleResource resource, String resourceKey, boolean withResolvers) {
 
-		for (PropertyResolver r : propertyResolvers) {
-			if (r.hasPropertyTemplate(resource, resourceKey)) {
-				return r.getPropertyTemplate(resource, resourceKey);
+		if(withResolvers) {
+			for (PropertyResolver r : propertyResolvers) {
+				if (r.hasPropertyTemplate(resource, resourceKey)) {
+					return r.getPropertyTemplate(resource, resourceKey);
+				}
 			}
 		}
 
