@@ -375,7 +375,8 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 	@Override
 	public final PropertyTemplate getPropertyTemplate(SimpleResource resource, String resourceKey, boolean withResolvers) {
 
-		if(withResolvers) {
+		var value = propertyTemplates.get(resourceKey);
+		if(value == null && withResolvers) {
 			for (PropertyResolver r : propertyResolvers) {
 				if (r.hasPropertyTemplate(resource, resourceKey)) {
 					return r.getPropertyTemplate(resource, resourceKey);
@@ -383,7 +384,7 @@ public abstract class ResourceTemplateRepositoryImpl extends PropertyRepositoryI
 			}
 		}
 
-		return propertyTemplates.get(resourceKey);
+		return value;
 	}
 
 	private void registerPropertyItem(PropertyCategory category, PropertyStore propertyStore, Element pnode, boolean forceReadOnly) {
