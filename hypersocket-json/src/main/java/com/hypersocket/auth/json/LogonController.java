@@ -253,7 +253,7 @@ public class LogonController extends AuthenticatedController {
 //				}
 			}
 			
-			if (isWinLoginScheme(scheme) && !isCredentialWizard(request)) {
+			if (isWinLoginScheme(state) && !isCredentialWizard(request)) {
 				throw new RedirectException("/");
 			}
 			
@@ -514,8 +514,12 @@ public class LogonController extends AuthenticatedController {
 		return Objects.nonNull(userAgent) && userAgent.contains("CredentialsWizard/");
 	}
 
-	private boolean isWinLoginScheme(String scheme) {
-		return Objects.equals("winlogin", scheme);
+	private boolean isWinLoginScheme(AuthenticationState state) {
+		// as per discussion when winlogin is used via browser
+		// the scheme is basic and nothing else is going to use it
+		return Objects.nonNull(state) 
+				&& Objects.nonNull(state.getScheme()) 
+				&& Objects.equals("basic", state.getScheme().getResourceKey());
 	}
 
 	private Role getCurrentRole(Session session) {
