@@ -132,7 +132,7 @@ public class PasswordPolicyResourceController extends ResourceController {
 	@RequestMapping(value = "passwordPolicys/generate/{id}/{length}", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	@AuthenticatedContext(system = true)
+	@AuthenticatedContext
 	public ResourceStatus<String> generatePassword(
 			HttpServletRequest request, HttpServletResponse response, @PathVariable Long id, @PathVariable Integer length)
 			throws AccessDeniedException, UnauthorizedException,
@@ -150,7 +150,7 @@ public class PasswordPolicyResourceController extends ResourceController {
 	@RequestMapping(value = "passwordPolicys/generateNew", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
-	@AuthenticatedContext(currentRealmOrDefault = true)
+	@AuthenticatedContext
 	public ResourceStatus<String> generatePassword(
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
@@ -163,6 +163,7 @@ public class PasswordPolicyResourceController extends ResourceController {
 	@RequestMapping(value = "passwordPolicys/myPolicy", method = RequestMethod.GET, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<PasswordPolicyResource> getCurrentPrincipalPolicy(
 			HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException,
