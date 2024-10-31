@@ -9,7 +9,6 @@ package com.hypersocket.auth;
 
 import java.util.Locale;
 
-import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.session.Session;
@@ -29,12 +28,6 @@ public interface AuthenticatedService extends Elevatable {
 	Locale getCurrentLocale();
 
 	boolean hasSessionContext();
-
-	Role getCurrentRole();
-
-	void setCurrentRole(Role role);
-
-	void setCurrentRole(Session session, Role role);
 
 	boolean hasSystemContext();
 

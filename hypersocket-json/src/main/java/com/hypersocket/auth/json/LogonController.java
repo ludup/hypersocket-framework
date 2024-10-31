@@ -42,7 +42,6 @@ import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.json.input.ParagraphField;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionService;
-import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
@@ -504,8 +503,7 @@ public class LogonController extends AuthenticatedController {
 			HttpServletResponse response) throws IOException, RedirectException {
 		
 		return new LogonSuccessResult(info,
-				configurationService.hasUserLocales(), session, homePage,
-				getCurrentRole(session));
+				configurationService.hasUserLocales(), session, homePage);
 		
 	}
 	
@@ -520,10 +518,6 @@ public class LogonController extends AuthenticatedController {
 		return Objects.nonNull(state) 
 				&& Objects.nonNull(state.getScheme()) 
 				&& Objects.equals("basic", state.getScheme().getResourceKey());
-	}
-
-	private Role getCurrentRole(Session session) {
-		return configurationService.getBooleanValue(session.getCurrentRealm(), "feature.roleSelection") ? session.getCurrentRole() : null;
 	}
 	
 }

@@ -401,10 +401,6 @@ public class Session extends AbstractEntity<String> {
 //		}
 //		return totalSeconds;
 	}
-
-	public Role getCurrentRole() {
-		return ApplicationContextServiceImpl.getInstance().getBean(SessionService.class).getCurrentRole(this);
-	}
 	
 	public String getCsrfToken() {
 		if(csrfToken==null) {

@@ -1,7 +1,6 @@
 package com.hypersocket.auth.json;
 
 import com.hypersocket.json.version.HypersocketVersion;
-import com.hypersocket.permissions.Role;
 import com.hypersocket.session.Session;
 
 public class LogonSuccessResult extends AuthenticationSuccessResult {
@@ -13,8 +12,7 @@ public class LogonSuccessResult extends AuthenticationSuccessResult {
 		super();
 	}
 
-	public LogonSuccessResult(String bannerMsg, boolean showLocales, Session session, String homePage,
-			Role currentRole) {
-		super(bannerMsg, showLocales, session, homePage, currentRole);
+	public LogonSuccessResult(String bannerMsg, boolean showLocales, Session session, String homePage) {
+		super(bannerMsg, showLocales, session, homePage);
 	}
 }
