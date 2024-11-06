@@ -48,18 +48,15 @@ import com.hypersocket.geo.GeoIPLocation;
 import com.hypersocket.geo.GeoIPService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionCategory;
-import com.hypersocket.permissions.Role;
 import com.hypersocket.permissions.SystemPermission;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.realm.RealmService;
-import com.hypersocket.realm.RolePermission;
 import com.hypersocket.realm.UserPermission;
 import com.hypersocket.realm.events.RealmEvent;
 import com.hypersocket.realm.events.UserEvent;
 import com.hypersocket.realm.events.UserImpersonatedEvent;
 import com.hypersocket.resource.Resource;
-import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.JobData;
 import com.hypersocket.session.events.ConcurrentSessionEvent;
@@ -266,7 +263,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					session = store.createSession(remoteAddress, principal, completedScheme, info.getBrowser().getName(),
 							info.getBrowser().getVersion(), info.getOs().getFamily(), info.getName(),
 							parameters, configurationService.getIntValue(realm, SESSION_TIMEOUT), realm);
-					setCurrentRole(session, permissionService.getPersonalRole(principal));
 				}
 			} catch (IOException e) {
 				session = store.createSession(remoteAddress, principal, completedScheme, 
@@ -434,7 +430,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setInheritPermissions(inheritPermissions);
 
 		session.setCurrentRealm(principal.getRealm());
-		setCurrentRole(permissionService.getPersonalRole(principal));
 		updateSession(session);
 		
 		eventService.publishEvent(new UserImpersonatedEvent(this, session, 
@@ -443,27 +438,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				principal, 
 				principal.getName())
 		);
-	}
-
-	@Override
-	public Role switchRole(Session session, Long id) throws AccessDeniedException, ResourceNotFoundException {
-		try(var c = tryWithElevatedPermissions(RolePermission.READ)) {
-			Role role = permissionService.getRoleById(id, getCurrentRealm());
-			switchRole(session, role);
-			return role;
-		} catch(IOException ioe){
-			throw new IllegalStateException(ioe);
-		}
-	}
-
-	@Override
-	public void switchRole(Session session, Role role) throws AccessDeniedException {
-		if (log.isInfoEnabled()) {
-			log.info(String.format("Switching %s role from %s to %s", session.getCurrentPrincipal().getPrincipalName(),
-					session.getCurrentRole().getName(), role.getName()));
-		}
-
-		setCurrentRole(role);
 	}
 
 	@Override
@@ -709,7 +683,6 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		session.setImpersonatedPrincipal(null);
 		session.setInheritPermissions(false);
 
-		setCurrentRole(permissionService.getPersonalRole(session.getCurrentPrincipal()));
 		updateSession(session);
 	}
 

@@ -1,0 +1,1 @@
+create index remote_id_idx on remote_groups(remote_id);

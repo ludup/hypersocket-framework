@@ -16,11 +16,9 @@ import java.util.Set;
 import com.hypersocket.auth.AuthenticationScheme;
 import com.hypersocket.auth.PasswordEnabledAuthenticatedService;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.Resource;
-import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.tables.ColumnSort;
 
 public interface SessionService extends PasswordEnabledAuthenticatedService {
@@ -109,12 +107,6 @@ public interface SessionService extends PasswordEnabledAuthenticatedService {
 	Long getResourceCount(Realm currentRealm, String searchPattern) throws AccessDeniedException;
 
 	Map<String, Long> getPrincipalUsage(Date from, Date now) throws AccessDeniedException;
-
-	Role switchRole(Session session, Long id) throws AccessDeniedException, ResourceNotFoundException;
-
-	void switchRole(Session currentSession, Role role) throws AccessDeniedException;
-
-	Role getCurrentRole(Session session);
 	
 	void updateSession(Session session);
 

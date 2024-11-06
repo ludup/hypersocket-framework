@@ -196,17 +196,12 @@ public class UserVariableReplacementServiceImpl implements UserVariableReplaceme
 			}
 		}
 		
-		if(permissionService.getRolePropertyNames().contains(name)) {
-			return permissionService.getRoleProperty(permissionService.getCurrentRole(), name);
-		} else {
-			RealmProvider provider = realmService.getProviderForRealm(source
+		RealmProvider provider = realmService.getProviderForRealm(source
 					.getRealm());
-			if(provider.hasPropertyValueSet(source, name))
-				return provider.getUserPropertyValue(source, name);
-			else
-				return null;
-		
-		}
+		if(provider.hasPropertyValueSet(source, name))
+			return provider.getUserPropertyValue(source, name);
+		else
+			return null;
 
 	}
 

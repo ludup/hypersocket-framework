@@ -27,7 +27,6 @@ import com.hypersocket.json.AuthenticationResult;
 import com.hypersocket.json.RequestStatus;
 import com.hypersocket.json.ResourceStatus;
 import com.hypersocket.permissions.AccessDeniedException;
-import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceNotFoundException;
@@ -93,18 +92,6 @@ public class SessionController extends ResourceController {
 		return getSuccessfulResult(session, "info=" + I18N.getResource(sessionUtils.getLocale(request),
 				AuthenticationService.RESOURCE_BUNDLE, "info.inRealm", realm.getName()), "");
 	}
-	
-	@AuthenticationRequired
-	@RequestMapping(value = "session/switchRole/{id}", method = RequestMethod.GET, produces = { "application/json" })
-	@ResponseBody
-	@ResponseStatus(value = HttpStatus.OK)
-	@AuthenticatedContext
-	public ResourceStatus<Role> switchRole(HttpServletRequest request, HttpServletResponse response,
-			@PathVariable("id") Long id) throws UnauthorizedException, AccessDeniedException, ResourceNotFoundException,
-					SessionTimeoutException {
-
-		return new ResourceStatus<Role>(sessionService.switchRole(getCurrentSession(), id));
-	}
 
 	@RequestMapping(value = "session/switchLanguage/{lang}", method = RequestMethod.GET, produces = {
 			"application/json" })
@@ -118,15 +105,11 @@ public class SessionController extends ResourceController {
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session, String info, String homePage) {
-		return new AuthenticationSuccessResult(info, configurationService.hasUserLocales(), session, homePage, getCurrentRole(session));
+		return new AuthenticationSuccessResult(info, configurationService.hasUserLocales(), session, homePage);
 	}
 
 	private AuthenticationResult getSuccessfulResult(Session session) {
-		return new AuthenticationSuccessResult("", configurationService.hasUserLocales(), session, "", getCurrentRole(session));
-	}
-
-	private Role getCurrentRole(Session session) {
-		return configurationService.getBooleanValue(session.getCurrentRealm(), "feature.roleSelection") ? session.getCurrentRole() : null;
+		return new AuthenticationSuccessResult("", configurationService.hasUserLocales(), session, "");
 	}
 	
 	@RequestMapping(value = "session/flash/{type}/{msg}", method = RequestMethod.GET, produces = { "application/json" })
@@ -184,7 +167,7 @@ public class SessionController extends ResourceController {
 
 		return new RequestStatus(true,
 				I18N.getResource(sessionUtils.getLocale(request), SessionServiceImpl.RESOURCE_BUNDLE,
-						"info.sessionClosed", logoffSession.getCurrentPrincipal().getName()));
+						"info.sessionClosed", logoffSession.getCurrentPrincipalName()));
 	}
 
 	@AuthenticationRequired
@@ -200,7 +183,7 @@ public class SessionController extends ResourceController {
 		sessionService.revertPrincipal(session);
 
 		request.getSession().setAttribute("flash", "success=" + I18N.getResource(sessionUtils.getLocale(request),
-				SessionService.RESOURCE_BUNDLE, "info.revertedPrincipal", session.getCurrentPrincipal().getName()));
+				SessionService.RESOURCE_BUNDLE, "info.revertedPrincipal", session.getCurrentPrincipalName()));
 
 		return new RequestStatus();
 	}
