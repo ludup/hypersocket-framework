@@ -193,6 +193,31 @@ public class Session extends AbstractEntity<String> {
 		this.principal = principal;
 	}
 
+	public String getCurrentPrincipalName() {
+		/* TODO these are temporary versions of this call. A later 
+		 * version will be removing the principal object entirely and
+		 * storing these names as plain text
+		 */
+		return getCurrentPrincipal().getPrincipalName();
+	}
+
+	public String getInheritedPrincipalName() {
+		/* TODO these are temporary versions of this call. A later 
+		 * version will be removing the principal object entirely and
+		 * storing these names as plain text
+		 */
+		return getInheritedPrincipal().getPrincipalName();
+	}
+
+	public String getImpersonatedPrincipalName() {
+		/* TODO these are temporary versions of this call. A later 
+		 * version will be removing the principal object entirely and
+		 * storing these names as plain text
+		 */
+		var p = getImpersonatedPrincipal();
+		return p == null ? null : p.getPrincipalName();
+	}
+
 	public Principal getCurrentPrincipal() {
 		if (!isImpersonating()) {
 			return getPrincipal();
