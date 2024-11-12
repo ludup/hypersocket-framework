@@ -26,7 +26,7 @@
 	    <property resourceKey="security.enableCSRFProtection" inputType="switch" defaultValue="true" weight="0"/>
 	    <property resourceKey="security.xFrameOptionsEnabled" inputType="switch" defaultValue="true" weight="100"/>
 	    <property resourceKey="security.strictTransportSecurity" inputType="switch" defaultValue="true" weight="200"/>
-	    <property resourceKey="security.xFrameOptionsValue" inputType="select" defaultValue="SAMEORIGIN" options="DENY,SAMEORIGIN" weight="300"/>
+	    <property resourceKey="security.xFrameOptionsValue" inputType="select" defaultValue="DENY" options="DENY,SAMEORIGIN" weight="300"/>
 	    <property resourceKey="security.sessionMaxAge" inputType="integer" defaultValue="365" weight="400"/>
 	    <property resourceKey="security.enableXForwardedForDomainNameResolution" inputType="switch" defaultValue="false" weight="500"/>
 		<property resourceKey="security.minGeneratedUid" inputType="text" minValue="0" maxValue="2147483647"

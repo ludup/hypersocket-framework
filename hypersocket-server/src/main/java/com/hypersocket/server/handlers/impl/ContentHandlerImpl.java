@@ -42,6 +42,7 @@ import org.springframework.mail.javamail.ConfigurableMimeFileTypeMap;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.cache.CacheUtils;
+import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.json.ControllerInterceptor;
 import com.hypersocket.server.handlers.HttpRequestHandler;
 import com.hypersocket.session.Session;
@@ -319,11 +320,26 @@ public abstract class ContentHandlerImpl extends HttpRequestHandler implements C
 		for(var filter : filters) {
 			filter.filter(defaultSources, styleSources, scriptSources, imageSources, frameSources);
 		}
-
-		response.addHeader("Content-Security-Policy", String.format("default-src %s;  style-src %s; "
+		
+		
+		String headerValue = String.format("default-src %s;  style-src %s; "
 				+ "script-src %s; "
 				+ "img-src %s ; frame-src %s", String.join(" ", defaultSources), String.join(" ", styleSources)
-				, String.join(" ", scriptSources), String.join(" ", imageSources), String.join(" ", frameSources)));
+				, String.join(" ", scriptSources), String.join(" ", imageSources), String.join(" ", frameSources));
+		
+		SystemConfigurationService systemConfigurationService = ApplicationContextServiceImpl
+				.getInstance().getBean(SystemConfigurationService.class);
+		
+		boolean framOptionEnabled = systemConfigurationService.getBooleanValue("security.xFrameOptionsEnabled");
+		if (framOptionEnabled) {
+			String xFrameOptions = systemConfigurationService.getValue("security.xFrameOptionsValue");
+			
+			if ("DENY".equals(xFrameOptions)) {
+				headerValue += String.format("; frame-ancestors %s;", "'none'");
+			}
+		}
+		
+		response.addHeader("Content-Security-Policy", headerValue);
 		
 	}
 	
