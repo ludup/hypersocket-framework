@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -44,6 +45,24 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 
 	private String resourceXmlPath;
 	private PropertyStore defaultStore;
+	
+	static class WeightedKeyValue implements Comparable<WeightedKeyValue>{
+		private final String resourceKey;
+		private final String value;
+		private final int weight;
+		
+		public WeightedKeyValue(String resourceKey, String value, int weight) {
+			this.resourceKey = resourceKey;
+			this.value = value;
+			this.weight = weight;
+		}
+
+		@Override
+		public int compareTo(WeightedKeyValue other) {
+			return Integer.compare(weight, other.weight);
+		}
+		
+	}
 
 	public PropertyTemplateRepositoryAbstractImpl(PropertyStore defaultStore) {
 		this.defaultStore = defaultStore;
@@ -449,10 +468,27 @@ public class PropertyTemplateRepositoryAbstractImpl implements
 	@Override
 	public void setValues(Map<String, String> values) {
 
-		for (String name : values.keySet()) {
-			setValue(name, values.get(name));
-		}
-
+		values
+			.entrySet()
+			.stream()
+			.map(entry -> {
+				
+				var resourceKey = entry.getKey();
+				var template = getPropertyTemplate(resourceKey);
+				
+				if (template == null) {
+					throw new IllegalStateException(resourceKey
+							+ " is not a registered configuration item");
+				}
+				
+				return new WeightedKeyValue(entry.getKey(), entry.getValue(), template.getWeight());
+			})
+			.sorted()
+			.collect(Collectors.toList())
+			.forEach(v -> {
+				setValue(v.resourceKey, v.value);
+			});
+		
 	}
 
 	@Override
