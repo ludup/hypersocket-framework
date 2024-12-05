@@ -141,6 +141,7 @@ public class FileStoreController extends ResourceController {
 	@RequestMapping(value = "files/image", method = RequestMethod.POST, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<FileUpload> createImage(HttpServletRequest request,
 			HttpServletResponse response,
 			@RequestPart(value = "file") MultipartFile file)
@@ -265,6 +266,7 @@ public class FileStoreController extends ResourceController {
 	@RequestMapping(value = "files/image/{uuid}", method = RequestMethod.DELETE, produces = { "application/json" })
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
 	public ResourceStatus<FileUpload> deleteImage(
 			final HttpServletRequest request, HttpServletResponse response,
 			@PathVariable String uuid) throws AccessDeniedException,
