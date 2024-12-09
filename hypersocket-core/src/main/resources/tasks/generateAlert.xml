@@ -2,12 +2,12 @@
 <propertyTemplates context="generateAlert">
 	<propertyCategory resourceKey="category.thresholds"
 		resourceBundle="TriggerResourceService" weight="1000">
-		<property resourceKey="alert.threshold" inputType="slider"
+		<property resourceKey="alert.threshold" inputType="spinner"
 			weight="0" defaultValue="5" min="1" max="100" step="1" labelResourceKey="alert.threshold.label" />
-		<property resourceKey="alert.timeout" inputType="slider" 
-			min="1" max="1440" defaultValue="10" step="1" weight="100" labelResourceKey="alert.timeout.label"/>
-		<property resourceKey="alert.reset" inputType="slider" 
-			min="0" max="1440" defaultValue="60" step="1" weight="200" labelResourceKey="alert.reset.label"/>
+		<property resourceKey="alert.timeout" inputType="spinner"
+			min="1" max="1440" defaultValue="10" step="1" weight="100" labelResourceKey="alert.timeout.label" />
+		<property resourceKey="alert.reset" inputType="spinner"
+			min="0" max="1440" defaultValue="60" step="1" weight="200" labelResourceKey="alert.reset.label" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.key"
 		resourceBundle="TriggerResourceService" weight="2000">
