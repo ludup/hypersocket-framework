@@ -252,7 +252,7 @@ public class LogonController extends AuthenticatedController {
 //				}
 			}
 			
-			if (isWinLoginScheme(state) && !isCredentialWizard(request)) {
+			if (isBasicScheme(state) && !isEmbeddedBrowserApp(request)) {
 				throw new RedirectException("/");
 			}
 			
@@ -507,12 +507,16 @@ public class LogonController extends AuthenticatedController {
 		
 	}
 	
-	private boolean isCredentialWizard(HttpServletRequest request) {
+	private boolean isEmbeddedBrowserApp(HttpServletRequest request) {
 		String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
-		return Objects.nonNull(userAgent) && userAgent.contains("CredentialsWizard/");
+		return Objects.nonNull(userAgent) && ( 
+			userAgent.contains("CredentialsWizard/") || 
+			userAgent.contains("JADVPNClient/") ||
+			userAgent.contains("LogonBoxVPNClient/")
+		);
 	}
 
-	private boolean isWinLoginScheme(AuthenticationState state) {
+	private boolean isBasicScheme(AuthenticationState state) {
 		// as per discussion when winlogin is used via browser
 		// the scheme is basic and nothing else is going to use it
 		return Objects.nonNull(state) 
