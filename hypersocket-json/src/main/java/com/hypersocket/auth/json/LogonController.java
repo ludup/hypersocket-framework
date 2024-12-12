@@ -512,6 +512,7 @@ public class LogonController extends AuthenticatedController {
 		return Objects.nonNull(userAgent) && ( 
 			userAgent.contains("CredentialsWizard/") || 
 			userAgent.contains("JADVPNClient/") ||
+			userAgent.contains("Java-http-client/") ||
 			userAgent.contains("LogonBoxVPNClient/")
 		);
 	}
