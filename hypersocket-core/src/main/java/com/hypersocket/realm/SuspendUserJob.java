@@ -41,17 +41,19 @@ public class SuspendUserJob extends PermissionsAwareJob {
 						"ResumeUserJob job requires name parameter!");
 			}
 			
-			principalSuspensionServiceImpl.clearExistingJob(name, getCurrentRealm());
-
 			if (log.isInfoEnabled()) {
 				log.info("Suspending user " + name.toString());
 			}
 			
 			Principal principal = realmService.getPrincipalByName(
 					getCurrentRealm(), name, PrincipalType.USER);
-
+			
 			if (principal != null) {
-				principalSuspensionServiceImpl.actOnSuspensionNow(principal, name, realm, new Date(), duration);
+				
+				principalSuspensionServiceImpl.clearExistingJob(principal, getCurrentRealm());
+
+			
+				principalSuspensionServiceImpl.actOnSuspensionNow(principal, realm, new Date(), duration);
 			}
 		} catch (JobExecutionException e) {
 			log.error("Job failed", e);

@@ -95,7 +95,7 @@ public class UnauthorizedAccessServiceImpl implements UnauthorizedAccessService 
 	private void processSuspension(Realm realm, String principalName, String scheme, String module) {
 		if(StringUtils.isNotBlank(principalName)) {
 			
-			StringBuffer alertKey = new StringBuffer();
+			var alertKey = new StringBuilder();
 			alertKey.append(realm.getName());
 			alertKey.append("|");
 			alertKey.append(principalName);
@@ -123,7 +123,7 @@ public class UnauthorizedAccessServiceImpl implements UnauthorizedAccessService 
 							}
 							
 							try {
-								suspensionService.createPrincipalSuspension(principal, principalName, realm, new Date(), 
+								suspensionService.createPrincipalSuspension(principal, realm, new Date(), 
 										period, 
 										PrincipalSuspensionType.MANUAL);
 								

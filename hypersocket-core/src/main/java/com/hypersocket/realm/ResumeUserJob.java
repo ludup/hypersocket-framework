@@ -52,7 +52,7 @@ public class ResumeUserJob extends PermissionsAwareJob {
 				log.info("Notifying resume for job with id " + scheduleId);
 			}
 			
-			suspensionService.notifyResume(scheduleId, name, true);
+			suspensionService.notifyResume(principal, getCurrentRealm(), true);
 
 			if (log.isInfoEnabled()) {
 				log.info("Resumed user " + name.toString());

@@ -89,7 +89,7 @@ public class ResumeUserTask extends AbstractTaskProvider {
 			suspensionService.deletePrincipalSuspension(principal,
 					PrincipalSuspensionType.MANUAL);
 			
-			suspensionService.notifyResume(principal.getId().toString(),principal.getPrincipalName(), false);
+			suspensionService.notifyResume(principal, currentRealm, false);
 
 			return new ResumeUserResult(this, currentRealm, task,
 					name);

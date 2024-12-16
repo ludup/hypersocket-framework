@@ -75,7 +75,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 
 	
 	@Override
-	public PrincipalSuspension createPrincipalSuspension(Principal principal, String name, Realm realm,
+	public PrincipalSuspension createPrincipalSuspension(Principal principal, Realm realm,
 			Date startDate, Long duration, PrincipalSuspensionType type) throws ResourceException {
 		var startMin = Calendar.getInstance();
 		startMin.set(Calendar.SECOND, 0);
@@ -86,17 +86,19 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 
 		try {
 			return transactionService.doInTransaction(new TransactionCallback<PrincipalSuspension>() {
+				
+				String principalName = principal.getPrincipalName();
 
 				@Override
 				public PrincipalSuspension doInTransaction(TransactionStatus status) {
-					Collection<PrincipalSuspension> principalSuspensions = repository.getSuspensions(name, realm, type);
+					Collection<PrincipalSuspension> principalSuspensions = repository.getSuspensions(principalName, realm, type);
 					
 					PrincipalSuspension principalSuspension = null;
 					
 					if(principalSuspensions.isEmpty()) {
 						principalSuspension = new PrincipalSuspension();
 						principalSuspension.setPrincipal(principal);
-						principalSuspension.setName(name);
+						principalSuspension.setName(principalName);
 						principalSuspension.setRealm(realm);
 						
 					} else {
@@ -107,16 +109,16 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 					principalSuspension.setDuration(duration);
 					principalSuspension.setSuspensionType(type);
 				
-					clearExistingJob(name, realm);
+					clearExistingJob(principal, realm);
 
 					repository.saveSuspension(principalSuspension);
 					
 					Date now = new Date();
 					
 					if (startDate.after(now)) {
-						actOnSuspensionInFuture(name, realm, startDate, duration);
+						actOnSuspensionInFuture(principal, realm, startDate, duration);
 					} else {
-						actOnSuspensionNow(principal, name, realm, startDate, duration);
+						actOnSuspensionNow(principal, realm, startDate, duration);
 					}
 
 					return principalSuspension;
@@ -154,21 +156,23 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 		}
 	}
 
-	public void notifyResume(String scheduleId, String name, boolean onSchedule) {
+	public void notifyResume(Principal principal, Realm realm, boolean onSchedule) {
 
-		if (!onSchedule && scheduleId != null) {
+		var scheduleId = createScheduleId(principal, realm);
+		
+		if (!onSchedule) {
 			try {
 				schedulerService.cancelNow(scheduleId);
 			} catch (SchedulerException e) {
-				log.error("Failed to cancel resume job for user " + name.toString(), e);
+				log.error("Failed to cancel resume job for user " + principal.getPrincipalName(), e);
 			}
 		}
 
 	}
 
 	@Override
-	public PrincipalSuspension getSuspension(String username, Realm realm, PrincipalSuspensionType type) {
-		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(username, realm, type);
+	public PrincipalSuspension getSuspension(Principal principal, Realm realm, PrincipalSuspensionType type) {
+		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(principal.getPrincipalName(), realm, type);
 		if(suspensions.isEmpty()) {
 			return null;
 		}
@@ -176,8 +180,8 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 	}
 	
 	@Override
-	public Collection<PrincipalSuspension> getSuspensions(String username, Realm realm) {
-		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(username, realm);
+	public Collection<PrincipalSuspension> getSuspensions(Principal principal, Realm realm) {
+		Collection<PrincipalSuspension> suspensions = repository.getSuspensions(principal.getPrincipalName(), realm);
 		if(suspensions.isEmpty()) {
 			return null;
 		}
@@ -201,7 +205,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 		}
 	}
 	
-	private void scheduleResume(String username, Realm realm, Date startDate, long duration) {
+	private void scheduleResume(Principal principal, Realm realm, Date startDate, long duration) {
 		
 		try {
 			var c = Calendar.getInstance();
@@ -214,10 +218,12 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 				}
 				return;
 			}
-			var data = new PermissionsAwareJobData(realm, "resumeUserJob", username);
-			data.put("name", username);
+			var principalName = principal.getPrincipalName();
+			
+			var data = new PermissionsAwareJobData(realm, "resumeUserJob", principalName);
+			data.put("name", principalName);
 
-			var scheduleId = username + "/" + realm.getId();
+			var scheduleId = createScheduleId(principal, realm);
 			
 			try {
 				schedulerService.scheduleAt(ResumeUserJob.class, scheduleId, data, c.getTime());
@@ -231,7 +237,7 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 
 	}
 	
-	private void scheduleSuspend(String username, Realm realm, Date startDate, long duration) {
+	private void scheduleSuspend(Principal principal, Realm realm, Date startDate, long duration) {
 		
 		try {
 			var c = Calendar.getInstance();
@@ -243,11 +249,14 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 				}
 				return;
 			}
-			var data = new PermissionsAwareJobData(realm, "suspendUserJob", username);
-			data.put("name", username);
+			
+			var principalName = principal.getPrincipalName();
+			
+			var data = new PermissionsAwareJobData(realm, "suspendUserJob", principalName);
+			data.put("name", principalName);
 			data.put("duration", duration);
 
-			String scheduleId = username + "/" + realm.getId();
+			String scheduleId = createScheduleId(principal, realm);
 			
 			try {
 				schedulerService.scheduleAt(SuspendUserJob.class, scheduleId, data, c.getTime());
@@ -261,49 +270,57 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 
 	}
 	
-	void actOnSuspensionNow(Principal principal, String name, Realm realm, Date startDate, Long duration) {
+	void actOnSuspensionNow(Principal principal, Realm realm, Date startDate, Long duration) {
 		updateSuspension(principal, true);
 
 		if (duration > 0) {
 
 			if (log.isInfoEnabled()) {
-				log.info("Scheduling resume account for account " + name
+				log.info("Scheduling resume account for account " + principal.getPrincipalName()
 						+ " in " + duration + " minutes");
 			}
 
-			scheduleResume(name, realm, startDate, duration);
+			scheduleResume(principal, realm, startDate, duration);
 			
 		}
 	}
 
-	void actOnSuspensionInFuture(String name, Realm realm, Date startDate, Long duration) {
+	void actOnSuspensionInFuture(Principal principal, Realm realm, Date startDate, Long duration) {
 		if (log.isInfoEnabled()) {
-			log.info("Scheduling suspend account for account " + name
+			log.info("Scheduling suspend account for account " + principal.getPrincipalName()
 					+ " at " + startDate);
 		}
 		
-		scheduleSuspend(name, realm, startDate, duration);
+		scheduleSuspend(principal, realm, startDate, duration);
 	}
 
-	void clearExistingJob(String name, Realm realm) {
-		String scheduleId = name + "/" + realm.getId();
+	void clearExistingJob(Principal principal, Realm realm) {
+		String scheduleId = createScheduleId(principal, realm);
 		
 		try {
 			if (schedulerService.jobExists(scheduleId)) {
 				if (log.isInfoEnabled()) {
-					log.info(String.format("%s with scheduleId %s is already suspended. Rescheduling to new parameters",scheduleId,name));
+					log.info(String.format("%s with scheduleId %s is already suspended. Rescheduling to new parameters",scheduleId, principal.getPrincipalName()));
 				}
 
 				if (log.isInfoEnabled()) {
-					log.info(String.format("Cancelling existing schedule for %s with scheduleId %s",name,scheduleId));
+					log.info(String.format("Cancelling existing schedule for %s with scheduleId %s",principal.getPrincipalName(),scheduleId));
 				}
 				
 				schedulerService.cancelNow(scheduleId);
 
 			}
 		} catch (Exception e) {
-			log.error("Failed to cancel suspend schedule for " + name, e);
+			log.error("Failed to cancel suspend schedule for " + principal.getPrincipalName(), e);
 		}
+	}
+	
+	public static String createScheduleId(Principal principal, Realm realm) {
+		
+		Objects.requireNonNull(principal);
+		Objects.requireNonNull(realm);
+		
+		return String.format("%s/%s", principal.getPrincipalName(), realm.getId());
 	}
 
 	class PrincipalSuspendedFilter extends DefaultTableFilter {

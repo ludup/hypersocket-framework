@@ -113,7 +113,7 @@ public class SuspendUserTask extends AbstractTaskProvider {
 			}
 
 			Principal principal = realmService.getUniquePrincipal(name, PrincipalType.USER);
-			suspensionService.createPrincipalSuspension(principal, name, currentRealm, startDate, duration,
+			suspensionService.createPrincipalSuspension(principal, currentRealm, startDate, duration,
 					PrincipalSuspensionType.MANUAL);
 
 			if (log.isInfoEnabled()) {
