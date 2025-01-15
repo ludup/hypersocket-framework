@@ -179,6 +179,12 @@ public class FaviconFetcher {
 				continue;
 			}
 			
+			// just in case logic initially settled on 'shortcut icon' and on subsequent parse we found 'icon'
+			if (normalIcon != null && !normalIcon.isModernType() && icon.isModernType() && !icon.isApple()) {
+				normalIcon = icon;
+				continue;
+			}
+			
 			if (normalIcon != null && appleToucIcon != null) {
 				break;
 			}
@@ -203,12 +209,6 @@ public class FaviconFetcher {
 	public FavIcon favicon(String hostAddress, Integer size) {
 		try {
 			
-			FavIcon defaultfavicon = exceptionSafeGetDefaultFavicon(hostAddress);
-			
-			if (defaultfavicon.iconStream.isPresent()) {
-				return defaultfavicon;
-			}
-			
 			String url = String.format("https://%s", hostAddress);
 			
 			log.info("Fetching favicon for {}", url);
@@ -228,14 +228,14 @@ public class FaviconFetcher {
 			.sorted() // sort in descending order
 			.collect(Collectors.toList());
 			
-			Optional<FavIconInfo> finalIcon = size != null 
+			Optional<FavIconInfo> favIcon = size != null 
 					? filterOnSize.apply(size, favIcons) : 
 						filterForBestResolution.apply(favIcons);
 			
-			if (finalIcon.isPresent()) {
-				log.info("Fetching fav icon from {}", finalIcon.get());
+			if (favIcon.isPresent()) {
+				log.info("Fetching fav icon from {}", favIcon.get());
 				
-				String target = finalIcon.get().href;
+				String target = favIcon.get().href;
 				
 				if (!target.startsWith("https")) {
 					target = url + target;
@@ -244,19 +244,6 @@ public class FaviconFetcher {
 			}
 			
 			return new FavIcon(Optional.empty(), Optional.empty());
-			
-		} catch (IOException io) {
-			throw new IllegalStateException(io);
-		}
-	}
-	
-	public FavIcon getDefaultFavicon(String hostAddress) {
-		try {
-			String faviconUrl = String.format("https://%s/favicon.ico", hostAddress);
-			
-			log.info("Fetching default favicon for {}", faviconUrl);
-			
-			return checkAndReturnIconBytes(faviconUrl);
 			
 		} catch (IOException io) {
 			throw new IllegalStateException(io);
@@ -300,16 +287,6 @@ public class FaviconFetcher {
 			}
 		}
 
-	}
-	
-	private FavIcon exceptionSafeGetDefaultFavicon(String hostAddress) {
-		try {
-			return getDefaultFavicon(hostAddress);
-		} catch (Exception e) {
-			log.error("Problem in fetching favicon for host {}", hostAddress, e);
-			return new FavIcon(Optional.empty(), Optional.empty());
-		}
-		
 	}
 	
 
@@ -380,6 +357,22 @@ public class FaviconFetcher {
 	private boolean isSvgFile(byte[] file) {
 		try {
 			Document document = Jsoup.parse(new String(file));
+			
+			Element body = document.body();
+			
+            if (body == null || body.children().isEmpty()) {
+                log.debug("Document body is empty, likely not an SVG.");
+                return false;
+            }
+            
+            Element rootElement = body.child(0); // First child of <body>
+            
+            // Check if the root element is <svg>
+            if (!"svg".equals(rootElement.nodeName())) {
+                log.debug("Root element inside <body> is not <svg>, likely not an SVG file.");
+                return false;
+            }
+            
 			
 			Elements allElements = document.body().getAllElements();
 			
@@ -479,6 +472,10 @@ public class FaviconFetcher {
 		
 		boolean isApple() {
 			return type != null && type.contains("apple-touch-icon");
+		}
+		
+		boolean isModernType() { // older 'shortcut icon' modern 'icon'
+			return "icon".equals(type);
 		}
 		
 		boolean isSVG() {
