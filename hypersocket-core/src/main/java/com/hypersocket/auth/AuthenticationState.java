@@ -25,6 +25,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -35,6 +37,9 @@ import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 
 public class AuthenticationState implements Serializable {
+
+	private static transient Logger log = LoggerFactory
+			.getLogger(AuthenticationState.class);
 
 	private static final long serialVersionUID = -6246407082032014021L;
 	
@@ -361,6 +366,8 @@ public class AuthenticationState implements Serializable {
 	}
 
 	public void fakeCredentials(Principal fakePrincipal) {
+
+		log.info("Creating fake principal {}. Last error mesg was {} which is of type {} and is key = {}", fakePrincipal, lastErrorMsg == null ? "Unknown" : lastErrorMsg, lastErrorType == null ? "Unknown" : lastErrorType, lastErrorIsResourceKey);
 		
 		Objects.requireNonNull(fakePrincipal, "Fake principal cannot be null.");
 		
