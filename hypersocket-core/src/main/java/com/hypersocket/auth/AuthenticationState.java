@@ -123,6 +123,10 @@ public class AuthenticationState implements Serializable {
 					"Current index is greater than the number of modules");
 		return modules.get(currentIndex);
 	}
+	
+	public boolean isInPostAuthenticationStep() {
+		return currentIndex >= modules.size();
+	}
 
 	public void clean() {
 		currentIndex = 0;

@@ -64,4 +64,6 @@ public @interface AuthenticatedContext  {
 	 * @return use current principal
 	 */
 	boolean principal() default false;
+	
+	boolean authStateRequired() default false;
 }

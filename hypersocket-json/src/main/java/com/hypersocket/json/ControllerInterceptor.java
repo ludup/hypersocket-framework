@@ -23,10 +23,12 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.hypersocket.auth.AuthenticationService;
 import com.hypersocket.auth.AuthenticationState;
+import com.hypersocket.auth.FakePrincipal;
 import com.hypersocket.auth.json.AuthenticatedController;
 import com.hypersocket.auth.json.AuthenticationRequired;
 import com.hypersocket.auth.json.AuthenticationRequiredButDontTouchSession;
 import com.hypersocket.auth.json.Cacheable;
+import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.SystemConfigurationService;
 import com.hypersocket.context.AuthenticatedContext;
 import com.hypersocket.realm.RealmService;
@@ -94,6 +96,8 @@ public class ControllerInterceptor implements HandlerInterceptor {
 			if (acAnnotation != null) {
 				checkMethod(method);
 
+				var state = AuthenticationState.getCurrentState(request);
+				
 				var contrl = (AuthenticatedController) method.getBean();
 				if (acAnnotation.preferActive() && sessionUtils.hasActiveSession(request)) {
 					if (acAnnotation.system())
@@ -102,7 +106,6 @@ public class ControllerInterceptor implements HandlerInterceptor {
 						contrl.setCurrentSession(sessionUtils.getActiveSession(request),
 								sessionUtils.getLocale(request));
 				} else if(acAnnotation.principal()) { 
-					AuthenticationState state = AuthenticationState.getCurrentState(request);
 					contrl.setupAuthenticatedContext(state.getSession(), sessionUtils.getLocale(request));
 				} else if(acAnnotation.anonymous()) {
 					contrl.setupAnonymousContext(request.getRemoteAddr(), request.getServerName(),
@@ -113,6 +116,12 @@ public class ControllerInterceptor implements HandlerInterceptor {
 					contrl.setupSystemContext();
 				} else if (acAnnotation.realmHost()) {
 					contrl.setupSystemContext(realmService.getRealmByHost(request.getServerName()));
+				} else if (state != null && acAnnotation.authStateRequired() && state.isInPostAuthenticationStep()) {
+					var principal = state.getPrincipal();
+					if (principal == null || principal instanceof FakePrincipal) {
+						throw new UnauthorizedException();
+					}
+					contrl.setupSystemContext(principal);
 				} else {
 					var session = sessionUtils.getSession(request);
 					contrl.setCurrentSession(session , session.getCurrentRealm(),
