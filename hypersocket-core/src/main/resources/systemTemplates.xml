@@ -38,7 +38,7 @@
 	</propertyCategory>
 	<propertyCategory resourceKey="category.databaseSettings"
 		resourceBundle="DatabaseService" weight="200">
-		<property resourceKey="jdbc.vendor" inputType="select" defaultValue="MYSQL_LOCAL" options="MYSQL,MYSQL_LOCAL,POSTGRES,MSSQL,DERBY,H2" store="databaseConfiguration"
+		<property resourceKey="jdbc.vendor" inputType="select" defaultValue="H2" options="MYSQL,MYSQL_LOCAL,POSTGRES,MSSQL,DERBY,H2" store="databaseConfiguration"
 			allowEmpty="false" weight="100" />
 		<property resourceKey="jdbc.database" inputType="text" store="databaseConfiguration"
 			allowEmpty="false" weight="200" defaultValue="hypersocket" />	
