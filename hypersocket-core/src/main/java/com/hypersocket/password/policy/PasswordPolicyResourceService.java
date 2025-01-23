@@ -52,5 +52,5 @@ public interface PasswordPolicyResourceService extends
 
 	PasswordPolicyResource getLocalPolicy(Realm realm);
 
-
+	PasswordPolicyResource getResourceByIdForViewOnly(Long id) throws ResourceNotFoundException, AccessDeniedException;
 }

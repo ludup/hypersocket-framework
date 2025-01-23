@@ -139,7 +139,7 @@ public class PasswordPolicyResourceController extends ResourceController {
 			SessionTimeoutException {
 
 		try {
-			PasswordPolicyResource policy = resourceService.getResourceById(id);
+			PasswordPolicyResource policy = resourceService.getResourceByIdForViewOnly(id);
 			return new ResourceStatus<String>(resourceService.generatePassword(policy, length));
 		} catch (ResourceNotFoundException e) {
 			return new ResourceStatus<String>(false, e.getMessage());

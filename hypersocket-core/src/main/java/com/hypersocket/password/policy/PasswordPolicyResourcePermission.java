@@ -16,7 +16,8 @@ public enum PasswordPolicyResourcePermission implements PermissionType {
 	READ("read", RolePermission.READ),
 	CREATE("create", READ),
 	UPDATE("update", READ),
-	DELETE("delete", READ);
+	DELETE("delete", READ),
+	VIEW("view");
 	
 	private final String val;
 	

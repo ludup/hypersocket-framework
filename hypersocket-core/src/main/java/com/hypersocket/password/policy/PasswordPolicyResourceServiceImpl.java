@@ -565,4 +565,18 @@ public class PasswordPolicyResourceServiceImpl extends AbstractAssignableResourc
 	public Iterator<PasswordPolicyResource> iterate(Realm realm) {
 		return repository.iterate(PasswordPolicyResource.class, null, new RealmCriteria(realm), new DeletedCriteria(false));
 	}
+
+	@Override
+	public PasswordPolicyResource getResourceByIdForViewOnly(Long id)
+			throws ResourceNotFoundException, AccessDeniedException {
+		PasswordPolicyResource resource = getRepository().getResourceById(id);
+		if (resource == null) {
+			throw new ResourceNotFoundException(getResourceBundle(),
+					"error.invalidResourceId", id);
+		}
+		
+		assertPrincipalAssignment(resource, PasswordPolicyResourcePermission.VIEW);
+		
+		return resource;
+	}
 }
