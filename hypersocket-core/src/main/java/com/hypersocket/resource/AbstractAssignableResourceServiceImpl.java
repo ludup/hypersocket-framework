@@ -178,7 +178,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			TransactionOperation<T>... ops) throws ResourceException,
 			AccessDeniedException {
 
-		assertPermission(getCreatePermission(resource));
+		assertCreatePermission(resource);
 
 		if(resource.getRealm()==null) {
 			resource.setRealm(getCurrentRealm());
@@ -218,8 +218,10 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 				throw e;
 			}
 		}
-	
+	}
 
+	protected void assertCreatePermission(T resource) throws AccessDeniedException {
+		assertPermission(getCreatePermission(resource));
 	}
 
 	protected void beforeCreateResource(T resource, Map<String,String> properties) throws AccessDeniedException, ResourceException {
@@ -266,11 +268,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		
 		boolean changedDefault = false;
 		
-		if(isAssignedUserAllowedUpdate()) {
-			assertPrincipalAssignment(resource, getUpdatePermission());
-		} else {
-			assertPermission(getUpdatePermission(resource));
-		}
+		assertUpdatePermission(resource);
 		
 		if(resource.getRealm()==null) {
 			resource.setRealm(getCurrentRealm());
@@ -341,6 +339,14 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 		}
 	}
 
+	protected void assertUpdatePermission(T resource) throws AccessDeniedException {
+		if(isAssignedUserAllowedUpdate()) {
+			assertPrincipalAssignment(resource, getUpdatePermission());
+		} else {
+			assertPermission(getUpdatePermission(resource));
+		}
+	}
+
 	protected List<PropertyChange> populateEntityFields(T resource, Map<String,String> properties) {
 		return getRepository().populateEntityFields(resource, properties);
 	}
@@ -378,11 +384,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 	public void deleteResource(T resource, @SuppressWarnings("unchecked") TransactionOperation<T>... ops) throws 
 			AccessDeniedException, ResourceException {
 
-		if(!resource.getPersonal()) {
-			assertPermission(getDeletePermission(resource));
-		} else {
-			assertRoleOrAnyPermission(permissionService.getPersonalRole(getCurrentPrincipal()));
-		}
+		assertDeletePermission(resource);
 
 		try {
 			resource.setUnassignedRoles(resource.getRoles());
@@ -401,6 +403,14 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 			}
 		}
 
+	}
+
+	protected void assertDeletePermission(T resource) throws AccessDeniedException {
+		if(!resource.getPersonal()) {
+			assertPermission(getDeletePermission(resource));
+		} else {
+			assertRoleOrAnyPermission(permissionService.getPersonalRole(getCurrentPrincipal()));
+		}
 	}
 
 	protected abstract void fireResourceDeletionEvent(T resource);
@@ -508,7 +518,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					"error.invalidResourceName", name);
 		}
 
-		assertPrincipalAssignment(resource, getReadPermission());
+		assetReadPermission(resource);
 		
 		return resource;
 	}
@@ -523,7 +533,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					"error.invalidResourceName", name);
 		}
 		
-		assertPrincipalAssignment(resource, getReadPermission());
+		assetReadPermission(resource);
 		
 		return resource;
 	}
@@ -562,9 +572,13 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					"error.invalidResourceId", id);
 		}
 		
-		assertPrincipalAssignment(resource, getReadPermission());
+		assetReadPermission(resource);
 		
 		return resource;
+	}
+
+	protected void assetReadPermission(T resource) throws AccessDeniedException {
+		assertPrincipalAssignment(resource, getReadPermission());
 	}
 	
 	@Override
@@ -576,7 +590,7 @@ public abstract class AbstractAssignableResourceServiceImpl<T extends Assignable
 					"error.invalidResourceId", id);
 		}
 		
-		assertPrincipalAssignment(resource, getReadPermission());
+		assetReadPermission(resource);
 		
 		return resource;
 	}
