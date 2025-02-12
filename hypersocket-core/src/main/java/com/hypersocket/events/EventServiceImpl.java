@@ -307,8 +307,11 @@ public class EventServiceImpl implements EventService {
 		try {
 			eventPublisher.publishEvent(extendEvent(event));
 			lastResult.set(event);
-		} catch(Throwable t) { 
-			log.error("Trapped unhandled error from event {}", event.getResourceKey(), t);
+		} catch(Throwable t) {
+			if(event instanceof SynchronousEvent && t instanceof RuntimeException) 
+				throw (RuntimeException)t;
+			else
+				log.error("Trapped unhandled error from event {}", event.getResourceKey(), t);
 		}
 	}
 

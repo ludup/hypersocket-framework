@@ -18,6 +18,7 @@ import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.EventService;
 import com.hypersocket.events.SynchronousEvent;
+import com.hypersocket.events.SynchronousEvent.SynchronousEventException;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.PrincipalType;
@@ -271,7 +272,9 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 			});
 
 			if (outputEvent != null) {
-
+				if(triggeredEvent instanceof SynchronousEvent && !outputEvent.isSuccess()) {
+					throw new SynchronousEventException(outputEvent);
+				}
 				if (outputEvent instanceof MultipleTaskResults) {
 					MultipleTaskResults results = (MultipleTaskResults) outputEvent;
 					for (TaskResult result : results.getResults()) {

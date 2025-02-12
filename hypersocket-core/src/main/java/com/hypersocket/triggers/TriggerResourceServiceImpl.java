@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import com.hypersocket.automation.AutomationResourceService;
 import com.hypersocket.events.EventDefinition;
 import com.hypersocket.events.EventService;
+import com.hypersocket.events.SynchronousEvent;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.http.HttpUtilsImpl;
 import com.hypersocket.i18n.I18N;
@@ -460,7 +461,11 @@ public class TriggerResourceServiceImpl extends AbstractResourceServiceImpl<Trig
 			try {
 				processEventTriggers(event);
 			} catch (Throwable t) {
-				log.error("Failed to process triggers", t);
+				if(event instanceof SynchronousEvent && t instanceof RuntimeException) 
+					throw (RuntimeException)t;
+				else
+					/// Grrrrr why do we always catch throwable
+					log.error("Failed to process triggers", t);
 			}
 		});
 
