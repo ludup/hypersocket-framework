@@ -54,5 +54,7 @@ public interface AutomationResourceService extends
 	boolean isEnabled();
 
 	void setController(AutomationController controller);
+	
+	TriggerResource deleteAndManageAutomationAndTriggers(AutomationResource automation, TriggerResource resource) throws ResourceException;
 
 }

@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 import com.hypersocket.automation.events.AutomationResourceCreatedEvent;
 import com.hypersocket.automation.events.AutomationResourceDeletedEvent;
@@ -516,5 +518,35 @@ public class AutomationResourceServiceImpl extends AbstractResourceServiceImpl<A
 	@Override
 	public boolean isEnabled() {
 		return Objects.isNull(controller) || controller.canAutomate();
+	}
+	
+	@Override
+	public TriggerResource deleteAndManageAutomationAndTriggers(AutomationResource automation, TriggerResource resource) throws ResourceException {
+		return repository.doInTransaction(new TransactionCallback<TriggerResource>() {
+
+			@Override
+			public TriggerResource doInTransaction(TransactionStatus status) {
+				try {
+	
+					TriggerResource rootTrigger = null;
+	
+					if (resource.getParentTrigger() != null) {
+						rootTrigger = resource;
+						while (rootTrigger.getParentTrigger() != null) {
+							rootTrigger = rootTrigger.getParentTrigger();
+						}
+					} else {
+						automation.getChildTriggers().remove(resource);
+						updateResource(automation);
+					}
+	
+					triggerService.deleteResource(resource);
+					
+					return rootTrigger;
+				} catch (Exception e) {
+					throw new IllegalStateException(e.getMessage(), e);
+				}
+			}
+		});
 	}
 }

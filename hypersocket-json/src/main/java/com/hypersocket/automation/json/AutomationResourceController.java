@@ -346,10 +346,8 @@ public class AutomationResourceController extends AbstractTriggerController {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@AuthenticationRequired
 	@RequestMapping(value = "automations/trigger/{id}/{triggerId}", method = RequestMethod.DELETE, produces = { "application/json" })
-
 	@ResponseBody
 	@ResponseStatus(value = HttpStatus.OK)
 	@AuthenticatedContext
@@ -380,19 +378,7 @@ public class AutomationResourceController extends AbstractTriggerController {
 
 			String preDeletedName = resource.getName();
 
-			TriggerResource rootTrigger = null;
-
-			if (resource.getParentTrigger() != null) {
-				rootTrigger = resource;
-				while (rootTrigger.getParentTrigger() != null) {
-					rootTrigger = rootTrigger.getParentTrigger();
-				}
-			} else {
-				automation.getChildTriggers().remove(resource);
-				resourceService.updateResource(automation);
-			}
-
-			triggerService.deleteResource(resource);
+			var rootTrigger = resourceService.deleteAndManageAutomationAndTriggers(automation, resource);
 
 			if (rootTrigger != null) {
 				return new ResourceStatus<TriggerResource>(
@@ -507,6 +493,7 @@ public class AutomationResourceController extends AbstractTriggerController {
 		} catch (Exception e) {
 		}
 		try {
+			@SuppressWarnings("deprecation")
 			String json = IOUtils.toString(jsonFile.getInputStream());
 			if (!HypersocketUtils.isValidJSON(json)) {
 				throw new ResourceException(

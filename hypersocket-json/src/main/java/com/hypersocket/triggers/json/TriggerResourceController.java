@@ -482,6 +482,7 @@ public class TriggerResourceController extends AbstractTriggerController {
 		} catch (Exception e) {
 		}
 		try {
+			@SuppressWarnings("deprecation")
 			String json = IOUtils.toString(jsonFile.getInputStream());
 			if (!HypersocketUtils.isValidJSON(json)) {
 				throw new ResourceException(
