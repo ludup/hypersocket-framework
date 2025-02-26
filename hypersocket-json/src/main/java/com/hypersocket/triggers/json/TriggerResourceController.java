@@ -342,6 +342,8 @@ public class TriggerResourceController extends AbstractTriggerController {
 			while (rootTrigger.getParentTrigger() != null) {
 				rootTrigger = rootTrigger.getParentTrigger();
 			}
+			
+			rootTrigger = resourceService.getResourceById(rootTrigger.getId());
 
 			return new ResourceStatus<TriggerResource>(rootTrigger,
 					I18N.getResource(sessionUtils.getLocale(request),
