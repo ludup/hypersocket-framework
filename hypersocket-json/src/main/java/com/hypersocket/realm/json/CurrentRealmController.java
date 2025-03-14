@@ -96,6 +96,9 @@ public class CurrentRealmController extends ResourceController {
 	private I18NService i18nService;
 	
 	@Autowired
+	private RealmService realmService;
+	
+	@Autowired
 	private ProfileCredentialsService credentialsService; 
 	
 	@Autowired
@@ -964,7 +967,7 @@ public class CurrentRealmController extends ResourceController {
 			SessionTimeoutException {
 		try {
 			Principal principal = sessionUtils.getSession(request)
-					.getCurrentPrincipal();
+					.getCurrentPrincipal(realmService);
 
 			realmService.changePassword(principal, oldPassword, newPassword);
 

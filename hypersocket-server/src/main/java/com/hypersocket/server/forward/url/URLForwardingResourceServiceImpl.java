@@ -9,6 +9,7 @@ import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.permissions.PermissionType;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.AbstractAssignableResourceRepository;
 import com.hypersocket.resource.AbstractAssignableResourceServiceImpl;
 import com.hypersocket.server.forward.ForwardingTransport;
@@ -30,6 +31,9 @@ public class URLForwardingResourceServiceImpl extends AbstractAssignableResource
 	
 	@Autowired
 	private I18NService i18nService;
+	
+	@Autowired
+	private RealmService realmService;
 	
 	protected URLForwardingResourceServiceImpl() {
 		super("URLFowardingResource");
@@ -92,6 +96,6 @@ public class URLForwardingResourceServiceImpl extends AbstractAssignableResource
 	public void verifyResourceSession(URLForwardingResource resource, String hostname, int port,
 			ForwardingTransport transport, Session session) throws AccessDeniedException {
 
-		permissionService.assertResourceAccess(resource, session.getCurrentPrincipal());
+		permissionService.assertResourceAccess(resource, session.getCurrentPrincipal(realmService));
 	}
 }

@@ -15,7 +15,7 @@ public class SessionWithState  {
 	
 	private String name;
 
-	private Session session;
+	private PublicSession session;
 	
 	private Map<String, String> stateMap;
 	
@@ -35,11 +35,11 @@ public class SessionWithState  {
 		this.name = name;
 	}
 
-	public Session getSession() {
+	public PublicSession getSession() {
 		return session;
 	}
 
-	public void setSession(Session session) {
+	public void setSession(PublicSession session) {
 		this.session = session;
 	}
 

@@ -30,6 +30,7 @@ import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.ResourceNotFoundException;
+import com.hypersocket.session.PublicSession;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionColumns;
 import com.hypersocket.session.SessionService;
@@ -56,7 +57,7 @@ public class SessionController extends ResourceController {
 	public AuthenticationResult touch(HttpServletRequest request, HttpServletResponse response)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
-		return getSuccessfulResult(sessionUtils.touchSession(request, response));
+		return getSuccessfulResult(new PublicSession(sessionUtils.touchSession(request, response), realmService));
 	}
 
 	@RequestMapping(value = "session/peek", method = { RequestMethod.GET }, produces = { "application/json" })
@@ -67,7 +68,7 @@ public class SessionController extends ResourceController {
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 		Session session = sessionUtils.getSession(request);
 		sessionUtils.addAPISession(request, response, session);
-		return getSuccessfulResult(session);
+		return getSuccessfulResult(new PublicSession(session, realmService));
 	}
 
 	@AuthenticationRequired
@@ -89,7 +90,7 @@ public class SessionController extends ResourceController {
 
 		sessionService.switchRealm(session, realm);
 
-		return getSuccessfulResult(session, "info=" + I18N.getResource(sessionUtils.getLocale(request),
+		return getSuccessfulResult(new PublicSession(session, realmService), "info=" + I18N.getResource(sessionUtils.getLocale(request),
 				AuthenticationService.RESOURCE_BUNDLE, "info.inRealm", realm.getName()), "");
 	}
 
@@ -104,11 +105,11 @@ public class SessionController extends ResourceController {
 		return new RequestStatus();
 	}
 
-	private AuthenticationResult getSuccessfulResult(Session session, String info, String homePage) {
+	private AuthenticationResult getSuccessfulResult(PublicSession session, String info, String homePage) {
 		return new AuthenticationSuccessResult(info, configurationService.hasUserLocales(), session, homePage);
 	}
 
-	private AuthenticationResult getSuccessfulResult(Session session) {
+	private AuthenticationResult getSuccessfulResult(PublicSession session) {
 		return new AuthenticationSuccessResult("", configurationService.hasUserLocales(), session, "");
 	}
 	

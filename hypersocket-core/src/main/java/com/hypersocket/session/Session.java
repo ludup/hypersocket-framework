@@ -17,6 +17,7 @@ import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.persistence.Cacheable;
 import javax.persistence.Column;
@@ -30,8 +31,6 @@ import javax.persistence.Transient;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -40,11 +39,11 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.hypersocket.ApplicationContextServiceImpl;
 import com.hypersocket.auth.AuthenticationScheme;
-import com.hypersocket.permissions.Role;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.repository.AbstractEntity;
 import com.hypersocket.utils.HypersocketUtils;
 
@@ -53,7 +52,7 @@ import com.hypersocket.utils.HypersocketUtils;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Session extends AbstractEntity<String> {
+public class Session extends AbstractEntity<String> implements ISession {
 
 	private static final long serialVersionUID = -830036435585689895L;
 
@@ -74,17 +73,35 @@ public class Session extends AbstractEntity<String> {
 	@Transient
 	private Date lastUpdated;
 
-	@ManyToOne
-	@Fetch(FetchMode.SELECT)
-	@JoinColumn(name = "principal_id", insertable = true, updatable = false)
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	private Principal principal;
+//	@ManyToOne
+//	@Fetch(FetchMode.SELECT)
+//	@JoinColumn(name = "principal_id", insertable = true, updatable = false)
+//	@OnDelete(action = OnDeleteAction.CASCADE)
+//	private Principal principal;
 
-	@ManyToOne
-	@Fetch(FetchMode.SELECT)
-	@JoinColumn(name = "impersonating_principal_id", insertable = true, updatable = true)
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	private Principal impersonatedPrincipal;
+	@Column(name = "principal_name", nullable = false, insertable = true, updatable = false)
+	private String principalName;
+
+	@Column(name = "principal_description", nullable = true, insertable = true, updatable = false)
+	private String principalDescription;
+
+	@Column(name="principal_id")
+	private Long principalId;
+
+//	@ManyToOne
+//	@Fetch(FetchMode.SELECT)
+//	@JoinColumn(name = "impersonating_principal_id", insertable = true, updatable = true)
+//	@OnDelete(action = OnDeleteAction.CASCADE)
+//	private Principal impersonatedPrincipal;
+
+	@Column(name = "impersonating_principal_name", nullable = true, insertable = true, updatable = true)
+	private String impersonatingPrincipalName;
+
+	@Column(name = "impersonating_principal_description", nullable = true, insertable = true, updatable = true)
+	private String impersonatingPrincipalDescription;
+
+	@Column(name="impersonating_principal_id")
+	private Long impersonatingPrincipalId;
 
 	@Column(name = "inherit", nullable = true)
 	private Boolean inheritPermissions;
@@ -149,10 +166,12 @@ public class Session extends AbstractEntity<String> {
 		this.id = id;
 	}
 
+	@Override
 	public String getName() {
-		return getPrincipal().getName();
+		return principalName;
 	}
 
+	@Override
 	public String getRemoteAddress() {
 		return remoteAddress;
 	}
@@ -161,6 +180,7 @@ public class Session extends AbstractEntity<String> {
 		this.remoteAddress = remoteAddress;
 	}
 
+	@Override
 	public Date getSignedOut() {
 		return signedOut;
 	}
@@ -170,6 +190,7 @@ public class Session extends AbstractEntity<String> {
 		totalSeconds = calculateTotalSeconds();
 	}
 
+	@Override
 	public boolean isTransient() {
 		return transientSession != null && transientSession;
 	}
@@ -185,59 +206,93 @@ public class Session extends AbstractEntity<String> {
 		return tmp.setScale(0, RoundingMode.HALF_UP).doubleValue();
 	}
 	
-	Principal getPrincipal() {
-		return principal;
+	Principal getPrincipal(RealmService realmService) {
+		return realmService.getPrincipalByName(realm, principalName, PrincipalType.ALL_TYPES);
 	}
 
 	void setPrincipal(Principal principal) {
-		this.principal = principal;
+		this.principalName = principal.getName();
+		this.principalDescription = principal.getDescription();
+		this.principalId = principal.getId();
+	}
+
+	@Override
+	public Long getPrincipalId() {
+		return principalId;
 	}
 
 	public String getCurrentPrincipalName() {
-		/* TODO these are temporary versions of this call. A later 
-		 * version will be removing the principal object entirely and
-		 * storing these names as plain text
-		 */
-		return getCurrentPrincipal().getPrincipalName();
+		if (isImpersonating()) {
+			return impersonatingPrincipalName;
+		}
+		else {
+			return principalName;
+		}
 	}
 
-	public String getInheritedPrincipalName() {
-		/* TODO these are temporary versions of this call. A later 
-		 * version will be removing the principal object entirely and
-		 * storing these names as plain text
-		 */
-		return getInheritedPrincipal().getPrincipalName();
+	public Long getCurrentPrincipalId() {
+		if (isImpersonating()) {
+			return impersonatingPrincipalId;
+		}
+		else {
+			return principalId;
+		}
+	}
+	
+	public String getCurrentPrincipalDescription() {
+		if (isImpersonating()) {
+			return impersonatingPrincipalDescription;
+		}
+		else {
+			return principalDescription;
+		}
+	}
+	
+	@Override
+	public String getDescription() {
+		return principalDescription;
 	}
 
 	public String getImpersonatedPrincipalName() {
-		/* TODO these are temporary versions of this call. A later 
-		 * version will be removing the principal object entirely and
-		 * storing these names as plain text
-		 */
-		var p = getImpersonatedPrincipal();
-		return p == null ? null : p.getPrincipalName();
+		return impersonatingPrincipalName;
 	}
 
-	public Principal getCurrentPrincipal() {
-		if (!isImpersonating()) {
-			return getPrincipal();
+	public Long getImpersonatedPrincipalId() {
+		return impersonatingPrincipalId;
+	}
+
+	public String getImpersonatedPrincipalDescription() {
+		return impersonatingPrincipalDescription;
+	}
+
+	public Principal getCurrentPrincipal(RealmService realmService) {
+		if (isImpersonating()) {
+			return getImpersonatedPrincipal(realmService);
 		} else {
-			return getImpersonatedPrincipal();
+			return getPrincipal(realmService);
 		}
 	}
 
-	public Principal getImpersonatedPrincipal() {
-		return impersonatedPrincipal;
+	public Principal getImpersonatedPrincipal(RealmService realmService) {
+		if(impersonatingPrincipalId == null)
+			return null;
+		else
+			return realmService.getPrincipalById(impersonatingPrincipalId);
 	}
 
 	public void setImpersonatedPrincipal(Principal impersonatedPrincipal) {
-		if (this.principal.equals(impersonatedPrincipal)) {
-			this.impersonatedPrincipal = null;
+		if (impersonatedPrincipal == null) {
+			this.impersonatingPrincipalName = null;
+			this.impersonatingPrincipalDescription = null;
+			this.impersonatingPrincipalId = null;
 		} else {
-			this.impersonatedPrincipal = impersonatedPrincipal;
+			this.impersonatingPrincipalId = impersonatedPrincipal.getId();
+			this.impersonatingPrincipalName = impersonatedPrincipal.getName();
+			this.impersonatingPrincipalDescription = impersonatedPrincipal.getDescription();
 		}
 	}
 
+	@Override
 	public boolean isInheritPermissions() {
 		return inheritPermissions == null ? false : inheritPermissions;
 	}
@@ -246,6 +301,7 @@ public class Session extends AbstractEntity<String> {
 		this.inheritPermissions = inheritPermissions == null ? false : inheritPermissions;
 	}
 
+	@Override
 	public Realm getCurrentRealm() {
 		if (currentRealm == null) {
 			return realm;
@@ -262,6 +318,7 @@ public class Session extends AbstractEntity<String> {
 		lastUpdated = new Date();
 	}
 
+	@Override
 	public Date getLastUpdated() {
 		if(sessionTimeout != null && sessionTimeout == Integer.MAX_VALUE) {
 			return new Date();
@@ -279,10 +336,12 @@ public class Session extends AbstractEntity<String> {
 		this.scheme = scheme;
 	}
 
+	@Override
 	public AuthenticationScheme getAuthenticationScheme() {
 		return scheme;
 	}
 
+	@Override
 	public int getTimeout() {
 		return sessionTimeout == null ? 15 : sessionTimeout;
 	}
@@ -291,10 +350,12 @@ public class Session extends AbstractEntity<String> {
 		this.sessionTimeout = sessionTimeout;
 	}
 
+	@Override
 	public long getCurrentTime() {
 		return System.currentTimeMillis();
 	}
 
+	@Override
 	@JsonIgnore
 	public boolean isReadyForUpdate() {
 		// We save our state every minute
@@ -304,6 +365,7 @@ public class Session extends AbstractEntity<String> {
 		return System.currentTimeMillis() - getModifiedDate().getTime() > 60000L;
 	}
 
+	@Override
 	@JsonIgnore
 	public boolean hasLastUpdated() {
 		return lastUpdated != null;
@@ -313,6 +375,7 @@ public class Session extends AbstractEntity<String> {
 		this.userAgent = userAgent;
 	}
 
+	@Override
 	public String getUserAgent() {
 		return userAgent;
 	}
@@ -321,10 +384,12 @@ public class Session extends AbstractEntity<String> {
 		this.os = os;
 	}
 
+	@Override
 	public String getOs() {
 		return os;
 	}
 
+	@Override
 	public String getUserAgentVersion() {
 		return userAgentVersion;
 	}
@@ -333,6 +398,7 @@ public class Session extends AbstractEntity<String> {
 		this.userAgentVersion = userAgentVersion;
 	}
 
+	@Override
 	public String getOsVersion() {
 		return osVersion;
 	}
@@ -345,6 +411,7 @@ public class Session extends AbstractEntity<String> {
 		this.nonCookieKey = nonCookieKey;
 	}
 
+	@Override
 	public String getNonCookieKey() {
 		return nonCookieKey;
 	}
@@ -396,22 +463,26 @@ public class Session extends AbstractEntity<String> {
 		writeState();
 	}
 
+	@Override
 	public boolean isImpersonating() {
-		return impersonatedPrincipal != null;
+		return getImpersonatedPrincipalName() != null;
 	}
 
-	public Principal getInheritedPrincipal() {
-		return getPrincipal();
+	public Principal getInheritedPrincipal(RealmService realmService) {
+		return getPrincipal(realmService);
 	}
 	
+	@Override
 	public boolean isClosed() {
 		return signedOut!=null;
 	}
 
+	@Override
 	public boolean isSystem() {
 		return system != null && system;
 	}
 
+	@Override
 	public Realm getPrincipalRealm() {
 		return realm;
 	}
@@ -420,6 +491,7 @@ public class Session extends AbstractEntity<String> {
 		this.realm = realm;
 	}
 
+	@Override
 	public Double getTotalSeconds() {
 //		if(totalSeconds==null) {
 			return calculateTotalSeconds();
@@ -427,14 +499,25 @@ public class Session extends AbstractEntity<String> {
 //		return totalSeconds;
 	}
 	
+	@Override
 	public String getCsrfToken() {
 		if(csrfToken==null) {
 			csrfToken = DigestUtils.sha256Hex(getId() + "|CSRF_TOKEN");
 		}
 		return csrfToken;
 	}
+	
+	public PrincipalRef getReference() {
+		return new PrincipalRef(realm, getName());
+	}
 
 	public void setSystem(boolean system) {
 		this.system = system;		
+	}
+	
+	public boolean isPrincipal(Principal principal) {
+		return principal == null || principal.getRealm() == null 
+			? false 
+			: principal.getRealm().equals(realm) && Objects.equals(principal.getName(), principalName);
 	}
 }

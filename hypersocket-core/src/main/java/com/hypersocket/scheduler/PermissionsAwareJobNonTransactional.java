@@ -57,7 +57,7 @@ public abstract class PermissionsAwareJobNonTransactional implements Job, Runnab
 				if(data.containsKey("session")) {
 					session = sessionService.getSession(data.getString("session"));
 					realm = session.getCurrentRealm();
-					principal = session.getCurrentPrincipal();
+					principal = session.getCurrentPrincipal(realmService);
 				}
 				if(data.containsKey("realm")) {
 					realm = realmRepository.getRealmById(data.getLong("realm"));

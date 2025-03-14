@@ -171,7 +171,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	private Session createSystemSession() {
 		Session session = new Session();
 		session.setId(UUID.randomUUID().toString());
-		session.setCurrentRealm(realmService.getSystemRealm());
+		session.setPrincipalRealm(realmService.getSystemRealm());
 		session.setOs(System.getProperty("os.name"));
 		session.setOsVersion(System.getProperty("os.version"));
 		session.setPrincipal(realmService.getSystemPrincipal());
@@ -347,7 +347,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 					closeSession(session);
 
 					if (log.isDebugEnabled()) {
-						log.debug("Session " + session.getPrincipal().getPrincipalName() + "/" + session.getId()
+						log.debug("Session " + session.getName() + "/" + session.getId()
 								+ " is now closed");
 					}
 
@@ -400,7 +400,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				SystemPermission.SWITCH_REALM);
 
 		if (log.isInfoEnabled()) {
-			log.info("Switching " + session.getPrincipal().getName() + " to " + realm.getName() + " realm");
+			log.info("Switching " + session.getName() + " to " + realm.getName() + " realm");
 		}
 
 		session.setCurrentRealm(realm);
@@ -423,7 +423,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		assertImpersonationPermission();
 
 		if (log.isInfoEnabled()) {
-			log.info("Switching " + session.getPrincipal().getName() + " to " + principal.getName());
+			log.info("Switching " + session.getName() + " to " + principal.getName());
 		}
 
 		session.setImpersonatedPrincipal(principal);
@@ -671,13 +671,13 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void revertPrincipal(Session session) throws AccessDeniedException {
 
-		if (session.getImpersonatedPrincipal() == null) {
+		if (session.getImpersonatedPrincipalName() == null) {
 			throw new AccessDeniedException("You are not impersonating anyone!");
 		}
 
 		if (log.isInfoEnabled()) {
 			log.info(
-					"Switching " + session.getCurrentPrincipal().getName() + " to " + session.getPrincipal().getName());
+					"Switching " + session.getCurrentPrincipalName() + " to " + session.getName());
 		}
 
 		session.setImpersonatedPrincipal(null);
@@ -758,7 +758,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 				
 				sessionWithState.setId(session.getId());
 				sessionWithState.setName(session.getName());
-				sessionWithState.setSession(session);
+				sessionWithState.setSession(new PublicSession(session, realmService));
 				sessionWithState.setStateMap(stateMap);
 				withStates.add(sessionWithState);
 			}
@@ -920,7 +920,7 @@ public class SessionServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			updateSession(session);
 			if (log.isDebugEnabled()) {
 				log.debug("Session "
-						+ session.getPrincipal().getPrincipalName()
+						+ session.getName()
 						+ "/" + session.getId()
 						+ " state has been updated");
 			}

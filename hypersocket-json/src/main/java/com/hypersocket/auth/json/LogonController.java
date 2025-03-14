@@ -46,6 +46,7 @@ import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.servlet.request.Request;
+import com.hypersocket.session.PublicSession;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.json.SessionTimeoutException;
 import com.hypersocket.session.json.SessionUtils;
@@ -503,7 +504,7 @@ public class LogonController extends AuthenticatedController {
 			HttpServletResponse response) throws IOException, RedirectException {
 		
 		return new LogonSuccessResult(info,
-				configurationService.hasUserLocales(), session, homePage);
+				configurationService.hasUserLocales(), new PublicSession(session, realmService), homePage);
 		
 	}
 	

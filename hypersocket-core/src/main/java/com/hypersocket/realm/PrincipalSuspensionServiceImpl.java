@@ -195,10 +195,10 @@ public class PrincipalSuspensionServiceImpl implements PrincipalSuspensionServic
 				principalRepository.saveResource(principal);
 				if(suspension)
 					eventService.publishEvent(
-							new PrincipalSuspendedEvent(this, sessionService.getSystemSession(), sessionService.getSystemSession().getCurrentPrincipal(), principal));
+							new PrincipalSuspendedEvent(this, sessionService.getSystemSession(), sessionService.getSystemSession().getCurrentPrincipal(realmService), principal));
 				else
 					eventService.publishEvent(
-							new PrincipalResumedEvent(this, sessionService.getSystemSession(), sessionService.getSystemSession().getCurrentPrincipal(), principal));
+							new PrincipalResumedEvent(this, sessionService.getSystemSession(), sessionService.getSystemSession().getCurrentPrincipal(realmService), principal));
 			}
 		} catch (ResourceException e) {
 			throw new IllegalStateException(e.getMessage(), e);

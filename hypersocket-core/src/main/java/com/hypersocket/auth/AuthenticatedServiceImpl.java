@@ -31,6 +31,7 @@ import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 
@@ -55,7 +56,11 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	protected abstract Role getPersonalRole(Principal principal) throws AccessDeniedException;
 	
 	@Autowired
-	private SessionService sessionService;  
+	private SessionService sessionService;
+	
+	@Autowired
+	/* XXXXXXXXXXX THIS ALMOST CERTAINLY WONT WORK */
+	private RealmService realmService;  
 
 	@Override
 	@Deprecated
@@ -131,7 +136,11 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	@Override
 	@Deprecated
 	public void setCurrentSession(Session session, Realm realm, Locale locale) {
-		setCurrentSession(session, realm, session.getCurrentPrincipal(), locale);
+		var cp = session.getCurrentPrincipal(realmService);
+		if(cp == null) {
+			System.out.println("BRK");
+		}
+		setCurrentSession(session, realm, cp, locale);
 	}
 	
 	@Override
@@ -140,9 +149,10 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 		if(log.isDebugEnabled()) {
 			log.debug("Setting current session context " + session.getId());
 		}
-		if(session.getCurrentPrincipal()==null) {
+		if(principal==null) {
 			throw new InvalidAuthenticationContext("Session does not have a current principal!");
 		}
+		
 		if(currentSession.get()==null) {
 			currentSession.set(new Stack<Session>());
 			currentPrincipal.set(new Stack<Principal>());
@@ -357,7 +367,7 @@ public abstract class AuthenticatedServiceImpl implements AuthenticatedService {
 	
 			if(hasSessionContext()) {
 				if(getCurrentSession().isImpersonating() && getCurrentSession().isInheritPermissions()) {
-					verifyPermission(getCurrentSession().getInheritedPrincipal(), strategy, permissions);
+					verifyPermission(getCurrentSession().getInheritedPrincipal(realmService), strategy, permissions);
 					return;
 				}
 			}

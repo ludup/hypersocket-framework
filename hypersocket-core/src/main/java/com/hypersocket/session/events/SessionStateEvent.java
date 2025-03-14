@@ -23,6 +23,6 @@ public class SessionStateEvent extends SessionEvent {
 	}
 
 	public static boolean isLocalApiEvent(Session session) {
-		return session.getCurrentPrincipal() != null && "JVM".equals(session.getOs()) && "127.0.0.1".equals(session.getRemoteAddress()) && "local-api".equals(session.getCurrentPrincipal().getPrincipalName());
+		return session.getCurrentPrincipalName() != null && "JVM".equals(session.getOs()) && "127.0.0.1".equals(session.getRemoteAddress()) && "local-api".equals(session.getCurrentPrincipalName());
 	}
 }

@@ -54,7 +54,7 @@ public abstract class PermissionsAwareJob extends TransactionalJob {
 					if (data.containsKey("session")) {
 						session = sessionService.getSession(data.getString("session"));
 						realm = session.getCurrentRealm();
-						principal = session.getCurrentPrincipal();
+						principal = session.getCurrentPrincipal(realmService);
 					}
 
 					if (data.containsKey("realm")) {

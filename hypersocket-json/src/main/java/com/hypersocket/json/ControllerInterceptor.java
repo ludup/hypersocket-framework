@@ -125,7 +125,7 @@ public class ControllerInterceptor implements HandlerInterceptor {
 				} else {
 					var session = sessionUtils.getSession(request);
 					contrl.setCurrentSession(session , session.getCurrentRealm(),
-							session.getCurrentPrincipal(), sessionUtils.getLocale(request));
+							session.getCurrentPrincipal(realmService), sessionUtils.getLocale(request));
 				}
 			}
 		}

@@ -15,7 +15,7 @@ public class ConcurrentSessionEvent extends SessionStateEvent {
 	
 	public ConcurrentSessionEvent(Object source, Session session, String sessionTrackedInfo) {
 		super(source, EVENT_RESOURCE_KEY, true, session);
-		addAttribute(ATTR_CONCURRENT_SESSION_PRINCIPAL, session.getCurrentPrincipal().getPrincipalName());
+		addAttribute(ATTR_CONCURRENT_SESSION_PRINCIPAL, session.getCurrentPrincipalName());
 		addAttribute(ATTR_CONCURRENT_SESSION_TRACKED, sessionTrackedInfo);
 	}
 	

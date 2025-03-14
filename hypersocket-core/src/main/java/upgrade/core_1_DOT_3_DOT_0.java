@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.scheduler.ClusteredSchedulerService;
 import com.hypersocket.scheduler.JobData;
 import com.hypersocket.session.SessionReaperJob;
@@ -28,6 +29,9 @@ public class core_1_DOT_3_DOT_0 implements Runnable {
 	@Autowired
 	private SessionService sessionService;
 	
+	@Autowired
+	private RealmService realmService;
+	
 	@Override
 	public void run() {
 
@@ -38,7 +42,7 @@ public class core_1_DOT_3_DOT_0 implements Runnable {
 		try {
 			if(schedulerService.jobDoesNotExists("firstRunSessionReaperJob")){
 				var session = sessionService.getSystemSession();
-				try(var c = sessionService.tryAs(session, session.getCurrentRealm(), session.getCurrentPrincipal(), null)) {
+				try(var c = sessionService.tryAs(session, session.getCurrentRealm(), session.getCurrentPrincipal(realmService), null)) {
 					schedulerService.scheduleNow(SessionReaperJob.class, "firstRunSessionReaperJob", JobData.of(
 						"firstRunSessionReaperJob",
 						"firstRun", true

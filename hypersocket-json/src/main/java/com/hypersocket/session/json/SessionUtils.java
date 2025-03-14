@@ -134,7 +134,7 @@ public class SessionUtils {
 		Session session = getActiveSession(request);
 		if (session == null)
 			throw new UnauthorizedException();
-		return session.getCurrentPrincipal();
+		return session.getCurrentPrincipal(realmService);
 	}
 
 	public Session touchSession(HttpServletRequest request,

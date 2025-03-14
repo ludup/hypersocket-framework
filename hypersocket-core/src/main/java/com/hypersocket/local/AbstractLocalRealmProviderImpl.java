@@ -1038,10 +1038,10 @@ public abstract class AbstractLocalRealmProviderImpl extends AbstractRealmProvid
 	}
 	@Override
 	public void onApplicationEvent(final SessionOpenEvent event) {
-	
-		if(event.getTargetPrincipal() instanceof LocalUser) {
+		var tp = event.getTargetPrincipal(realmService);
+		if(tp instanceof LocalUser) {
 			
-			LocalUser user = (LocalUser) event.getTargetPrincipal();
+			LocalUser user = (LocalUser)tp;
 			user.setLastSignOn(new Date(event.getTimestamp()));
 			userRepository.saveUser(user, new HashMap<String,String>());
 		}		

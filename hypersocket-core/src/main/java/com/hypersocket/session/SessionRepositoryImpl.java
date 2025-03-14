@@ -116,7 +116,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
 		
 		if(distinctUsers) {
-			criteria.setProjection(Projections.countDistinct("principal"));
+			criteria.setProjection(Projections.countDistinct("principalId"));
 		} else {
 			criteria.setProjection(Projections.rowCount());
 		}
@@ -135,7 +135,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
 		
 		if(distinctUsers) {
-			criteria.setProjection(Projections.countDistinct("principal"));
+			criteria.setProjection(Projections.countDistinct("principalId"));
 		} else {
 			criteria.setProjection(Projections.rowCount());
 		}
@@ -300,7 +300,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
 		
 		if(distinctUsers) {
-			criteria.setProjection(Projections.countDistinct("principal"));
+			criteria.setProjection(Projections.countDistinct("principalId"));
 		} else {
 			criteria.setProjection(Projections.rowCount());
 		}
@@ -325,7 +325,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);	
 		
 		if(distinctUsers) {
-			criteria.setProjection(Projections.countDistinct("principal"));
+			criteria.setProjection(Projections.countDistinct("principalId"));
 		} else {
 			criteria.setProjection(Projections.rowCount());
 		}
@@ -365,8 +365,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 								criteria.add(Restrictions.isNull("signedOut"));
 								
 								if(StringUtils.isNotEmpty(searchPattern)) {
-									criteria = criteria.createCriteria("principal");
-									criteria.add(Restrictions.ilike("name", searchPattern));
+									criteria.add(Restrictions.ilike("principalName", searchPattern));
 								}
 								
 							}
@@ -388,8 +387,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 						criteria.add(Restrictions.isNull("signedOut"));
 						
 						if(StringUtils.isNotEmpty(searchPattern)) {
-							criteria = criteria.createCriteria("principal");
-							criteria.add(Restrictions.ilike("name", searchPattern));
+							criteria.add(Restrictions.ilike("principalName", searchPattern));
 						}
 					}
 		        }));
@@ -440,20 +438,6 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	@Override
 	@Transactional
 	public void deleteRealm(final Realm realm) {
-		
-		Collection<Session> sessions = list(Session.class, new CriteriaConfiguration() {
-			
-			@Override
-			public void configure(Criteria criteria) {
-				criteria.createAlias("impersonatedPrincipal", "i");
-				criteria.add(Restrictions.eq("i.realm", realm));
-			}
-		});
-		
-		for(Session session : sessions) {
-			delete(session);
-		}
-		
 		Query q = createQuery("delete from Session where realm = :r or currentRealm = :r", true);
 		q.setParameter("r", realm);
 		log.info(String.format("Deleted %d Session", q.executeUpdate()));

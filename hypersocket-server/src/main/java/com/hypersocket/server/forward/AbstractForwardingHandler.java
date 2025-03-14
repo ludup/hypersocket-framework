@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.hypersocket.auth.json.UnauthorizedException;
 import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.permissions.AccessDeniedException;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.realm.UserVariableReplacementService;
 import com.hypersocket.resource.ResourceNotFoundException;
 import com.hypersocket.server.HypersocketServer;
@@ -41,6 +42,9 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 
 	@Autowired
 	private SessionService sessionService;
+	
+	@Autowired
+	private RealmService realmService;
 
 	@Autowired
 	private SessionUtils sessionUtils;
@@ -97,7 +101,8 @@ public abstract class AbstractForwardingHandler<T extends ForwardingResource> im
 				hostname = resource.getHostname();
 			}
 		
-			hostname = userVariableReplacement.replaceVariables(session.getCurrentPrincipal(), hostname);
+			var currentPrincipal = session.getCurrentPrincipal(realmService);
+			hostname = userVariableReplacement.replaceVariables(currentPrincipal, hostname);
 			
 			getService().verifyResourceSession(
 					resource, hostname, port, ForwardingTransport.TCP, session);

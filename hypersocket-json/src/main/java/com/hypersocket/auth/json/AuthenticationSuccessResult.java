@@ -8,25 +8,26 @@
 package com.hypersocket.auth.json;
 
 import com.hypersocket.json.AuthenticationResult;
+import com.hypersocket.session.PublicSession;
 import com.hypersocket.session.Session;
 
 public class AuthenticationSuccessResult extends AuthenticationResult {
 
-	private Session session;
+	private PublicSession session;
 	private String homePage;
 	
 	public AuthenticationSuccessResult() {
 
 	}
 
-	public AuthenticationSuccessResult(String bannerMsg, boolean showLocales, Session session, String homePage) {
+	public AuthenticationSuccessResult(String bannerMsg, boolean showLocales, PublicSession session, String homePage) {
 		super(bannerMsg, null, null, showLocales);
 		this.session = session;
 		this.homePage = homePage;
 		setSuccess(true);
 	}
 
-	public Session getSession() {
+	public PublicSession getSession() {
 		return session;
 	}
 	
@@ -34,7 +35,7 @@ public class AuthenticationSuccessResult extends AuthenticationResult {
 		return homePage;
 	}
 
-	public void setSession(Session session) {
+	public void setSession(PublicSession session) {
 		this.session = session;
 	}
 

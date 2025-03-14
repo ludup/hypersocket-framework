@@ -6,6 +6,7 @@ import com.hypersocket.events.CommonAttributes;
 import com.hypersocket.events.SystemEvent;
 import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
+import com.hypersocket.realm.RealmService;
 import com.hypersocket.session.Session;
 import com.hypersocket.session.SessionService;
 
@@ -64,15 +65,15 @@ public abstract class SessionEvent extends SystemEvent {
 		
 		addAttribute(ATTR_UUID, session.getId());
 		
-		addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipal().getPrincipalName());
-		addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipal().getDescription());
+		addAttribute(ATTR_PRINCIPAL_NAME, session.getCurrentPrincipalName());
+		addAttribute(ATTR_PRINCIPAL_DESC, session.getCurrentPrincipalDescription());
 		
 		addAttribute(ATTR_PRINCIPAL_REALM, currentRealm.getName());
 		addAttribute(ATTR_IP_ADDRESS, session.getRemoteAddress());
 		
 		if(session.isImpersonating()) {
-			addAttribute(ATTR_IMPERSONATOR, session.getInheritedPrincipal().getPrincipalName());
-			addAttribute(ATTR_IMPERSONATOR_DESC, session.getInheritedPrincipal().getDescription());
+			addAttribute(ATTR_IMPERSONATOR, session.getName());
+			addAttribute(ATTR_IMPERSONATOR_DESC, session.getDescription());
 		}
 	}
 	
@@ -84,8 +85,12 @@ public abstract class SessionEvent extends SystemEvent {
 		return session;
 	}
 
-	public Principal getTargetPrincipal() {
-		return session.getCurrentPrincipal();
+	public Principal getTargetPrincipal(RealmService realmService) {
+		return session.getCurrentPrincipal(realmService);
+	}
+
+	public String getTargetPrincipalName() {
+		return session.getCurrentPrincipalName();
 	}
 	
 	public String[] getResourceKeys() {

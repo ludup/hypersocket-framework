@@ -36,7 +36,7 @@ public class InMemorySessionStore implements SessionStore {
 
 	@Override
 	public List<Session> getPrincipalActiveSessions(Principal principal) {
-		return getActiveSessions().stream().filter(s -> principal.equals(s.getPrincipal())).collect(Collectors.toList());
+		return getActiveSessions().stream().filter(s -> s.isPrincipal(principal)).collect(Collectors.toList());
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class InMemorySessionStore implements SessionStore {
 	@Override
 	public Long getActiveSessionCount(boolean distinctUsers) {
 		if(distinctUsers)
-			return (long)getActiveSessions().stream().collect(Collectors.groupingBy(Session::getPrincipal, Collectors.counting())).size();
+			return (long)getActiveSessions().stream().collect(Collectors.groupingBy(Session::getReference, Collectors.counting())).size();
 		else
 			return getActiveSessionCount();
 	}
@@ -60,7 +60,7 @@ public class InMemorySessionStore implements SessionStore {
 	@Override
 	public Long getActiveSessionCount(boolean distinctUsers, Realm realm) {
 		if(distinctUsers)
-			return (long)getActiveSessions().stream().filter(s -> realm.equals(s.getCurrentRealm())).collect(Collectors.groupingBy(Session::getPrincipal, Collectors.counting())).size();
+			return (long)getActiveSessions().stream().filter(s -> realm.equals(s.getCurrentRealm())).collect(Collectors.groupingBy(Session::getReference, Collectors.counting())).size();
 		else
 			return (long)getActiveSessions().stream().filter(s -> realm.equals(s.getCurrentRealm())).collect(Collectors.toList()).size();
 	}
@@ -142,7 +142,7 @@ public class InMemorySessionStore implements SessionStore {
 	}
 
 	private boolean matches(Session r, String searchPattern) {
-		return !r.isSystem() && r.getSignedOut() == null && r.getPrincipal() != null && r.getPrincipal().getName().toLowerCase().contains(searchPattern.toLowerCase());
+		return !r.isSystem() && r.getSignedOut() == null && r.getName() != null && r.getName().toLowerCase().contains(searchPattern.toLowerCase());
 	}
 
 	@Override
@@ -162,7 +162,7 @@ public class InMemorySessionStore implements SessionStore {
 	@Override
 	public void updatePrincipalSessions(Principal principal) {
 		synchronized(sessions) {
-			for(var s : getActiveSessions().stream().filter(s -> s.getPrincipal() != null && principal.getId().equals(s.getPrincipal().getId())).collect(Collectors.toList())) {
+			for(var s : getActiveSessions().stream().filter(s -> s.getName() != null && s.isPrincipal(principal)).collect(Collectors.toList())) {
 				s.setPrincipal(principal);
 			}
 		}

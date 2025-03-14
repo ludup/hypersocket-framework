@@ -10,8 +10,8 @@ import com.hypersocket.utils.HypersocketUtils;
 public class SessionResolver extends PrincipalWithoutPasswordResolver {
 
 	
-	public SessionResolver(Session session) {
-		super((UserPrincipal<?>)session.getCurrentPrincipal());
+	public SessionResolver(Session session, RealmService realmService) {
+		super((UserPrincipal<?>)session.getCurrentPrincipal(realmService));
 		addToken("sessionId", session.getId());
 		addToken("sessionCreated", HypersocketUtils.formatDateTime(session.getCreateDate()));
 		addToken("sessionOs", session.getOs());

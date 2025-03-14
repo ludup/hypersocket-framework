@@ -423,7 +423,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	@Override
 	public void onCredentialsUpdated(ProfileCredentialsEvent event) {
 		if(event.isSuccess()) {
-			fireProfileUpdateJob(event.getTargetPrincipal());
+			fireProfileUpdateJob(event.getTargetPrincipal(realmService));
 		}
 	}
 
@@ -499,7 +499,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	@Override
 	public void onSessionOpen(SessionOpenEvent event) {
 		if(event.isSuccess()) {
-			fireProfileCreationJob(event.getTargetPrincipal());
+			fireProfileCreationJob(event.getTargetPrincipal(realmService));
 		}
 	}
 	
