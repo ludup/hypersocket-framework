@@ -171,6 +171,11 @@ public class PasswordPolicyResourceServiceImpl extends AbstractAssignableResourc
 					policy.setValidSymbols("?!@#$%&");
 
 					createResource(policy, new HashMap<String, String>());
+					
+					Role everyone = permissionService.getRole(PermissionService.ROLE_EVERYONE, realm);
+					permissionService.grantPermission(everyone, permissionService.getPermission(PasswordPolicyResourcePermission.VIEW.getResourceKey()));
+					
+					
 				} catch (AccessDeniedException e) {
 					throw new IllegalStateException(e.getMessage(), e);
 				}
