@@ -3,10 +3,13 @@ package com.hypersocket.messagedelivery;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import com.hypersocket.email.RecipientHolder;
+import com.hypersocket.messagedelivery.MessageDeliveryPreSendCheck.MessageDeliveryPreSendCheckException;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.triggers.ValidationException;
+import com.hypersocket.util.SpringApplicationContextProvider;
 
 public abstract class MessageDeliveryBuilder {
 
@@ -141,6 +144,20 @@ public abstract class MessageDeliveryBuilder {
 	}
 
 	public final MessageDeliveryResult send() throws MessageDeliveryException {
+		
+		Objects.requireNonNull(this.realm);
+		
+		var  messageDeliveryPreSendCheck = SpringApplicationContextProvider
+												.getApplicationContext()
+												.getBean(MessageDeliveryPreSendCheck.class);
+		
+		Objects.requireNonNull(messageDeliveryPreSendCheck);
+		
+		if (!messageDeliveryPreSendCheck.canSend(this.realm)) {
+			throw new MessageDeliveryPreSendCheckException(String.format("Invalid license found for realm: '%s' during Message Delivery",
+					this.realm.getName()));
+		}
+		
 		var res = sendImpl();
 		if(res.isEmpty()) {
 			throw new MessageDeliveryException("Nothing was sent.");
