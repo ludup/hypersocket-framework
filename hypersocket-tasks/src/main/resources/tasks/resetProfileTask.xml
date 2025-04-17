@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?><!DOCTYPE xml>
+<propertyTemplates context="resetProfileTask">
+	<propertyCategory resourceKey="category.resetProfileTask"
+		resourceBundle="ResetProfileTask" weight="1000">
+		<property resourceKey="resetProfile.principalName" inputType="text" weight="0" allowEmpty="false" defaultValue="" />
+	</propertyCategory>
+</propertyTemplates>
