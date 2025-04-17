@@ -71,7 +71,7 @@ public class UnblockIPTask extends AbstractTaskProvider {
 	@Override
 	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
-		if(parameters.containsKey("unblock.ip")) {
+		if(!parameters.containsKey("unblock.ip")) {
 			throw new ValidationException("IP address required");
 		}
 	}

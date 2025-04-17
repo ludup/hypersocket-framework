@@ -82,7 +82,7 @@ public class BlockIPTask extends AbstractTaskProvider {
 	@Override
 	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
-		if(parameters.containsKey("block.ip")) {
+		if(!parameters.containsKey("block.ip")) {
 			throw new ValidationException("IP address required");
 		}
 	}

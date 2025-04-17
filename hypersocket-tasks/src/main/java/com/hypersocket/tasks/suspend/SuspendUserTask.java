@@ -79,9 +79,11 @@ public class SuspendUserTask extends AbstractTaskProvider {
 	@Override
 	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
-		if (parameters.containsKey("suspendUser.name")) {
+		if (!parameters.containsKey("suspendUser.name")) {
 			throw new ValidationException("Name required");
-		} else if (parameters.containsKey("suspendUser.duration")) {
+		} 
+		
+		if (!parameters.containsKey("suspendUser.duration")) {
 			throw new ValidationException("Duration required");
 		}
 	}

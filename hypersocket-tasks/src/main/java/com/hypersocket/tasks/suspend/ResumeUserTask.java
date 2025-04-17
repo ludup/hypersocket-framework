@@ -70,7 +70,7 @@ public class ResumeUserTask extends AbstractTaskProvider {
 	@Override
 	public void validate(Task task, Map<String, String> parameters)
 			throws ValidationException {
-		if (parameters.containsKey("resumeUser.name")) {
+		if (!parameters.containsKey("resumeUser.name")) {
 			throw new ValidationException("Username required");
 		}
 	}
