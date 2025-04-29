@@ -44,4 +44,8 @@ public interface ProfileRepository extends AbstractEntityRepository<Profile, Lon
 
 	void deleteRealm(Realm realm);
 
+	long getCompleteProfileCountAlt(Collection<Realm> realms);
+
+	boolean hasCompletedProfileAlt(Principal principal);
+
 }

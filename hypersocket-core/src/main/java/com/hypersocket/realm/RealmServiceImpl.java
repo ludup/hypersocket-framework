@@ -2716,6 +2716,16 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	public long getPrincipalCount(Collection<Realm> realms, PrincipalType type) {
 		return principalRepository.getResourceCount(realms, type);
 	}
+	
+	@Override
+	public long getEnabledPrincipalCount(Realm realm, PrincipalType type) {
+		var principals = principalRepository.allPrincipals(realm, PrincipalType.USER);
+		
+		return principals == null ? 0 : principals
+				.stream()
+				.filter(p -> p.getPrincipalStatus() == PrincipalStatus.ENABLED)
+				.count();
+	}
 
 	@Override
 	public boolean canChangePassword(Principal principal) {
@@ -3253,4 +3263,5 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 		}
 		return fakeRealm;
 	}
+
 }
