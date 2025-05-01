@@ -1,6 +1,10 @@
 package com.hypersocket.certificates;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,10 +16,12 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hypersocket.properties.ResourceUtils;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.resource.RealmResource;
 
@@ -215,6 +221,30 @@ public class CertificateResource extends RealmResource {
 
 	public void setIssueDate(Date issueDate) {
 		this.issueDate = issueDate;
+	}
+	
+	public Set<String> listOfDomains() {
+		var domains = new HashSet<String>();
+		
+		Objects.requireNonNull(getCommonName(), "Common Name cannot be null");
+		
+		if (StringUtils.isBlank(getCommonName())) {
+			throw new IllegalArgumentException("Common Name cannot be blank");
+		}
+		
+		domains.add(getCommonName());
+		
+		var sans = ResourceUtils.explodeCollectionValues(getSan());
+		
+		if (sans != null) {
+			var cleanSans = sans.stream()
+					            .map(san -> san.replaceAll("DNS:", ""))
+					            .collect(Collectors.toList());
+			
+			domains.addAll(cleanSans);
+		}
+		
+		return domains;
 	}
 
 }
