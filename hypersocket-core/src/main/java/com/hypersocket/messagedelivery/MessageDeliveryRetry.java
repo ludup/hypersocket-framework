@@ -76,7 +76,7 @@ public class MessageDeliveryRetry {
 	@Autowired
 	private SystemConfigurationService systemConfigurationService;
 
-	public <T> Result<T> retry(Supplier<T> logic, String tag) {
+	public <T> Result<T> retry(Supplier<T> logic, String tag, boolean shouldRetry) {
 
 		var maxRetries = systemConfigurationService.getIntValue("message.delivery.retry.number");
 
@@ -86,8 +86,10 @@ public class MessageDeliveryRetry {
 
 		Objects.requireNonNull(baseDelaySeconds);
 
-		if (baseDelaySeconds == 0) {
-			maxRetries = 0;
+		// if by configuration or defined by implementation, no retry
+		// configuration is dynamic, implementation is hardcoded
+		if (baseDelaySeconds == 0 || !shouldRetry) {
+			maxRetries = 0; // marks no retires
 		}
 
 		var baseDelayMillis = (long) baseDelaySeconds * 1000;

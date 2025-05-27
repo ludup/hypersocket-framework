@@ -190,7 +190,7 @@ public abstract class MessageDeliveryBuilder {
 			} catch (MessageDeliveryException e) {
 				throw new RetryableCheckedExceptionWrapper(e);
 			}
-		}, String.format("Realm:%s", this.realm.getName()));
+		}, String.format("Realm:%s", this.realm.getName()), shouldRetry());
 
 		var reason = result.getReason();
 
@@ -252,6 +252,10 @@ public abstract class MessageDeliveryBuilder {
 		
 		return result.getResult().get();
 		
+	}
+	
+	protected boolean shouldRetry() {
+		return false;
 	}
 
 	protected abstract MessageDeliveryResult sendImpl() throws MessageDeliveryException;
