@@ -16,7 +16,7 @@ import com.hypersocket.resource.ThrowingRunnable;
 
 public class MessageDeliveryResult {
 	
-	private static Logger LOG = LoggerFactory.getLogger(MessageDeliveryResult.class);
+	static Logger LOG = LoggerFactory.getLogger(MessageDeliveryResult.class);
 
 	public static MessageDeliveryResult ofNonFatalError(String nonFatalError, RecipientHolder... recipients) {
 		return new MessageDeliveryResult(new Exception(nonFatalError), recipients);

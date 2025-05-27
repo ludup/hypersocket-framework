@@ -20,10 +20,6 @@
 		<property resourceKey="email.on" inputType="switch" weight="0" defaultValue="true"/>
 		<property resourceKey="email.defaultProvider" inputType="select"
 			weight="10" defaultValue="" url="messageDelivery/defaultProviders/EMAIL" resourceKeyTemplate="messageDeliveryProvider.{0}" notSetResourceKey="messageDeliveryProvider.default" valueAttr="name" emptySelectionAllowed="true" nameIsResourceKey="true"/>
-		<property resourceKey="message.delivery.retry.time" inputType="text" minValue="0" maxValue="60"
-			allowEmpty="false" weight="30" defaultValue="30" />
-		<property resourceKey="message.delivery.retry.number" inputType="text" minValue="1" maxValue="5"
-			allowEmpty="false" weight="40" defaultValue="2" />
 	</propertyCategory>
 	<propertyCategory resourceKey="category.security" resourceBundle="HypersocketServer" weight="400">
 		<property resourceKey="security.knownHosts" inputType="hidden" defaultValue="" weight="0" cache="false"/>
