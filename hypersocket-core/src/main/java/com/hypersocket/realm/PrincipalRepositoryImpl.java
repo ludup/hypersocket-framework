@@ -237,13 +237,6 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 	public Collection<Principal> allPrincipals() {
 		return allEntities(Principal.class, new DeletedCriteria(false), new HiddenCriteria(false));
 	}
-	
-	@Override
-	@Transactional(readOnly = true)
-	public Collection<Principal> allPrincipals(Realm realm, PrincipalType type) {
-		return allEntities(Principal.class, new RealmCriteria(realm), new PrincipalTypeCriteria(type), 
-				new DeletedCriteria(false), new HiddenCriteria(false));
-	}
 
 	public boolean isDeletable() {
 		return true;
