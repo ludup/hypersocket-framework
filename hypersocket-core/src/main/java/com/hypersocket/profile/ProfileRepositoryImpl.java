@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hypersocket.local.PrincipalTypeRestriction;
 import com.hypersocket.realm.DelegationCriteria;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalStatus;
 import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.Realm;
 import com.hypersocket.repository.AbstractEntityRepositoryImpl;
@@ -332,6 +333,47 @@ public class ProfileRepositoryImpl extends AbstractEntityRepositoryImpl<Profile,
 		Query q = createQuery("delete from Profile where realm = :r", true);
 		q.setParameter("r", realm);
 		log.info(String.format("Deleted %d Profile", q.executeUpdate()));
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public long getCompleteProfileCountAlt(Collection<Realm> realms) {
+		
+		var principals =  allEntities(Principal.class, new RealmsCriteria(realms), 
+				new DeletedCriteria(false),
+				new PrincipalTypeRestriction(PrincipalType.USER), delegationCriteria, new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				DetachedCriteria profileSubquery = DetachedCriteria.forClass(Profile.class, "p")
+						.add(Restrictions.eq("deleted", false))
+						.add(Restrictions.in("p.state", 
+							new ProfileCredentialsState[] { ProfileCredentialsState.COMPLETE }))  
+					    .setProjection( Projections.property("p.id"));
+				
+				criteria.add(Subqueries.propertyIn("id", profileSubquery));
+			}
+			
+		});
+		
+		return principals == null ? 0 : principals
+				.stream()
+				.filter(p -> p.getPrincipalStatus() == PrincipalStatus.ENABLED)
+				.count();
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public boolean hasCompletedProfileAlt(Principal principal) {
+		// may be check principal status (PrincipalStatus)
+		return get("id", principal.getId(), Profile.class, new DeletedCriteria(false), new CriteriaConfiguration() {
+
+			@Override
+			public void configure(Criteria criteria) {
+				criteria.add(Restrictions.eq("state", ProfileCredentialsState.COMPLETE));
+			}
+			
+		}) != null;
 	}
 	
 }
