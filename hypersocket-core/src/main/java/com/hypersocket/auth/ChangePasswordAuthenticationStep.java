@@ -15,6 +15,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.hypersocket.config.ConfigurationService;
 import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.permissions.AccessDeniedException;
@@ -34,12 +35,18 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	private static final String HAVE_I_BEEN_PWNED_USER_PASSWORD_HASH_SALT = "hibp.userPasswordHashSalt";
 	private static final String HAVE_I_BEEN_PWNED_USER_PASSWORD_RESULT = "hibp.userPasswordResult";
 	
+	// depends on x-hypersocket-password-reset
+	private static final String ADMINISTRATIVE_RESET_CONFIG = "resetPassword.administrative";
+	
 	
 	@Autowired
 	private RealmService realmService;
 	
 	@Autowired
 	private AuthenticationService authenticationService;
+	
+	@Autowired
+	private ConfigurationService configurationService; 
 	
 	@PostConstruct
 	private void postConstruct() {
@@ -112,20 +119,29 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 	}
 
 	protected void doPasswordChange(AuthenticationState state, String password) throws AccessDeniedException, ResourceException {
-		if(state.hasParameter("password")) {
-			realmService.changePassword(state.getPrincipal(), state.getParameter("password"), password);
+		var isAdministrativeReset = configurationService
+							.getBooleanValue(state.getPrincipal().getRealm(), ADMINISTRATIVE_RESET_CONFIG);
+		var isMarkedByHIBP = state.hasEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED) 
+											&& (Boolean) state.getEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED);
+		
+		if (isAdministrativeReset && isMarkedByHIBP) {
+			realmService.setPassword(state.getPrincipal(), password, isForceChangeRequired(state), true);
 		} else {
-			realmService.setPassword(state.getPrincipal(), password, 
-					isForceChangeRequired(state), 
-					isAdministrative(state));
+			if(state.hasParameter("password")) {
+				realmService.changePassword(state.getPrincipal(), state.getParameter("password"), password);
+			} else {
+				realmService.setPassword(state.getPrincipal(), password, 
+						isForceChangeRequired(state), 
+						isAdministrative(state));
+			}
 		}
 	}
 
-	protected boolean isForceChangeRequired(AuthenticationState principal) {
+	protected boolean isForceChangeRequired(AuthenticationState state) {
 		return false;
 	}
 	
-	protected boolean isAdministrative(AuthenticationState principal) {
+	protected boolean isAdministrative(AuthenticationState state) {
 		return false;
 	}
 	
