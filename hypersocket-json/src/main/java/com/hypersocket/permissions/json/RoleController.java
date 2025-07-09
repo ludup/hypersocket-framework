@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -372,6 +373,16 @@ public class RoleController extends ResourceController {
 
 			Role newRole;
 			Realm realm = sessionUtils.getCurrentRealm(request);
+			
+			if (role.getId() != null) {
+				var roleFromSource = permissionService.getRoleById(role.getId(), realm);
+				
+				if (checkRoleNameChangedForEveyone(role, roleFromSource)) {
+					return new ResourceStatus<Role>(false, I18N.getResource(
+							sessionUtils.getLocale(request),
+							PermissionService.RESOURCE_BUNDLE, "error.role.everyone.name.rename"));
+				}
+			}
 
 			List<Realm> realms = new ArrayList<Realm>();
 			for (Long id : role.getRealms()) {
@@ -571,5 +582,14 @@ public class RoleController extends ResourceController {
 		} catch (Exception e) {
 			return new RequestStatus(false, e.getMessage());
 		}
+	}
+	
+	private boolean checkRoleNameChangedForEveyone(RoleUpdate role, Role roleFromSource) {
+		
+		Objects.requireNonNull(role);
+		Objects.requireNonNull(roleFromSource);
+		
+		return PermissionService.ROLE_EVERYONE.equals(roleFromSource.getName()) &&
+				!PermissionService.ROLE_EVERYONE.equals(role.getName());
 	}
 }
