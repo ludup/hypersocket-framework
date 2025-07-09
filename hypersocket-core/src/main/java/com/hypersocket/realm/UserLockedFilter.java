@@ -12,29 +12,29 @@ import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.DefaultTableFilter;
 
 @Component
-public class UserEnabledFilter extends DefaultTableFilter {
+public class UserLockedFilter extends DefaultTableFilter {
 	
-	static Logger log = LoggerFactory.getLogger(UserEnabledFilter.class);
+	static Logger log = LoggerFactory.getLogger(UserLockedFilter.class);
 	
 	@Autowired
 	private PrincipalRepository principalRepository;
 	
 	@Override
 	public String getResourceKey() {
-		return "filter.ad.principal.enabled";
+		return "filter.principal.locked";
 	}
 
 	@Override
 	public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) {
 		return principalRepository.searchPrincipalWithStatus(Principal.class, realm, PrincipalType.USER, 
-				searchColumn, searchPattern, sorting, start, length,  Arrays.asList(PrincipalStatus.ENABLED));
+				searchColumn, searchPattern, sorting, start, length,  Arrays.asList(PrincipalStatus.LOCKED));
 	}
 
 	@Override
 	public Long searchResourcesCount(Realm realm, String searchColumn, String searchPattern) {
 		return principalRepository.getPrincipalWithStatusCount(Principal.class, realm, PrincipalType.USER, 
-				searchColumn, searchPattern, Arrays.asList(PrincipalStatus.ENABLED));
+				searchColumn, searchPattern, Arrays.asList(PrincipalStatus.LOCKED));
 	}
 
 	@Override
