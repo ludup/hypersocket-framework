@@ -27,13 +27,13 @@ public class UserEnabledFilter extends DefaultTableFilter {
 	@Override
 	public List<?> searchResources(Realm realm, String searchColumn, String searchPattern, int start, int length,
 			ColumnSort[] sorting) {
-		return principalRepository.searchPrincipalWithStatus(Principal.class, realm, PrincipalType.USER, 
+		return principalRepository.searchRemoteUserWithPrincipalStatus(Principal.class, realm, PrincipalType.USER, 
 				searchColumn, searchPattern, sorting, start, length,  Arrays.asList(PrincipalStatus.ENABLED));
 	}
 
 	@Override
 	public Long searchResourcesCount(Realm realm, String searchColumn, String searchPattern) {
-		return principalRepository.getPrincipalWithStatusCount(Principal.class, realm, PrincipalType.USER, 
+		return principalRepository.getRemoteUserWithPrincipalStatusCount(Principal.class, realm, PrincipalType.USER, 
 				searchColumn, searchPattern, Arrays.asList(PrincipalStatus.ENABLED));
 	}
 

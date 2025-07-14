@@ -305,7 +305,7 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<?> searchPrincipalWithStatus(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn,
+	public List<?> searchRemoteUserWithPrincipalStatus(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn,
 			String searchPattern, ColumnSort[] sorting, int start, int length, List<PrincipalStatus> principalStatuses,
 			CriteriaConfiguration... criteriaConfiguration) {
 		return super.search(clazz, searchColumn, searchPattern, start, length, sorting,
@@ -315,7 +315,7 @@ public class PrincipalRepositoryImpl extends AbstractResourceRepositoryImpl<Prin
 
 	@Override
 	@Transactional(readOnly = true)
-	public Long getPrincipalWithStatusCount(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn,
+	public Long getRemoteUserWithPrincipalStatusCount(Class<?> clazz, Realm realm, PrincipalType type, String searchColumn,
 			String searchPattern, List<PrincipalStatus> principalStatuses, CriteriaConfiguration... criteriaConfiguration) {
 		return getCount(clazz, searchColumn, searchPattern,
 				ArrayUtils.addAll(criteriaConfiguration, new RealmCriteria(realm), new PrincipalTypeCriteria(type),
