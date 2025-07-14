@@ -323,4 +323,12 @@ public class AuthenticationSchemeRepositoryImpl extends AbstractResourceReposito
 	public AuthenticationScheme get2faScheme(Realm realm, String authenticator) {
 		return get("authenticator2fa", authenticator, AuthenticationScheme.class, new RealmCriteria(realm));
 	}
+	
+	@Override
+	@Transactional(readOnly=true)
+	public List<AuthenticationScheme> getAuthenticationSchemeByResourceKeyOtherThan(Long id, String resourceKey, Realm realm) {
+		return list("resourceKey", resourceKey, AuthenticationScheme.class, new RealmCriteria(realm), c -> {
+			c.add(Restrictions.not(Restrictions.eq("id", id)));
+		});
+	}
 }

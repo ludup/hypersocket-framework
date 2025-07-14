@@ -57,4 +57,6 @@ public interface AuthenticationSchemeRepository extends AbstractResourceReposito
 	Set<Role> getAllowedRoles(AuthenticationScheme scheme);
 
 	Set<Role> getDeniedRoles(AuthenticationScheme scheme);
+	
+	List<AuthenticationScheme> getAuthenticationSchemeByResourceKeyOtherThan(Long id, String resourceKey, Realm realm);
 }
