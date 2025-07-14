@@ -22,9 +22,6 @@ public class DatabasePropertiesFileConfigurationStore extends PropertiesFileConf
 
 	public static final String MYSQL = "MYSQL";
 	public static final String MYSQL_LOCAL = "MYSQL_LOCAL";
-	public static final String POSTGRES = "POSTGRES";
-	public static final String MSSQL = "MSSQL";
-	public static final String DERBY = "DERBY";
 	public static final String H2 = "H2";
 
 	public static final String JDBC_HIBERNATE_DIALECT = "jdbc.hibernate.dialect";
@@ -110,7 +107,7 @@ public class DatabasePropertiesFileConfigurationStore extends PropertiesFileConf
 			} else if (JDBC_DATABASE.equals(template.getResourceKey())) {
 				properties.put(JDBC_DATABASE, value);
 			} else if (JDBC_HOST.equals(template.getResourceKey())) {
-				if (DERBY.equals(currentVendor) || H2.equals(currentVendor)) {
+				if (H2.equals(currentVendor)) {
 					properties.put(JDBC_HOST, null);
 				} else {
 					properties.put(JDBC_HOST, value);
@@ -128,7 +125,7 @@ public class DatabasePropertiesFileConfigurationStore extends PropertiesFileConf
 					properties.put(JDBC_LOCAL_SOCKET, null);
 				}
 			} else if (JDBC_PORT.equals(template.getResourceKey())) {
-				if (DERBY.equals(currentVendor) || H2.equals(currentVendor)) {
+				if (H2.equals(currentVendor)) {
 					properties.put(JDBC_PORT, null);
 				} else {
 					properties.put(JDBC_PORT, value);
@@ -235,9 +232,6 @@ public class DatabasePropertiesFileConfigurationStore extends PropertiesFileConf
 
 		public static final String SCHEME_MYSQL = "mysql";
 		public static final String SCHEME_MARIADB = "mariadb";
-		public static final String SCHEME_POSTGRESQL = "postgresql";
-		public static final String SCHEME_MSSQL = "sqlserver";
-		public static final String SCHEME_DERBY = "derby";
 		public static final String SCHEME_H2 = "h2";
 
 		public static String SCHEME = "SCHEME";
@@ -254,12 +248,6 @@ public class DatabasePropertiesFileConfigurationStore extends PropertiesFileConf
 				return parseMaria(uri);
 			} else if (uri.contains(SCHEME_MYSQL)) {
 				return parseMySql(uri);
-			} else if (uri.contains(SCHEME_POSTGRESQL)) {
-				return parsePostgres(uri);
-			} else if (uri.contains(SCHEME_MSSQL)) {
-				return parseMsSql(uri);
-			} else if (uri.contains(SCHEME_DERBY)) {
-				return parseDerby(uri);
 			} else if (uri.contains(SCHEME_H2)) {
 				return parseH2(uri);
 			}
@@ -286,34 +274,6 @@ public class DatabasePropertiesFileConfigurationStore extends PropertiesFileConf
 				tksn.put(JDBC_LOCAL_SOCKET, tksn.get(MYSQL_LOCAL_SOCKET));
 			}
 			return tksn;
-		}
-
-		private static Map<String, String> parsePostgres(String uri) {
-			String toParse = uri.replaceAll("jdbc:", "");
-			return makeTokens(toParse);
-		}
-
-		private static Map<String, String> parseMsSql(String uri) {
-			String toParse = uri.replaceAll("jdbc:jtds:", "");
-			return makeTokens(toParse);
-		}
-
-		private static Map<String, String> parseDerby(String uri) {
-			String[] parts = uri.split(":");
-			// server
-			if (parts[2].startsWith("//")) {
-				String toParse = uri.replaceAll("jdbc:", "");
-				return makeTokens(toParse);
-			} else {// embedded
-				String toParse = cleanUpDerbySubProtocol(uri);
-				Map<String, String> tokens = new HashMap<>();
-				tokens.put(SCHEME, mapDatabase("derby"));
-				tokens.put(HOST, "localhost");
-				tokens.put(PORT, "0");
-				tokens.put(PATH, "");
-				tokens.put(DATABASE, processEmbeddedDerbyDatabase(toParse.split(":")[2]));
-				return tokens;
-			}
 		}
 
 		private static Map<String, String> parseH2(String uri) {
@@ -344,12 +304,6 @@ public class DatabasePropertiesFileConfigurationStore extends PropertiesFileConf
 				return MYSQL;
 			case SCHEME_MARIADB:
 				return MYSQL_LOCAL;
-			case SCHEME_POSTGRESQL:
-				return POSTGRES;
-			case SCHEME_MSSQL:
-				return MSSQL;
-			case SCHEME_DERBY:
-				return DERBY;
 			case SCHEME_H2:
 				return H2;
 			}
@@ -405,14 +359,8 @@ public class DatabasePropertiesFileConfigurationStore extends PropertiesFileConf
 		private static String mapPort(String database, int port) {
 			if (port == -1) {
 				switch (database) {
-				case MYSQL:
-					return "3306";
-				case POSTGRES:
-					return "5432";
-				case MSSQL:
-					return "1433";
-				case DERBY:
-					return "1527";
+					case MYSQL:
+						return "3306";
 				}
 				return "0";
 			}

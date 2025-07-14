@@ -39,25 +39,16 @@ public class QuartzSpringConfiguration {
 	
 	static Logger log = LoggerFactory.getLogger(QuartzSpringConfiguration.class);
 	
-	private static final String POSTGRES = "postgres";
 	private static final String MYSQL = "mysql";
 	private static final String MARIADB = "MariaDB";
 	private static final String H2 = "h2";
 	
-	private static final String ORACLE = "oracle";
-	private static final String MSSQL = "ms";
-	private static final String DERBY = "derby";
-	
 	private static final Map<String, String> databaseScript = new HashMap<>();
 	
 	static {
-		databaseScript.put(POSTGRES, "/conf/quartz-tables-postgres.sql");
 		databaseScript.put(MYSQL, "/conf/quartz-tables-mysql.sql");
 		databaseScript.put(MARIADB, "/conf/quartz-tables-mysql.sql");
 		databaseScript.put(H2, "/conf/quartz-tables-h2.sql");
-		databaseScript.put(ORACLE, "/conf/quartz-tables-oracle.sql");
-		databaseScript.put(MSSQL, "/conf/quartz-tables-mssql.sql");
-		databaseScript.put(DERBY, "/conf/quartz-tables-derby.sql");
 	}
 	
 	@Autowired 
@@ -217,17 +208,9 @@ public class QuartzSpringConfiguration {
 	private String getDatabaseFile(String databaseProductName){
 		if(databaseProductName.toLowerCase().contains("mysql")){
 			return databaseScript.get(MYSQL);
-		}else if(databaseProductName.toLowerCase().contains("postgres")){
-			return databaseScript.get(POSTGRES);
-		}else if(databaseProductName.toLowerCase().contains("h2")){
+		} else if(databaseProductName.toLowerCase().contains("h2")){
 			return databaseScript.get(H2);
-		}else if(databaseProductName.toLowerCase().contains("oracle")){
-			return databaseScript.get(ORACLE);
-		}else if(databaseProductName.toLowerCase().contains("mssql")){
-			return databaseScript.get(MSSQL);
-		}else if(databaseProductName.toLowerCase().contains("derby")){
-			return databaseScript.get(DERBY);
-		}else if(databaseProductName.toLowerCase().contains("mariadb")){
+		} else if(databaseProductName.toLowerCase().contains("mariadb")){
 			return databaseScript.get(MARIADB);
 		}
 		
