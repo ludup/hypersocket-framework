@@ -54,7 +54,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		
 		<!-- Also in hypersocket.enterprise, hypersocket-json-client and I4J -->
-		<jackson.version>2.10.5</jackson.version>
+		<jackson.version>2.12.7</jackson.version>
+		<jackson.databind.version>2.12.7.1</jackson.databind.version>
 		
 		<!-- When you change this, remember to also change hypersocket-client, hypersocket-enterprise, hypersocket-ui  -->
 		<hypersocket.languages>da,nl,fi,fr,de,it,no,pl,ru,sv,es,ja,he,pt</hypersocket.languages>
@@ -115,6 +116,13 @@
 				<artifactId>bcpkix-jdk15on</artifactId>
 				<version>1.68</version>
 			</dependency>
+			
+			<dependency>
+				<artifactId>jackson-databind</artifactId>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<version>${jackson.databind.version}</version>
+			</dependency>
+			
 		</dependencies>
 	</dependencyManagement>
 	

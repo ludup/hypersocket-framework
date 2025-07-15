@@ -24,9 +24,8 @@
             <version>2.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<artifactId>jackson-databind</artifactId>
 			<groupId>com.fasterxml.jackson.core</groupId>
-			<version>${jackson.version}</version>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
