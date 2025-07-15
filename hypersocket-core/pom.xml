@@ -197,8 +197,9 @@
 
 		<!-- Jackson -->
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<version>${jackson.version}</version>
 		</dependency>
 
 		<!-- JAXB -->
