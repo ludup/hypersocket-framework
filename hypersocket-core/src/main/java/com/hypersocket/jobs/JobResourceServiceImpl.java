@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.hypersocket.events.EventService;
 import com.hypersocket.i18n.I18NService;
+import com.hypersocket.jobs.JobResource.Parent;
 import com.hypersocket.jobs.events.JobResourceCreatedEvent;
 import com.hypersocket.jobs.events.JobResourceDeletedEvent;
 import com.hypersocket.jobs.events.JobResourceEvent;
@@ -286,14 +287,20 @@ public class JobResourceServiceImpl extends
 		return createJob(null);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public String createJob(String parent) throws ResourceException, AccessDeniedException {
+	
+		return createAndGetJob(new Parent(parent)).getName();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public JobResource createAndGetJob(Parent parent) throws ResourceException, AccessDeniedException {
 		
 		JobResource parentJob = null;
 		
-		if(parent!=null) {
-			parentJob = getResourceByName(parent);
+		if(parent !=null && !parent.equals(JobResource.NO_PARENT)) {
+			parentJob = getResourceByName(parent.getParent());
 		}
 		
 		JobResource job = new JobResource();
@@ -304,11 +311,12 @@ public class JobResourceServiceImpl extends
 		
 		repository.saveResource(job, null);
 		repository.flush();
-		return job.getName();
+		return job;
 	}
 
 	@Override
 	public Collection<JobResource> getJobs(String jobUuid) {
 		return repository.getChildJobs(jobUuid);
 	}
+	
 }

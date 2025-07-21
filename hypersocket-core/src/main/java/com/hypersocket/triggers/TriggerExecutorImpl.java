@@ -217,7 +217,22 @@ public class TriggerExecutorImpl extends AbstractAuthenticatedServiceImpl implem
 		}
 
 		try {
-			TaskResult outputEvent = transactionService.doInTransaction(new TransactionCallback<TaskResult>() {
+			
+			/*
+			 * JobResource needs to be available for the executing job in another thread.
+			 * By default isolation is repeatable read, hence whatever is saved in this transaction until
+			 * it commits will not be seen by other threads, and we wait at the end of the current logic for job to complete,
+			 * while job waits on this transaction to complete which causes the failure and both are waiting on each other for something.
+			 * 
+			 * We break this chain by saving the job resource in a new transaction but that causes problem for current
+			 * transaction as due to default isolation it itself cannot see the saved job resource saved in new transaction.
+			 * 
+			 * To solve this the parent transaction's isolation is dropped one level to read committed.
+			 * 
+			 * Refer class StartReconcileTask for reference where job resource is created.
+			 * TrackedJob#execute where job resource is referred by job task saved in StartReconcileTask.
+			 */
+			TaskResult outputEvent = transactionService.doInIsolationReadCommittedTransaction(new TransactionCallback<TaskResult>() {
 
 				@Override
 				public TaskResult doInTransaction(TransactionStatus status) {

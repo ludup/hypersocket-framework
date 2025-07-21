@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import com.hypersocket.jobs.JobResource.Parent;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.realm.Realm;
@@ -29,6 +30,8 @@ public interface JobResourceService extends
 	
 	String createJob(String parent) throws ResourceException, AccessDeniedException;
 	
+	JobResource createAndGetJob(Parent parent) throws ResourceException, AccessDeniedException;
+	
 	void reportJobStarting(String uuid) throws ResourceException, InvalidJobStateException;
 
 	void reportJobComplete(String uuid, String result) throws ResourceException, InvalidJobStateException;
@@ -45,5 +48,5 @@ public interface JobResourceService extends
 			throws TimeoutException, ResourceNotFoundException, InterruptedException;
 
 	Collection<JobResource> getJobs(String jobUuid);
-
+	
 }

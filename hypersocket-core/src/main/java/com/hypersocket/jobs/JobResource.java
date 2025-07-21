@@ -1,5 +1,7 @@
 package com.hypersocket.jobs;
 
+import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -20,6 +22,8 @@ import com.hypersocket.resource.RealmResource;
 public class JobResource extends RealmResource {
 
 	private static final long serialVersionUID = 5348826725565924228L;
+	
+	public static final Parent NO_PARENT = new Parent("NO_PARENT");
 
 	@OneToOne
 	private JobResource parentJob;
@@ -67,6 +71,38 @@ public class JobResource extends RealmResource {
 
 	public void setResult(String result) {
 		this.result = result;
+	}
+	
+	public static class Parent {
+		
+		private final String parent;
+		
+		public Parent(String parent) {
+			this.parent = parent;
+		}
+		
+		public String getParent() {
+			return parent;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(parent);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Parent other = (Parent) obj;
+			return Objects.equals(parent, other.parent);
+		}
+		
+		
 	}
 
 }

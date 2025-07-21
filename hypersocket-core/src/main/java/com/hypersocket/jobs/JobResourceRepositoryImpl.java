@@ -23,6 +23,7 @@ public class JobResourceRepositoryImpl extends
 	@Override
 	@Transactional(readOnly=true)
 	public Collection<JobResource> getChildJobs(final String parent) {
+		
 		return list(JobResource.class, new CriteriaConfiguration() {
 			
 			@Override

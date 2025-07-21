@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -25,11 +27,44 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Autowired
 	private EventService eventService;
-
+	
 	@Override
 	public <T> T doInTransaction(TransactionCallback<T> transaction) throws ResourceException, AccessDeniedException {
+		return doInTransactionRequiresWithTransactionDefinition(transaction, new DefaultTransactionDefinition());
+	}
 
-		TransactionTemplate tmpl = new TransactionTemplate(txManager);
+	@Override
+	public <T> T doInTransaction(TransactionCallbackWithError<T> transaction) throws ResourceException {
+		return doInTransactionRequiresWithTransactionDefinition(transaction, new DefaultTransactionDefinition()); 
+	}
+	
+	@Override
+	public <T> T doInNewTransaction(TransactionCallback<T> transaction)
+			throws ResourceException, AccessDeniedException {
+		return doInTransactionRequiresWithTransactionDefinition(transaction, newTransaction()); 
+	}
+	
+	@Override
+	public <T> T doInNewTransaction(TransactionCallbackWithError<T> transaction) throws ResourceException {
+		return doInTransactionRequiresWithTransactionDefinition(transaction, newTransaction()); 
+	}
+	
+	@Override
+	public <T> T doInIsolationReadCommittedTransaction(TransactionCallback<T> transaction)
+			throws ResourceException, AccessDeniedException {
+		return doInTransactionRequiresWithTransactionDefinition(transaction, isolationReadCommitted()); 
+	}
+	
+	@Override
+	public <T> T doInIsolationReadCommittedTransaction(TransactionCallbackWithError<T> transaction)
+			throws ResourceException {
+		return doInTransactionRequiresWithTransactionDefinition(transaction, isolationReadCommitted()); 
+	}
+	
+	@Override
+	public <T> T doInTransactionRequiresWithTransactionDefinition(TransactionCallback<T> transaction,
+			TransactionDefinition transactionDefinition) throws ResourceException, AccessDeniedException {
+		TransactionTemplate tmpl = new TransactionTemplate(txManager, transactionDefinition);
 		try {
 			T result;
 			eventService.delayEvents();
@@ -56,11 +91,12 @@ public class TransactionServiceImpl implements TransactionService {
 					e.getMessage(), e);
 		}
 	}
-
+	
 	@Override
-	public <T> T doInTransaction(TransactionCallbackWithError<T> transaction) throws ResourceException {
-
-		TransactionTemplate tmpl = new TransactionTemplate(txManager);
+	public <T> T doInTransactionRequiresWithTransactionDefinition(TransactionCallbackWithError<T> transaction,
+			TransactionDefinition transactionDefinition) throws ResourceException {
+		
+		TransactionTemplate tmpl = new TransactionTemplate(txManager, transactionDefinition);
 		try {
 			T result;
 			eventService.delayEvents();
@@ -78,7 +114,16 @@ public class TransactionServiceImpl implements TransactionService {
 			throw new ResourceException(AuthenticationService.RESOURCE_BUNDLE, "error.transactionFailed",
 					e.getMessage(), e);
 		} 
+	}
 
+	private DefaultTransactionDefinition isolationReadCommitted() {
+		var dt = new DefaultTransactionDefinition();
+		dt.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+		return dt;
+	}
+	
+	private DefaultTransactionDefinition newTransaction() {
+		return new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	}
 
 }
