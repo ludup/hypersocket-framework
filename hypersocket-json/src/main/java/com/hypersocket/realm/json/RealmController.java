@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -58,6 +59,7 @@ import com.hypersocket.tables.Column;
 import com.hypersocket.tables.ColumnSort;
 import com.hypersocket.tables.TableFilter;
 import com.hypersocket.tables.json.BootstrapTablePageProcessor;
+import com.hypersocket.util.Pair;
 
 @Controller
 public class RealmController extends ResourceController {
@@ -427,5 +429,40 @@ public class RealmController extends ResourceController {
 
 		return new ResourceList<CommonEndOfLine>(
 				realmService.getCommonEndOfLine());
+	}
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "realms/users/tableFilters", method = RequestMethod.GET, produces = { "application/json" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
+	public ResourceList<Pair<String>> getUserTableFilters(
+			HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, UnauthorizedException,
+			SessionTimeoutException {
+		
+		
+		var realm = getCurrentRealm();
+		var searchFilters = new ArrayList<Pair<String>>();
+		
+		searchFilters.add(new Pair<>("all.accounts", ""));
+		
+
+		if (!"local".equals(realm.getResourceCategory())) {
+			searchFilters.add(new Pair<>("local.accounts", "filter.accounts.local"));
+			searchFilters.add(new Pair<>(String.format("realm.%s.accounts", realm.getResourceCategory()), "filter.accounts.remote"));
+		}
+		
+		var registeredFilters = realmService.getPrincipalFilters();
+		
+		
+		var registeredFiltersList = registeredFilters
+			.stream()
+			.map(f -> new Pair<String>(f.getResourceKey(), f.getResourceKey()))
+			.collect(Collectors.toList());
+		
+		searchFilters.addAll(registeredFiltersList);
+		
+		return new ResourceList<Pair<String>>(searchFilters);
 	}
 }

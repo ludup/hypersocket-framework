@@ -129,6 +129,11 @@
 		<property resourceKey="websocket.origins" inputType="multipleTextInput"
 		    	defaultValue="" weight="100" />	
 	</propertyCategory>
+	<propertyCategory resourceKey="user.table.filter"
+		 resourceBundle="RealmService"  weight="999999" group="userTableFilter">	
+		<property resourceKey="defaultUserFilter" inputType="select" nameAttr="first" valueAttr="second"
+		       url="realms/users/tableFilters" weight="0" defaultValue="" allowEmpty="true" nameIsResourceKey="true"/>
+	</propertyCategory>
 </propertyTemplates>
 
 		
