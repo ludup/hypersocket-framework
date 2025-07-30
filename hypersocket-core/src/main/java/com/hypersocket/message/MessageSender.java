@@ -58,6 +58,8 @@ public class MessageSender {
 
 	static Logger log = LoggerFactory.getLogger(MessageSender.class);
 	
+	private static String DIRECTIVE_OUTPUT_FORMAT_HTML = "<#ftl output_format=\"HTML\">\n";
+	
 	private final Realm realm;
 	private final RealmService realmService;
 	private final FreeMarkerService templateService;
@@ -438,29 +440,16 @@ public class MessageSender {
 						message.getSubject(), message.getModifiedDate().getTime());
 				StringWriter subjectWriter = new StringWriter();
 				subjectTemplate.process(data, subjectWriter);
-
+				
 				Template bodyTemplate = templateService.createTemplate("message.body." + message.getId(),
 						message.getBody(), message.getModifiedDate().getTime());
 				StringWriter bodyWriter = new StringWriter();
 				bodyTemplate.process(data, bodyWriter);
+				
+				String plainTextEmail = bodyWriter.toString();
 
-				String receipientHtml = "";
-
-				if (StringUtils.isNotBlank(message.getHtml())) {
-					if (message.getHtmlTemplate() != null) {
-						Document doc = Jsoup.parse(message.getHtmlTemplate().getHtml());
-						Elements elements = doc.select(message.getHtmlTemplate().getContentSelector());
-						if (elements.isEmpty()) {
-							throw new IllegalStateException(String.format("Invalid content selector %s",
-									message.getHtmlTemplate().getContentSelector()));
-						}
-						elements.first().append(message.getHtml());
-						receipientHtml = doc.toString();
-					} else {
-						receipientHtml = message.getHtml();
-					}
-				}
-
+				String receipientHtml = DIRECTIVE_OUTPUT_FORMAT_HTML + message.getHtml();
+				
 				Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(),
 						receipientHtml, message.getModifiedDate().getTime());
 
@@ -468,7 +457,20 @@ public class MessageSender {
 
 				StringWriter htmlWriter = new StringWriter();
 				htmlTemplate.process(data, htmlWriter);
+				
+				String htmlEmail = htmlWriter.toString();
 
+				if (StringUtils.isNotBlank(message.getHtml()) && message.getHtmlTemplate() != null) {
+					Document doc = Jsoup.parse(message.getHtmlTemplate().getHtml());
+					Elements elements = doc.select(message.getHtmlTemplate().getContentSelector());
+					if (elements.isEmpty()) {
+						throw new IllegalStateException(String.format("Invalid content selector %s",
+								message.getHtmlTemplate().getContentSelector()));
+					}
+					elements.first().append(htmlEmail);
+					htmlEmail = doc.toString();
+				}
+				
 				String attachmentsListString = message.getAttachments();
 				List<String> attachmentUUIDs = new ArrayList<>(
 						Arrays.asList(ResourceUtils.explodeValues(attachmentsListString)));
@@ -507,8 +509,8 @@ public class MessageSender {
 					var provider = (EmailMessageDeliveryProvider<EmailNotificationBuilder>)messageDeliveryService.getProviderOrBest(MediaType.EMAIL, providerResourceKey.orElse(""), EmailNotificationBuilder.class);
 					var builder = provider.newBuilder(realm);
 					builder.subject(subjectWriter.toString());
-					builder.text(bodyWriter.toString());
-					builder.html(htmlWriter.toString());
+					builder.text(plainTextEmail);
+					builder.html(htmlEmail);
 					builder.replyToName(replyTo != null ? replyTo.getName() : message.getReplyToName());
 					builder.replyToEmail(replyTo != null ? replyTo.getAddress() : message.getReplyToEmail());
 					builder.recipient(recipient);
