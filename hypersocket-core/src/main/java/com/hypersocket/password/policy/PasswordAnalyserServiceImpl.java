@@ -118,9 +118,11 @@ public class PasswordAnalyserServiceImpl implements PasswordAnalyserService, Ser
 						strength, i18nService.getResource("password.policy.contains.username", locale));
 			}
 		}
+		
+		var alwaysCheck = systemConfigurationService.getBooleanValue("dictionary.alwaysCheck");
 
 		// Check the password doesn't contain any dictionary words
-		if (!characteristics.getContainDictionaryWord()) {
+		if (alwaysCheck || !characteristics.getContainDictionaryWord()) {
 			try(var c = systemConfigurationService.tryWithSystemContext()) {
 				int minWordLength;
 				boolean matchAlphaOnly;

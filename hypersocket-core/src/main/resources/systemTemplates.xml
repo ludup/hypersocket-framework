@@ -88,6 +88,8 @@
 			defaultValue="true" weight="30" />
 		<property resourceKey="dictionary.blacklistBuiltIn" inputType="switch"
 			defaultValue="true" weight="50" />
+		<property resourceKey="dictionary.alwaysCheck" inputType="switch"
+			defaultValue="false" weight="60" />
 	</propertyCategory>
 	
 	
