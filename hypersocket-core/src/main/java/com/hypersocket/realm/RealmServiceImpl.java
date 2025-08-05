@@ -1075,6 +1075,12 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 	@Override
 	public void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon, boolean resendNewUserNotification,
 			boolean administrative) throws ResourceException, AccessDeniedException {
+		setPassword(principal, password, forceChangeAtNextLogon, resendNewUserNotification, administrative, null);
+	}
+	
+	@Override
+	public void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon, boolean resendNewUserNotification,
+			boolean administrative, Principal delegationPrincipalToActOn) throws ResourceException, AccessDeniedException {
 
 		if (permissionService.hasSystemPermission(principal)) {
 			try {
@@ -1090,7 +1096,11 @@ public class RealmServiceImpl extends PasswordEnabledAuthenticatedServiceImpl
 			}
 			
 			try {
-				delegationService.assertDelegation(principal);
+				if (delegationPrincipalToActOn != null) {
+					delegationService.assertDelegation(delegationPrincipalToActOn);
+				} else {
+					delegationService.assertDelegation(principal);
+				}
 			} catch (AccessDeniedException e) {
 				throw new ResourceCreationException(RESOURCE_BUNDLE, "error.noDelegation");
 			}

@@ -87,6 +87,9 @@ public interface RealmService extends PasswordEnabledAuthenticatedService {
 	
 	void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon, boolean resendNewUserNotification, 
 			boolean administrative) throws AccessDeniedException, ResourceException;
+	
+	public void setPassword(Principal principal, String password, boolean forceChangeAtNextLogon, boolean resendNewUserNotification,
+			boolean administrative, Principal delegationPrincipalToActOn) throws AccessDeniedException, ResourceException;
 
 	void changePassword(Principal principal, String oldPassword, String newPassword)
 			throws AccessDeniedException, ResourceException;

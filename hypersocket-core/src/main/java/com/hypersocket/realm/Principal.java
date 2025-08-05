@@ -139,6 +139,10 @@ public abstract class Principal extends RealmResource implements java.security.P
 	public boolean isPrimaryAccount() {
 		return super.getRealm().getOwner() == null;
 	}
+	
+	public boolean isSecondaryAccount() {
+		return !isPrimaryAccount();
+	}
 
 	@Transient
 	public abstract PrincipalType getType();
