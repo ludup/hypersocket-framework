@@ -163,7 +163,8 @@ public class DatabasePropertiesFileConfigurationStore extends PropertiesFileConf
 			}
 
 			if (properties.containsKey(JDBC_URL) && properties.containsKey(JDBC_LOCAL_SOCKET) && 
-					!vendorTemplateProperties.getProperty(JDBC_URL, "").contains(INSTALLER_DATABASE_HOST)) {
+					!vendorTemplateProperties.getProperty(JDBC_URL, "").contains(INSTALLER_DATABASE_HOST)
+					&& !properties.getProperty(JDBC_URL).contains(MYSQL_LOCAL_SOCKET)) {
 				properties.put(JDBC_URL, properties.getProperty(JDBC_URL) + "&" + MYSQL_LOCAL_SOCKET + "="
 						+ properties.getProperty(JDBC_LOCAL_SOCKET));
 			}
