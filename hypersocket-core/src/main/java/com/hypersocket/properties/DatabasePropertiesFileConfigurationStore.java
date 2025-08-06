@@ -162,7 +162,8 @@ public class DatabasePropertiesFileConfigurationStore extends PropertiesFileConf
 						+ properties.getProperty(JDBC_TIMEZONE));
 			}
 
-			if (properties.containsKey(JDBC_URL) && properties.containsKey(JDBC_LOCAL_SOCKET)) {
+			if (properties.containsKey(JDBC_URL) && properties.containsKey(JDBC_LOCAL_SOCKET) && 
+					!vendorTemplateProperties.getProperty(JDBC_URL, "").contains(INSTALLER_DATABASE_HOST)) {
 				properties.put(JDBC_URL, properties.getProperty(JDBC_URL) + "&" + MYSQL_LOCAL_SOCKET + "="
 						+ properties.getProperty(JDBC_LOCAL_SOCKET));
 			}
