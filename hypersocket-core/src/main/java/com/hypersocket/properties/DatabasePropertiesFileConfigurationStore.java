@@ -189,7 +189,10 @@ public class DatabasePropertiesFileConfigurationStore extends PropertiesFileConf
 		String jdbcUrl = properties.getProperty(JDBC_URL);
 		if (StringUtils.isNotBlank(jdbcUrl)) {
 			Map<String, String> tokens = JDBCURIParser.parse(jdbcUrl);
-			properties.setProperty(JDBC_VENDOR, tokens.get(JDBCURIParser.SCHEME));
+			
+			if(!properties.containsKey(JDBC_VENDOR))
+				properties.setProperty(JDBC_VENDOR, tokens.get(JDBCURIParser.SCHEME));
+			
 			if (tokens.containsKey(JDBCURIParser.HOST))
 				properties.setProperty(JDBC_HOST, tokens.get(JDBCURIParser.HOST));
 			if (tokens.containsKey(JDBCURIParser.PORT))
