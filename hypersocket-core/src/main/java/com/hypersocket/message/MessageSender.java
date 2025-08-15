@@ -448,7 +448,7 @@ public class MessageSender {
 				
 				String plainTextEmail = bodyWriter.toString();
 
-				String receipientHtml = DIRECTIVE_OUTPUT_FORMAT_HTML + message.getHtml();
+				String receipientHtml = DIRECTIVE_OUTPUT_FORMAT_HTML + (message.getHtml() == null ? "" : message.getHtml());
 				
 				Template htmlTemplate = templateService.createTemplate("message.html." + message.getId(),
 						receipientHtml, message.getModifiedDate().getTime());
@@ -459,7 +459,7 @@ public class MessageSender {
 				htmlTemplate.process(data, htmlWriter);
 				
 				String htmlEmail = htmlWriter.toString();
-
+				
 				if (StringUtils.isNotBlank(message.getHtml()) && message.getHtmlTemplate() != null) {
 					Document doc = Jsoup.parse(message.getHtmlTemplate().getHtml());
 					Elements elements = doc.select(message.getHtmlTemplate().getContentSelector());
@@ -506,11 +506,19 @@ public class MessageSender {
 						}
 					}
 					
+					if (StringUtils.isBlank(plainTextEmail) && StringUtils.isBlank(htmlEmail)) {
+						throw new IllegalStateException("No content to email.");
+					}
+					
 					var provider = (EmailMessageDeliveryProvider<EmailNotificationBuilder>)messageDeliveryService.getProviderOrBest(MediaType.EMAIL, providerResourceKey.orElse(""), EmailNotificationBuilder.class);
 					var builder = provider.newBuilder(realm);
 					builder.subject(subjectWriter.toString());
-					builder.text(plainTextEmail);
-					builder.html(htmlEmail);
+					if (StringUtils.isNotBlank(plainTextEmail)) {
+						builder.text(plainTextEmail);
+					}
+					if (StringUtils.isNotBlank(htmlEmail)) {
+						builder.html(htmlEmail);
+					}
 					builder.replyToName(replyTo != null ? replyTo.getName() : message.getReplyToName());
 					builder.replyToEmail(replyTo != null ? replyTo.getAddress() : message.getReplyToEmail());
 					builder.recipient(recipient);
