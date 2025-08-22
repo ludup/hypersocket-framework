@@ -27,7 +27,9 @@ public enum UserPermission implements PermissionType {
 	 * of the ticket that introduced this due to conflicts apparently
 	 * related to delegation, this is just to get a build.
 	 */
-	RESET_CREDENTIALS("user.reset", READ);
+	RESET_CREDENTIALS("user.reset", READ),
+	
+	RESET_PROFILE("user.reset_profile", READ);
 	
 	private final String val;
 	
