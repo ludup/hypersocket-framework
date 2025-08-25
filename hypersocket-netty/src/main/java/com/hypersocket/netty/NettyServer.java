@@ -200,7 +200,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 		executionHandler = new ExecutionHandler(
 				newThreadPool(minChannels, maxChannels, TimeUnit.MINUTES.toMillis(WORKER_TIMEOUT_MINUTES), nettyThreadFactory));
-		log.info(String.format("Using %d minimum execution threads, %d max execution  threads", 1, maxChannels));
+		log.info(String.format("Using %d minimum execution threads, %d max execution  threads", minChannels, maxChannels));
 		
 		requestLog = new NCSARequestLog();
 		requestLog.setFilename("logs/request.log");
