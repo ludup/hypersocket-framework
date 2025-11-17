@@ -22,15 +22,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -131,6 +134,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 	private Map<HTTPInterfaceResource,Set<Channel>> httpsChannels;
 
 	private ExecutorService serverWorkerExecutor;
+	private ExecutorService appBackgroundExecutor;
 
 	private MonitorChannelHandler monitorChannelHandler = new MonitorChannelHandler();
 	private Map<String,List<Channel>> channelsByIPAddress = new HashMap<String,List<Channel>>();
@@ -217,6 +221,24 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 		i18nService.registerBundle(RESOURCE_BUNDLE);
 	}
+	
+	@PreDestroy
+	private void preDestroy() {
+		if (Objects.nonNull(appBackgroundExecutor)) {
+			appBackgroundExecutor.shutdown(); // stop new work
+			try {
+				// wait up to 10 seconds for everything to finish
+				if (!appBackgroundExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
+					// still work left → force cancel
+					appBackgroundExecutor.shutdownNow();
+				}
+			} catch (InterruptedException e) {
+				// Hook itself got interrupted → force cancel anyway
+				appBackgroundExecutor.shutdownNow();
+				Thread.currentThread().interrupt(); // preserve interrupt status
+			}
+		}
+	}
 
 	public ClientBootstrap getClientBootstrap() {
 		return clientBootstrap;
@@ -269,6 +291,8 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 				return pipeline;
 			}
 		});
+		
+		appBackgroundExecutor = newAppBackgroundExecutor();
 
 		// Configure the server.	
 		serverWorkerExecutor = newScalingThreadPool(minWorkerThreads, maxWorkerThreads, TimeUnit.MINUTES.toMillis(WORKER_TIMEOUT_MINUTES), new NettyThreadFactory("ServerWorker"));
@@ -662,7 +686,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 
 	protected void processApplicationEvent(final SystemEvent event) {
 		if(event instanceof HTTPInterfaceResourceEvent) {
-			serverWorkerExecutor.execute(new Runnable() {
+		    appBackgroundExecutor.execute(new Runnable() {
 				public void run() {
 					try {
 						HTTPInterfaceResource resource = (HTTPInterfaceResource) ((HTTPInterfaceResourceEvent) event).getResource();
@@ -673,7 +697,7 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 							unbindInterface(resource);
 							bindInterface(resource);
 						} else if(event instanceof HTTPInterfaceResourceDeletedEvent) {
-							bindInterface(resource);
+							unbindInterface(resource);
 						}
 
 					} catch (IOException e) {
@@ -770,6 +794,23 @@ public class NettyServer extends HypersocketServerImpl implements ObjectSizeEsti
 				&& "true".equals(System.getProperty("hypersocket.security.strictTransportSecurity","true"))) {
 			nettyResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubdomains; preload");
 		}
+	}
+	
+	private ExecutorService newAppBackgroundExecutor() {
+		// a single threaded queue
+		 return new ThreadPoolExecutor(
+	        /* corePoolSize */          1,
+	        /* maximumPoolSize */       1,
+	        /* keepAliveTime */         0L, // as min and max thread is 1 irrelevant in this case but still given.
+	        /* keepAliveTime unit */    TimeUnit.MILLISECONDS,
+	        /* workQueue */             new LinkedBlockingQueue<>(),
+	        /* threadFactory */         r -> {
+	                                        // 1. obtain a plain thread from the default factory
+	                                        Thread t = Executors.defaultThreadFactory().newThread(r);
+	                                        // 2. give it a deterministic, readable name – great for logs
+	                                        t.setName("logonbox-background-app-worker");
+	                                        return t;
+	                                    });
 	}
 
 	private ExecutorService newScalingThreadPool(int min, int max, long keepAliveTime, ThreadFactory factory) {
