@@ -7,7 +7,7 @@
  ******************************************************************************/
 package com.hypersocket.session;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +32,6 @@ import com.hypersocket.repository.AbstractEntityRepositoryImpl;
 import com.hypersocket.repository.CriteriaConfiguration;
 import com.hypersocket.resource.RealmOrSystemRealmCriteria;
 import com.hypersocket.tables.ColumnSort;
-import com.hypersocket.tables.Sort;
 import com.hypersocket.utils.HypersocketUtils;
 
 @Repository
@@ -99,7 +98,7 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	@Transactional(readOnly=true)
 	public List<Session> getPrincipalActiveSessions(Principal principal) {
 		return allEntities(Session.class, (c) -> {
-			c.add(Restrictions.eq("principal", principal))
+			c.add(Restrictions.eq("principalId", principal.getId()))
 				.add(Restrictions.isNull("signedOut"))
 				.add(Restrictions.eq("system", false));
 		});
@@ -397,31 +396,64 @@ public class SessionRepositoryImpl extends AbstractEntityRepositoryImpl<Session,
 	@Transactional(readOnly=true)
 	public Map<String,Long> getPrincipalUsage(final Realm realm, final int maximumUsers, final Date startDate, final Date endDate) {
 		
-		List<?> ret = sum(Session.class, "principal", Sort.DESC, new RealmOrSystemRealmCriteria(
-				realm), new CriteriaConfiguration() {
-
-					@Override
-					public void configure(Criteria criteria) {
-						
-						criteria.add(Restrictions.or(
-								Restrictions.and(Restrictions.ge("created", startDate), Restrictions.lt("created", endDate)),
-								Restrictions.and(Restrictions.lt("created", startDate), Restrictions.or(
-										Restrictions.ge("signedOut", startDate), Restrictions.isNull("signedOut")))));
-
-						
-						criteria.add(Restrictions.eq("system", false));
-						criteria.setMaxResults(maximumUsers);
-					}
-			
-		});
+		var entities = new ArrayList<>(List.of("Principal p", "Session s"));
 		
-		Map<String,Long> results = new HashMap<String,Long>();
-		for(Object obj : ret) {
-			Object[] tmp = (Object[])obj;
-			results.put(((Principal) tmp[0]).getDescription(), ((Long)tmp[1] / 60));
+		var whereClause = new ArrayList<String>(List.of("s.principalId = p.id"));
+		
+		var params = new HashMap<String, Object>(
+					Map.of(
+							"startDate", startDate,
+							"endDate", endDate
+					)
+				);
+		
+		if(realm!=null && !realm.isSystem()) {
+			whereClause.add("s.currentRealm.id = :realmId");
+			params.put("realmId", realm.getId());
 		}
 		
-		return results;
+		whereClause.add("s.system = false "
+				+ "      and ("
+				+ "        (s.created >= :startDate and s.created < :endDate)"
+				+ "        or "
+				+ "        (s.created < :startDate"
+				+ "         and (s.signedOut >= :startDate or s.signedOut is null))"
+				+ "      )");
+		
+		Query query = createQuery("select "
+				+ "   p.description, count(s) as total "
+				+ " from "
+				+     String.join(", ", entities)
+				+ " where "
+				+ 	 String.join(" and ", whereClause)
+				+ " group by "
+				+ "    p.id, p.description "
+				+ " order by "
+				+ "	   total DESC",
+				false);
+		
+		// set params from your map 
+		params.forEach(query::setParameter);
+
+		// use maxResults 
+		query.setMaxResults(maximumUsers);
+		
+		Map<String,Long> data = new HashMap<String,Long>();
+		
+		var result = query.list();
+		
+		for(Object obj : result) {
+			Object[] tmp = (Object[])obj;
+
+			String description = (String) tmp[0];
+		    long total = ((Number) tmp[1]).longValue();
+			
+		    data.put(description, total);
+		    
+			
+		}
+		
+		return data;
 	}
 
 	
