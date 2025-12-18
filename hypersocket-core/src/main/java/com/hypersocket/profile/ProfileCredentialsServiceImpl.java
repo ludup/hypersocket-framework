@@ -531,7 +531,6 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 	@Override
 	public void resetProfile(Principal principal) throws AccessDeniedException, ResourceException {
 		
-		
 		assertAnyPermission(UserPermission.DELETE, UserPermission.UPDATE, UserPermission.RESET_PROFILE);
 		
 		Profile profile = getProfileForUser(principal);
@@ -539,8 +538,16 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 			profileRepository.deleteEntity(profile);
 		}
 		
-		for(ProfileCredentialsProvider provider : providers.values()) {
-			provider.deleteCredentials(principal);
+		var ctx = new AuthenticationModulesOperationContext();
+		for(var provider : providers.values()) {
+			switch(provider.hasCredentials(principal, ctx)) {
+				case COMPLETE:
+				case PARTIALLY_COMPLETE:
+					provider.deleteCredentials(principal);
+					break;
+				default:
+					break;
+			}
 		}
 		
 	}
