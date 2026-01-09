@@ -32,10 +32,10 @@ public class DatabaseProperty extends AbstractEntity<Long> implements ResourcePr
 	@Column(name="property_id")
 	private Long id;
 
-	@Column(nullable=false)
+	@Column(nullable=false, columnDefinition = "varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL")
 	private String resourceKey;
 	
-	@Column(nullable=true)
+	@Column(nullable=true, columnDefinition = "longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL")
 	@Lob
 	private String value;
 	
