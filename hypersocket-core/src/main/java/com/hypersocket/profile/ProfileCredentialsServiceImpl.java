@@ -206,6 +206,9 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 		
 		for(String module : validator.getRequired2FACredentials(principal)) {
 			Authenticator authenticator = authenticationService.getAuthenticator(module);
+			if(authenticator == null) {
+				log.warn("Skipping module `{}` for `{}` because it does not exist. Removed extension?", module == null ? "<null>" : module, principal.getName());
+			}
 			ProfileCredentialsProvider provider = providers.get(authenticator.getCredentialsResourceKey());
 			if(Objects.nonNull(provider)) {
 				ProfileCredentialsState currentState = provider.hasCredentials(principal, ctx);
