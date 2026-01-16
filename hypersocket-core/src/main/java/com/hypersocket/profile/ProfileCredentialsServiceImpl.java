@@ -208,6 +208,7 @@ public class ProfileCredentialsServiceImpl extends AbstractAuthenticatedServiceI
 			Authenticator authenticator = authenticationService.getAuthenticator(module);
 			if(authenticator == null) {
 				log.warn("Skipping module `{}` for `{}` because it does not exist. Removed extension?", module == null ? "<null>" : module, principal.getName());
+				continue;
 			}
 			ProfileCredentialsProvider provider = providers.get(authenticator.getCredentialsResourceKey());
 			if(Objects.nonNull(provider)) {
