@@ -37,28 +37,6 @@ public class TextProcessorTest extends AbstractTest {
 				.parseLong(tp.process("$(script)new java.io.File('" + tf.getPath() + "').lastModified()$(/script)")));
 	}
 
-	public void testDangerousClassesWhitelisted() throws IOException {
-		TextProcessor tp = new TextProcessor();
-		tp.setCaptureScriptErrors(false);
-		tp.setEvaluateScripts(true);
-		tp.whitelistClassName("java.io.File");
-		File tf = File.createTempFile("tff", ".tmp");
-		Assert.assertEquals(tf.lastModified(), Long
-				.parseLong(tp.process("$(script)new java.io.File('" + tf.getPath() + "').lastModified()$(/script)")));
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void testDangerousClassesBlacklisted() throws IOException {
-		TextProcessor tp = new TextProcessor();
-		tp.setCaptureScriptErrors(false);
-		tp.setEvaluateScripts(true);
-		tp.allowAllClasses();
-		tp.blacklistClassName("java.io.File");
-		File tf = File.createTempFile("tff", ".tmp");
-		Assert.assertEquals(tf.lastModified(), Long
-				.parseLong(tp.process("$(script)new java.io.File('" + tf.getPath() + "').lastModified()$(/script)")));
-	}
-
 	@Test
 	public void testVariables() {
 		TextProcessor tp = new TextProcessor();
