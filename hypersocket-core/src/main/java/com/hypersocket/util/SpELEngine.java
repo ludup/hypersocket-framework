@@ -29,7 +29,7 @@ public class SpELEngine implements ExpressionLanguageEngine {
 		whitelistPackages = Arrays.asList(System.getProperty("spel.whitelistPackages", "org.springframework.expression.spel,java.util,java.lang").split(",")).stream().filter(s -> !s.isBlank()).collect(Collectors.toList());
 		whitelistClasses = Arrays.asList(System.getProperty("spel.whitelistClasses", "org.springframework.expression.spel.,java.util.,java.lang.").split(",")).stream().filter(s -> !s.isBlank()).collect(Collectors.toList());
 		whitelistResources = Arrays.asList(System.getProperty("spel.whitelistResources", "").split(",")).stream().filter(s -> !s.isBlank()).collect(Collectors.toList());
-		blacklistPackages = Arrays.asList(System.getProperty("spel.blacklistPackages", "").split(",")).stream().filter(s -> !s.isBlank()).collect(Collectors.toList());
+		blacklistPackages = Arrays.asList(System.getProperty("spel.blacklistPackages", "java.lang.reflect").split(",")).stream().filter(s -> !s.isBlank()).collect(Collectors.toList());
 		blacklistClasses = Arrays.asList(System.getProperty("spel.blacklistClasses", "java.lang.System").split(",")).stream().filter(s -> !s.isBlank()).collect(Collectors.toList());
 		blacklistResources = Arrays.asList(System.getProperty("spel.blacklistResources", "").split(",")).stream().filter(s -> !s.isBlank()).collect(Collectors.toList());
 	}
