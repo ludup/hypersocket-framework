@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.TypeLocator;
 import org.springframework.expression.spel.SpelCompilerMode;
 import org.springframework.expression.spel.SpelParserConfiguration;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -79,6 +81,17 @@ public class SpELEngine implements ExpressionLanguageEngine {
 	public Object eval(String scriptText, Map<String, ? extends Object> map) throws Exception {
 		ExpressionParser parser = new SpelExpressionParser(config);
 		StandardEvaluationContext evalContext = new StandardEvaluationContext();
+		evalContext.setTypeLocator(new TypeLocator() {
+			
+			@Override
+			public Class<?> findType(String typeName) throws EvaluationException {
+				try {
+					return config.getCompilerClassLoader().loadClass(typeName);
+				} catch (ClassNotFoundException e) {
+					throw new EvaluationException("Type not found: " + typeName, e);
+				}
+			}
+		});
 		evalContext.setVariables((Map<String, Object>) map);
 		Expression exp = parser.parseExpression(scriptText);
 		return exp.getValue(evalContext);
