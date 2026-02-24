@@ -53,7 +53,7 @@ public class PublicSession implements ISession {
 		return impersonatedPrincipal;
 	}
 	
-	public Principal getInhertiedPrincipal() {
+	public Principal getInheritedPrincipal() {
 		return principal;
 	}
 
