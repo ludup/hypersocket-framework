@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,6 +54,15 @@ import com.hypersocket.session.json.SessionUtils;
 
 @Controller
 public class LogonController extends AuthenticatedController {
+	
+	private static final String FALLBACK_LOGIN_SCHEME = "fallback";
+
+	// Set of IP strings that we treat as “local”.
+    private static final Set<String> LOCALHOST_IPS = Set.of(
+            "127.0.0.1",      // IPv4 loopback
+            "0:0:0:0:0:0:0:1",// IPv6 loopback (expanded)
+            "::1"             // IPv6 loopback (compressed)
+    );
 
 	@Autowired
 	private PermissionService permissionService;
@@ -179,6 +189,11 @@ public class LogonController extends AuthenticatedController {
 	public AuthenticationResult logon(HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String scheme)
 			throws AccessDeniedException, UnauthorizedException, IOException, RedirectException {
+		
+		
+		if (FALLBACK_LOGIN_SCHEME.equals(scheme)) {
+			fallbackSchemeRestrictedToLocalhost(request, response);
+		}
 
 		AuthenticationState state = AuthenticationState.getCurrentState(request);
 
@@ -366,7 +381,7 @@ public class LogonController extends AuthenticatedController {
 				
 			}
 		} catch(FallbackAuthenticationRequired e) {
-			return resetLogon(request, response, "fallback", false);
+			return resetLogon(request, response, FALLBACK_LOGIN_SCHEME, false);
 		} catch(RedirectException e) {
 			/**
 			 * This is a hard redirect i.e. the logon method has been called directly by the browser 
@@ -408,34 +423,6 @@ public class LogonController extends AuthenticatedController {
 					state.getRealm(),
 					getNonce(request));
 		}
-	}
-
-	private Map<String, String[]> sanitizeMap(Map<String, String[]> parameterMap) {
-		var m = new HashMap<String, String[]>();
-		parameterMap.forEach((k, v) -> {
-			if(!k.equalsIgnoreCase("username") && !k.equalsIgnoreCase("password")) {
-				var a = new String[v.length];
-				for(int i = 0 ; i < a.length ; i++)
-					a[i] = SafeHTMLTagsBannerHelper.HTML_SANITIZE_POLICY.sanitize(v[i]);
-				m.put(k, a);
-			}
-		});
-		return m;
-	}
-
-	private int getNonce(HttpServletRequest request) {
-		String nonce = request.getParameter("nonce");
-		if(Objects.isNull(nonce)) {
-			return 0;
-		}
-		return Integer.parseInt(nonce);
-	}
-
-	private FormTemplate getErrorTemplate(AuthenticationState state, String message) {
-		FormTemplate template = new FormTemplate(state.getInitialSchemeResourceKey());
-		template.setShowLogonButton(false);
-		template.getInputFields().add(new ParagraphField("<i class=\"fa fa-exclamation\"></i> " + message, false, true, "danger"));
-		return template;
 	}
 
 	protected void checkRedirect(HttpServletRequest request, HttpServletResponse response) throws RedirectException, IOException {
@@ -524,6 +511,46 @@ public class LogonController extends AuthenticatedController {
 		return Objects.nonNull(state) 
 				&& Objects.nonNull(state.getScheme()) 
 				&& Objects.equals("basic", state.getScheme().getResourceKey());
+	}
+	
+	private void fallbackSchemeRestrictedToLocalhost(HttpServletRequest request, HttpServletResponse response)
+			throws IOException, AccessDeniedException {
+		String remoteAddr = request.getRemoteAddr();
+
+	    if (!LOCALHOST_IPS.contains(remoteAddr)) {
+	        // Not coming from localhost → reject
+	        response.sendError(HttpServletResponse.SC_FORBIDDEN,
+	                           "Access to this endpoint is restricted to localhost.");
+	        throw new AccessDeniedException();
+	    }
+	}
+
+	private Map<String, String[]> sanitizeMap(Map<String, String[]> parameterMap) {
+		var m = new HashMap<String, String[]>();
+		parameterMap.forEach((k, v) -> {
+			if(!k.equalsIgnoreCase("username") && !k.equalsIgnoreCase("password")) {
+				var a = new String[v.length];
+				for(int i = 0 ; i < a.length ; i++)
+					a[i] = SafeHTMLTagsBannerHelper.HTML_SANITIZE_POLICY.sanitize(v[i]);
+				m.put(k, a);
+			}
+		});
+		return m;
+	}
+
+	private int getNonce(HttpServletRequest request) {
+		String nonce = request.getParameter("nonce");
+		if(Objects.isNull(nonce)) {
+			return 0;
+		}
+		return Integer.parseInt(nonce);
+	}
+
+	private FormTemplate getErrorTemplate(AuthenticationState state, String message) {
+		FormTemplate template = new FormTemplate(state.getInitialSchemeResourceKey());
+		template.setShowLogonButton(false);
+		template.getInputFields().add(new ParagraphField("<i class=\"fa fa-exclamation\"></i> " + message, false, true, "danger"));
+		return template;
 	}
 	
 }
