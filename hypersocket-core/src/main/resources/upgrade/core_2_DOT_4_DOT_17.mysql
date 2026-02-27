@@ -1,0 +1,36 @@
+EXIT IF FRESH;
+
+ALTER TABLE `principals` DROP FOREIGN KEY IF EXISTS `principals_cascade_1`;
+ALTER TABLE `principals` DROP FOREIGN KEY IF EXISTS `principals_cascade_2`;
+
+ALTER TABLE `principals`
+  ADD CONSTRAINT `principals_cascade_1`
+    FOREIGN KEY (`realm_id`)
+    REFERENCES `realms`(`resource_id`)
+    ON DELETE CASCADE
+    ON UPDATE RESTRICT,
+  ADD CONSTRAINT `principals_cascade_2`
+    FOREIGN KEY (`parent_principal`)
+    REFERENCES `principals`(`resource_id`)
+    ON DELETE SET NULL
+    ON UPDATE RESTRICT;
+
+ALTER TABLE `properties`
+  CHANGE `resourceKey` `resourceKey` VARCHAR(191)
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  CHANGE `value` `value` LONGTEXT
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
+  CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+
+UPDATE `resources`
+  SET `name` = LEFT(`name`, 191)
+  WHERE CHAR_LENGTH(`name`) > 191;
+
+ALTER TABLE `resources`
+  CHANGE `name` `name` VARCHAR(191)
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  CHANGE `reference` `reference` VARCHAR(255)
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
+  CHANGE `resource_category` `resource_category` VARCHAR(255)
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
+  CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;

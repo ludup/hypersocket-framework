@@ -1,6 +1,5 @@
 package com.hypersocket.resource;
 
-
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -19,36 +18,33 @@ import com.hypersocket.repository.AbstractEntity;
 public abstract class SimpleResource extends AbstractEntity<Long> {
 
 	private static final long serialVersionUID = 306989572401186385L;
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
-	@Column(name="resource_id")
+	@Column(name = "resource_id")
 	private Long id;
 
-
-	@Column(name = "reference", updatable=false)
+	@Column(name = "reference", length = 255, updatable = false, columnDefinition = "varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
 	protected String reference = UUID.randomUUID().toString();
-	
 
 	public Long getId() {
 		return id;
 	}
-	
+
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	
 	@JsonIgnore
 	public String getUUID() {
 		return reference;
 	}
-	
+
 	@JsonIgnore
 	public UUID toUUID() {
 		return UUID.fromString(reference);
 	}
-	
+
 	public abstract String getName();
 
 	@PreRemove

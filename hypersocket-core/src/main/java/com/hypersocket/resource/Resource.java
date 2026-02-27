@@ -23,37 +23,37 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Inheritance(strategy=InheritanceType.JOINED)
-@Table(name="resources")
+@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "resources")
 public abstract class Resource extends SimpleResource {
-	
+
 	private static final long serialVersionUID = 6795842573539622186L;
 
-	@Column(name="name", nullable=false)
+	@Column(name = "name", length = 191, nullable = false, columnDefinition = "varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
 	private String name;
-	
-	@Column(name="hidden")
+
+	@Column(name = "hidden")
 	private boolean hidden;
-	
-	@Column(name="resource_category", nullable=true)
+
+	@Column(name = "resource_category", length = 255, nullable = true, columnDefinition = "varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
 	private String resourceCategory;
-	
-	@Column(name="system", nullable=false)
+
+	@Column(name = "system", nullable = false)
 	private boolean system = false;
-	
-	@Column(name="read_only", nullable=true)
+
+	@Column(name = "read_only", nullable = true)
 	private Boolean readOnly = false;
-	
+
 	@Transient
 	private String oldName;
-	
+
 	@Transient
-	private Map<String,String> properties;
-	
+	private Map<String, String> properties;
+
 	public Long getId() {
 		return super.getId();
 	}
-	
+
 	public boolean isSystem() {
 		return system;
 	}
@@ -61,20 +61,20 @@ public abstract class Resource extends SimpleResource {
 	public void setSystem(boolean system) {
 		this.system = system;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setName(String name) {
 		this.oldName = this.name;
 		this.name = StringUtils.defaultString(name, "").trim();
 	}
 
 	public boolean hasNameChanged() {
-		return oldName!=null && !oldName.equals(name);
+		return oldName != null && !oldName.equals(name);
 	}
-	
+
 	public boolean isHidden() {
 		return hidden;
 	}
@@ -82,11 +82,11 @@ public abstract class Resource extends SimpleResource {
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
 	}
-	
+
 	public String getResourceCategory() {
 		return resourceCategory;
 	}
-	
+
 	public void setResourceCategory(String resourceCategory) {
 		this.resourceCategory = resourceCategory;
 	}
@@ -95,12 +95,12 @@ public abstract class Resource extends SimpleResource {
 		super.doHashCodeOnKeys(builder);
 		builder.append(name);
 	}
-	
+
 	protected void doEqualsOnKeys(EqualsBuilder builder, Object obj) {
 		super.doEqualsOnKeys(builder, obj);
-		builder.append(name, ((Resource)obj).getName());
+		builder.append(name, ((Resource) obj).getName());
 	}
-	
+
 	@JsonIgnore
 	public String getOldName() {
 		return oldName;

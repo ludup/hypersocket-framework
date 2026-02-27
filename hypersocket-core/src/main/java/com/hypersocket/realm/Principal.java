@@ -74,7 +74,15 @@ public abstract class Principal extends RealmResource implements java.security.P
 	private Set<Principal> linkedPrincipals;
 
 	@ManyToOne
-	@JoinColumn(name = "parent_principal", foreignKey = @ForeignKey(name = "principals_cascade_2"))
+	@JoinColumn(
+	        name = "parent_principal",
+	        referencedColumnName = "resource_id",
+	        foreignKey = @ForeignKey(
+	            name = "principals_cascade_2",
+	            foreignKeyDefinition = "FOREIGN KEY (parent_principal) REFERENCES principals(resource_id) "
+	                                 + "ON DELETE SET NULL ON UPDATE RESTRICT"
+	        )
+	    )
 	@OnDelete(action = OnDeleteAction.NO_ACTION) // TODO no set null
 	private Principal parentPrincipal;
 
@@ -94,7 +102,15 @@ public abstract class Principal extends RealmResource implements java.security.P
 	}
 
 	@ManyToOne
-	@JoinColumn(name = "realm_id", foreignKey = @ForeignKey(name = "principals_cascade_1"))
+	@JoinColumn(
+	        name = "realm_id",
+	        referencedColumnName = "resource_id",
+	        foreignKey = @ForeignKey(
+	            name = "principals_cascade_1",
+	            foreignKeyDefinition = "FOREIGN KEY (realm_id) REFERENCES realms(resource_id) "
+	                                 + "ON DELETE CASCADE ON UPDATE RESTRICT"
+	        )
+	    )
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	protected Realm realm;
 
