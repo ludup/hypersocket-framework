@@ -222,8 +222,8 @@ public class EmailNotificationServiceImpl extends AbstractAuthenticatedServiceIm
 
 				var serverResolver = new ServerResolver(builder.realm());
 
-				var messageSubject = processDefaultReplacements(builder.subject(), r, serverResolver);
-				var messageText = processDefaultReplacements(builder.text(), r, serverResolver);
+				var messageSubject = processDefaultReplacements(builder.subject() == null ? "" : builder.subject(), r, serverResolver);
+				var messageText = processDefaultReplacements(builder.text() == null ? "" : builder.text(), r, serverResolver);
 
 				try {
 					if (StringUtils.isNotBlank(builder.html())) {
