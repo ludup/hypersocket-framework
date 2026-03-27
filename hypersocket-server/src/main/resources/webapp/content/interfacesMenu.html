@@ -5,13 +5,16 @@
 				<i class="far fa-sitemap"></i><span class="ms-2 break"></span><span id="interfaceHeading" localize="httpInterfaces.title"></span>
 			</h2>
 			<ul id="interfaceTabContentTabs" class="nav nav-tabs">
-				<li class="active interfaceTab"><a href="#tabHttpInterfaces" data-resourcekey="httpInterfaces.title"><span localize="httpInterfaces.title"></span></a></li>
+				<li class="interfaceTab">
+					<a href="#tabHttpInterfaces" class="nav-link" data-resourcekey="httpInterfaces.title" data-bs-toggle="tab" data-bs-target="#tabHttpInterfaces" role="tab">
+						<span localize="httpInterfaces.title"></span>
+					</a>
+				</li>
 			</ul>
 		</div>
 		<div class="panel-body">
 			<div id="interfaceTabContentContent" class="tab-content">
-				<div id="tabHttpInterfaces" class="tab-pane active">
-
+				<div id="tabHttpInterfaces" class="tab-pane" role="tabpanel" aria-labelledby="tabHttpInterfaces">
 				</div>
 			</div>
 		</div>
@@ -28,8 +31,8 @@
 			if(data.success) {
 				
 				$.each(data.resources, function(idx, obj) {
-					$('#interfaceTabContentTabs').append('<li class="interfaceTab"><a href="#tab' + obj + '" data-resourcekey="' + obj + '.title"><span localize="' + obj + '.title"></span></a></li>');	
-					$('#interfaceTabContentContent').append('<div id="tab' + obj + '" class="tab-pane"></div>');
+					$('#interfaceTabContentTabs').append('<li class="interfaceTab"><a data-bs-toggle="tab" role="tab" data-bs-target="#tab' + obj + '" href="#tab' + obj + '" data-resourcekey="' + obj + '.title"><span localize="' + obj + '.title"></span></a></li>');	
+					$('#interfaceTabContentContent').append('<div id="tab' + obj + '" class="tab-pane" role="tabpanel" aria-labelledby="tab' + obj + '"></div>');
 					$('#tab' + obj).load('${uiPath}/content/' + obj + '.html');
 				});
 				
@@ -40,8 +43,10 @@
 				  $('#interfaceHeading').text(getResource($(this).data('resourcekey')));
 				  $(this).tab('show');
 			});
-			
+				
 			$('#interfaceTabContent').localize();
+			
+			$('#interfaceTabContentTabs a[href="#tabHttpInterfaces"]').tab('show');
 		});
 		
 	});
