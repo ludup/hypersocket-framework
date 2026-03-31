@@ -25,6 +25,10 @@ public abstract class AbstractCertificateProvider implements CertificateProvider
 			return "SHA256WithRSAEncryption";
 		case RSA_2048:
 			return "SHA256WithRSAEncryption";
+		case RSA_3072:
+			return "SHA256WithRSAEncryption";
+		case RSA_4096:
+			return "SHA256WithRSAEncryption";
 		case DSA_1024:
 			return "SHA256WithDSA";
 		default:
@@ -41,6 +45,10 @@ public abstract class AbstractCertificateProvider implements CertificateProvider
 			return X509CertificateUtils.generatePrivateKey("RSA", 1024);
 		case RSA_2048:
 			return X509CertificateUtils.generatePrivateKey("RSA", 2048);
+		case RSA_3072:
+			return X509CertificateUtils.generatePrivateKey("RSA", 3072);
+		case RSA_4096:
+			return X509CertificateUtils.generatePrivateKey("RSA", 4096);
 		case DSA_1024:
 			return X509CertificateUtils.generatePrivateKey("DSA", 1024);
 		default:
