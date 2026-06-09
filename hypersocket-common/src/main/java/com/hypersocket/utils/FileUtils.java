@@ -226,5 +226,23 @@ public class FileUtils {
 	    return returnValue;
 	}
 
+	/**
+	 * Validates a file path string for directory traversal sequences.
+	 * Rejects paths containing '../', '/./', or ending with '/..' or '/.'.
+	 * 
+	 * @param path the path string to validate
+	 * @throws IllegalArgumentException if traversal patterns are detected
+	 */
+	public static void validateFilePath(String path) {
+		
+		String normalized = path.replace('\\', '/');           // unify separators
+		
+		if (normalized.contains("../") ||
+		    normalized.contains("/./") ||
+		    normalized.endsWith("/..") ||
+		    normalized.endsWith("/.") ) {
+		    	throw new IllegalArgumentException("Path must not contain '..', '../' or './'");
+		}
+	}
 
 }
