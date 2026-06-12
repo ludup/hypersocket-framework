@@ -8,7 +8,9 @@
 package com.hypersocket.resource;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,6 +32,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hypersocket.permissions.Role;
+import com.hypersocket.realm.Principal;
 import com.hypersocket.realm.Realm;
 
 @Entity
@@ -105,4 +108,70 @@ public abstract class AssignableResource extends RealmResource {
 	public void setPersonal(Boolean personal) {
 		this.personal = personal;
 	}
+	
+	/**
+     * Extracts the name of the single principal associated with a resource.
+     * It checks only assigned role is personal and principal name can be extracted via the role.
+     * 
+     * @return The name of the single principal
+     * 
+     * @throws IllegalStateException if roles or principals are missing or multiple exist or role exists and is not personal
+     */
+    public String getPrincipalNameFromAssignedPersonalRole() {
+    	
+    	var assignableResource = this;
+        
+        var resourceClassName = assignableResource.getClass().getSimpleName();
+        
+        var resourceName = assignableResource.getName();
+
+        // 1. Validate Roles
+        var resourceRoles = Objects.requireNonNull(assignableResource.getRoles());
+        
+        if (resourceRoles.isEmpty()) {
+            throw new IllegalStateException(
+                String.format("For %s resource with name '%s' no associated roles found.", resourceClassName, resourceName)
+            );
+        }
+
+        if (resourceRoles.size() > 1) {
+            var roleNames = resourceRoles.stream().map(Role::getName).collect(Collectors.toSet());
+            throw new IllegalStateException(
+                String.format("For %s resource with name '%s' more than one roles found -> %s.", 
+                		resourceClassName, resourceName, roleNames)
+            );
+        }
+
+        var role = resourceRoles.iterator().next();
+        
+        var roleName = role.getName();
+        
+        if (!role.isPersonalRole()) {
+        	throw new IllegalStateException(
+                    String.format("For %s resource with name '%s' role '%s' is not personal role.", 
+                    		resourceClassName, resourceName, roleName)
+                );
+        }
+
+        // 2. Validate Principals
+        var principals = Objects.requireNonNull(role.getPrincipals());
+
+        if (principals.isEmpty()) {
+            throw new IllegalStateException(
+                String.format("For %s resource with name '%s' role '%s' has no associated principals.", 
+                		resourceClassName, resourceName, roleName)
+            );
+        }
+
+        if (principals.size() > 1) {
+            var principalNames = principals.stream().map(Principal::getName).collect(Collectors.toSet());
+            throw new IllegalStateException(
+                String.format("For %s resource with name '%s' role '%s' has more than one principals -> %s.", 
+                		resourceClassName, resourceName, roleName, principalNames)
+            );
+        }
+
+        // 3. Retrieve single element via iterator (O(1), no list allocation)
+        return principals.iterator().next().getName();
+    }
 }
