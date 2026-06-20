@@ -491,7 +491,7 @@ public class CertificateResourceController extends ResourceController {
 			@RequestPart(value = "file") MultipartFile file,
 			@RequestPart(value = "bundle", required = false) MultipartFile bundle,
 			@RequestPart(value = "key") MultipartFile key, @RequestParam(value = "passphrase") String passphrase, 
-			@RequestParam(value = "replaceCertificate") Long replaceCertificate)
+			@RequestParam(required = false, defaultValue = "-1", value = "replaceCertificate") Long replaceCertificate)
 			throws AccessDeniedException, UnauthorizedException, SessionTimeoutException {
 
 		return replaceKey(request, response, file, bundle, key, passphrase, replaceCertificate, null);
