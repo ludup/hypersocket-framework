@@ -30,8 +30,11 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPublicKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,6 +55,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -303,6 +307,8 @@ public class X509CertificateUtils {
 				PrivateKey prv = converter.getPrivateKey(i);
 				if(prv instanceof RSAPrivateCrtKey) {
 					return loadKeyPair((RSAPrivateCrtKey)prv);
+				} else if(prv instanceof ECPrivateKey) {
+					return loadKeyPair((ECPrivateKey)prv);
 				} else {
 					throw new FileFormatException("Unsupported private key type");
 				}
@@ -339,6 +345,35 @@ public class X509CertificateUtils {
 		} catch (Exception e) {
 			throw new CertificateException(
 					"Failed to convert RSAPrivateCrtKey into JCE KeyPair", e);
+		}
+	}
+
+	private static KeyPair loadKeyPair(ECPrivateKey privatekey)
+			throws CertificateException {
+		try {
+			if (privatekey.getParams() == null) {
+				throw new CertificateException("ECPrivateKey has no domain parameters");
+			}
+			if (!(privatekey instanceof BCECPrivateKey)) {
+				throw new CertificateException(
+						"Unsupported ECPrivateKey implementation " + privatekey.getClass().getName());
+			}
+
+			BCECPrivateKey bcPrivate = (BCECPrivateKey) privatekey;
+			ECParameterSpec params = privatekey.getParams();
+			org.bouncycastle.math.ec.ECPoint q = bcPrivate.getParameters().getG()
+					.multiply(privatekey.getS()).normalize();
+			java.security.spec.ECPoint w = new java.security.spec.ECPoint(
+					q.getAffineXCoord().toBigInteger(), q.getAffineYCoord().toBigInteger());
+
+			KeyFactory keyFactory = KeyFactory.getInstance("EC", BC);
+			PublicKey pubKey = keyFactory.generatePublic(new ECPublicKeySpec(w, params));
+			return new KeyPair(pubKey, privatekey);
+		} catch (CertificateException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new CertificateException(
+					"Failed to convert ECPrivateKey into JCE KeyPair", e);
 		}
 	}
 
