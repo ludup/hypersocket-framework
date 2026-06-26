@@ -1,6 +1,7 @@
 package com.hypersocket.realm.json;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +50,7 @@ import com.hypersocket.permissions.PermissionService;
 import com.hypersocket.permissions.Role;
 import com.hypersocket.profile.Profile;
 import com.hypersocket.profile.ProfileCredentialsService;
+import com.hypersocket.profile.export.ProfileExportService;
 import com.hypersocket.properties.NameValuePair;
 import com.hypersocket.properties.PropertyCategory;
 import com.hypersocket.properties.ResourceUtils;
@@ -103,6 +105,9 @@ public class CurrentRealmController extends ResourceController {
 	
 	@Autowired
 	private TransactionService transactionService; 
+	
+	@Autowired
+	private ProfileExportService profileExportService;
 	
 	@AuthenticationRequired
 	@RequestMapping(value = "currentRealm/groups/list", method = RequestMethod.GET, produces = { "application/json" })
@@ -1318,6 +1323,29 @@ public class CurrentRealmController extends ResourceController {
 				request.getParameter("attributes"), sortArray, 
 				response.getOutputStream(), sessionUtils.getLocale(request));
 			
+	}
+	
+	
+	@AuthenticationRequired
+	@RequestMapping(value = "currentRealm/profile/csv", method = RequestMethod.POST, produces = { "application/octet-stream" })
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.OK)
+	@AuthenticatedContext
+	public void downloadProfileCSV(HttpServletRequest request, HttpServletResponse response)
+			throws AccessDeniedException, IOException, NumberFormatException {
+
+		String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=\"profile.zip\"";
+        response.setHeader(headerKey, headerValue);
+        response.setBufferSize(8192);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        
+	
+		Realm realm = realmService.getCurrentRealm();
+		
+		try (var out = response.getOutputStream()) {
+			profileExportService.zipAllProfiles(out, realm);
+        }
 	}
 
 	@AuthenticationRequired
