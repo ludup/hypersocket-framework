@@ -1,5 +1,7 @@
 EXIT IF FRESH;
 
+TRY 
+
 ALTER TABLE `principals` DROP FOREIGN KEY IF EXISTS `principals_cascade_1`;
 ALTER TABLE `principals` DROP FOREIGN KEY IF EXISTS `principals_cascade_2`;
 
@@ -34,3 +36,5 @@ ALTER TABLE `resources`
   CHANGE `resource_category` `resource_category` VARCHAR(255)
     CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
   CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+  
+CATCH
