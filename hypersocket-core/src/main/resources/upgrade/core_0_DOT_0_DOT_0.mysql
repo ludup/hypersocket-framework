@@ -1,0 +1,8 @@
+TRY
+ALTER TABLE `properties`
+  CHANGE `resourceKey` `resourceKey` VARCHAR(191)
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  CHANGE `value` `value` LONGTEXT
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
+  CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+CATCH
