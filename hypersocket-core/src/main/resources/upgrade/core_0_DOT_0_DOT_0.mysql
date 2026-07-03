@@ -5,4 +5,12 @@ ALTER TABLE `properties`
   CHANGE `value` `value` LONGTEXT
     CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
   CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+  
+ALTER TABLE `resources`
+  CHANGE `name` `name` VARCHAR(191)
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  CHANGE `resource_category` `value` VARCHAR(191)
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+  
 CATCH

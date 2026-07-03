@@ -29,13 +29,13 @@ public abstract class Resource extends SimpleResource {
 
 	private static final long serialVersionUID = 6795842573539622186L;
 
-	@Column(name = "name", length = 191, nullable = false, columnDefinition = "varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
+	@Column(name = "name", length = 191, nullable = false, columnDefinition = "varchar(191)")
 	private String name;
 
 	@Column(name = "hidden")
 	private boolean hidden;
 
-	@Column(name = "resource_category", length = 255, nullable = true, columnDefinition = "varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
+	@Column(name = "resource_category", length = 255, nullable = true, columnDefinition = "varchar(255)")
 	private String resourceCategory;
 
 	@Column(name = "system", nullable = false)

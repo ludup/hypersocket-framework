@@ -24,7 +24,7 @@ public abstract class SimpleResource extends AbstractEntity<Long> {
 	@Column(name = "resource_id")
 	private Long id;
 
-	@Column(name = "reference", length = 255, updatable = false, columnDefinition = "varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
+	@Column(name = "reference", length = 255, updatable = false, columnDefinition = "varchar(255)")
 	protected String reference = UUID.randomUUID().toString();
 
 	public Long getId() {
