@@ -117,6 +117,7 @@ public abstract class AssignableResource extends RealmResource {
      * 
      * @throws IllegalStateException if roles or principals are missing or multiple exist or role exists and is not personal
      */
+	@JsonIgnore
     public String getPrincipalNameFromAssignedPersonalRole() {
     	
     	var assignableResource = this;
