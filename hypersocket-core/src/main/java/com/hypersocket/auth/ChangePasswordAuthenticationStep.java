@@ -20,6 +20,7 @@ import com.hypersocket.json.input.FormTemplate;
 import com.hypersocket.local.LocalUser;
 import com.hypersocket.permissions.AccessDeniedException;
 import com.hypersocket.realm.Principal;
+import com.hypersocket.realm.PrincipalType;
 import com.hypersocket.realm.RealmProvider;
 import com.hypersocket.realm.RealmService;
 import com.hypersocket.resource.ResourceException;
@@ -178,7 +179,9 @@ public class ChangePasswordAuthenticationStep implements PostAuthenticationStep 
 		
 		RealmProvider realmProvider = getProviderForPrincipal(state.getPrincipal());
 		
-		realmProvider.updateUserProperties(state.getPrincipal(), properties);
+		var latestPrincipal = realmProvider.getPrincipalById(state.getPrincipal().getId(), state.getRealm(), new PrincipalType[] { PrincipalType.USER } );
+		
+		realmProvider.updateUserProperties(latestPrincipal, properties);
 		
 		state.removeEnvironmentVariable(HAVE_I_BEEN_PWNED_FLAGGED_CHANGED);
 	}
