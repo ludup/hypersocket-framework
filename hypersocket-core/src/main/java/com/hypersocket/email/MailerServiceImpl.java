@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.api.mailer.config.TransportStrategy;
+import org.simplejavamail.internal.modules.ModuleLoader;
 import org.simplejavamail.mailer.MailerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +83,14 @@ public class MailerServiceImpl implements MailerService {
 	
 	
 	private Mailer createMailer(Realm realm) {
+		
+		if (!ModuleLoader.batchModuleAvailable()) {
+			log.error("SMTP connection pool is NOT ACTIVE: Simple Java Mail Batch module is unavailable, realm={}",
+					realm.getName());
+			throw new IllegalStateException("Simple Java Mail SMTP connection pool is unavailable");
+		}
+		
+		ModuleLoader.loadBatchModule();
 		
 		
 		Mailer mail;
