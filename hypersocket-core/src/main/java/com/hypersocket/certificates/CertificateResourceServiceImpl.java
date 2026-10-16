@@ -616,7 +616,7 @@ public class CertificateResourceServiceImpl extends
 			MultipartFile bundle) throws ResourceException,
 			InvalidPassphraseException, IOException {
 		return replacePrivateKey(resource, key.getInputStream(), passphrase, 
-				file.getInputStream(), bundle.getInputStream());
+				file.getInputStream(), bundle == null || bundle.isEmpty() ? null : bundle.getInputStream());
 	}
 	
 	@Override
