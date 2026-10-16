@@ -475,6 +475,7 @@ public class CertificateResourceController extends ResourceController {
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE, "info.certUploaded"));
 
 		} catch (Exception ex) {
+			LOG.error("Failed to upload certificate.", ex);
 			status.setMessage(I18N.getResource(sessionUtils.getLocale(request),
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE, "error.generalError", ex.getMessage()));
 		}
@@ -536,6 +537,7 @@ public class CertificateResourceController extends ResourceController {
 			status.setMessage(I18N.getResource(sessionUtils.getLocale(request),
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE, "error.invalidPassphrase"));
 		} catch (Exception e) {
+			LOG.error("Failed to replace certificate.", e);
 			status.setMessage(I18N.getResource(sessionUtils.getLocale(request),
 					CertificateResourceServiceImpl.RESOURCE_BUNDLE, "error.generalError", e.getMessage()));
 		}
