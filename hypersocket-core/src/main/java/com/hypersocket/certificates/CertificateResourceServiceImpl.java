@@ -548,6 +548,8 @@ public class CertificateResourceServiceImpl extends
 				ByteArrayOutputStream caStream = new ByteArrayOutputStream();
 				X509CertificateUtils.saveCertificate(ca, caStream);
 				resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
+			} else {
+				resource.setBundle(null);
 			}
 			resource.setCertificate(new String(certStream.toByteArray(), "UTF-8"));
 
@@ -686,6 +688,8 @@ public class CertificateResourceServiceImpl extends
 			ByteArrayOutputStream caStream = new ByteArrayOutputStream();
 			X509CertificateUtils.saveCertificate(ca, caStream);
 			resource.setBundle(new String(caStream.toByteArray(), "UTF-8"));
+		} else {
+			resource.setBundle(null);
 		}
 		
 		X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
