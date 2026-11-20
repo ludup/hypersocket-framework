@@ -50,7 +50,7 @@
 
 	<properties>
 		<org.springframework.version>4.3.30.RELEASE</org.springframework.version>
-		<aspectj.version>1.8.13</aspectj.version>
+		<aspectj.version>1.8.14</aspectj.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		
 		<!-- Also in hypersocket.enterprise, hypersocket-json-client and I4J -->

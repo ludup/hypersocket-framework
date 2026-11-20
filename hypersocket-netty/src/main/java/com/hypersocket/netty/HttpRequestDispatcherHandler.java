@@ -781,6 +781,11 @@ public class HttpRequestDispatcherHandler extends SimpleChannelUpstreamHandler {
 			servletResponse.setHeader("Connection", "close");
 			servletResponse.setCloseOnComplete(true);
 		}
+
+		HttpSession session = request.getSession(false);
+		if(session != null && session.getAttribute(SessionUtils.AUTHENTICATED_SESSION) != null) {
+			 servletResponse.setHeader("X-Hypersocket-Authenticated", "true");
+		}
 		
 		var ignoreCC = (Boolean)request.getAttribute(CacheUtils.IGNORE_CACHE);
 		if(!Boolean.TRUE.equals(ignoreCC)) {
